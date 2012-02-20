@@ -1,6 +1,9 @@
 
+import os
+
 from boto.mturk.connection import MTurkConnection
 from ConfigParser import ConfigParser
+
 
 
 #print mtc.get_account_balance()  # Tests the connection
@@ -25,9 +28,11 @@ def get_all_reviewable_hits( mtc ):
     return hits
 
 
-configfilename = "../config"
+framework_root = os.path.abspath(os.path.join(os.getcwd(), os.path.pardir))
+configfilename = os.path.join(framework_root, 'config')
+
 config = ConfigParser()
-config.read( open( configfilename ) )
+config.read( configfilename )
 
 hostname = 'mechanicalturk.amazonaws.com'
 
