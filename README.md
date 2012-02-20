@@ -2,7 +2,7 @@
 What is this?
 ------------
 
-PsiTurk is an open framework for conducting custom behvioral experiments on
+PsiTurk is an open platform for conducting custom behvioral experiments on
 Amazon's Mechanical Turk. 
 
 It is intended to provide most of the backend machinery necessary to run your
@@ -18,6 +18,10 @@ modules installed:
 
  * [Flask](http://flask.pocoo.org/) --- A lightweight web framework.
  * [SQLAlchemy](http://www.sqlalchemy.org/) --- A powerful SQL abstraction layer.
+
+You will also need to run this from a web server connected to the internet, and
+you will need a database of some kind (MySQL, SQLite, or PostgreSQL would all
+work).
 
 Copyright
 ---------
