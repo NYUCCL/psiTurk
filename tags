@@ -1,0 +1,3 @@
+range	app.py	/^dimorders = range(24)$/
+timedelta	app.py	/^    starttime = datetime.datetime.now() + datetime/
+wraps	app.py	/^    @wraps(f)$/
