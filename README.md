@@ -20,8 +20,8 @@ modules installed:
  * [SQLAlchemy](http://www.sqlalchemy.org/) --- A powerful SQL abstraction layer.
 
 You will also need to run this from a web server connected to the internet, and
-you will need a database of some kind (MySQL, SQLite, or PostgreSQL would all
-work).
+you will need a database compatible with SQL Alchemy (MySQL, SQLite, or
+PostgreSQL would all work).
 
 Copyright
 ---------

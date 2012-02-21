@@ -12,7 +12,8 @@ from functools import wraps
 DEPLOYMENT_ENV = 'sandbox'  # 'sandbox' or 'deploy' (the real thing)
 CODE_VERSION = '1'
 
-DATABASE = 'mysql://user:password@domain:port/dbname'
+#DATABASE = 'mysql://user:password@domain:port/dbname'
+DATABASE = 'sqlite://'
 TABLENAME = 'turkdemo'
 SUPPORTIE = True
 NUMCONDS = 1
@@ -69,8 +70,8 @@ for i in dimorders:
 #----------------------------------------------
 # function for authentication
 #----------------------------------------------
-validuname = examplename
-validpw = examplepass
+validuname = "examplename"
+validpw = "examplepass"
 
 def wrapper(func, args):
     return func(*args)
@@ -282,6 +283,8 @@ def mturkroute():
                                    hitid=request.args['hitId'], 
                                    assignid=request.args['assignmentId'], 
                                    workerid=request.args['workerId'])
+    else:
+        return render_template('error.html', errornum=HIT_ASSIGN_WORKER_ID_NOT_SET_IN_MTURK)
 
 @app.route('/consent', methods=['GET'])
 def give_consent():
@@ -521,9 +524,10 @@ def createdatabase(engine, metadata):
     # try to load tables from a file, if that fails create new tables
     try:
         participants = Table(TABLENAME, metadata, autoload=True)
+        print "Participant table already seems to exist."
     except: # can you put in the specific exception here?
         # ok will create the database
-        print "ok will create the participant database"
+        print "Initializing the database."
         participants = Table(TABLENAME, metadata,
             Column('subjid', Integer, primary_key=True),
             Column('ipaddress', String(128)),
@@ -564,11 +568,10 @@ if __name__ == '__main__':
         engine = create_engine(DATABASE, echo=False) 
         metadata = MetaData()
         metadata.bind = engine
-        if sys.argv[1]=='initdb':
+        if 'initdb' in sys.argv:
             print "initializing database"
             createdatabase(engine, metadata)
-            pass
-        elif sys.argv[1]=='server':
+        if 'server' in sys.argv:
             print "starting webserver"
             participantsdb = loaddatabase(engine, metadata)
             # by default just launch webserver
