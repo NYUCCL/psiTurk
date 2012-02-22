@@ -3,27 +3,15 @@ from string import split
 import datetime
 from random import choice, shuffle, seed, getstate, setstate
 import sys
-from sqlalchemy import *
 from functools import wraps
 
 
 
 # constants
-DEPLOYMENT_ENV = 'sandbox'  # 'sandbox' or 'deploy' (the real thing)
-CODE_VERSION = '1'
+DEPLOYMENT_ENV = 'sandbox'  # 'sandbox' or 'deploy' (the real thing)  MOVE TO CONFIG
+CODE_VERSION = '1'          # MOVE TO CONFIG
+CUTOFFTIME = 30  # Minutes after starting when a participnat is assumed to have timed out.  MOVE TO CONFIG
 
-#DATABASE = 'mysql://user:password@domain:port/dbname'
-DATABASE = 'sqlite://'
-TABLENAME = 'turkdemo'
-SUPPORTIE = True
-NUMCONDS = 1
-NUMCOUNTERS = 2
-ALLOCATED = 1
-STARTED = 2
-COMPLETED = 3
-DEBRIEFED = 4
-CREDITED = 5
-QUITEARLY = 6
 
 # For easy debugging
 if DEPLOYMENT_ENV == 'sandbox':
@@ -32,6 +20,21 @@ else:
     MAXBLOCKS = 15
 
 TESTINGPROBLEMSIX = False
+
+# Database configuration and constants
+#DATABASE = 'mysql://user:password@domain:port/dbname'
+DATABASE = 'sqlite://'  # MOVE TO CONFIG
+TABLENAME = 'turkdemo'  # MOVE TO CONFIG
+SUPPORTIE = True        # MOVE TO CONFIG
+
+NUMCONDS = 1
+NUMCOUNTERS = 2
+ALLOCATED = 1
+STARTED = 2
+COMPLETED = 3
+DEBRIEFED = 4
+CREDITED = 5
+QUITEARLY = 6
 
 # error codes
 STATUS_INCORRECTLY_SET = 1000
@@ -53,25 +56,12 @@ IN_DEBUG = 2005
 
 app = Flask(__name__)
 
-#----------------------------------------------
-# based counterbalancing code
-#----------------------------------------------
-seed(500)  # use the same order each time the program is launched
-counterbalanceconds = []
-dimorders = range(24)
-dimvals = range(16)
-shuffle(dimorders)
-shuffle(dimvals)
-for i in dimorders:
-    for j in dimvals:
-        counterbalanceconds.append((i,j))
-
 
 #----------------------------------------------
 # function for authentication
 #----------------------------------------------
-validuname = "examplename"
-validpw = "examplepass"
+queryname = "examplename"   # MOVE TO CONFIG
+querypw = "examplepass"     # MOVE TO CONFIG
 
 def wrapper(func, args):
     return func(*args)
@@ -80,7 +70,7 @@ def check_auth(username, password):
     """This function is called to check if a username /
     password combination is valid.
     """
-    return username == validuname and password == validpw
+    return username == queryname and password == querypw
 
 
 def authenticate():
@@ -104,30 +94,71 @@ def requires_auth(f):
 #----------------------------------------------
 # general utilities
 #----------------------------------------------
-def get_people(conn, s):
-    people={}
-    i=0
-    for row in conn.execute(s):
+def get_people(people):
+    people=[]
+    for record in people:
         person = {}
-        for field in ['subjid', 'ipaddress', 'hitid', 'assignmentid', 'workerid',
-                        'cond', 'counterbalance', 'beginhit','beginexp', 'endhit',
-                        'status', 'datafile']:
+        for field in ['subjid', 'ipaddress', 'hitid', 'assignmentid',
+                      'workerid', 'cond', 'counterbalance',
+                      'beginhit','beginexp', 'endhit', 'status', 'datafile']:
             if field=='datafile':
-                if row[field] == None:
+                if record[field] == None:
                     person[field] = "Nothing yet"
                 else:
-                    person[field] = row[field][:10]
+                    person[field] = record[field][:10]
             else:
-                person[field] = row[field]
-        people[i] = person
-        i+=1
-    return [people, i]
+                person[field] = record[field]
+        people.append( person )
+    return people
 
+#----------------------------------------------
+# Define database class
+#----------------------------------------------
+
+from sqlalchemy import create_engine
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text
+from sqlalchemy import or_, and_
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+Base = declarative_base()
+
+class Participant(Base):
+    __tablename__ = TABLENAME
+    
+    subjid = Column( Integer, primary_key = True )
+    ipaddress = Column(String(128)),
+    hitid = Column(String(128)),
+    assignmentid =Column(String(128)),
+    workerid = Column(String(128)),
+    cond = Column(Integer),
+    counterbalance = Column(Integer),
+    codeversion = Column(String(128)),
+    beginhit = Column(DateTime(), nullable=True),
+    beginexp = Column(DateTime(), nullable=True),
+    endhit = Column(DateTime(), nullable=True),
+    status = Column(Integer, default = ALLOCATED),
+    debriefed = Column(Boolean),
+    datafile = Column(Text, nullable=True),  #the data from the exp
+    
+    def __init__(self, hitid, ipaddress, assignmentid, workerid, cond, counterbalance):
+        self.hitid = hitid
+        self.ipaddress = ipaddress
+        self.assignmentid = assignmentid
+        self.workerid = workerid
+        self.cond = cond
+        self.counterbalance = counterbalance
+        self.status = ALLOCATED
+        self.codeversion = CODE_VERSION
+        self.debriefed = False
+        self.beginhit = datetime.datetime.now()
+    
+    def __repr__( self ):
+        return "Subject(%r, %r)" % ( self.subjid, self.status )
 
 #----------------------------------------------
 # Experiment counterbalancing code.
 #----------------------------------------------
-def get_random_condition(conn):
+def get_random_condition(session):
     """
     HITs can be in one of three states:
         - jobs that are finished
@@ -136,40 +167,35 @@ def get_random_condition(conn):
     Our count should be based on the first two, so we count any tasks finished
     or any tasks not finished that were started in the last 30 minutes.
     """
-    starttime = datetime.datetime.now() + datetime.timedelta(minutes=-30)
-    s = select([participantsdb.c.cond], and_(participantsdb.c.codeversion==CODE_VERSION, or_(participantsdb.c.endhit!=null, participantsdb.c.beginhit>starttime)), from_obj=[participantsdb])
-    result = conn.execute(s)
+    starttime = datetime.datetime.now() + datetime.timedelta(minutes=-CUTOFFTIME)
     counts = [0]*NUMCONDS
-    for row in result:
-        counts[row[0]]+=1
+    for partcond in session.Query(Participant.cond).\
+                    filter(Participant.codeversion == CODE_VERSION).\
+                    filter(or_(Participant.endhit != None, Participant.beginhit > starttime)):
+        counts[partcond] += 1
     
     # choose randomly from the ones that have the least in them (so will tend to fill in evenly)
-    indicies = [i for i, x in enumerate(counts) if x == min(counts)]
+    indices = [i for i, x in enumerate(counts) if x == min(counts)]
     rstate = getstate()
     seed()
-    subj_cond = choice(indicies)
+    subj_cond = choice(indices)
     setstate(rstate)
     return subj_cond
 
-def get_random_counterbalance(conn):
+def get_random_counterbalance(session):
     starttime = datetime.datetime.now() + datetime.timedelta(minutes=-30)
-    s = select([participantsdb.c.counterbalance], 
-               and_(
-                   participantsdb.c.codeversion==CODE_VERSION, 
-                   or_(
-                       participantsdb.c.endhit!=null, 
-                       participantsdb.c.beginhit>starttime)), 
-               from_obj=[participantsdb])    
-    result = conn.execute(s)
+    session = Session()
     counts = [0]*NUMCOUNTERS
-    for row in result:
-        counts[row[0]]+=1
+    for partcount in session.Query(Participant.counterbalance).\
+                     filter(Participant.codeversion == CODE_VERSION).\
+                     filter(or_(Participant.endhit != None, Participant.beginhit > starttime)):
+        counts[partcount] += 1
     
     # choose randomly from the ones that have the least in them (so will tend to fill in evenly)
-    indicies = [i for i, x in enumerate(counts) if x == min(counts)]
+    indices = [i for i, x in enumerate(counts) if x == min(counts)]
     rstate = getstate()
     seed()
-    subj_counter = choice(indicies)
+    subj_counter = choice(indices)
     setstate(rstate)
     return subj_counter
 
@@ -219,17 +245,20 @@ def mturkroute():
     
     if request.args.has_key('hitId') and request.args.has_key('assignmentId'):
         # Person has accepted the HIT, entering them into the database.
-        conn = engine.connect()
+        session = Session()
         hitID = request.args['hitId']
         assignmentID = request.args['assignmentId']
         if request.args.has_key('workerId'):
             workerID = request.args['workerId']
             # first check if this workerId has completed the task before (v1)
-            s = select([participantsdb.c.subjid])
-            s = s.where(and_(participantsdb.c.hitid!=hitID, participantsdb.c.workerid==workerID))
-            result = conn.execute(s)
-            matches = [row for row in result]
-            numrecs = len(matches)
+            numrecs = session.Query(Participant.subjid).\
+                       filter(Participant.workerid == workerID).\
+                       matches()
+            
+            # Note about old code: Referencing the hitId is actually
+            # problematic here, the same experiment could be posted on
+            # different HITs
+            #s = s.where(and_(participantsdb.c.hitid!=hitID, participantsdb.c.workerid==workerID))
             
             if numrecs != 0:
                 # already completed task
@@ -242,13 +271,11 @@ def mturkroute():
             # If worker has not accepted the hit:
             workerID = None # WARNING was '-1', should be fine but if this crashes on the home screen could be my fault here.
         print hitID, assignmentID, workerID
-        s = select([participantsdb.c.status, participantsdb.c.subjid])
-        s = s.where(and_(participantsdb.c.hitid==hitID, participantsdb.c.assignmentid==assignmentID, participantsdb.c.workerid==workerID))
+        status, subj_id = session.Query(Participant.status, Participant.subjid).\
+                            filter(Participant.hitid == hitID).\
+                            filter(Participant.assignmentid == assignmentID).\
+                            filter(Participant.workerid == workerID).one()
         
-        status = None
-        for row in conn.execute(s):
-            status = row[0]
-            subj_id = row[1]
         if status == ALLOCATED or not status:
             # Participant has not yet agreed to the consent. They might not
             # even have accepted the HIT. The mturkindex template will treat
@@ -311,21 +338,21 @@ def start_exp():
         workerID = request.args['workerId']
         print hitID, assignmentID, workerID
         
-        conn = engine.connect()
         
         # check first to see if this hitID or assignmentID exists.  if so check to see if inExp is set
-        s = select([participantsdb.c.subjid, participantsdb.c.cond, participantsdb.c.counterbalance, participantsdb.c.status], from_obj=[participantsdb])
-        s = s.where(and_(participantsdb.c.hitid==hitID,participantsdb.c.assignmentid==assignmentID,participantsdb.c.workerid==workerID))
-        result = conn.execute(s)
-        matches = [row for row in result]
+        session = Session()
+        matches = session.Query(Participant.subjid, Participant.cond, Participant.counterbalance, Participant.status).\
+                            filter(Participant.hitid == hitID).\
+                            filter(Participant.assignmentid == assignmentID).\
+                            filter(Participant.workerid == workerID).all()
         numrecs = len(matches)
         if numrecs == 0:
             
             # doesn't exist, get a histogram of completed conditions and choose an under-used condition
-            subj_cond = get_random_condition(conn)
+            subj_cond = get_random_condition(session)
             
             # doesn't exist, get a histogram of completed counterbalanced, and choose an under-used one
-            subj_counter = get_random_counterbalance(conn)
+            subj_counter = get_random_counterbalance(session)
             
             if not request.remote_addr:
                 myip = "UKNOWNIP"
@@ -333,19 +360,10 @@ def start_exp():
                 myip = request.remote_addr
             
             # set condition here and insert into database
-            result = conn.execute(participantsdb.insert(),
-                hitid = hitID,
-                ipaddress = myip,
-                assignmentid = assignmentID,
-                workerid = workerID,
-                cond = subj_cond,
-                counterbalance = subj_counter,
-                status = ALLOCATED,
-                codeversion = CODE_VERSION,
-                debriefed=False,
-                beginhit = datetime.datetime.now()
-            )
-            myid = result.inserted_primary_key[0]
+            newpart = Participant( hitID, myip, assignmentID, workerID, subj_cond, subj_counter)
+            session.add( newpart )
+            session.commit()
+            myid = newpart.subjid
         
         elif numrecs==1:
             myid, subj_cond, subj_counter, status = matches[0]
@@ -355,7 +373,6 @@ def start_exp():
             print "Error, hit/assignment appears in database more than once (serious problem)"
             return render_template('error.html', errornum=HIT_ASSIGN_APPEARS_IN_DATABASE_MORE_THAN_ONCE, hitid=request.args['hitId'], assignid=request.args['assignmentId'], workerid=request.args['workerId'])
         
-        conn.close()
         dimo, dimv = counterbalanceconds[subj_counter]
         return render_template('exp.html', subj_num = myid, order=subj_counter )
     else:
@@ -373,15 +390,14 @@ def enterexp():
     print "accessing /inexp"
     if request.method == 'POST':
         if request.form.has_key('subjId'):
-            subid = request.form['subjId']
-            conn = engine.connect()
-            results = conn.execute(
-                participantsdb.update().where(
-                    participantsdb.c.subjid==subid
-                ).values(
-                    status=STARTED, 
-                    beginexp = datetime.datetime.now()))
-            conn.close()
+            subjid = request.form['subjId']
+            session = Session()
+            user = session.Query(Participant).\
+                    filter(Participant.subjid == subjid).\
+                    one()
+            user.status = STARTED
+            user.beginexp = datetime.datetime.now()
+            session.commit()
     else:
         return render_template('error.html', errornum=IN_EXP_ACCESSED_WITHOUT_POST)
 
@@ -398,9 +414,13 @@ def inexpsave():
             subj_id = request.form['subjId']
             datastring = request.form['dataString']  
             print "getting the save data", subj_id, datastring
-            conn = engine.connect()
-            conn.execute(participantsdb.update().where(participantsdb.c.subjid==subj_id).values(datafile=datastring, status=STARTED))
-            conn.close()
+            session = Session()
+            user = session.Query(Participant).\
+                    filter(Participant.subjid == subjid).\
+                    one()
+            user.datafile = datastring
+            user.status = STARTED
+            session.commit()
     return render_template('error.html', errornum=INTERMEDIATE_SAVE)
 
 @app.route('/quitter', methods=['POST'])
@@ -412,12 +432,16 @@ def quitter():
     if request.method == 'POST':
         print request.form.keys()
         if request.form.has_key('subjId') and request.form.has_key('dataString'):
-            subj_id = request.form['subjId']
+            subjid = request.form['subjId']
             datastring = request.form['dataString']  
-            print "getting the save data", subj_id, datastring
-            conn = engine.connect()
-            conn.execute(participantsdb.update().where(participantsdb.c.subjid==subj_id).values(datafile=datastring, status=QUITEARLY))
-            conn.close()
+            print "getting the save data", subjid, datastring
+            session = Session()
+            user = session.Query(Participant).\
+                    filter(Participant.subjid == subjid).\
+                    one()
+            user.datafile = datastring
+            user.status = QUITEARLY
+            session.commit()
     return render_template('error.html', errornum=TRIED_TO_QUIT)
 
 @app.route('/debrief', methods=['POST', 'GET'])
@@ -428,15 +452,20 @@ def savedata():
     """
     print request.form.keys()
     if request.form.has_key('subjid') and request.form.has_key('data'):
-        conn = engine.connect()
-        subj_id = int(request.form['subjid'])
-        datafile = request.form['data']
-        print subj_id, datafile
-        s = participantsdb.update()
-        s = s.where(participantsdb.c.subjid==subj_id)
-        s = s.values(status=COMPLETED, datafile=datafile, endhit=datetime.datetime.now())
-        conn.execute(s)
-        return render_template('debriefing.html', subjid=subj_id)
+        subjid = int(request.form['subjid'])
+        datastring = request.form['data']
+        print subjid, datastring
+        
+        session = Session()
+        user = session.Query(Participant).\
+                filter(Participant.subjid == subjid).\
+                one()
+        user.status = COMPLETED
+        user.datafile = datastring
+        user.endhit = datetime.datetime.now()
+        session.commit()
+        
+        return render_template('debriefing.html', subjid=subjid)
 
 @app.route('/complete', methods=['POST'])
 def completed():
@@ -449,15 +478,17 @@ def completed():
     if request.method == 'POST':
         print request.form.keys()
         if request.form.has_key('subjid') and request.form.has_key('agree'):
-            subj_id = request.form['subjid']
+            subjid = request.form['subjid']
             agreed = request.form['agree']  
-            print subj_id, agreed
-            conn = engine.connect()
-            if agreed=="true":
-                conn.execute(participantsdb.update().where(participantsdb.c.subjid==subj_id).values(debriefed=True, status=DEBRIEFED))
-            else:
-                conn.execute(participantsdb.update().where(participantsdb.c.subjid==subj_id).values(debriefed=False, status=DEBRIEFED))
-            conn.close()
+            print subjid, agreed
+            
+            session = Session()
+            user = session.Query(Participant).\
+                    filter(Participant.subjid == subjid).\
+                    one()
+            user.status = DEBRIEFED
+            user.debriefed = agreed
+            
             return render_template('closepopup.html')
     return render_template('error.html', errornum=COMPLETE_ACCESSED_WITHOUT_POST)
 
@@ -472,12 +503,12 @@ def viewdata():
     Gives a page providing a readout of the database. Requires password
     authentication.
     """
-    s = select([participantsdb], use_labels=False)
-    s = s.order_by(participantsdb.c.subjid.asc())
-    conn = engine.connect()
-    [people, i] = get_people(conn, s)
-    conn.close()
-    return render_template('simplelist.html', records=people, nrecords=i)
+    session = Session()
+    people = session.Query(Participant).\
+            order_by(Participant.subjid_).\
+            all()
+    people = get_people(people)
+    return render_template('simplelist.html', records=people)
 
 
 @app.route('/updatestatus', methods=['POST'])
@@ -487,17 +518,20 @@ def updatestatus():
     Allows subject status to be updated from the web interface.
     """
     if request.method == 'POST':
-        conn = engine.connect()
         field = request.form['id']
         value = request.form['value']
         print field, value
-        [tmp, field, id] = split(field,'_')
+        [tmp, field, subjid] = split(field, '_')
         id = int(id)
-        s = participantsdb.update()
-        s = s.where(participantsdb.c.subjid==id)
+        
+        session = Session()
+        user = session.Query(Participant).\
+                filter(Participant.subjid == subjid).\
+                one()
         if field=='status':
-            s = s.values(status=value)
-        conn.execute(s)
+            user.status = value
+        session.commit()
+        
         return value
 
 
@@ -517,46 +551,6 @@ def regularpage(pagename=None):
     else:
         return render_template(pagename)
 
-#----------------------------------------------
-# database management
-#----------------------------------------------
-def createdatabase(engine, metadata):
-    # try to load tables from a file, if that fails create new tables
-    try:
-        participants = Table(TABLENAME, metadata, autoload=True)
-        print "Participant table already seems to exist."
-    except: # can you put in the specific exception here?
-        # ok will create the database
-        print "Initializing the database."
-        participants = Table(TABLENAME, metadata,
-            Column('subjid', Integer, primary_key=True),
-            Column('ipaddress', String(128)),
-            Column('hitid', String(128)),
-            Column('assignmentid', String(128)),
-            Column('workerid', String(128)),
-            Column('cond', Integer),
-            Column('counterbalance', Integer),
-            Column('codeversion',String(128)),
-            Column('beginhit', DateTime(), nullable=True),
-            Column('beginexp', DateTime(), nullable=True),
-            Column('endhit', DateTime(), nullable=True),
-            Column('status', Integer, default = ALLOCATED),
-            Column('debriefed', Boolean),
-            Column('datafile', Text, nullable=True),  #the data from the exp
-        )
-        participants.create()
-    return participants
-
-
-def loaddatabase(engine, metadata):
-    # try to load tables from a file, if that fails create new tables
-    try:
-        participants = Table(TABLENAME, metadata, autoload=True)
-    except: # can you put in the specific exception here?
-        print "Error, participants table doesn't exist"
-        exit()
-    return participants
-
 
 ###########################################################
 # let's start
@@ -565,15 +559,15 @@ if __name__ == '__main__':
     if len(sys.argv) == 1:
         print "Useage: python webapp.py [initdb/server]"
     elif len(sys.argv)>1:
+        # Some basic server config
         engine = create_engine(DATABASE, echo=False) 
-        metadata = MetaData()
-        metadata.bind = engine
+        Session = sessionmaker( bind=engine )
+        Session.configure( bind=engine )
+        
         if 'initdb' in sys.argv:
             print "initializing database"
-            createdatabase(engine, metadata)
+            Base.metadata.create_all( engine )
         if 'server' in sys.argv:
             print "starting webserver"
-            participantsdb = loaddatabase(engine, metadata)
-            # by default just launch webserver
             app.run(debug=True, host='0.0.0.0', port=5001)
 
