@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, Response
+from flask import Flask, render_template, request, Response, make_response
 from string import split
 import datetime
 from random import choice, shuffle, seed, getstate, setstate
@@ -101,8 +101,8 @@ def get_people(people):
         person = {}
         for field in ['subjid', 'ipaddress', 'hitid', 'assignmentid',
                       'workerid', 'cond', 'counterbalance',
-                      'beginhit','beginexp', 'endhit', 'status', 'datafile']:
-            if field=='datafile':
+                      'beginhit','beginexp', 'endhit', 'status', 'datastring']:
+            if field=='datastring':
                 if record[field] == None:
                     person[field] = "Nothing yet"
                 else:
@@ -139,7 +139,7 @@ class Participant(Base):
     endhit = Column(DateTime, nullable=True)
     status = Column(Integer, default = ALLOCATED)
     debriefed = Column(Boolean)
-    datafile = Column(Text, nullable=True)
+    datastring = Column(Text, nullable=True)
     
     def __init__(self, hitid, ipaddress, assignmentid, workerid, cond, counterbalance):
         self.hitid = hitid
@@ -422,7 +422,7 @@ def inexpsave():
             user = session.query(Participant).\
                     filter(Participant.subjid == subjid).\
                     one()
-            user.datafile = datastring
+            user.datastring = datastring
             user.status = STARTED
             session.commit()
     return render_template('error.html', errornum=INTERMEDIATE_SAVE)
@@ -443,7 +443,7 @@ def quitter():
             user = session.query(Participant).\
                     filter(Participant.subjid == subjid).\
                     one()
-            user.datafile = datastring
+            user.datastring = datastring
             user.status = QUITEARLY
             session.commit()
     return render_template('error.html', errornum=TRIED_TO_QUIT)
@@ -465,7 +465,7 @@ def savedata():
                 filter(Participant.subjid == subjid).\
                 one()
         user.status = COMPLETED
-        user.datafile = datastring
+        user.datastring = datastring
         user.endhit = datetime.datetime.now()
         session.commit()
         
@@ -516,6 +516,21 @@ def viewdata():
     people = get_people(people)
     return render_template('simplelist.html', records=people)
 
+@app.route('/dumpdata')
+@requires_auth
+def dumpdata():
+    """
+    Dumps all the data strings concatenated. Requires password authentication.
+    """
+    session = Session()
+    ret = ""
+    for subj in session.query(Participant.datastring).\
+                order_by(Participant.subjid):
+        ret += subj[0]
+    response = make_response( ret )
+    response.headers['Content-Disposition'] = 'attachment;filename=data.csv'
+    response.headers['Content-Type'] = 'text/csv'
+    return response
 
 @app.route('/updatestatus', methods=['POST'])
 @app.route('/updatestatus/', methods=['POST'])
