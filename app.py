@@ -126,16 +126,16 @@ class Participant(Base):
     __tablename__ = TABLENAME
     
     subjid = Column( Integer, primary_key = True )
-    ipaddress = Column(String(128)),
-    hitid = Column(String(128)),
-    assignmentid =Column(String(128)),
-    workerid = Column(String(128)),
+    ipaddress = Column(String),
+    hitid = Column(String),
+    assignmentid =Column(String),
+    workerid = Column(String),
     cond = Column(Integer),
     counterbalance = Column(Integer),
-    codeversion = Column(String(128)),
-    beginhit = Column(DateTime(), nullable=True),
-    beginexp = Column(DateTime(), nullable=True),
-    endhit = Column(DateTime(), nullable=True),
+    codeversion = Column(String),
+    beginhit = Column(DateTime, nullable=True),
+    beginexp = Column(DateTime, nullable=True),
+    endhit = Column(DateTime, nullable=True),
     status = Column(Integer, default = ALLOCATED),
     debriefed = Column(Boolean),
     datafile = Column(Text, nullable=True),  #the data from the exp
@@ -169,7 +169,7 @@ def get_random_condition(session):
     """
     starttime = datetime.datetime.now() + datetime.timedelta(minutes=-CUTOFFTIME)
     counts = [0]*NUMCONDS
-    for partcond in session.Query(Participant.cond).\
+    for partcond in session.query(Participant.cond).\
                     filter(Participant.codeversion == CODE_VERSION).\
                     filter(or_(Participant.endhit != None, Participant.beginhit > starttime)):
         counts[partcond] += 1
@@ -186,7 +186,7 @@ def get_random_counterbalance(session):
     starttime = datetime.datetime.now() + datetime.timedelta(minutes=-30)
     session = Session()
     counts = [0]*NUMCOUNTERS
-    for partcount in session.Query(Participant.counterbalance).\
+    for partcount in session.query(Participant.counterbalance).\
                      filter(Participant.codeversion == CODE_VERSION).\
                      filter(or_(Participant.endhit != None, Participant.beginhit > starttime)):
         counts[partcount] += 1
@@ -251,7 +251,7 @@ def mturkroute():
         if request.args.has_key('workerId'):
             workerID = request.args['workerId']
             # first check if this workerId has completed the task before (v1)
-            numrecs = session.Query(Participant.subjid).\
+            numrecs = session.query(Participant.subjid).\
                        filter(Participant.workerid == workerID).\
                        matches()
             
@@ -271,7 +271,7 @@ def mturkroute():
             # If worker has not accepted the hit:
             workerID = None # WARNING was '-1', should be fine but if this crashes on the home screen could be my fault here.
         print hitID, assignmentID, workerID
-        status, subj_id = session.Query(Participant.status, Participant.subjid).\
+        status, subj_id = session.query(Participant.status, Participant.subjid).\
                             filter(Participant.hitid == hitID).\
                             filter(Participant.assignmentid == assignmentID).\
                             filter(Participant.workerid == workerID).one()
@@ -341,7 +341,7 @@ def start_exp():
         
         # check first to see if this hitID or assignmentID exists.  if so check to see if inExp is set
         session = Session()
-        matches = session.Query(Participant.subjid, Participant.cond, Participant.counterbalance, Participant.status).\
+        matches = session.query(Participant.subjid, Participant.cond, Participant.counterbalance, Participant.status).\
                             filter(Participant.hitid == hitID).\
                             filter(Participant.assignmentid == assignmentID).\
                             filter(Participant.workerid == workerID).all()
@@ -392,7 +392,7 @@ def enterexp():
         if request.form.has_key('subjId'):
             subjid = request.form['subjId']
             session = Session()
-            user = session.Query(Participant).\
+            user = session.query(Participant).\
                     filter(Participant.subjid == subjid).\
                     one()
             user.status = STARTED
@@ -415,7 +415,7 @@ def inexpsave():
             datastring = request.form['dataString']  
             print "getting the save data", subj_id, datastring
             session = Session()
-            user = session.Query(Participant).\
+            user = session.query(Participant).\
                     filter(Participant.subjid == subjid).\
                     one()
             user.datafile = datastring
@@ -436,7 +436,7 @@ def quitter():
             datastring = request.form['dataString']  
             print "getting the save data", subjid, datastring
             session = Session()
-            user = session.Query(Participant).\
+            user = session.query(Participant).\
                     filter(Participant.subjid == subjid).\
                     one()
             user.datafile = datastring
@@ -457,7 +457,7 @@ def savedata():
         print subjid, datastring
         
         session = Session()
-        user = session.Query(Participant).\
+        user = session.query(Participant).\
                 filter(Participant.subjid == subjid).\
                 one()
         user.status = COMPLETED
@@ -483,7 +483,7 @@ def completed():
             print subjid, agreed
             
             session = Session()
-            user = session.Query(Participant).\
+            user = session.query(Participant).\
                     filter(Participant.subjid == subjid).\
                     one()
             user.status = DEBRIEFED
@@ -504,7 +504,7 @@ def viewdata():
     authentication.
     """
     session = Session()
-    people = session.Query(Participant).\
+    people = session.query(Participant).\
             order_by(Participant.subjid_).\
             all()
     people = get_people(people)
@@ -525,7 +525,7 @@ def updatestatus():
         id = int(id)
         
         session = Session()
-        user = session.Query(Participant).\
+        user = session.query(Participant).\
                 filter(Participant.subjid == subjid).\
                 one()
         if field=='status':
