@@ -561,10 +561,7 @@ def dumpdata():
     Dumps all the data strings concatenated. Requires password authentication.
     """
     session = Session()
-    ret = ""
-    for subj in session.query(Participant.datastring).\
-                order_by(Participant.subjid):
-        ret += subj[0]
+    ret = '\n'.join([subj[0] for subj in session.query(Participant.datastring)])
     response = make_response( ret )
     response.headers['Content-Disposition'] = 'attachment;filename=data.csv'
     response.headers['Content-Type'] = 'text/csv'
