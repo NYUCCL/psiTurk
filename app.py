@@ -23,7 +23,8 @@ TESTINGPROBLEMSIX = False
 
 # Database configuration and constants
 #DATABASE = 'mysql://user:password@domain:port/dbname'
-DATABASE = 'sqlite://'  # MOVE TO CONFIG
+#DATABASE = 'sqlite:///:memory:'  # MOVE TO CONFIG
+DATABASE = 'mysql://mturk@localhost/mturk?unix_socket=/Applications/MAMP/tmp/mysql/mysql.sock'
 TABLENAME = 'turkdemo'  # MOVE TO CONFIG
 SUPPORTIE = True        # MOVE TO CONFIG
 
@@ -126,19 +127,19 @@ class Participant(Base):
     __tablename__ = TABLENAME
     
     subjid = Column( Integer, primary_key = True )
-    ipaddress = Column(String),
-    hitid = Column(String),
-    assignmentid =Column(String),
-    workerid = Column(String),
-    cond = Column(Integer),
-    counterbalance = Column(Integer),
-    codeversion = Column(String),
-    beginhit = Column(DateTime, nullable=True),
-    beginexp = Column(DateTime, nullable=True),
-    endhit = Column(DateTime, nullable=True),
-    status = Column(Integer, default = ALLOCATED),
-    debriefed = Column(Boolean),
-    datafile = Column(Text, nullable=True),  #the data from the exp
+    ipaddress = Column(String(128))
+    hitid = Column(String(128))
+    assignmentid =Column(String(128))
+    workerid = Column(String(128))
+    cond = Column(Integer)
+    counterbalance = Column(Integer)
+    codeversion = Column(String(128))
+    beginhit = Column(DateTime, nullable=True)
+    beginexp = Column(DateTime, nullable=True)
+    endhit = Column(DateTime, nullable=True)
+    status = Column(Integer, default = ALLOCATED)
+    debriefed = Column(Boolean)
+    datafile = Column(Text, nullable=True)
     
     def __init__(self, hitid, ipaddress, assignmentid, workerid, cond, counterbalance):
         self.hitid = hitid
@@ -172,7 +173,7 @@ def get_random_condition(session):
     for partcond in session.query(Participant.cond).\
                     filter(Participant.codeversion == CODE_VERSION).\
                     filter(or_(Participant.endhit != None, Participant.beginhit > starttime)):
-        counts[partcond] += 1
+        counts[partcond[0]] += 1
     
     # choose randomly from the ones that have the least in them (so will tend to fill in evenly)
     indices = [i for i, x in enumerate(counts) if x == min(counts)]
@@ -189,7 +190,7 @@ def get_random_counterbalance(session):
     for partcount in session.query(Participant.counterbalance).\
                      filter(Participant.codeversion == CODE_VERSION).\
                      filter(or_(Participant.endhit != None, Participant.beginhit > starttime)):
-        counts[partcount] += 1
+        counts[partcount[0]] += 1
     
     # choose randomly from the ones that have the least in them (so will tend to fill in evenly)
     indices = [i for i, x in enumerate(counts) if x == min(counts)]
@@ -251,16 +252,16 @@ def mturkroute():
         if request.args.has_key('workerId'):
             workerID = request.args['workerId']
             # first check if this workerId has completed the task before (v1)
-            numrecs = session.query(Participant.subjid).\
+            records = session.query(Participant.assignmentid).\
                        filter(Participant.workerid == workerID).\
-                       matches()
+                       all()
             
             # Note about old code: Referencing the hitId is actually
             # problematic here, the same experiment could be posted on
             # different HITs
             #s = s.where(and_(participantsdb.c.hitid!=hitID, participantsdb.c.workerid==workerID))
             
-            if numrecs != 0:
+            if len(records) > 0 and records[0][0] != assignmentID:
                 # already completed task
                 return render_template('error.html', 
                                        errornum=ALREADY_DID_EXP_HIT, 
@@ -271,10 +272,14 @@ def mturkroute():
             # If worker has not accepted the hit:
             workerID = None # WARNING was '-1', should be fine but if this crashes on the home screen could be my fault here.
         print hitID, assignmentID, workerID
-        status, subj_id = session.query(Participant.status, Participant.subjid).\
-                            filter(Participant.hitid == hitID).\
-                            filter(Participant.assignmentid == assignmentID).\
-                            filter(Participant.workerid == workerID).one()
+        try:
+            status, subj_id = session.query(Participant.status, Participant.subjid).\
+                                filter(Participant.hitid == hitID).\
+                                filter(Participant.assignmentid == assignmentID).\
+                                filter(Participant.workerid == workerID).one()
+        except:
+            status = None
+            subj_id = None
         
         if status == ALLOCATED or not status:
             # Participant has not yet agreed to the consent. They might not
@@ -373,7 +378,6 @@ def start_exp():
             print "Error, hit/assignment appears in database more than once (serious problem)"
             return render_template('error.html', errornum=HIT_ASSIGN_APPEARS_IN_DATABASE_MORE_THAN_ONCE, hitid=request.args['hitId'], assignid=request.args['assignmentId'], workerid=request.args['workerId'])
         
-        dimo, dimv = counterbalanceconds[subj_counter]
         return render_template('exp.html', subj_num = myid, order=subj_counter )
     else:
         return render_template('error.html', errornum=HIT_ASSIGN_WORKER_ID_NOT_SET_IN_EXP)
@@ -487,7 +491,8 @@ def completed():
                     filter(Participant.subjid == subjid).\
                     one()
             user.status = DEBRIEFED
-            user.debriefed = agreed
+            user.debriefed = agreed == 'true'
+            session.commit()
             
             return render_template('closepopup.html')
     return render_template('error.html', errornum=COMPLETE_ACCESSED_WITHOUT_POST)
@@ -505,8 +510,9 @@ def viewdata():
     """
     session = Session()
     people = session.query(Participant).\
-            order_by(Participant.subjid_).\
+            order_by(Participant.subjid).\
             all()
+    print people
     people = get_people(people)
     return render_template('simplelist.html', records=people)
 
@@ -560,14 +566,14 @@ if __name__ == '__main__':
         print "Useage: python webapp.py [initdb/server]"
     elif len(sys.argv)>1:
         # Some basic server config
-        engine = create_engine(DATABASE, echo=False) 
+        engine = create_engine(DATABASE, echo=True) 
         Session = sessionmaker( bind=engine )
         Session.configure( bind=engine )
         
         if 'initdb' in sys.argv:
-            print "initializing database"
+            print "Initializing database."
             Base.metadata.create_all( engine )
         if 'server' in sys.argv:
-            print "starting webserver"
+            print "Starting webserver."
             app.run(debug=True, host='0.0.0.0', port=5001)
 
