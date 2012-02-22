@@ -1,17 +1,32 @@
-from flask import Flask, render_template, request, Response, make_response
-from string import split
+
+import os, sys
 import datetime
-from random import choice, shuffle, seed, getstate, setstate
-import sys
+from random import choice, seed, getstate, setstate
+from ConfigParser import ConfigParser
+
+from flask import Flask, render_template, request, Response, make_response
 from functools import wraps
 
+import logging
 
+configfilepath = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                              'config.txt')
+logfilepath = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                              'server.log')
+
+config = ConfigParser()
+config.read( configfilepath )
+
+loglevels = [logging.DEBUG, logging.INFO, logging.WARNING, logging.ERROR, logging.CRITICAL]
+loglevel = loglevels[config.getint('User Preferences', 'loglevel')]
+logging.basicConfig( filename=logfilepath, level=loglevel )
+
+# config.get( 'Mechanical Turk Info', 'aws_secret_access_key' )
 
 # constants
-DEPLOYMENT_ENV = 'sandbox'  # 'sandbox' or 'deploy' (the real thing)  MOVE TO CONFIG
-CODE_VERSION = '1'          # MOVE TO CONFIG
-CUTOFFTIME = 30  # Minutes after starting when a participnat is assumed to have timed out.  MOVE TO CONFIG
-
+DEPLOYMENT_ENV = config.getint('User Preferences', 'loglevel')
+CODE_VERSION = config.get('Task Parameters', 'code_version')
+CUTOFFTIME = config.getint('Server Parameters', 'cutoff_time')
 
 # For easy debugging
 if DEPLOYMENT_ENV == 'sandbox':
@@ -22,14 +37,14 @@ else:
 TESTINGPROBLEMSIX = False
 
 # Database configuration and constants
-#DATABASE = 'mysql://user:password@domain:port/dbname'
-#DATABASE = 'sqlite:///:memory:'  # MOVE TO CONFIG
-DATABASE = 'mysql://mturk@localhost/mturk?unix_socket=/Applications/MAMP/tmp/mysql/mysql.sock'
-TABLENAME = 'turkdemo'  # MOVE TO CONFIG
-SUPPORTIE = True        # MOVE TO CONFIG
+DATABASE = config.get('Database Parameters', 'database_url')
+TABLENAME = config.get('Database Parameters', 'table_name')
+SUPPORTIE = config.getboolean('Server Parameters', 'support_IE')
 
-NUMCONDS = 1
-NUMCOUNTERS = 2
+NUMCONDS = config.getint('Task Parameters', 'num_conds')
+NUMCOUNTERS = config.getint('Task Parameters', 'num_counters')
+
+# Status codes
 ALLOCATED = 1
 STARTED = 2
 COMPLETED = 3
@@ -37,7 +52,7 @@ DEBRIEFED = 4
 CREDITED = 5
 QUITEARLY = 6
 
-# error codes
+# Error codes
 STATUS_INCORRECTLY_SET = 1000
 HIT_ASSIGN_WORKER_ID_NOT_SET_IN_MTURK = 1001
 HIT_ASSIGN_WORKER_ID_NOT_SET_IN_CONSENT = 1002
@@ -61,8 +76,8 @@ app = Flask(__name__)
 #----------------------------------------------
 # function for authentication
 #----------------------------------------------
-queryname = "examplename"   # MOVE TO CONFIG
-querypw = "examplepass"     # MOVE TO CONFIG
+queryname = config.get('Server Parameters', 'login_username')
+querypw = config.get('Server Parameters', 'login_pw')
 
 def wrapper(func, args):
     return func(*args)
@@ -118,7 +133,7 @@ def get_people(people):
 
 from sqlalchemy import create_engine
 from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text
-from sqlalchemy import or_, and_
+from sqlalchemy import or_
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 Base = declarative_base()
@@ -516,6 +531,29 @@ def viewdata():
     people = get_people(people)
     return render_template('simplelist.html', records=people)
 
+@app.route('/updatestatus', methods=['POST'])
+@app.route('/updatestatus/', methods=['POST'])
+def updatestatus():
+    """
+    Allows subject status to be updated from the web interface.
+    """
+    if request.method == 'POST':
+        field = request.form['id']
+        value = request.form['value']
+        print field, value
+        [tmp, field, subjid] = field.split('_')
+        id = int(id)
+        
+        session = Session()
+        user = session.query(Participant).\
+                filter(Participant.subjid == subjid).\
+                one()
+        if field=='status':
+            user.status = value
+        session.commit()
+        
+        return value
+
 @app.route('/dumpdata')
 @requires_auth
 def dumpdata():
@@ -531,30 +569,6 @@ def dumpdata():
     response.headers['Content-Disposition'] = 'attachment;filename=data.csv'
     response.headers['Content-Type'] = 'text/csv'
     return response
-
-@app.route('/updatestatus', methods=['POST'])
-@app.route('/updatestatus/', methods=['POST'])
-def updatestatus():
-    """
-    Allows subject status to be updated from the web interface.
-    """
-    if request.method == 'POST':
-        field = request.form['id']
-        value = request.form['value']
-        print field, value
-        [tmp, field, subjid] = split(field, '_')
-        id = int(id)
-        
-        session = Session()
-        user = session.query(Participant).\
-                filter(Participant.subjid == subjid).\
-                one()
-        if field=='status':
-            user.status = value
-        session.commit()
-        
-        return value
-
 
 #----------------------------------------------
 # generic route
