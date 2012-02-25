@@ -4,6 +4,11 @@ Interacting with the Mechanical Turk API
 These python scripts allow you to interact with the Mechanical Turk API. They
 require [boto][boto], a python package for interacting with [Amazon Web Services][aws].
 
+checkBalance.py
+--------------
+
+Checks your mturk balance.
+
 createHIT.py
 ------------
 
