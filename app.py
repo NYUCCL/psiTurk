@@ -588,18 +588,15 @@ def regularpage(pagename=None):
 # let's start
 ###########################################################
 if __name__ == '__main__':
-    if len(sys.argv) == 1:
-        print "Useage: python webapp.py [initdb/server]"
-    elif len(sys.argv)>1:
-        # Some basic server config
-        engine = create_engine(DATABASE, echo=True) 
-        Session = sessionmaker( bind=engine )
-        Session.configure( bind=engine )
-        
-        if 'initdb' in sys.argv:
-            print "Initializing database."
-            Base.metadata.create_all( engine )
-        if 'server' in sys.argv:
-            print "Starting webserver."
-            app.run(debug=True, host='0.0.0.0', port=5001)
+    # Some basic server config
+    engine = create_engine(DATABASE) 
+    logging.getLogger('sqlalchemy.engine').setLevel(loglevel)
+    Session = sessionmaker( bind=engine )
+    Session.configure( bind=engine )
+    
+    # Set up database if it's not there already.
+    Base.metadata.create_all( engine )
+    
+    print "Starting webserver."
+    app.run(debug=True, host='0.0.0.0', port=5001)
 
