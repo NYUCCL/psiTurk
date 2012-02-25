@@ -2,7 +2,7 @@ Interacting with the Mechanical Turk API
 ========================================
 
 These python scripts allow you to interact with the Mechanical Turk API. They
-require `boto`_, a python package for interacting with `Amazon Web Services`_.
+require [boto][boto], a python package for interacting with [Amazon Web Services][aws].
 
 createHIT.py
 ------------
@@ -17,10 +17,10 @@ Tools for seeing the status of your existing HITs.
 Acknowledgment
 --------------
 
-These scripts were based on the advice provided by `Mauro Rocco`_ on his blog.
+These scripts were based on the advice provided by Mauro Rocco on [his blog][Mauro Rocco].
 
 
-.. _boto: http://code.google.com/p/boto/
-.. _Amazon Web Services: http://aws.amazon.com/
-.. _Mauro Rocco: http://www.toforge.com/tag/mturk/
+[boto]: http://code.google.com/p/boto/ "Boto's Google Code page."
+[aws]: http://aws.amazon.com/ "Amazon Web Services."
+[Mauro Rocco]: http://www.toforge.com/tag/mturk/  "Rocco's posts tagged with mturk."
 
