@@ -44,6 +44,8 @@ table_name: turkdemo
 cutoff_time: 30         ; Time in minutes when we assume a subject gave up
 support_IE: true        ; Whether to support Internet Explorer
 
+debug: true             ; NEVER leave this on when exposing the server to the public.
+
 login_username: examplename
 login_pw: examplepassword
 
