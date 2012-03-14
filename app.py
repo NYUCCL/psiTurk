@@ -72,7 +72,6 @@ IN_DEBUG = 2005
 
 app = Flask(__name__)
 
-
 #----------------------------------------------
 # function for authentication
 #----------------------------------------------
@@ -262,21 +261,17 @@ def mturkroute():
     if request.args.has_key('hitId') and request.args.has_key('assignmentId'):
         # Person has accepted the HIT, entering them into the database.
         session = Session()
-        hitID = request.args['hitId']
-        assignmentID = request.args['assignmentId']
+        hitId = request.args['hitId']
+        assignmentId = request.args['assignmentId']
         if request.args.has_key('workerId'):
-            workerID = request.args['workerId']
+            workerId = request.args['workerId']
             # first check if this workerId has completed the task before (v1)
-            records = session.query(Participant.assignmentid).\
-                       filter(Participant.workerid == workerID).\
-                       all()
+            nrecords = session.query(Participant).\
+                       filter(Participant.assignmentid != assignmentId).\
+                       filter(Participant.workerid == workerId).\
+                       count()
             
-            # Note about old code: Referencing the hitId is actually
-            # problematic here, the same experiment could be posted on
-            # different HITs
-            #s = s.where(and_(participantsdb.c.hitid!=hitID, participantsdb.c.workerid==workerID))
-            
-            if len(records) > 0 and records[0][0] != assignmentID:
+            if nrecords > 0:
                 # already completed task
                 return render_template('error.html', 
                                        errornum=ALREADY_DID_EXP_HIT, 
@@ -285,13 +280,13 @@ def mturkroute():
                                        workerid=request.args['workerId'])
         else:
             # If worker has not accepted the hit:
-            workerID = None # WARNING was '-1', should be fine but if this crashes on the home screen could be my fault here.
-        print hitID, assignmentID, workerID
+            workerId = None
+        print hitId, assignmentId, workerId
         try:
             status, subj_id = session.query(Participant.status, Participant.subjid).\
-                                filter(Participant.hitid == hitID).\
-                                filter(Participant.assignmentid == assignmentID).\
-                                filter(Participant.workerid == workerID).one()
+                                filter(Participant.hitid == hitId).\
+                                filter(Participant.assignmentid == assignmentId).\
+                                filter(Participant.workerid == workerId).one()
         except:
             status = None
             subj_id = None
@@ -301,9 +296,9 @@ def mturkroute():
             # even have accepted the HIT. The mturkindex template will treat
             # them appropriately regardless.
             return render_template('mturkindex.html', 
-                                   hitid = hitID, 
-                                   assignmentid = assignmentID, 
-                                   workerid = workerID)
+                                   hitid = hitId, 
+                                   assignmentid = assignmentId, 
+                                   workerid = workerId)
         elif status == STARTED:
             # Once participants have finished the instructions, we do not allow
             # them to start the task again.
@@ -320,9 +315,9 @@ def mturkroute():
             # They've done the debriefing but perhaps haven't submitted the HIT yet..
             return render_template('thanks.html', 
                                    target_env=DEPLOYMENT_ENV, 
-                                   hitid = hitID, 
-                                   assignmentid = assignmentID, 
-                                   workerid = workerID)
+                                   hitid = hitId, 
+                                   assignmentid = assignmentId, 
+                                   workerid = workerId)
         else:
             # Hopefully this won't happen.
             return render_template('error.html', 
@@ -339,11 +334,11 @@ def give_consent():
     Serves up the consent in the popup window.
     """
     if request.args.has_key('hitId') and request.args.has_key('assignmentId') and request.args.has_key('workerId'):
-        hitID = request.args['hitId']
-        assignmentID = request.args['assignmentId']
-        workerID = request.args['workerId']
-        print hitID, assignmentID, workerID
-        return render_template('consent.html', hitid = hitID, assignmentid=assignmentID, workerid=workerID)
+        hitId = request.args['hitId']
+        assignmentId = request.args['assignmentId']
+        workerId = request.args['workerId']
+        print hitId, assignmentId, workerId
+        return render_template('consent.html', hitid = hitId, assignmentid=assignmentId, workerid=workerId)
     else:
         return render_template('error.html', errornum=HIT_ASSIGN_WORKER_ID_NOT_SET_IN_CONSENT)
 
@@ -353,18 +348,18 @@ def start_exp():
     Serves up the experiment applet.
     """
     if request.args.has_key('hitId') and request.args.has_key('assignmentId') and request.args.has_key('workerId'):
-        hitID = request.args['hitId']
-        assignmentID = request.args['assignmentId']
-        workerID = request.args['workerId']
-        print hitID, assignmentID, workerID
+        hitId = request.args['hitId']
+        assignmentId = request.args['assignmentId']
+        workerId = request.args['workerId']
+        print hitId, assignmentId, workerId
         
         
-        # check first to see if this hitID or assignmentID exists.  if so check to see if inExp is set
+        # check first to see if this hitId or assignmentId exists.  if so check to see if inExp is set
         session = Session()
         matches = session.query(Participant.subjid, Participant.cond, Participant.counterbalance, Participant.status).\
-                            filter(Participant.hitid == hitID).\
-                            filter(Participant.assignmentid == assignmentID).\
-                            filter(Participant.workerid == workerID).all()
+                            filter(Participant.hitid == hitId).\
+                            filter(Participant.assignmentid == assignmentId).\
+                            filter(Participant.workerid == workerId).all()
         numrecs = len(matches)
         if numrecs == 0:
             
@@ -380,7 +375,7 @@ def start_exp():
                 myip = request.remote_addr
             
             # set condition here and insert into database
-            newpart = Participant( hitID, myip, assignmentID, workerID, subj_cond, subj_counter)
+            newpart = Participant( hitId, myip, assignmentId, workerId, subj_cond, subj_counter)
             session.add( newpart )
             session.commit()
             myid = newpart.subjid
