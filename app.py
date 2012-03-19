@@ -583,14 +583,15 @@ def regularpage(pagename=None):
 # let's start
 ###########################################################
 if __name__ == '__main__':
-    # Some basic server config
+    # Starting database engine
     engine = create_engine(DATABASE, echo=False) 
+    logging.getLogger('sqlalchemy.engine').setLevel(loglevel)
     Session = sessionmaker( bind=engine )
     Session.configure( bind=engine )
     
-    print "Setting up database connection / initalizing if necessary."
+    # Set up database if it's not there already.
+    print "Setting up database connection, initalizing if necessary."
     Base.metadata.create_all( engine )
-    # 
+    
     print "Starting webserver."
     app.run(debug=config.getboolean('Server Parameters', 'debug'), host='0.0.0.0', port=5001)
-
