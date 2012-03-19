@@ -66,6 +66,7 @@ ALREADY_STARTED_EXP_MTURK = 1009
 ALREADY_DID_EXP_HIT = 1010
 TRIED_TO_QUIT= 1011
 INTERMEDIATE_SAVE = 1012
+IMPROPER_INPUTS = 1013
 PAGE_NOT_FOUND = 404
 
 IN_DEBUG = 2005
@@ -480,6 +481,8 @@ def savedata():
         session.commit()
         
         return render_template('debriefing.html', subjid=subjid)
+    else:
+        return render_template('error.html', errornum=IMPROPER_INPUTS)
 
 @app.route('/complete', methods=['POST'])
 def completed():
