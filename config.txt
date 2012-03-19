@@ -41,6 +41,7 @@ table_name: turkdemo
 
 [Server Parameters]
 
+port: 5001
 cutoff_time: 30         ; Time in minutes when we assume a subject gave up
 support_IE: true        ; Whether to support Internet Explorer
 

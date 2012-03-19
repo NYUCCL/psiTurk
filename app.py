@@ -597,4 +597,4 @@ if __name__ == '__main__':
     Base.metadata.create_all( engine )
     
     print "Starting webserver."
-    app.run(debug=config.getboolean('Server Parameters', 'debug'), host='0.0.0.0', port=5001)
+    app.run(debug=config.getboolean('Server Parameters', 'debug'), host='0.0.0.0', port=config.getint('Server Parameters', 'port'))
