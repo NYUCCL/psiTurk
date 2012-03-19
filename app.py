@@ -583,18 +583,14 @@ def regularpage(pagename=None):
 # let's start
 ###########################################################
 if __name__ == '__main__':
-    if len(sys.argv) == 1:
-        print "Useage: python webapp.py [initdb/server]"
-    elif len(sys.argv)>1:
-        # Some basic server config
-        engine = create_engine(DATABASE, echo=True) 
-        Session = sessionmaker( bind=engine )
-        Session.configure( bind=engine )
-        
-        if 'initdb' in sys.argv:
-            print "Initializing database."
-            Base.metadata.create_all( engine )
-        if 'server' in sys.argv:
-            print "Starting webserver."
-            app.run(debug=config.getboolean('Server Parameters', 'debug') host='0.0.0.0', port=5001)
+    # Some basic server config
+    engine = create_engine(DATABASE, echo=False) 
+    Session = sessionmaker( bind=engine )
+    Session.configure( bind=engine )
+    
+    print "Setting up database connection / initalizing if necessary."
+    Base.metadata.create_all( engine )
+    # 
+    print "Starting webserver."
+    app.run(debug=config.getboolean('Server Parameters', 'debug'), host='0.0.0.0', port=5001)
 
