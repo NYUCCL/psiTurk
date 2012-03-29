@@ -30,9 +30,9 @@ Just follow these directions to get started:
 
 1. Installing the dependencies, including the database. 
 2. Sign up for Mechanical Turk, including an AWS account.
-3. Update the config file with your Amazon secret code and a correct URL to your
-  database (the default database URL is set up for [MAMP](http://mamp.info) on
-  OSX). 
+3. Move the config file from `config.txt.example` to `config.txt`. Update it
+   with your Amazon secret code and a correct URL to your database (the default
+   database URL is set up for [MAMP](http://mamp.info) on OSX). 
 4. Making sure that the configuration file is set up to use the Amazon sandbox,
   issue the following commands from the PsiTurk root folder:
 
