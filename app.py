@@ -1,13 +1,21 @@
 
 import os, sys
 import datetime
+import logging
+from functools import wraps
 from random import choice, seed, getstate, setstate
 from ConfigParser import ConfigParser
 
+# Importing flask
 from flask import Flask, render_template, request, Response, make_response
-from functools import wraps
 
-import logging
+# Sqlalchemy imports
+from sqlalchemy import create_engine
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text
+from sqlalchemy import or_
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+
 
 configfilepath = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                               'config.txt')
@@ -131,11 +139,6 @@ def get_people(people):
 # Define database class
 #----------------------------------------------
 
-from sqlalchemy import create_engine
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text
-from sqlalchemy import or_
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
 Base = declarative_base()
 
 class Participant(Base):
