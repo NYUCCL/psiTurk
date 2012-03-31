@@ -3,7 +3,7 @@ import os
 import datetime
 import logging
 from functools import wraps
-from random import choice, seed, getstate, setstate
+from random import choice
 from ConfigParser import ConfigParser
 
 # Importing flask
@@ -34,15 +34,11 @@ logging.basicConfig( filename=logfilepath, level=loglevel )
 # constants
 DEPLOYMENT_ENV = config.getint('User Preferences', 'loglevel')
 CODE_VERSION = config.get('Task Parameters', 'code_version')
-CUTOFFTIME = config.getint('Server Parameters', 'cutoff_time')
 
 # Database configuration and constants
 DATABASE = config.get('Database Parameters', 'database_url')
 TABLENAME = config.get('Database Parameters', 'table_name')
 SUPPORTIE = config.getboolean('Server Parameters', 'support_IE')
-
-NUMCONDS = config.getint('Task Parameters', 'num_conds')
-NUMCOUNTERS = config.getint('Task Parameters', 'num_counters')
 
 # Status codes
 ALLOCATED = 1
@@ -76,7 +72,6 @@ def authenticate():
     'Could not verify your access level for that URL.\n'
     'You have to login with proper credentials', 401,
     {'WWW-Authenticate': 'Basic realm="Login Required"'})
-
 
 def requires_auth(f):
     """
@@ -113,8 +108,10 @@ experiment_errors = dict(
 )
 
 class ExperimentError(Exception):
-    """Error class for experimental errors, such as subject not being found in
-    the database."""
+    """
+    Error class for experimental errors, such as subject not being found in
+    the database.
+    """
     def __init__(self, value):
         self.value = value
         self.errornum = experiment_errors[self.value]
@@ -157,6 +154,9 @@ def get_people(people):
 Base = declarative_base()
 
 class Participant(Base):
+    """
+    Object representation of a participant in the database.
+    """
     __tablename__ = TABLENAME
     
     subjid = Column( Integer, primary_key = True )
@@ -187,11 +187,34 @@ class Participant(Base):
         self.beginhit = datetime.datetime.now()
     
     def __repr__( self ):
-        return "Subject(%r, %r)" % ( self.subjid, self.status )
+        return "Subject(%r, %s, %r, %r, %s)" % ( 
+            self.subjid, 
+            self.workerid, 
+            self.cond, 
+            self.status,
+            self.codeversion )
 
 #----------------------------------------------
 # Experiment counterbalancing code.
 #----------------------------------------------
+
+# TODO: Write tests for this stuff.
+
+def choose_least_used(npossible, sofar):
+    """
+    For both condition and counterbalance, we have to choose a value from a
+    certain range that hasn't been used much in the past. This takes the number
+    of integers possible, and a list of those which have already been used. We
+    count how often each of them have been used, and choose the one which has
+    been used least often.
+    """
+    counts = [0 for _ in range(npossible)]
+    for instance in sofar:
+        counts[instance] += 1
+    indices = [i for i, x in enumerate(counts) if x == min(counts)]
+    chosen = choice(indices)
+    return chosen
+
 def get_random_condition(session):
     """
     HITs can be in one of three states:
@@ -199,38 +222,31 @@ def get_random_condition(session):
         - jobs that are started but not finished
         - jobs that are never going to finish (user decided not to do it)
     Our count should be based on the first two, so we count any tasks finished
-    or any tasks not finished that were started in the last 30 minutes.
+    or any tasks not finished that were started in the last cutoff_time
+    minutes, as specified in the cutoff_time variable in the config file.
     """
-    starttime = datetime.datetime.now() + datetime.timedelta(minutes=-CUTOFFTIME)
-    counts = [0]*NUMCONDS
-    for partcond in session.query(Participant.cond).\
-                    filter(Participant.codeversion == CODE_VERSION).\
-                    filter(or_(Participant.endhit != None, Participant.beginhit > starttime)):
-        counts[partcond[0]] += 1
+    cutofftime = datetime.timedelta(minutes=-config.getint('Server Parameters', 'cutoff_time'))
+    starttime = datetime.datetime.now() + cutofftime
     
-    # choose randomly from the ones that have the least in them (so will tend to fill in evenly)
-    indices = [i for i, x in enumerate(counts) if x == min(counts)]
-    rstate = getstate()
-    seed()
-    subj_cond = choice(indices)
-    setstate(rstate)
+    numconds = config.getint('Task Parameters', 'num_conds')
+    
+    partconds = session.query(Participant.cond).\
+                filter(Participant.codeversion == CODE_VERSION).\
+                filter(or_(Participant.endhit != None, 
+                           Participant.beginhit > starttime))
+    subj_cond = choose_least_used(numconds, [x[0] for x in partconds] )
+    
     return subj_cond
 
 def get_random_counterbalance(session):
     starttime = datetime.datetime.now() + datetime.timedelta(minutes=-30)
     session = Session()
-    counts = [0]*NUMCOUNTERS
-    for partcount in session.query(Participant.counterbalance).\
-                     filter(Participant.codeversion == CODE_VERSION).\
-                     filter(or_(Participant.endhit != None, Participant.beginhit > starttime)):
-        counts[partcount[0]] += 1
-    
-    # choose randomly from the ones that have the least in them (so will tend to fill in evenly)
-    indices = [i for i, x in enumerate(counts) if x == min(counts)]
-    rstate = getstate()
-    seed()
-    subj_counter = choice(indices)
-    setstate(rstate)
+    numcounts = config.getint('Task Parameters', 'num_counters')
+    partcounts = session.query(Participant.counterbalance).\
+                 filter(Participant.codeversion == CODE_VERSION).\
+                 filter(or_(Participant.endhit != None, 
+                            Participant.beginhit > starttime))
+    subj_counter = choose_least_used(numcounts, [x[0] for x in partcounts])
     return subj_counter
 
 #----------------------------------------------
