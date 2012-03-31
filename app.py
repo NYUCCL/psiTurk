@@ -36,14 +36,6 @@ DEPLOYMENT_ENV = config.getint('User Preferences', 'loglevel')
 CODE_VERSION = config.get('Task Parameters', 'code_version')
 CUTOFFTIME = config.getint('Server Parameters', 'cutoff_time')
 
-# For easy debugging
-if DEPLOYMENT_ENV == 'sandbox':
-    MAXBLOCKS = 2
-else:
-    MAXBLOCKS = 15
-
-TESTINGPROBLEMSIX = False
-
 # Database configuration and constants
 DATABASE = config.get('Database Parameters', 'database_url')
 TABLENAME = config.get('Database Parameters', 'table_name')
@@ -59,18 +51,6 @@ COMPLETED = 3
 DEBRIEFED = 4
 CREDITED = 5
 QUITEARLY = 6
-
-
-
-
-def requires_auth(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        auth = request.authorization
-        if not auth or not check_auth(auth.username, auth.password):
-            return authenticate()
-        return f(*args, **kwargs)
-    return decorated
 
 
 app = Flask(__name__)
@@ -90,7 +70,6 @@ def check_auth(username, password):
     """
     return username == queryname and password == querypw
 
-
 def authenticate():
     """Sends a 401 response that enables basic auth"""
     return Response(
@@ -100,6 +79,10 @@ def authenticate():
 
 
 def requires_auth(f):
+    """
+    Decorator to prompt for user name and password. Useful for data dumps, etc.
+    that you don't want to be public.
+    """
     @wraps(f)
     def decorated(*args, **kwargs):
         auth = request.authorization
@@ -109,7 +92,7 @@ def requires_auth(f):
     return decorated
 
 #----------------------------------------------
-# Error handling
+# ExperimentError Exception, for db errors, etc.
 #----------------------------------------------
 # Possible ExperimentError values.
 experiment_errors = dict(
@@ -521,7 +504,6 @@ def completed():
         
         return render_template('closepopup.html')
 
-
 #------------------------------------------------------
 # routes for displaying the database/editing it in html
 #------------------------------------------------------
@@ -588,7 +570,6 @@ def regularpage(pagename=None):
         raise ExperimentError('page_not_found')
     return render_template(pagename)
 
-
 ###########################################################
 # let's start
 ###########################################################
@@ -605,3 +586,4 @@ if __name__ == '__main__':
     
     print "Starting webserver."
     app.run(debug=config.getboolean('Server Parameters', 'debug'), host='0.0.0.0', port=config.getint('Server Parameters', 'port'))
+
