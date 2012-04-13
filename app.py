@@ -381,6 +381,7 @@ def enterexp():
                 one()
         user.status = STARTED
         user.beginexp = datetime.datetime.now()
+        db_session.add(user)
         db_session.commit()
 
 @app.route('/inexpsave', methods=['POST'])
@@ -400,6 +401,7 @@ def inexpsave():
                 one()
         user.datastring = datastring
         user.status = STARTED
+        db_session.add(user)
         db_session.commit()
     return render_template('error.html', errornum= experiment_errors['intermediate_save'])
 
@@ -419,6 +421,7 @@ def quitter():
                 one()
         user.datastring = datastring
         user.status = QUITEARLY
+        db_session.add(user)
         db_session.commit()
     return render_template('error.html', errornum= experiment_errors['tried_to_quit'])
 
@@ -441,6 +444,7 @@ def savedata():
     user.status = COMPLETED
     user.datastring = datastring
     user.endhit = datetime.datetime.now()
+    db_session.add(user)
     db_session.commit()
     
     return render_template('debriefing.html', subjid=subjid)
@@ -465,8 +469,8 @@ def completed():
             one()
     user.status = DEBRIEFED
     user.debriefed = agreed == 'true'
+    db_session.add(user)
     db_session.commit()
-    
     return render_template('closepopup.html')
 
 #------------------------------------------------------
@@ -504,6 +508,7 @@ def updatestatus():
                 one()
         if field=='status':
             user.status = value
+        db_session.add(user)
         db_session.commit()
         
         return value
