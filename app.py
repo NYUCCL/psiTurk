@@ -21,7 +21,7 @@ logfilepath = os.path.join(os.path.dirname(os.path.abspath(__file__)),
 
 loglevels = [logging.DEBUG, logging.INFO, logging.WARNING, logging.ERROR, logging.CRITICAL]
 loglevel = loglevels[config.getint('User Preferences', 'loglevel')]
-logging.basicConfig( filename=logfilepath, level=loglevel )
+logging.basicConfig( filename=logfilepath, format='%(asctime)s %(message)s', level=loglevel )
 
 # config.get( 'Mechanical Turk Info', 'aws_secret_access_key' )
 
