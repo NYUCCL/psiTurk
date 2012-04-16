@@ -198,9 +198,10 @@ def get_random_counterbalance(cond):
     numcounts = config.getint('Task Parameters', 'num_counters')
     participants = Participant.query.\
                  filter(Participant.codeversion == CODE_VERSION).\
-                 filter(and_ Participant.cond == cond,
-                             or_(Participant.endhit != None, 
-                                 Participant.beginhit > starttime))
+                 filter(Participant.cond == cond).\
+                 filter(or_(Participant.endhit != None, 
+                            Participant.beginhit > starttime)).\
+                 all()
     subj_counter = choose_least_used(numcounts, [p.counterbalance for p in participants])
     return subj_counter
 
@@ -344,10 +345,10 @@ def start_exp():
         subj_cond = get_random_condition()
         subj_counter = get_random_counterbalance(subj_cond)
         
-        if not request['remote_addr']:
+        if not request.remote_addr:
             myip = "UKNOWNIP"
         else:
-            myip = request['remote_addr']
+            myip = request.remote_addr
         
         # set condition here and insert into database
         part = Participant( hitId, myip, assignmentId, workerId, subj_cond, subj_counter)
