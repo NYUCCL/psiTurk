@@ -198,9 +198,10 @@ def get_random_counterbalance(cond):
     numcounts = config.getint('Task Parameters', 'num_counters')
     participants = Participant.query.\
                  filter(Participant.codeversion == CODE_VERSION).\
-                 filter(and_ Participant.cond == cond,
-                             or_(Participant.endhit != None, 
-                                 Participant.beginhit > starttime))
+                 filter(Participant.cond == cond).\
+                 filter(or_(Participant.endhit != None, 
+                            Participant.beginhit > starttime)).\
+                 all()
     subj_counter = choose_least_used(numcounts, [p.counterbalance for p in participants])
     return subj_counter
 
