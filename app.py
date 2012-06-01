@@ -4,6 +4,7 @@ import datetime
 import logging
 from functools import wraps
 from random import choice
+from collections import Counter
 
 # Importing flask
 from flask import Flask, render_template, request, Response, make_response
@@ -153,24 +154,8 @@ def get_people(people):
 # Experiment counterbalancing code.
 #----------------------------------------------
 
-# TODO: Write tests for this stuff.
 
-def choose_least_used(npossible, sofar):
-    """
-    For both condition and counterbalance, we have to choose a value from a
-    certain range that hasn't been used much in the past. This takes the number
-    of integers possible, and a list of those which have already been used. We
-    count how often each of them have been used, and choose the one which has
-    been used least often.
-    """
-    counts = [0 for _ in range(npossible)]
-    for instance in sofar:
-        counts[instance] += 1
-    indices = [i for i, x in enumerate(counts) if x == min(counts)]
-    chosen = choice(indices)
-    return chosen
-
-def get_random_condition():
+def get_random_condcount():
     """
     HITs can be in one of three states:
         - jobs that are finished
@@ -179,31 +164,36 @@ def get_random_condition():
     Our count should be based on the first two, so we count any tasks finished
     or any tasks not finished that were started in the last cutoff_time
     minutes, as specified in the cutoff_time variable in the config file.
+    
+    Returns a tuple: (cond, condition)
     """
     cutofftime = datetime.timedelta(minutes=-config.getint('Server Parameters', 'cutoff_time'))
     starttime = datetime.datetime.now() + cutofftime
     
     numconds = config.getint('Task Parameters', 'num_conds')
+    numcounts = config.getint('Task Parameters', 'num_counters')
     
     participants = Participant.query.\
                    filter(Participant.codeversion == CODE_VERSION).\
-                   filter(or_(Participant.endhit != None, 
-                           Participant.beginhit > starttime))
-    subj_cond = choose_least_used(numconds, [p.cond for p in participants] )
+                   filter(or_(Participant.status == 4, 
+                              Participant.status == 5, 
+                              Participant.beginhit > starttime)).\
+                   filter(Participant.cond<4).\
+                   all()
+    counts = Counter()
+    for cond in range(numconds):
+        for counter in range(numcounts):
+            counts[(cond, counter)] = 0
+    for p in participants:
+        counts[(p.cond, p.counterbalance)] += 1
+    mincount = min( counts.values() )
+    minima = [hash for hash, count in counts.iteritems() if count == mincount]
+    chosen = choice(minima)
+    #conds += [ 0 for _ in range(1000) ]
+    #conds += [ 1 for _ in range(1000) ]
+    print "given ", counts, " chose ", chosen
     
-    return subj_cond
-
-def get_random_counterbalance(cond):
-    starttime = datetime.datetime.now() + datetime.timedelta(minutes=-30)
-    numcounts = config.getint('Task Parameters', 'num_counters')
-    participants = Participant.query.\
-                 filter(Participant.codeversion == CODE_VERSION).\
-                 filter(Participant.cond == cond).\
-                 filter(or_(Participant.endhit != None, 
-                            Participant.beginhit > starttime)).\
-                 all()
-    subj_counter = choose_least_used(numcounts, [p.counterbalance for p in participants])
-    return subj_counter
+    return chosen
 
 #----------------------------------------------
 # routes
@@ -341,9 +331,8 @@ def start_exp():
     numrecs = len(matches)
     if numrecs == 0:
         
-        # New participant, choose condition and counterbalance.
-        subj_cond = get_random_condition()
-        subj_counter = get_random_counterbalance(subj_cond)
+        # Choose condition and counterbalance
+        subj_cond, subj_counter = get_random_condcount()
         
         if not request.remote_addr:
             myip = "UKNOWNIP"
