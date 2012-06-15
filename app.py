@@ -363,15 +363,18 @@ def enterexp():
     experiment applet (meaning they can't do part of the experiment and
     referesh to start over).
     """
-    if request.form.has_key('subjId'):
-        subjid = request.form['subjId']
-        user = Participant.query.\
-                filter(Participant.subjid == subjid).\
-                one()
-        user.status = STARTED
-        user.beginexp = datetime.datetime.now()
-        db_session.add(user)
-        db_session.commit()
+    print "/inexp"
+    if not request.form.has_key('subjId'):
+        raise ExperimentError('improper_inputs')
+    subjid = request.form['subjId']
+    user = Participant.query.\
+            filter(Participant.subjid == subjid).\
+            one()
+    user.status = STARTED
+    user.beginexp = datetime.datetime.now()
+    db_session.add(user)
+    db_session.commit()
+    return "Success"
 
 @app.route('/inexpsave', methods=['POST'])
 def inexpsave():
