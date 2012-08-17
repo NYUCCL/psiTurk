@@ -345,7 +345,7 @@ def start_exp():
         db_session.commit()
     
     elif numrecs==1:
-        part = matches[0].subjid
+        part = matches[0]
         if part.status>=STARTED: # in experiment (or later) can't restart at this point
             raise ExperimentError( 'already_started_exp' )
     else:
