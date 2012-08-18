@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Mechanical Turk Workshop</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <script src="https://github.com/downloads/gnab/remark/remark-0.3.5.min.js" type="text/javascript"></script>
+    <style type="text/css" media="screen">
+    /* Slideshow styles */
+      @import url(http://fonts.googleapis.com/css?family=Lobster);
+      @import url(http://fonts.googleapis.com/css?family=Open+Sans);
+      @import url(http://fonts.googleapis.com/css?family=Vast+Shadow);
+      @import url(http://fonts.googleapis.com/css?family=Marmelad);
+      @import url(http://fonts.googleapis.com/css?family=Bitter);
+      
+      body { 
+        font-family: 'Open Sans', sans-serif;
+        font-size: 18px;
+      }
+      h1 {
+          font-family: 'Lobster', cursive;
+      }
+      h1 {
+        font-weight: normal;
+        font-size: 55px;
+      }
+      h2 {
+          font-family: 'Vast Shadow';
+      }
+      a {
+        color: #eaab0c;
+        text-decoration: 1px dotted #ccc;
+      }
+      .slide {
+          
+      }
+      .center {
+        margin: 0 auto;
+      }
+      .footnote {
+        position: absolute;
+        bottom: 3em;
+      }
+      .red    { color: #FF4943; }
+      .gray   { color: #787878; }
+      .green  { color: #87A558; }
+      .blue   { color: #41C8F0; }
+      .yellow { color: #DBEC62; }
+      .orange { color: #eaab0c; }
+      
+      .people {
+          border-top: 1px solid #f1f1f1;
+      }
+      
+      .people img {
+          padding-bottom: 20px;
+      }
+      
+
+   </style>
+  </head>
+  <body>
+    <textarea id="source">
+
+.center.middle
+# Using .blue[Mechanical Turk] for Cognition Experiments
+[@johnvmcdonnell](http://twitter.com/johnvmcdonnell) and [@todd_gureckis](http://twitter.com/todd_gureckis)  
+_[Computation and Cognition Lab](http://gureckislab.org)_  
+_Department of Psychology_  
+_New York University_  
+
+---
+
+.middle
+# Overview
+
+
+1. What is [Amazon Mechanical Turk](https://www.mturk.com) (AMT)?  
+
+2. Who are the people in the system (demographics, etc...)?
+
+3. How can it be used for behavioral research?
+
+4. What are the mechanics of using the system?
+
+5. Describe a [simple Python-based web-app](https://github.com/NYUCCL/psiTurk) we developed which could be starting framework for your experiment
+
+---
+
+# On the shoulders of giants...
+
+<!-- .right[<img src="http://green-leads.web5.hubspot.com/Portals/53598/images/logo1.gif">] -->
+
+<div class="people">
+<img src="images/Mason.jpg" width="125" align="left" style="padding-right: 50px; padding-top: 20px;">
+### [Winter Mason](http://www.stevens.edu/provost/directory/faculty_profile.php?faculty_id=1687) (Asst. Prof at Stevens Institute, formerly Yahoo! Research)
+A social psychologist who really pioneered the documentation of using Mechanical Turk
+for behavioral researchers.
+</div>
+
+
+<div class="people">
+<img src="images/Suri200.jpg" width="125" align="left" style="padding-right: 50px; padding-top: 20px;">
+### [Siddharth Suri](http://www.sidsuri.com/About_Sid.html) (Microsoft Research, formerly Yahoo! Research)
+A computer scientist doing web-based behavioral experiments on how
+aspect of social network structure influence human behavior.
+</div>
+
+
+### They have created some helpful resources
+- A really helpful and informative [post](http://smallsocialsystems.com/blog/?p=95) on Winter's blog
+- CogSci2011 [workshop](http://cognitivesciencesociety.org/uploads/2011-t4.pdf): "How to use Mechanical Turk for Cognitive Science Research"
+- Mason, W. & Suri, S. (2012). [A Guide to Behavioral Experiments on Mechanical Turk](http://www.springerlink.com/content/5236n965288116v8/fulltext.pdf). _Behavior Research
+Methods_, 44(1), 1-23. 
+
+---
+
+.middle
+# Our three goals
+
+1. Help you decide if it is right to use in your work
+
+2. Share what we've learned in the process of collecting data with the system
+
+3. Describe our system for helping you develop your own experiments
+
+
+---
+
+.center.middle
+# What is ".blue[Mechanical Turk]"?
+
+
+---
+
+# The history
+
+<img src="images/bezos.jpg" width="250" align="right"><br>
+
+
+- Developed by [Amazon.com](http://amazon.com) by Peter Cohen
+
+- Originally for in-house use to detect duplicate product postings on Amazon's site
+
+- Jeff Bezos calls it "artificial artificial intelligence"
+
+- Name originates from a mechanical chess illusion/automaton by Wolfgang von Kempelen in the 18th century
+
+- Nice summary in the [New York Times](http://www.nytimes.com/2007/03/25/business/yourmoney/25Stream.html)
+
+
+---
+
+# The concept
+
+<img src="images/crowdsource.png" alt="Crowdsourcing" width="300" align="left">
+"Normally, a human makes a request of a computer, and the computer does the computation of the task, but artificial artificial intelligences like Mechanical Turk invert all that. The computer has a task that is easy for a human but extraordinarily hard for the computer. So instead of calling a computer service to perform the function, it calls a human.” 
+
+### - Jeff Bezos
+
+
+    </textarea>
+    <div id="slideshow"></div>
+  </body>
+</html>
