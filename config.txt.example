@@ -36,7 +36,8 @@ Approve_Requirement: 95   ; What % of previous assignments have been approved.
 
 ; Example MySQL url: mysql://user:password@domain:port/dbname
 ; MySQL url using MAMP: mysql://mturk@localhost/mturk?unix_socket=/Applications/MAMP/tmp/mysql/mysql.sock
-database_url: mysql://mturk@localhost/mturk?unix_socket=/Applications/MAMP/tmp/mysql/mysql.sock
+database_url: sqlite:///participants.db
+
 table_name: turkdemo
 
 [Server Parameters]
