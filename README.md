@@ -18,28 +18,31 @@ You will need to use a relatively recent version of [Python
 
  * [Flask](http://flask.pocoo.org/) --- A lightweight web framework.
  * [SQLAlchemy](http://www.sqlalchemy.org/) --- A powerful SQL abstraction layer.
+ 
+You can get both of these at once with the command
 
-You will also need to run this from a web server connected to the internet, and
-you will need a database compatible with SQL Alchemy (MySQL, SQLite, or
-PostgreSQL would all work).
+    easy_install Flask-SQLAlchemy
+
+You will also need to run this from a web server connected to the internet.
 
 Quick Start
 -----------
 
 Just follow these directions to get started:
 
-1. Installing the dependencies, including the database. 
-2. Sign up for Mechanical Turk, including an AWS account.
-3. Move the config file from `config.txt.example` to `config.txt`. Update it
-   with your Amazon secret code and a correct URL to your database (the default
-   database URL is set up for [MAMP](http://mamp.info) on OSX). 
-4. Making sure that the configuration file is set up to use the Amazon sandbox,
-  issue the following commands from the PsiTurk root folder:
+1. Install the dependencies. 
+1. Sign up for an AWS account, available [here](http://aws.amazon.com/).
+1. Sign up for a Mechanical Turk requester account, available
+   [here](https://requester.mturk.com/).
+1. Move the config file from `config.txt.example` to `config.txt`. Update it
+   with your secret AWS code.
+1. Making sure that the configuration file is set up to use the Amazon sandbox,
+   issue the following commands from the PsiTurk root folder:
 
-        python mturk/createHIT.py    # To post a HIT to the sandbox
+        python mturk/createHIT.py    # To post a HIT to the sandbox    
         python app.py                # To start the web server
 
-5. You should be ready to go! Point your browser to the [worker
+1. You should be ready to go! Point your browser to the [worker
   sandbox](https://workersandbox.mturk.com) and try to find your HIT!
 
 Copyright
