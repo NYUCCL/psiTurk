@@ -47,6 +47,7 @@
       .blue   { color: #41C8F0; }
       .yellow { color: #dbcb14; }
       .orange { color: #eaab0c; }
+
       
       .people {
           border-top: 1px solid #f1f1f1;
@@ -54,7 +55,10 @@
       
 
       .task {
-        float: right;
+        /* float: right; */
+        position: absolute;
+        top: 25px;
+        right: 50px;
         font-size: 18px;
         padding-top: 0.6em;
         color: #d3d3d3;
@@ -75,8 +79,16 @@
      
       .rotatetitle {
           transform:rotate(-12deg);
+          -ms-transform:rotate(12deg);
+          -moz-transform:rotate(12deg);
           -webkit-transform:rotate(-12deg);
+          -o-transform:rotate(-12deg);
+
+          -ms-transform-origin:150% -170%;
+          -moz-transform-origin:150% -170%;
           -webkit-transform-origin:150% -170%;
+          -o-transform-origin:150% -170%;
+
           font-size: 15px;
       }
       
@@ -126,7 +138,7 @@ name: overview
     
 3. Using custom software to run dynamic experiments
 
-    - Introduce a [simple Python-based web-app](https://github.com/NYUCCL/psiTurk) we developed which could be starting framework for your experiment
+    - Introduce a [simple Python-based web-app](https://github.com/NYUCCL/psiTurk) we developed which could be a starting framework for your experiment
     - Using the AMT sandbox to develop and test your app
     - Manage hits using command-line tools (avoid too many visits to Amazon's site)
 
@@ -232,8 +244,11 @@ class: center, middle
 ---
 
 name: terminology
+class: shortlist, middle
+
 .task[Part 1: What is AMT?]
 # Key terminology
+
 
 - .red[**HIT**] = Human Intelligence Task (a unit of work, e.g. a trial or an entire sequence of trials in an experiment)
 
@@ -278,7 +293,7 @@ Tamir (2011)
 ---
 
 .task[Part 1: What is AMT?]
-# Why are people doing this?
+# What motivates workers?
 
 
 #.green.center[Money.]
@@ -356,7 +371,7 @@ Mitch Fernandez, 38, a disabled former United States Army linguist, said by e-ma
 ---
 
 .task[Part 1: What is AMT?]
-# Ethical/I.R.B. Issues
+# Ethical Issues
 
 - How much should you pay?  As much as the market supports or should it match what you pay in the lab (roughly)?
 
@@ -380,6 +395,8 @@ class: center, middle
 
 ---
 
+name: replicationstudies
+
 .task[Part 1: What is AMT?]
 # Lots of interest in this...
 
@@ -389,15 +406,134 @@ class: center, middle
 
 - Germine, L., Nakayama, K., Duchaine, B.C., Chabris, C.F., Chatterjee, G. & Wilmer, J.B. (2012, in press).  [Is the Web as good as the lab?  Comparable performance from Web and lab in cognitive/perceptual experiments.](http://www.springerlink.com/content/f0244t772070138w/)  _Psychonomic Bulletin & Review_.
 
-- .blue[**Crump, M., McDonnell, J., &  Gureckis, T.M. (in prep).  Evaluating Amazon’s Mechanical Turk as a tool for experimental behavioral research: A critical look.**]
+
+---
+
+
+.task[Part 1: What is AMT?]
+# Does it replicate?
+
+- We recently attempted to replicate a classic categorization finding using AMT subjects
+    - Shepard, R.N., Hovland, C.I., & Jenkins H.M. (1961). Learning and memorization of classifications. _Psychological Monographs: General and Applied_, 75(13), 1-41.
+
+- Was a good learning experience for what works (and what doesn't)
+
+- Part of a larger study replicating a number of classic findings (stroop, task-switching, simon, visual cuing, attentional blink, subliminal priming, category learning)
+    - **Crump, M., McDonnell, J., &  Gureckis, T.M. (in prep).  Evaluating Amazon’s Mechanical Turk as a tool for experimental behavioral research: A critical look.**
+
 
 ---
 
 .task[Part 1: What is AMT?]
-# Lots of interest in this...
+# SHJ (1961)
 
-[Go to terminology](#terminology)
+- Six different ways of classifying the same 8 items (geometric figures with 3 binary dimensions) into deterministic categories
 
+- Generally Type I is learned faster than Type II which is faster that Types III-V, with Type VI the hardest
+
+.center[
+<img src="images/abstractstructureSHJ.png" width="180"><img src="images/dimstructureSHJ.png" width="200">
+<img src="images/SHJDifficulty.png" width="700">
+]
+
+---
+
+.task[Part 1: What is AMT?]
+# Try 1
+
+.center[
+<img src="images/exp8-nosofsky.png" height="310"><img src="images/exp8-amt.png" height="310">
+]
+
+---
+
+.task[Part 1: What is AMT?]
+# Try 1
+
+.center[
+<img src="images/exp8-block2criterion.png" height="400">
+]
+
+---
+
+class: center, middle
+# Maybe we weren't paying people enough?
+
+---
+
+.task[Part 1: What is AMT?]
+# Try 2
+
+.center[
+<img src="images/exp9-typeII.png" height="400">
+]
+
+---
+
+.task[Part 1: What is AMT?]
+# Try 2
+
+.center[
+<img src="images/exp9-typeIV.png" height="400">
+]
+
+---
+
+class: center, middle
+# Maybe people didn't read or understand the instructions?
+
+---
+
+.task[Part 1: What is AMT?]
+# Try 3
+
+.center[
+<img src="images/exp10-n-vs-amt.png" height="500">
+]
+
+---
+
+.task[Part 1: What is AMT?]
+# Try 3
+
+.center[
+<img src="images/exp10-l-vs-amt.png" height="500">
+]
+
+
+---
+
+.task[Part 1: What is AMT?]
+# Try 3
+
+- 100% of participants in the type I problem reached the learning criterion .red[*]
+
+- 73.1% reached criterion in the type II problem
+
+- 56.4% reach criterion in the type IV problem
+
+- 44.8% reach criterion in the type VI problem. 
+
+.footnote[.red[*] 2 blocks in a row with 100% correct responses  within the 10 training blocks]
+
+---
+
+.task[Part 1: What is AMT?]
+# Summary
+
+- Eh, it's ok. not perfect.
+    - Hard to tell if problems are with AMT data or with previous work (perhaps selection bias with university students?)
+
+- Important lessons
+    - Payment doesn't have much effect beyond signup rate
+    - Checking people read and comprehend instructions is critical
+    - Cleaning up data may help, but good to decide on criterion ahead of time
+    
+- Huge studies run in 3-4 days.  Does this benefit outweight possible disadvantages?  Do you trust your lab data more?
+
+- Note, our other studies (e.g., stroop, etc...) replicate with much higher fidelity.  Learning experiments
+may reflect a sort of special case where caution is particularly advised.
+    - See also [this slide](#replicationstudies) for references to other studies reporting success
 
 ---
 
@@ -414,6 +550,13 @@ class: center, middle
 
 - Obvious solution to reviewer objections is to replicate a few conditions or experiments in the lab as well
     - Easy to do since the code runs just as well in the lab as online
+
+---
+
+class: center, middle
+# End of Part 1 
+### Time for a break!
+
 
     </textarea>
     <div id="slideshow"></div>
