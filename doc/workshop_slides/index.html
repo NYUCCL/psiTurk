@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Mechanical Turk Workshop</title>
+    <title>Using Mechanical Turk for Cognition Experiments - John McDonnell and Todd Gureckis</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-    <script src="https://github.com/downloads/gnab/remark/remark-0.3.5.min.js" type="text/javascript"></script>
+    <script src="remark-min.js" type="text/javascript"></script>
     <style type="text/css" media="screen">
     /* Slideshow styles */
       @import url(http://fonts.googleapis.com/css?family=Lobster);
@@ -18,6 +18,7 @@
       }
       h1 {
           font-family: 'Lobster', cursive;
+          color: #444;
       }
       h1 {
         font-weight: normal;
@@ -42,56 +43,103 @@
       }
       .red    { color: #FF4943; }
       .gray   { color: #787878; }
-      .green  { color: #87A558; }
+      .green  { color: #92d12d; }
       .blue   { color: #41C8F0; }
-      .yellow { color: #DBEC62; }
+      .yellow { color: #dbcb14; }
       .orange { color: #eaab0c; }
       
       .people {
           border-top: 1px solid #f1f1f1;
       }
       
-      .people img {
-          padding-bottom: 20px;
+
+      .task {
+        float: right;
+        font-size: 18px;
+        padding-top: 0.6em;
+        color: #d3d3d3;
+      }
+      .task a {
+        color: #080;
+        text-decoration: none;
+      }      
+
+      .footnote {
+        position: absolute;
+        bottom: 3em;
       }
       
-
+      .shortlist {
+          font-size: 27px;
+      }
+     
+      .rotatetitle {
+          transform:rotate(-12deg);
+          -webkit-transform:rotate(-12deg);
+          -webkit-transform-origin:150% -170%;
+          font-size: 15px;
+      }
+      
+      .smallquote {
+          font-size: 14px;
+      }
+      
+      .position {
+          color: #ccc;
+          font-size: 12px;
+      }
+      
    </style>
   </head>
   <body>
     <textarea id="source">
 
-.center.middle
+name: title
+class: center, middle
+
+<div class="rotatetitle">
 # Using .blue[Mechanical Turk] for Cognition Experiments
-[@johnvmcdonnell](http://twitter.com/johnvmcdonnell) and [@todd_gureckis](http://twitter.com/todd_gureckis)  
+.author[
+John McDonnell ([@johnvmcdonnell](http://twitter.com/johnvmcdonnell)) & Todd Gureckis ([@todd_gureckis](http://twitter.com/todd_gureckis))  
 _[Computation and Cognition Lab](http://gureckislab.org)_  
 _Department of Psychology_  
 _New York University_  
+]
+</div>
 
 ---
 
-.middle
+name: overview
+
 # Overview
 
 
 1. What is [Amazon Mechanical Turk](https://www.mturk.com) (AMT)?  
+    - Who are the people in the system (demographics, etc...)?
+    - How can it be used for research?
+    - How good is the data?
 
-2. Who are the people in the system (demographics, etc...)?
+2. What are the mechanics of using the system?
 
-3. How can it be used for behavioral research?
+    - Step through setting up account
+    - Using built-in tools to create simple form-based experiments
+    
+3. Using custom software to run dynamic experiments
 
-4. What are the mechanics of using the system?
-
-5. Describe a [simple Python-based web-app](https://github.com/NYUCCL/psiTurk) we developed which could be starting framework for your experiment
+    - Introduce a [simple Python-based web-app](https://github.com/NYUCCL/psiTurk) we developed which could be starting framework for your experiment
+    - Using the AMT sandbox to develop and test your app
+    - Manage hits using command-line tools (avoid too many visits to Amazon's site)
 
 ---
+
+name: credits
 
 # On the shoulders of giants...
 
 <!-- .right[<img src="http://green-leads.web5.hubspot.com/Portals/53598/images/logo1.gif">] -->
 
 <div class="people">
-<img src="images/Mason.jpg" width="125" align="left" style="padding-right: 50px; padding-top: 20px;">
+<img src="images/Mason.jpg" width="125" align="left" style="margin-right: 50px; margin-top: 20px;">
 ### [Winter Mason](http://www.stevens.edu/provost/directory/faculty_profile.php?faculty_id=1687) (Asst. Prof at Stevens Institute, formerly Yahoo! Research)
 A social psychologist who really pioneered the documentation of using Mechanical Turk
 for behavioral researchers.
@@ -99,7 +147,7 @@ for behavioral researchers.
 
 
 <div class="people">
-<img src="images/Suri200.jpg" width="125" align="left" style="padding-right: 50px; padding-top: 20px;">
+<img src="images/Suri200.jpg" width="125" align="left" style="margin-right: 50px; margin-top: 20px;">
 ### [Siddharth Suri](http://www.sidsuri.com/About_Sid.html) (Microsoft Research, formerly Yahoo! Research)
 A computer scientist doing web-based behavioral experiments on how
 aspect of social network structure influence human behavior.
@@ -114,7 +162,9 @@ Methods_, 44(1), 1-23.
 
 ---
 
-.middle
+name: goals
+class: shortlist, middle
+
 # Our three goals
 
 1. Help you decide if it is right to use in your work
@@ -126,12 +176,13 @@ Methods_, 44(1), 1-23.
 
 ---
 
-.center.middle
+name: whatisamt
+class: center, middle
 # What is ".blue[Mechanical Turk]"?
-
 
 ---
 
+.task[Part 1: What is AMT?]
 # The history
 
 <img src="images/bezos.jpg" width="250" align="right"><br>
@@ -139,17 +190,19 @@ Methods_, 44(1), 1-23.
 
 - Developed by [Amazon.com](http://amazon.com) by Peter Cohen
 
-- Originally for in-house use to detect duplicate product postings on Amazon's site
+- Originally for in-house use to detect duplicate product postings on Amazon's site .red[*]
 
 - Jeff Bezos calls it "artificial artificial intelligence"
 
 - Name originates from a mechanical chess illusion/automaton by Wolfgang von Kempelen in the 18th century
 
-- Nice summary in the [New York Times](http://www.nytimes.com/2007/03/25/business/yourmoney/25Stream.html)
+
+.footnote[.red[*] Nice summary in the [New York Times](http://www.nytimes.com/2007/03/25/business/yourmoney/25Stream.html)]
 
 
 ---
 
+.task[Part 1: What is AMT?]
 # The concept
 
 <img src="images/crowdsource.png" alt="Crowdsourcing" width="300" align="left">
@@ -159,31 +212,38 @@ Methods_, 44(1), 1-23.
 
 ---
 
+.task[Part 1: What is AMT?]
 # What kinds of tasks?
 
-- Difficult for computer
+- Difficult for computer (or for use in training machine learning systems)
     - Provide three key words to describe a randomly selected image
     - Does this photograph contain a car?
     - Type the characters in this image (e.g., captcha)
     
-- Regular "work"
-    - Go to http://mycompany.com and email my some comments on what you think of the design
+- Traditional "work"
+    - Go to http://mycompany.com and email me some comments on what you think of the design
+    - Write a positive review for this product online (pay per paragraph)
+    - Translate this text from english to spanish
+    
 
-- Help with science!
-    - Participate in my human cognition/perception/learning experiment!
+- .green[Help with science!]
+    - **Participate in my human cognition/perception/learning experiment!**
 
 ---
 
+name: terminology
+.task[Part 1: What is AMT?]
 # Key terminology
 
-- **HIT** = Human Intelligence Task (a unit of work, e.g. a trial or an entire sequence of trials in an experiment)
+- .red[**HIT**] = Human Intelligence Task (a unit of work, e.g. a trial or an entire sequence of trials in an experiment)
 
-- **Requester** = an entity (e.g., researcher) who posts HITS
+- .orange[**Requester**] = an entity (e.g., researcher) who posts .red[**HIT**]s
 
-- **Worker** = a person who performs the task
+- .blue[**Worker**] = a person who performs the task
 
 ---
 
+.task[Part 1: What is AMT?]
 # Who are the workers?
 
 - 46.80% US, 34% India, 19.20% Other
@@ -199,6 +259,7 @@ Methods_, 44(1), 1-23.
 
 ---
 
+.task[Part 1: What is AMT?]
 # US Distribution
 
 <img src="images/us-turk-distribution.jpg" width="750">
@@ -207,6 +268,7 @@ Taken from this [website](http://www-958.ibm.com/software/data/cognos/manyeyes/v
 
 ---
 
+.task[Part 1: What is AMT?]
 # World Distribution
 
 <img src="images/world-turk-distribution.jpg" width="750">
@@ -215,6 +277,28 @@ Tamir (2011)
 
 ---
 
+.task[Part 1: What is AMT?]
+# Why are people doing this?
+
+
+#.green.center[Money.]
+
+.smallquote[
+Mitch Fernandez, 38, a disabled former United States Army linguist, said by e-mail that he became a Turk Worker for various reasons: “At first, I was just curious about the idea of crowdsourcing.” But he said he soon found that by working about two hours a day, he could often earn more than $100 a week. In the last nine months he made around $4,000, which he used to buy a high-definition television, a DVD player and a new subwoofer — all from Amazon.com.]
+
+.smallquote[
+“I do this primarily for the money, but I also view it as a form of therapy to get me used to working again.” he explained. “The experience has gotten me thinking about pursuing a library science degree.” - From [New York Times](http://www.nytimes.com/2007/03/25/business/yourmoney/25Stream.html)
+]
+
+<hr>
+
+.smallquote[
+"Is it worthwhile? I was genuinely surprised by the experience. If you have the ability to throw down readable writing very quickly, you can earn minimum wage with the Turk – more than I ever expected. Given the short timeframe and the wide variety of tasks available, it’s something that you can sit down and do in short little bits when it’s convenient for you.” - From [The simple Dollar](http://www.thesimpledollar.com/2009/07/05/can-you-actually-earn-reasonable-money-from-mechanical-turk/)
+]
+
+---
+
+.task[Part 1: What is AMT?]
 # Compensation
 
 - Median wage is $1.38/hour
@@ -232,46 +316,105 @@ Tamir (2011)
 
 ---
 
+.task[Part 1: What is AMT?]
 # Why mess with this?
 
 - **Convenient** - and our scripts help you even more
 
 - **Fast** 
     - collect LOTS of data quickly
-    - iterate designs daily if you want
     - collect large N studies
     - pilot study materials
-    - gather norms
-    - pretest stimuli
+    - norm/pretest stimuli
     
 - **Affordable**
     - Relative to fMRI incredibly cost effective
     - We paid about $2.00 for 15-25 minute session
 
+- **Anonymous**
+    - Subject never meets experimenter, in some ways testing conditions more uniform since no RAs
+    - Subjects unlikely to know about "your lab" and the types of studies you do
+
+- **Replicable**
+    - Very easy to share your experiment code to let people replicate your work cheaply
+
 ---
 
-# Why stay away?
+.task[Part 1: What is AMT?]
+# Why .red[stay away]?
 
-- **Quality assurance** Are people following instructions? Can they read them actually?
+- **Quality assurance** Are people following instructions? Can they read them?  Are they "bots" just trying to rip you off?
 
 - **Attrition** the cost (social or otherwise) for closing the browser and quitting the experiment is low
 
-- **Non-lab setting** You don’t have control over distractions.  _People could get up and leave for 1 hour in the middle of your experiment (needs lots of controls in your data to check for this)_
+- **Non-lab setting** 
+    - You don’t have control over distractions.  
+    - People literally could get up and leave for 1 hour in the middle of your experiment
 
 - **Undergrads = mturk population?**  Is this really a different population? 
 
 ---
 
-# IRB Issues
+.task[Part 1: What is AMT?]
+# Ethical/I.R.B. Issues
 
-- Some IRBs are more cautious than need be
+- How much should you pay?  As much as the market supports or should it match what you pay in the lab (roughly)?
 
-- Since participants never meet experimenter and are free to close browser and walk away at any moment the IRB issues seem non-existent (should be exempt, but check with your local IRB)
+- Can you get IRB approval for your experiment (yes, you MUST run it by the IRB first)
 
-- Main concern would be if materials/stimuli are controversial and might reflect poorly on the field, sponsors, or university
+    - Some IRBs are more cautious than they need to be, IMHO
 
-- Wasn't very difficult to add to an existing IRB at NYU
-  
+    - Since participants never meet experimenter and are free to close browser and walk away at any moment the IRB issues seem non-existent (should be exempt, but check with your  local IRB)
+
+    - Main concern would be if materials/stimuli are controversial and might reflect poorly on the field, sponsors, or university
+
+    - Wasn't very difficult to add to an existing IRB at NYU
+
+---
+
+class: center, middle
+# How does the data compare to that collected in the lab? .red[*]
+
+.left.footnote[.red[*]Check out our discussion of this at our [Thinking about Thinking](http://gureckislab.org/blog/) blog ]
+
+
+---
+
+.task[Part 1: What is AMT?]
+# Lots of interest in this...
+
+- Gosling, S.D., Vazire, S., Srivastava, S., & John, O.P. (2004). [Should we trust web-based studies? A comparative analysis of six preconceptions about Internet questionnaires](http://www.yalepeplab.com/teaching/psych231/documents/231_Gosling2004.pdf). _American Psychologist_, 59, 2, 93-104.
+
+- Paolacci, G., Chandler, J., & Ipeirotis, P. G. (2010). [Running experiments on Amazon Mechanical Turk](http://repub.eur.nl/res/pub/31983/jdm10630a[1].pdf). _Judgment and Decision Making_, 5, 411-419.
+
+- Germine, L., Nakayama, K., Duchaine, B.C., Chabris, C.F., Chatterjee, G. & Wilmer, J.B. (2012, in press).  [Is the Web as good as the lab?  Comparable performance from Web and lab in cognitive/perceptual experiments.](http://www.springerlink.com/content/f0244t772070138w/)  _Psychonomic Bulletin & Review_.
+
+- .blue[**Crump, M., McDonnell, J., &  Gureckis, T.M. (in prep).  Evaluating Amazon’s Mechanical Turk as a tool for experimental behavioral research: A critical look.**]
+
+---
+
+.task[Part 1: What is AMT?]
+# Lots of interest in this...
+
+[Go to terminology](#terminology)
+
+
+---
+
+.task[Part 1: What is AMT?]
+# Can you actually publish this data?
+
+- Not many mainstream cognitive psychology papers which report findings based purely on AMT data
+
+- A few early examples of web-based experimentation in Cognitive Science (e.g., Mark Steyvers)
+
+- Used heavily in machine learning (e.g., NIPS), in many Cognitive Science Society conference papers, and work on collective/group behavior
+
+- We have a few papers about to be submitted based entirely on AMT data, so we'll see how it goes!
+
+- Obvious solution to reviewer objections is to replicate a few conditions or experiments in the lab as well
+    - Easy to do since the code runs just as well in the lab as online
+
     </textarea>
     <div id="slideshow"></div>
   </body>
