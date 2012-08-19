@@ -136,7 +136,7 @@ name: overview
     - Step through setting up account
     - Using built-in tools to create simple form-based experiments
     
-3. Using custom software to run dynamic experiments
+3. Using custom software to run dynamic experiments (psiTurk)
 
     - Introduce a [simple Python-based web-app](https://github.com/NYUCCL/psiTurk) we developed which could be a starting framework for your experiment
     - Using the AMT sandbox to develop and test your app
@@ -540,9 +540,9 @@ may reflect a sort of special case where caution is particularly advised.
 .task[Part 1: What is AMT?]
 # Can you actually publish this data?
 
-- Not many mainstream cognitive psychology papers which report findings based purely on AMT data
+- Currently, few mainstream cognitive psychology papers which report findings based purely on AMT data
 
-- A few early examples of web-based experimentation in Cognitive Science (e.g., Mark Steyvers)
+- A few early examples of web-based experimentation in Cognitive Science (e.g., [Mark Steyvers](http://psiexp.ss.uci.edu/research/papers/causalinference.pdf))
 
 - Used heavily in machine learning (e.g., NIPS), in many Cognitive Science Society conference papers, and work on collective/group behavior
 
@@ -555,7 +555,189 @@ may reflect a sort of special case where caution is particularly advised.
 
 class: center, middle
 # End of Part 1 
-### Time for a break!
+### .gray[Time for a break!]
+
+---
+
+class: center, middle
+
+.task[Part 2: The mechanics]
+# What are the mechanics of using the system? 
+
+---
+
+class: middle
+.task[Part 2: The mechanics]
+# Two perspectives:
+
+1. What is it like to use AMT as a [**Worker**](#terminology)?
+
+2. What is it like to use AMT as a [**Requester**](#terminology)?
+
+---
+
+.task[Part 2: The mechanics]
+# Using AMT as a .blue[**Worker**]
+
+1. Sign up on Amazon's site
+
+2. Search for tasks (i.e., .red[**HIT**]s) to do online through the AMT interface.
+
+3. Worker accepts a .red[**HIT**].  The task appears in a frame within the AMT website.
+
+4. After completing the .red[**HIT**], the worker signals to Amazon that they have completed the task
+
+<hr>
+
+Some important conceptual notes:
+
+- (as we will see) .orange[**Requester**]s send out a job with a certain number of .red[**HIT**]s
+
+- When a .blue[**Worker**] accepts the .red[**HIT**] is it removed from the .orange[**Requester**]'s account
+
+    - If the .blue[**Worker**] doesn't want to do the task they have to _return_ the .red[**HIT**] to the .orange[**Requester**] so someone else can do it
+
+- As a .orange[**Requester**] you get to set how long a .red[**HIT**] can be "held" like this
+
+---
+
+.task[Part 2: The mechanics]
+# What is a .red[**HIT**] ?
+
+- In our experiments, a .red[**HIT**] is typically an entire experiment (as might be done in the lab)
+
+- However, it is up to the .orange[**Requester**] to determine what constitutes a .red[**HIT**].
+
+- Could be one trial in an experiment, and you just offer the .blue[**Worker**] as many .red[**HIT**]s as they care to do
+
+- Will see some examples in a minute...
+
+---
+
+class: center, middle
+# Demo: Using AMT as a .blue[**Worker**] 
+
+---
+
+.task[Part 2: The mechanics]
+# Using AMT as a .orange[**Requester**]
+
+.red[John: fill this in similarly to "Worker" section?]
+
+1. Sign up on Amazon's site
+
+2. something...
+
+
+---
+
+.task[Part 2: The mechanics]
+# Using AMT as a .orange[**Requester**]
+### Two key types of .red[**HIT**]s
+
+- **Amazon Template**
+    - Hosted directly on Amazon's servers
+    - Mostly restricted to simple HTML
+    - Easy to use (don't need your own server)
+    - Tools for helping you "build" the question
+
+- **External Question**
+    - Pushes user off the AMT site to your own website
+    - You can leverage full power of the "Interweb" (custom Javascript, Flash, etc...)
+    - You need to have a publically accessible webserver
+    - Most coding involved
+        - Our software is intended to help with this
+
+---
+
+class: center, middle
+# Demo: Using AMT as a .orange[**Requester**] 
+
+
+---
+
+class: center, middle
+# End of Part 2
+### .gray[Time for a break!]
+
+---
+
+class: center, middle
+
+.task[Part 3: Using psiTurk]
+# Using custom software to run dynamic experiments
+
+---
+
+class: center, middle
+
+.task[Part 3: Using psiTurk]
+# psiTurk
+### .gray[Our "framework" for doing online experiments]
+### [https://github.com/NYUCCL/psiTurk](https://github.com/NYUCCL/psiTurk)
+<img src="images/github.png" width="200">
+
+---
+
+.task[Part 3: Using psiTurk]
+# Model, View, Controller (MVC) 
+
+A common software development pattern.  If you are _not_ a scientist and do
+end-user programming (e.g., Android, iOS, webapps), this is probably how you 
+are designing things.
+<img src="images/MVC.png" align="right" width="350">
+
+- **Model** is basically your data.  
+    - A common situation is for the model to contains the abstract logic of your
+    application
+    - What kind of data is being stored, how it is formatted, is there computation that the app is supposed to do?
+    
+- **View** is the UI elements presented to a user of the software
+    - Independent of the model 
+    - Idea is object-oriented encapsulation...  the graphics people can design the interface
+    while the engineers build the model
+
+- **Controller** is the "glue" which binds the model to the view
+
+---
+
+.task[Part 3: Using psiTurk]
+# Software dependencies
+
+**Python**  
+If you've never used Python before, we recommend you use the [Enthought Python distribution](http://www.enthought.com/repo/.epd_academic_installers), 
+because it comes with easy_install, a tool for easily installing Python packages.
+
+Once you've installed Enthought, you should be able to open a terminal window and install **Flask** (the web server library we'll be using) and **SQLAlchemy** 
+(the database manipulation package we'll be using) with the following command:
+
+    .sh
+    easy_install Flask-SQLAlchemy
+
+If you get a permissions error, try:
+
+    .sh
+    sudo easy_install Flask-SQLAlchemy
+
+(which will prompt you for your password)
+
+---
+
+.task[Part 3: Using psiTurk]
+# Software dependencies
+
+You will also find it useful to install **boto**, a Python library which enables interaction with Amazon's Mechanical Turk servers 
+to help assign credit to participants.  To install:
+
+    .sh
+    easy_install boto
+
+Finally, you can try getting things up and running by cloning our repository using the following command:
+
+    .sh
+    git clone git://github.com/NYUCCL/psiTurk.git
+
+(Further instructions are provided here: [http://github.com/NYUCCL/psiTurk](http://github.com/NYUCCL/psiTurk))
 
 
     </textarea>
