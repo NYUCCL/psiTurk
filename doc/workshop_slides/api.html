@@ -151,12 +151,13 @@ class: large
 
 # External Questions
 
-1. Link to a site. Could be anything! Must link back to Amazon. 
-1. You are responsible for
-	- Hosting
-	- Posting your link to Amazon
-	- Talking to Amazon
-	- Approving submitted HITs
+- Link to a site. Could be anything! Must link back to Amazon. 
+- You are responsible for
+	1. Requesting an *ExternalQuestion*-type HIT.
+	1. Hosting your experiment.
+	1. Providing the participant with a link certifying that htey have
+	   completed the task.
+	1. Approving submitted HITs.
 
 ---
 
@@ -194,14 +195,52 @@ _Strangely, there is no web interface for this. You need to use scripts. Fortuna
 
 <img src="images/listing.png" width="750" />
 
-- Once they "See a HIT in this group," they see whatever your site is serving up.
+- Once they click "View a HIT in this group," they see whatever your site is serving up, in our case this is the default:
 
+<iframe src="http://puncture.psych.nyu.edu:5001/mturk?assignmentId=ASSIGNMENT_ID_NOT_AVAILABLE&hitId=dummyhit"></iframe>
+
+---
+
+# Accepting a participant
+
+Upon accepting the HIT, they see... whatever you want them to see! In our case,
+it's this:
+
+<iframe src="http://puncture.psych.nyu.edu:5001/mturk?workerId=testing&assignmentId=testing&hitId=testing"></iframe>
+
+---
+
+# Finishing up
+
+The last thing served to the participant is a button they can use to inform
+Amazon that they have finished the HIT.
+
+<iframe src="http://puncture.psych.nyu.edu:5001/mturk?workerId=finished&assignmentId=finished&hitId=finished"></iframe>
 
 ---
 
 class: center, middle
 # End of Part 2 
 ### Let's try!
+
+---
+
+# A look at the URLs
+
+- Our first URL looked like this:
+
+	http://puncture.psych.nyu.edu:5001/mturk?assignmentId=ASSIGNMENT_ID_NOT_AVAILABLE&hitId=testing
+
+- Basic syntax is as follows:
+
+	http://.yellow[**yoururl**]?.red[**assignmentId**=ASSIGNMENT_ID_NOT_AVAILABLE]&.blue[**hitId**=testing]
+
+- .yellow[**yoururl**] is wherever your server is ready for requests.
+- .red[**assignmentId**] is the unique ID assigned by Amazon to the event of
+  this particular person taking performing this particular HIT.
+  ASSIGNMENT_ID_NOT_AVAILABLE means they haven't accepted yet.
+- .blue[**hitId**] is the Amazon ID associated with this HIT. For debugging, you can set this to any value.
+
 
 
     </textarea>
