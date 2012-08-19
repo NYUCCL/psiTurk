@@ -221,6 +221,7 @@ def mturkroute():
     # Person has accepted the HIT, entering them into the database.
     hitId = request.args['hitId']
     assignmentId = request.args['assignmentId']
+    already_in_db = False
     if request.args.has_key('workerId'):
         workerId = request.args['workerId']
         # first check if this workerId has completed the task before (v1)
@@ -231,11 +232,10 @@ def mturkroute():
         
         if nrecords > 0:
             # already completed task
-            raise ExperimentError('already_did_exp_hit')
+            already_in_db = True
     else:
         # If worker has not accepted the hit:
         workerId = None
-    print hitId, assignmentId, workerId
     try:
         part = Participant.query.\
                            filter(Participant.hitid == hitId).\
@@ -243,20 +243,10 @@ def mturkroute():
                            filter(Participant.workerid == workerId).\
                            one()
         status = part.status
-        assignmentId = part.assignmentid
     except:
         status = None
-        assignmentId = None
     
-    if status == ALLOCATED or not status:
-        # Participant has not yet agreed to the consent. They might not
-        # even have accepted the HIT. The mturkindex template will treat
-        # them appropriately regardless.
-        return render_template('mturkindex.html', 
-                               hitid = hitId, 
-                               assignmentid = assignmentId, 
-                               workerid = workerId)
-    elif status == STARTED:
+    if status == STARTED:
         # Once participants have finished the instructions, we do not allow
         # them to start the task again.
         raise ExperimentError('already_started_exp_mturk')
@@ -268,6 +258,16 @@ def mturkroute():
         # They've done the debriefing but perhaps haven't submitted the HIT yet..
         return render_template('thanks.html', 
                                target_env=DEPLOYMENT_ENV, 
+                               hitid = hitId, 
+                               assignmentid = assignmentId, 
+                               workerid = workerId)
+    elif already_in_db:
+        raise ExperimentError('already_did_exp_hit')
+    elif status == ALLOCATED or not status:
+        # Participant has not yet agreed to the consent. They might not
+        # even have accepted the HIT. The mturkindex template will treat
+        # them appropriately regardless.
+        return render_template('mturkindex.html', 
                                hitid = hitId, 
                                assignmentid = assignmentId, 
                                workerid = workerId)
