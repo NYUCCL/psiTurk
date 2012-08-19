@@ -14,7 +14,7 @@ from boto.mturk.qualification import LocaleRequirement, PercentAssignmentsApprov
 framework_root = os.path.abspath( 
     os.path.join(os.path.dirname(os.path.abspath(__file__)), 
                  os.path.pardir))
-configfilename = os.path.join(framework_root, 'config')
+configfilename = os.path.join(framework_root, 'config.txt')
 
 config = ConfigParser()
 config.read( configfilename )

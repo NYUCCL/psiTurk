@@ -29,7 +29,7 @@ def get_all_reviewable_hits( mtc ):
 
 
 framework_root = os.path.abspath(os.path.join(os.getcwd(), os.path.pardir))
-configfilename = os.path.join(framework_root, 'config')
+configfilename = os.path.join(framework_root, 'config.txt')
 
 config = ConfigParser()
 config.read( configfilename )
