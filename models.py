@@ -14,11 +14,10 @@ class Participant(Base):
     """
     __tablename__ = TABLENAME
     
-    subjid = Column( Integer, primary_key = True )
-    ipaddress = Column(String(128))
+    assignmentid =Column(String(128), primary_key=True)
     hitid = Column(String(128))
-    assignmentid =Column(String(128))
     workerid = Column(String(128))
+    ipaddress = Column(String(128))
     cond = Column(Integer)
     counterbalance = Column(Integer)
     codeversion = Column(String(128))
@@ -42,8 +41,8 @@ class Participant(Base):
         self.beginhit = datetime.datetime.now()
     
     def __repr__( self ):
-        return "Subject(%r, %s, %r, %r, %s)" % ( 
-            self.subjid, 
+        return "Subject(%s, %s, %r, %r, %s)" % ( 
+            self.assignmentid, 
             self.workerid, 
             self.cond, 
             self.status,
