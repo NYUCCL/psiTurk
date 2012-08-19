@@ -47,11 +47,11 @@
 						<td id="negative" onClick="javascript:document.forms['decline'].submit()">No, please withhold my data. I will contact the experimenter with questions.</td>
 					</tr></table> 
 					<form id="accept" action="complete" method="post">
-						<input type="hidden" name="subjid" value="{{ subjid }}" />
+						<input type="hidden" name="assignmentid" value="{{ assignmentId }}" />
 						<input type="hidden" name="agree" value="true" />
 					</form>
 					<form id="decline" action="complete" method="post">
-						<input type="hidden" name="subjid" value="{{ subjid }}" />
+						<input type="hidden" name="assignmentid" value="{{ assignmentId }}" />
 						<input type="hidden" name="agree" value="false" />
 					</form>
 			</div>

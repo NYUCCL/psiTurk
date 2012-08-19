@@ -136,7 +136,7 @@ def get_people(people):
         return []
     for record in people:
         person = {}
-        for field in ['subjid', 'ipaddress', 'hitid', 'assignmentid',
+        for field in ['ipaddress', 'hitid', 'assignmentid',
                       'workerid', 'cond', 'counterbalance',
                       'beginhit','beginexp', 'endhit', 'status', 'datastring']:
             if field=='datastring':
@@ -199,28 +199,6 @@ def get_random_condcount():
 # routes
 #----------------------------------------------
 
-@app.route('/debug', methods=['GET'])
-def start_exp_debug():
-    # this serves up the experiment applet in debug mode
-    if "cond" in request.args.keys():
-        subj_cond = int( request.args['cond'] );
-    else:
-        import random
-        subj_cond = random.randrange(12);
-    if "subjid" in request.args.keys():
-        counterbalance = int( request.args['counterbalance'] );
-    else:
-        import random
-        counterbalance = random.randrange(384);
-    return render_template('exp.html', 
-                           subj_num = -1, 
-                           traintype = 0 if subj_cond<6 else 1, 
-                           rule = subj_cond%6, 
-                           dimorder = counterbalance%24, 
-                           dimvals = counterbalance//24,
-                           skipto = request.args['skipto'] if 'skipto' in request.args else ''
-                          )
-
 @app.route('/mturk', methods=['GET'])
 def mturkroute():
     """
@@ -265,10 +243,10 @@ def mturkroute():
                            filter(Participant.workerid == workerId).\
                            one()
         status = part.status
-        subj_id = part.subjid
+        assignmentId = part.assignmentid
     except:
         status = None
-        subj_id = None
+        assignmentId = None
     
     if status == ALLOCATED or not status:
         # Participant has not yet agreed to the consent. They might not
@@ -285,7 +263,7 @@ def mturkroute():
     elif status == COMPLETED:
         # They've done the whole task, but haven't signed the debriefing yet.
         return render_template('debriefing.html', 
-                               subjid = subj_id)
+                               assignmentId = assignmentId)
     elif status == DEBRIEFED:
         # They've done the debriefing but perhaps haven't submitted the HIT yet..
         return render_template('thanks.html', 
@@ -352,7 +330,7 @@ def start_exp():
         print "Error, hit/assignment appears in database more than once (serious problem)"
         raise ExperimentError( 'hit_assign_appears_in_database_more_than_once' )
     
-    return render_template('exp.html', subj_num = part.subjid, order=part.counterbalance )
+    return render_template('exp.html', assignmentId = part.assignmentid, order=part.counterbalance )
 
 @app.route('/inexp', methods=['POST'])
 def enterexp():
@@ -364,11 +342,11 @@ def enterexp():
     referesh to start over).
     """
     print "/inexp"
-    if not request.form.has_key('subjId'):
+    if not request.form.has_key('assignmentid'):
         raise ExperimentError('improper_inputs')
-    subjid = request.form['subjId']
+    assignmentId = request.form['assignmentid']
     user = Participant.query.\
-            filter(Participant.subjid == subjid).\
+            filter(Participant.assignmentid == assignmentId).\
             one()
     user.status = STARTED
     user.beginexp = datetime.datetime.now()
@@ -384,12 +362,12 @@ def inexpsave():
     """
     print "accessing the /inexpsave route"
     print request.form.keys()
-    if request.form.has_key('subjId') and request.form.has_key('dataString'):
-        subj_id = request.form['subjId']
+    if request.form.has_key('assignmentid') and request.form.has_key('dataString'):
+        assignmentId = request.form['assignmentid']
         datastring = request.form['dataString']  
-        print "getting the save data", subj_id, datastring
+        print "getting the save data", assignmentId, datastring
         user = Participant.query.\
-                filter(Participant.subjid == subj_id).\
+                filter(Participant.assignmentid == assignmentId).\
                 one()
         user.datastring = datastring
         user.status = STARTED
@@ -404,12 +382,12 @@ def quitter():
     """
     print "accessing the /quitter route"
     print request.form.keys()
-    if request.form.has_key('subjId') and request.form.has_key('dataString'):
-        subjid = request.form['subjId']
+    if request.form.has_key('assignmentid') and request.form.has_key('dataString'):
+        assignmentId = request.form['assignmentid']
         datastring = request.form['dataString']  
-        print "getting the save data", subjid, datastring
+        print "getting the save data", assignmentId, datastring
         user = Participant.query.\
-                filter(Participant.subjid == subjid).\
+                filter(Participant.assignmentid == assignmentId).\
                 one()
         user.datastring = datastring
         user.status = QUITEARLY
@@ -424,14 +402,14 @@ def savedata():
     (long) string. They will receive a debreifing back.
     """
     print request.form.keys()
-    if not (request.form.has_key('subjid') and request.form.has_key('data')):
+    if not (request.form.has_key('assignmentid') and request.form.has_key('data')):
         raise ExperimentError('improper_inputs')
-    subjid = int(request.form['subjid'])
+    assignmentId = request.form['assignmentid']
     datastring = request.form['data']
-    print subjid, datastring
+    print assignmentId, datastring
     
     user = Participant.query.\
-            filter(Participant.subjid == subjid).\
+            filter(Participant.assignmentid == assignmentId).\
             one()
     user.status = COMPLETED
     user.datastring = datastring
@@ -439,7 +417,7 @@ def savedata():
     db_session.add(user)
     db_session.commit()
     
-    return render_template('debriefing.html', subjid=subjid)
+    return render_template('debriefing.html', assignmentId=assignmentId)
 
 @app.route('/complete', methods=['POST'])
 def completed():
@@ -450,14 +428,14 @@ def completed():
     """
     print "accessing the /complete route"
     print request.form.keys()
-    if not (request.form.has_key('subjid') and request.form.has_key('agree')):
+    if not (request.form.has_key('assignmentid') and request.form.has_key('agree')):
         raise ExperimentError('improper_inputs')
-    subjid = request.form['subjid']
+    assignmentId = request.form['assignmentid']
     agreed = request.form['agree']  
-    print subjid, agreed
+    print assignmentId, agreed
     
     user = Participant.query.\
-            filter(Participant.subjid == subjid).\
+            filter(Participant.assignmentid == assignmentId).\
             one()
     user.status = DEBRIEFED
     user.debriefed = agreed == 'true'
@@ -476,7 +454,7 @@ def viewdata():
     authentication.
     """
     people = Participant.query.\
-              order_by(Participant.subjid).\
+              order_by(Participant.assignmentid).\
               all()
     print people
     people = get_people(people)
@@ -492,11 +470,10 @@ def updatestatus():
         field = request.form['id']
         value = request.form['value']
         print field, value
-        [tmp, field, subjid] = field.split('_')
-        id = int(id)
+        [tmp, field, assignmentId] = field.split('_')
         
         user = Participant.query.\
-                filter(Participant.subjid == subjid).\
+                filter(Participant.assignmentid == assignmentId).\
                 one()
         if field=='status':
             user.status = value
