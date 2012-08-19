@@ -50,12 +50,9 @@
 	{% for rec in records %}
 	<tr>
 		<td valign="top" {{ loop.cycle('', 'class=even') }}>
-		    <font size="+2" color="#aaa" face="helvetica">{{ rec['subjid'] }}</font></td>
+		    <font size="+2" color="#aaa" face="helvetica">{{ rec['assignmentid'] }}</font></td>
 		<td {{ loop.cycle('', 'class=even') }}>
 		    {{ rec['hitid'] }}
-		</td>
-		<td {{ loop.cycle('', 'class=even') }}>
-            {{ rec['assignmentid'] }}
 		</td>
 		<td {{ loop.cycle('', 'class=even') }}>
             {{ rec['workerid'] }}
@@ -76,7 +73,7 @@
             {{ rec['endhit'] }}
         </td>
 		<td {{ loop.cycle('', 'class=even') }}>
-            <small class="editable_select_status" id="applicants_status_{{ rec['subjid'] }}">
+            <small class="editable_select_status" id="applicants_status_{{ rec['assignmentid'] }}">
 		      {% if rec['status'] == 1 %}
 		        ALLOCATED
 		      {% elif rec['status'] == 2 %}
