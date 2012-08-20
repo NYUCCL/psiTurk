@@ -243,6 +243,7 @@ class: center, middle
     
 - The link to the site. Could be anything! Must link back to Amazon at the end (we'll show you how)
 
+<<<<<<< HEAD
 - You are responsible for:
 	- Hosting
 	   - **At minimum** you need a computer with a web-accessible HTTP server running
@@ -258,6 +259,15 @@ class: center, middle
 	- Dealing quickly with .blue[**Worker**] issues.  Welcome to tech support.
 	
 	- Saving your data in a secure place, etc..
+=======
+- Link to a site. Could be anything! Must link back to Amazon. 
+- You are responsible for
+	1. Requesting an *ExternalQuestion*-type HIT.
+	1. Hosting your experiment.
+	1. Providing the participant with a link certifying that htey have
+	   completed the task.
+	1. Approving submitted HITs.
+>>>>>>> 316bcc1b4e5496963d0a399cc04e32411d297d15
 
 ---
 
@@ -295,25 +305,79 @@ _Oddly, there is no web interface for this. You need to use scripts. Fortunately
 
 ---
 
+<<<<<<< HEAD
 .task[Part 2: The mechanics]
 
 # Hosting an Ad.
+=======
+# Hosting an Advertisement
+>>>>>>> 316bcc1b4e5496963d0a399cc04e32411d297d15
 
 - When participants see your HIT in the list, they will see basic metadata:
 
 <img src="images/listing.png" width="750" />
 
-- Once they "See a HIT in this group," they see whatever your site is serving up.
+- Once they click "View a HIT in this group," they see whatever your site is serving up, in our case this is the default:
 
+<iframe src="http://puncture.psych.nyu.edu:5001/mturk?assignmentId=ASSIGNMENT_ID_NOT_AVAILABLE&hitId=dummyhit"></iframe>
+
+---
+
+# A Participant Accepts
+
+Upon accepting the HIT, they see... whatever you want them to see! In our case,
+it's this:
+
+<iframe src="http://puncture.psych.nyu.edu:5001/mturk?workerId=testing&assignmentId=testing&hitId=testing"></iframe>
+
+---
+
+# A look at the URLs
+
+That last URL would look like this:
+
+- http://puncture.psych.nyu.edu:5001/mturk?assignmentId=2IBHSTLB3L0FRXQ18BAEQREVKPSIU2&hitId=2HUOK2JE1M7P0YQ4BWXO6AC07HXOVE&workerId=A1GJV9UNFG9EJF
+
+Basic syntax is as follows:
+
+- http://.yellow[yoururl]?.red[**assignmentId**=2IBHSTLB3L0FRXQ18BAEQREVKPSIU2]&.blue[**hitId**=2HUOK2JE1M7P0YQ4BWXO6AC07HXOVE]&.green[**workerId**=A1GJV9UNFG9EJF]
+
+	- .yellow[**yoururl**] is wherever your server is ready for requests.
+	- .red[**assignmentId**] is the unique ID assigned by Amazon to the event of
+	  this particular person taking performing this particular HIT.
+	  ASSIGNMENT_ID_NOT_AVAILABLE means they haven't accepted yet.
+	- .blue[**hitId**] is the Amazon ID associated with this HIT.
+	- .green[**workerId**] is the Amazon ID associated with each unique worker.
+
+---
+
+# Finishing up
+
+The last thing served to the participant is a button they can use to inform
+Amazon that they have finished the HIT. This submits a form with their
+identifying information to `http://www.mturk.com/mturk/externalSubmit`.
+
+<iframe src="http://puncture.psych.nyu.edu:5001/mturk?workerId=finished&assignmentId=finished&hitId=finished"></iframe>
+
+---
+
+# Crediting participants
+
+<iframe src="https://requestersandbox.mturk.com/manage"></iframe>
 
 
 ---
 
 class: center, middle
+<<<<<<< HEAD
 # End of Part 2
 ### .gray[Time for a break!]
 
 [Go the to next part](psiturk.html)
+=======
+# Let's try it out!
+
+>>>>>>> 316bcc1b4e5496963d0a399cc04e32411d297d15
 
 
 
