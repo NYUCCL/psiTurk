@@ -118,64 +118,170 @@
   <body>
     <textarea id="source">
 
-name: Running an MTurk Experiment
+class: center, middle
+ 
+.task[Part 2: The mechanics]
+ 
+<div class="rotatetitle">
+# .blue[Part 2:] What are the mechanics of using the AMT system? 
+</div>
+ 
+---
+
+class: middle
+
+.task[Part 2: The mechanics]
+# Two perspectives:
+ 
+1. What is it like to use AMT as a [**Worker**](#terminology)?
+ 
+2. What is it like to use AMT as a [**Requester**](#terminology)?
+   
+---
+ 
+.task[Part 2: The mechanics]
+# Using AMT as a .blue[**Worker**]
+ 
+1. Sign up on Amazon's site
+ 
+2. Search for tasks (i.e., .red[**HIT**]s) to do online through the AMT interface.
+ 
+3. Worker accepts a .red[**HIT**].  The task appears in a frame within the AMT website.
+ 
+4. After completing the .red[**HIT**], the worker signals to Amazon that they have completed the task
+ 
+<hr>
+ 
+Some important conceptual notes:
+ 
+- (as we will see) .orange[**Requester**]s send out a job with a certain number of .red[**HIT**]s
+ 
+- When a .blue[**Worker**] accepts the .red[**HIT**] is it removed from the .orange[**Requester**]'s account
+ 
+    - If the .blue[**Worker**] doesn't want to do the task they have to _return_ the .red[**HIT**] to the .orange[**Requester**] so someone else can do it
+ 
+- As a .orange[**Requester**] you get to set how long a .red[**HIT**] can be "held" like this
+ 
+---
+ 
+.task[Part 2: The mechanics]
+# What is a .red[**HIT**] ?
+ 
+- In our experiments, a .red[**HIT**] is typically an entire experiment (as might be done in the lab)
+ 
+- However, it is up to the .orange[**Requester**] to determine what constitutes a .red[**HIT**].
+ 
+- Could be one trial in an experiment, and you just offer the .blue[**Worker**] as many .red[**HIT**]s as they care to do
+ 
+- Will see some examples in a minute...
+ 
+---
+
 class: center, middle
 
-# Part 2: The Mechanics of MTurk
-
-## Setting up your Amazon account
-## Using built-in tools to create simple experiments
-    
----
-
-# Getting signed up
-
-## Amazon Web Services (AWS): [Subscribe here](http://aws.amazon.com)
-## Mechanical Turk Requester Account: [Subscribe here](http://requester.mturk.com)
-    
----
-
-# Through a Worker's eyes.
-
+.task[Part 2: The mechanics]
+# Demo: Using AMT as a .blue[**Worker**] 
+ 
 <iframe src="http://www.mturk.com/mturk/findhits"></iframe>
-
+ 
+---
+ 
+.task[Part 2: The mechanics]
+# Using AMT as a .orange[**Requester**]
+ 
+1. Open a Amazon Web Services (AWS) account: [Subscribe here](http://aws.amazon.com)
+ 
+1. Get a Mechanical Turk Requester Account: [Subscribe here](http://requester.mturk.com)
+   
+1. Create a "dummy" email account which you can use to deal with inevitable issues that come up with Workers
+    - Workers will contact you when their computer crashes on the last trial of the task, etc...
+    - Need a way to deal with this efficiently and quickly
+     
+1. Due the built-in Amazon template or "External Question" approach to design your experiment
+ 
+1. Test your code on the "sandbox" website before going live
+    - Important... if you cause problems you WILL be contacted by users with complaints.
+ 
+1. Go live! 
+ 
+ 
+ 
+---
+ 
+.task[Part 2: The mechanics]
+# Using AMT as a .orange[**Requester**]
+### Two key types of .red[**HIT**]s
+ 
+- **Amazon Template**
+    - Hosted directly on Amazon's servers
+    - Mostly restricted to simple HTML
+    - Easy to use (don't need your own server)
+    - Tools for helping you "build" the question
+ 
+- **External Question**
+    - Pushes user off the AMT site to your own website
+    - You can leverage full power of the "Interweb" (custom Javascript, Flash, etc...)
+    - You need to have a publically accessible webserver
+    - Most coding involved
+        - Our software is intended to help with this
+ 
 ---
 
-# Templates
-
+class: center, middle
+.task[Part 2: The mechanics]
+# Demo: Using AMT as a .orange[**Requester**]
+ 
+(using Amazon templates) 
+ 
 <iframe src="https://requester.mturk.com/create/projects/new"></iframe>
-
+ 
 ---
-
-class: large
-
-# External Questions
-
-- Link to a site. Could be anything! Must link back to Amazon. 
-- You are responsible for
-	1. Requesting an *ExternalQuestion*-type HIT.
-	1. Hosting your experiment.
-	1. Providing the participant with a link certifying that they have
-	   completed the task.
-	1. Approving submitted HITs.
-
+ 
+.task[Part 2: The mechanics]
+# More about external questions...
+ 
+     
+- The link to the site. Could be anything! Must link back to Amazon at the end (we'll show you how)
+ 
+- You are responsible for:
+    - Hosting
+       - **At minimum** you need a computer with a web-accessible HTTP server running
+       - A static IP address may be preferred to simply things
+       - You probably want to avoid trying to host it over WiFi since NAT/Firewalls can make your site inaccessible to the global Internet
+     
+    - Posting your link to Amazon
+     
+    - Communicating back to Amazon when the .red[**HIT**] has been completed
+     
+    - Approving completed .red[**HIT**]s for payment in a timely manner
+     
+    - Dealing quickly with .blue[**Worker**] issues.  Welcome to tech support.
+     
+    - Saving your data in a secure place, etc..
+ 
 ---
-class: large
-
+ 
+.task[Part 2: The mechanics]
 # Requesting an External Question
-
-- **URL** to your experiment.
+ 
+- **URL** 
+    - basic link to your experiment.
 - **Title**.
 - **Description**.
 - **Keywords**.
-- **Lifetime**. _...how long will it be available?_
-- **Duration**. _...how long are people allowed to take?_
-- **Qualifications**. _...country? ...consistency?_
-
-_Strangely, there is no web interface for this. You need to use scripts. Fortunately, we've got you covered._
-
+- **Lifetime**. 
+    - _...how long will it be available?_
+- **Duration**. 
+    - _...how long are people allowed to take?_
+- **Qualifications**. 
+    - _...country? ...consistency?_
+ 
+_Oddly, there is no web interface for this. You need to use scripts. Fortunately, we've got you covered in [Part 3](psiturk.html)._
+ 
 ---
-
+ 
+.task[Part 2: The mechanics]
+ 
 # Hosting an Advertisement
 
 - When participants see your HIT in the list, they will see basic metadata:
@@ -185,7 +291,7 @@ _Strangely, there is no web interface for this. You need to use scripts. Fortuna
 - Once they click "View a HIT in this group," they see whatever your site is serving up, in our case this is the default:
 
 <iframe src="http://puncture.psych.nyu.edu:5001/mturk?assignmentId=ASSIGNMENT_ID_NOT_AVAILABLE&hitId=dummyhit"></iframe>
-
+ 
 ---
 
 # A Participant Accepts
@@ -199,13 +305,13 @@ it's this:
 
 # A look at the URLs
 
-That last URL would look like this:
+That last URL would look like this .red[*]:
 
-- http://puncture.psych.nyu.edu:5001/mturk?assignmentId=2IBHSTLB3L0FRXQ18BAEQREVKPSIU2&hitId=2HUOK2JE1M7P0YQ4BWXO6AC07HXOVE&workerId=A1GJV9UNFG9EJF
+- http://puncture.psych.nyu.edu:5001/mturk?assignmentId=.red[XX]&hitId=.red[XX]&workerId=.red[XX]
 
 Basic syntax is as follows:
 
-- http://.yellow[yoururl]?.red[**assignmentId**=2IBHSTLB3L0FRXQ18BAEQREVKPSIU2]&.blue[**hitId**=2HUOK2JE1M7P0YQ4BWXO6AC07HXOVE]&.green[**workerId**=A1GJV9UNFG9EJF]
+- http://.yellow[yoururl]?.red[**assignmentId**=XX]&.blue[**hitId**=XX]&.green[**workerId**=XX]
 
 	- .yellow[**yoururl**] is wherever your server is ready for requests.
 	- .red[**assignmentId**] is the unique ID assigned by Amazon to the event of
@@ -214,6 +320,7 @@ Basic syntax is as follows:
 	- .blue[**hitId**] is the Amazon ID associated with this HIT.
 	- .green[**workerId**] is the Amazon ID associated with each unique worker.
 
+.footnote[.red[*] The .red[XX] are shorthand for usually long strings of letters and numbers.]
 ---
 
 # Finishing up
@@ -233,7 +340,10 @@ identifying information to `http://www.mturk.com/mturk/externalSubmit`.
 ---
 
 class: center, middle
-# Let's try it out!
+# End of Part 2
+### .gray[Time for a break!]
+ 
+[Go the to next part](psiturk.html)
 
 
 
