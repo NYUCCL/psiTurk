@@ -189,7 +189,7 @@ _Strangely, there is no web interface for this. You need to use scripts. Fortuna
 
 ---
 
-# Hosting an Ad.
+# Hosting an Advertisement
 
 - When participants see your HIT in the list, they will see basic metadata:
 
@@ -201,7 +201,7 @@ _Strangely, there is no web interface for this. You need to use scripts. Fortuna
 
 ---
 
-# Accepting a participant
+# A Participant Accepts
 
 Upon accepting the HIT, they see... whatever you want them to see! In our case,
 it's this:
@@ -210,36 +210,44 @@ it's this:
 
 ---
 
+# A look at the URLs
+
+That last URL would look like this:
+
+- http://puncture.psych.nyu.edu:5001/mturk?assignmentId=2IBHSTLB3L0FRXQ18BAEQREVKPSIU2&hitId=2HUOK2JE1M7P0YQ4BWXO6AC07HXOVE&workerId=A1GJV9UNFG9EJF
+
+Basic syntax is as follows:
+
+- http://.yellow[yoururl]?.red[**assignmentId**=2IBHSTLB3L0FRXQ18BAEQREVKPSIU2]&.blue[**hitId**=2HUOK2JE1M7P0YQ4BWXO6AC07HXOVE]&.green[**workerId**=A1GJV9UNFG9EJF]
+
+	- .yellow[**yoururl**] is wherever your server is ready for requests.
+	- .red[**assignmentId**] is the unique ID assigned by Amazon to the event of
+	  this particular person taking performing this particular HIT.
+	  ASSIGNMENT_ID_NOT_AVAILABLE means they haven't accepted yet.
+	- .blue[**hitId**] is the Amazon ID associated with this HIT.
+	- .green[**workerId**] is the Amazon ID associated with each unique worker.
+
+---
+
 # Finishing up
 
 The last thing served to the participant is a button they can use to inform
-Amazon that they have finished the HIT.
+Amazon that they have finished the HIT. This submits a form with their
+identifying information to `http://www.mturk.com/mturk/externalSubmit`.
 
 <iframe src="http://puncture.psych.nyu.edu:5001/mturk?workerId=finished&assignmentId=finished&hitId=finished"></iframe>
 
 ---
 
-class: center, middle
-# End of Part 2 
-### Let's try!
+# Crediting participants
+
+<iframe src="https://requestersandbox.mturk.com/manage"></iframe>
 
 ---
 
-# A look at the URLs
+class: center, middle
+# Let's try it out!
 
-- Our first URL looked like this:
-
-	http://puncture.psych.nyu.edu:5001/mturk?assignmentId=ASSIGNMENT_ID_NOT_AVAILABLE&hitId=testing
-
-- Basic syntax is as follows:
-
-	http://.yellow[**yoururl**]?.red[**assignmentId**=ASSIGNMENT_ID_NOT_AVAILABLE]&.blue[**hitId**=testing]
-
-- .yellow[**yoururl**] is wherever your server is ready for requests.
-- .red[**assignmentId**] is the unique ID assigned by Amazon to the event of
-  this particular person taking performing this particular HIT.
-  ASSIGNMENT_ID_NOT_AVAILABLE means they haven't accepted yet.
-- .blue[**hitId**] is the Amazon ID associated with this HIT. For debugging, you can set this to any value.
 
 
 
