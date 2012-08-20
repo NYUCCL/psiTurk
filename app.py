@@ -27,7 +27,7 @@ logging.basicConfig( filename=logfilepath, format='%(asctime)s %(message)s', lev
 # config.get( 'Mechanical Turk Info', 'aws_secret_access_key' )
 
 # constants
-DEPLOYMENT_ENV = config.getint('User Preferences', 'loglevel')
+USING_SANDBOX = config.getboolean('HIT Configuration', 'using_sandbox')
 CODE_VERSION = config.get('Task Parameters', 'code_version')
 
 # Database configuration and constants
@@ -257,7 +257,7 @@ def mturkroute():
     elif status == DEBRIEFED:
         # They've done the debriefing but perhaps haven't submitted the HIT yet..
         return render_template('thanks.html', 
-                               target_env=DEPLOYMENT_ENV, 
+                               using_sandbox=USING_SANDBOX, 
                                hitid = hitId, 
                                assignmentid = assignmentId, 
                                workerid = workerId)
