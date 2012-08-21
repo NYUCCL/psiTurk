@@ -18,7 +18,7 @@ from config import config
 
 # Set up logging
 logfilepath = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                              'server.log')
+                           config.get("Server Parameters", "logfile"))
 
 loglevels = [logging.DEBUG, logging.INFO, logging.WARNING, logging.ERROR, logging.CRITICAL]
 loglevel = loglevels[config.getint('Server Parameters', 'loglevel')]
@@ -153,8 +153,6 @@ def get_people(people):
 #----------------------------------------------
 # Experiment counterbalancing code.
 #----------------------------------------------
-
-
 def get_random_condcount():
     """
     HITs can be in one of three states:
