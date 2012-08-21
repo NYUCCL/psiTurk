@@ -328,7 +328,7 @@ def start_exp():
         print "Error, hit/assignment appears in database more than once (serious problem)"
         raise ExperimentError( 'hit_assign_appears_in_database_more_than_once' )
     
-    return render_template('exp.html', assignmentId = part.assignmentid, order=part.counterbalance )
+    return render_template('exp.html', assignmentId = part.assignmentid, cond=part.cond, counter=part.counterbalance )
 
 @app.route('/inexp', methods=['POST'])
 def enterexp():

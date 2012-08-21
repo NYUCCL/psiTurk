@@ -50,6 +50,20 @@ Just follow these directions to get started:
    sandbox](https://workersandbox.mturk.com/mturk/findhits) and try to find your
    HIT.
 
+Experiment design
+-----------------
+
+We have provided an example stroop experiment that could form the basis of your
+own experiment. It is a Javascript experiment, with task logic inside the
+participant's browser using Javascript code in `static/task.js`. This
+Javascript code works by dynamically changing the html document served to
+participants in `templates/exp.html`. PsiTurk assigns a condition and
+counterbalance to each participant. These are fed into JavaScript by plugging
+them into `templates/exp.html`. PsiTurk actively manages the condition and
+counterbalance subjects are assigned to, helping you fill them in evenly. To
+tell PsiTurk how many conditions and counterbalance identities are possible in
+your experiment, adust `num_conds` and `num_counters` in `config.txt`.
+
 Deployment
 ----------
 
