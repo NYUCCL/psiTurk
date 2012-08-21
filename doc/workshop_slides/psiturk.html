@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html>
   <head>
@@ -28,7 +26,7 @@
         font-size: 55px;
       }
       h2 {
-          font-family: 'Vast Shadow';
+          font-family: 'Bitter';
       }
       a {
         color: #eaab0c;
@@ -105,6 +103,17 @@
           font-size: 12px;
       }
       
+      pre code {
+        -webkit-border-radius: 6px;
+        -moz-border-radius: 6px;
+        border-radius: 6px;
+       
+        font-size: 11px;
+      }
+      
+      #slideshow .slide .content code { font-size: 11px;
+	      
+      }
    </style>
   </head>
   <body>
@@ -143,6 +152,9 @@ class: center, middle
     1. Communicate back to AMT when job is done
     1. (Store data in a local database)
     1. (Store data INCREMENTALLY in a local database)
+    1. Record how long the user took to do the task
+    1. Handles and records drop-outs
+    1. etc...
     
 - Helps to automatically submit hits, check your current Amazon funds balance, and assign credit
 
@@ -223,13 +235,30 @@ are designing things.
     - A common situation is for the model to contains the abstract logic of your
     application
     - What kind of data is being stored, how it is formatted, is there computation that the app is supposed to do?
+
+- **Controller** is the "glue" which binds the model to the view
     
 - **View** is the UI elements presented to a user of the software
     - Independent of the model 
     - Idea is object-oriented encapsulation...  the graphics people can design the interface
     while the engineers build the model
 
-- **Controller** is the "glue" which binds the model to the view
+
+
+---
+
+.task[Part 3: Using psiTurk]
+# Scary?
+
+No.  Basically we just are giving you a pre-structured website which
+you can fill in with the info for you study.  In addition, our code
+handles some of the logic a AMT experiment might need like counterbalancing, etc...
+
+<center>
+## It's not scary, it's going to be fun!
+</center>
+
+
 
 ---
 
@@ -244,11 +273,68 @@ are designing things.
 
 <img src="images/psiturk-filelist.png" width="600" align="center">
 
-
 ---
 
 .task[Part 3: Using psiTurk]
-# The most important idea
+# Model (i.e., database) structure
+
+Defined in **models.py**:
+
+    .python
+    class Participant(Base):
+    	"""
+    	Object representation of a participant in the database.
+    	"""
+    	__tablename__ = TABLENAME
+    
+    	assignmentid =Column(String(128), primary_key=True)
+    	hitid = Column(String(128))
+    	workerid = Column(String(128))
+    	ipaddress = Column(String(128))
+    	cond = Column(Integer)
+    	counterbalance = Column(Integer)
+    	codeversion = Column(String(128))
+    	beginhit = Column(DateTime, nullable=True)
+    	beginexp = Column(DateTime, nullable=True)
+    	endhit = Column(DateTime, nullable=True)
+    	status = Column(Integer, default = 1)
+    	debriefed = Column(Boolean)
+    	datastring = Column(Text, nullable=True)
+
+has fields for tracking the assignmentId, hitId, workerId, ipaddress of worker,
+condition, the data file, etc...
+ 	
+---
+
+.task[Part 3: Using psiTurk]
+# Status codes
+
+Possible status codes are defined at the top of the file
+
+    .python
+	# Status codes
+	ALLOCATED = 1
+	STARTED = 2
+	COMPLETED = 3
+	DEBRIEFED = 4
+	CREDITED = 5
+	QUITEARLY = 6
+
+---
+ 
+.task[Part 3: Using psiTurk]
+# Model (i.e., database) structure
+
+The model is written/updated by the controller in response to commands given by the user (or their browser)
+
+<center>
+<img src="images/MVC.png" align="center" width="350">
+</center>
+ 	
+---
+
+.task[Part 3: Using psiTurk]
+# Controller: The most important idea
 
 - **app.py** runs a webserver which is basically listening for requests (i.e., requests are attempts to access a particular URL)
 
@@ -267,6 +353,7 @@ are designing things.
 ---
 
 
+
 .task[Part 3: Using psiTurk]
 # An example
 
@@ -278,7 +365,9 @@ If you request .orange[http://myip.edu:PORT/consent], this function will run
     	"""
     	Serves up the consent in the popup window.
     	"""
-    	if not  (request.args.has_key('hitId') and request.args.has_key('assignmentId') and request.args.has_key('workerId')):
+    	if not (request.args.has_key('hitId') and \
+    		   request.args.has_key('assignmentId') and \
+    		   request.args.has_key('workerId')):
     		raise ExperimentError('hit_assign_worker_id_not_set_in_consent')
     	hitId=request.args ['hitId']
     	assignmentId = request.args ['assignmentId']
@@ -292,7 +381,154 @@ into the users browser window.
 
 **So a layer of computation/logic is inserted into any web requests!! **
 
+
+---
+
+.task[Part 3: Using psiTurk]
+# A more complex example
+
+If you request .orange[http://myip.edu:PORT/debrief], this function will run
+
+	.python
+	@app.route('/debrief', methods=['POST', 'GET'])
+	def savedata():
+	    """
+	    User has finished the experiment and is posting their data in the form of a
+	    (long) string. They will receive a debreifing back.
+	    """
+	    print request.form.keys()
+	    if not (request.form.has_key('assignmentid') and request.form.has_key('data')):
+	        raise ExperimentError('improper_inputs')
+	    assignmentId = request.form ['assignmentid']
+	    datastring = request.form ['data']
+	    print assignmentId, datastring
+	    
+	    user = Participant.query.\
+	            filter(Participant.assignmentid == assignmentId).\
+	            one()
+	    user.status = COMPLETED
+	    user.datastring = datastring
+	    user.endhit = datetime.datetime.now()
+	    db_session.add(user)
+	    db_session.commit()
+	    
+	    return render_template('debriefing.html', assignmentId=assignmentId)
+
+which updates the database so that we know the user finished the task, and then
+prints out the debriefing form to the user's browser window.
+
+---
+
+.task[Part 3: Using psiTurk]
+# An example which doesn't display anything in the browser
+If you request .orange[http://myip.edu:PORT/debrief], this function will run
+
+	.python
+	@app.route('/inexp', methods=['POST'])
+	def enterexp():
+	    """
+	    AJAX listener that listens for a signal from the user's script when they
+	    leave the instructions and enter the real experiment. After the server
+	    receives this signal, it will no longer allow them to re-access the
+	    experiment applet (meaning they can't do part of the experiment and
+	    referesh to start over).
+	    """
+	    print "/inexp"
+	    if not request.form.has_key('assignmentid'):
+	        raise ExperimentError('improper_inputs')
+	    assignmentId = request.form ['assignmentid']
+	    user = Participant.query.\
+	            filter(Participant.assignmentid == assignmentId).\
+	            one()
+	    user.status = STARTED
+	    user.beginexp = datetime.datetime.now()
+	    db_session.add(user)
+	    db_session.commit()
+	    return "Success"
+
+updates the model (i.e., database) so that the user.status is 'STARTED' and the starttime is
+recorded
+
+
+---
+
+.task[Part 3: Using psiTurk]
+# Persistence
+
+The .orange[**Worker**]'s browser is simply making web requests at various
+times as they go through the experiment.  These call up particular '.red[routes]' in 
+the **app.py** code.  
+
+What about multiple people doing the experiment at once?  How do we know
+who they are?
+
+Remember that on the first request, Amazon sends three variables to your route:
+
+- http://.yellow[yoururl]?.red[**assignmentId**=XX]&.blue[**hitId**=XX]&.green[**workerId**=XX]
+
+We just continue to pass these variables to all new routes we add.  These keys let us
+look up the correct user in the databased (based on the workerId and/or assignmentId)
+and then update the right person.
+
+---
+
+.task[Part 3: Using psiTurk]
+# Templates
+
+- Rather than just plain HTML, the system uses HTML templates which help you programmatically
+generate HTML
+
+- **render_template()** function
+		return render_template('debriefing.html', assignmentId=assignmentId)
+
+- Makes a variable called 'assignmentId' available inside the template.
+
+		<form id="accept" action="complete" method="post">
+			<input type="hidden" name="assignmentid" value="{{ assignmentId }}" />
+			<input type="hidden" name="agree" value="true" />
+		</form>
+
+---
+
+.task[Part 3: Using psiTurk]
+# Important routes
+
+- .blue[/mturk]
+	- The initial place people go.  If they haven't accepted the .red[HIT] this displays the ad.  Otherwise a launch button.
+- .blue[/consent]
+	- This displays the consent form (consent.html is the relevant template)
+- .blue[/exp]
+	- This serves up the actual experiment code (Javascript or whatever).  The relevant template is exp.html/
+- .blue[/inexp]
+	- This is just a path you can hit that verifies the person is "in the experiment" (done with instructions)
+- .blue[/inexpsave]
+	- This saves the current data to the database (can be accessed at end of every trial or every block)
+- .blue[/quitter]
+	- If the person closes the browser window we want to know... This updates the database to indicate this person withdrew.
+- .blue[/debrief]
+	- This serve up the debriefing form
+- .blue[/complete]
+	- When the person finishes (but not done with debrief) this is accessed.
+
+
+---
+
+.task[Part 3: Using psiTurk]
+# Configuration
+
+- Most of the configutation stuff is accessed through **config.txt**
+
+- John will step through this, but it is heavily commented
+
+- Configures the location of your server, the database, your Amazon account information, etc...
+
+	
+
     </textarea>
+    <script type="text/javascript">
+    	var remark = this.remark;
+    	remark.config({"highlightStyle": "sunburst"});
+    </script>
     <div id="slideshow"></div>
   </body>
 </html>
