@@ -18,10 +18,13 @@ You will need to use a relatively recent version of [Python
 
  * [Flask](http://flask.pocoo.org/) --- A lightweight web framework.
  * [SQLAlchemy](http://www.sqlalchemy.org/) --- A powerful SQL abstraction layer.
+ * [boto](https://github.com/boto/boto) --- A library for interfacing with
+   Amazon services, including MTurk.
  
-You can install both of these at once with the command
+You can install these with the following commands:
 
     easy_install Flask-SQLAlchemy
+    easy_install boto
 
 To serve your experiment to participants online, you will need to run this code
 from a web server connected to the internet.
@@ -41,11 +44,36 @@ Just follow these directions to get started:
    issue the following commands from the PsiTurk root folder:
 
         python mturk/createHIT.py    # To post a HIT to the sandbox    
-        python app.py                # To start the web server
+        python app.py                # To start the debugging server
 
 6. You should be ready to go! Point your browser to the [worker
    sandbox](https://workersandbox.mturk.com/mturk/findhits) and try to find your
    HIT.
+
+Deployment
+----------
+We STRONGLY recommend you not deploy your experiment using the debugging server
+(the one you start using `python app.py`). It is not robust to failures, which
+can leave your participants stranded without a way of submitting their
+completed HITs. Additionally, if you accidentally leave debug mode on, you will
+expose yourself to major security holes.
+
+An alternative we have set up is gunicorn. You can install gunicorn using the
+following command:
+
+    easy_install gunicorn
+
+Then simply run using:
+
+    sh run_gunicorn.sh
+
+You can configure gunicorn in the `config.txt` file under `Server Parameters`.
+
+Flask apps like PsiTurk can be deployed as a CGI, fastCGI, or WSGI app on any
+server system, so there are many alternative options for deployment.
+Additional options for deploying Flask can be found
+[here](http://flask.pocoo.org/docs/deploying/).
+
 
 Copyright
 ---------
