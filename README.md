@@ -1,6 +1,6 @@
 
 What is this?
-------------
+============
 
 PsiTurk is an open platform for conducting custom behvioral experiments on
 Amazon's Mechanical Turk. 
@@ -11,7 +11,7 @@ collect data using any website. As long as you can turn your experiment into a
 website, you can run it with PsiTurk!
 
 Dependencies
-------------
+============
 
 You will need to use a relatively recent version of [Python
 2](http://python.org) with the following modules installed:
@@ -30,7 +30,7 @@ To serve your experiment to participants online, you will need to run this code
 from a web server connected to the internet.
 
 Quick Start
------------
+===========
 
 Just follow these directions to get started:
 
@@ -51,7 +51,7 @@ Just follow these directions to get started:
    HIT.
 
 Experiment design
------------------
+=================
 
 We have provided an example stroop experiment that could form the basis of your
 own experiment. It is a Javascript experiment, with task logic inside the
@@ -65,10 +65,10 @@ tell PsiTurk how many conditions and counterbalance identities are possible in
 your experiment, adust `num_conds` and `num_counters` in `config.txt`.
 
 Deployment
-----------
+==========
 
 Server
-======
+------
 We **strongly** recommend you not deploy your experiment using the debugging
 server (the one you start using `python app.py`). It is not robust to failures,
 which can leave your participants stranded without a way of submitting their
@@ -92,7 +92,7 @@ Additional options for deploying Flask can be found
 [here](http://flask.pocoo.org/docs/deploying/).
 
 Database
-========
+--------
 
 We recommend using a deployment-robust database solution such as
 [MySQL](http://www.mysql.org) or [PostgreSQL](http://www.postgresql.org).
@@ -116,7 +116,7 @@ Congratulations, if you followed these instructions correctly, your app should
 now be using MAMP's MySQL server. 
 
 Copyright
----------
+=========
 You are welcome to use this code for personal or academic uses. If you fork,
 please cite the authors (Todd Gureckis and John McDonnell).
 
