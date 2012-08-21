@@ -16,9 +16,9 @@ Dependencies
 You will need to use a relatively recent version of [Python
 2](http://python.org) with the following modules installed:
 
- * [Flask](http://flask.pocoo.org/) --- A lightweight web framework.
- * [SQLAlchemy](http://www.sqlalchemy.org/) --- A powerful SQL abstraction layer.
- * [boto](https://github.com/boto/boto) --- A library for interfacing with
+ * [Flask](http://flask.pocoo.org/) – A lightweight web framework.
+ * [SQLAlchemy](http://www.sqlalchemy.org/) – A powerful SQL abstraction layer.
+ * [Boto](https://github.com/boto/boto) – A library for interfacing with
    Amazon services, including MTurk.
  
 You can install these with the following commands:
@@ -52,9 +52,12 @@ Just follow these directions to get started:
 
 Deployment
 ----------
-We STRONGLY recommend you not deploy your experiment using the debugging server
-(the one you start using `python app.py`). It is not robust to failures, which
-can leave your participants stranded without a way of submitting their
+
+Server
+======
+We **strongly** recommend you not deploy your experiment using the debugging
+server (the one you start using `python app.py`). It is not robust to failures,
+which can leave your participants stranded without a way of submitting their
 completed HITs. Additionally, if you accidentally leave debug mode on, you will
 expose yourself to major security holes.
 
@@ -74,6 +77,29 @@ server system, so there are many alternative options for deployment.
 Additional options for deploying Flask can be found
 [here](http://flask.pocoo.org/docs/deploying/).
 
+Database
+========
+
+We recommend using a deployment-robust database solution such as
+[MySQL](http://www.mysql.org) or [PostgreSQL](http://www.postgresql.org).
+SQLite does not allow concurrent access to the database, so if the locks work
+properly, simultaneous access (say, from multiple users submitting their data
+at the same time) could destabilize your database. In the worst (unlikely)
+scenario, the database could become corrupted, resulting in data loss.
+
+One easy option for Mac users is to use [MAMP](http://www.mamp.info/en), an
+out-of-the-box MySQL server. Instructions as follows:
+
+- Download the vanilla version of MAMP [here](http://www.mamp.info/en).
+- Install the app to `/Applications`, open it, and click on "Start Servers".
+- Configure the server in `config.txt` as follows:
+
+    database_url: mysql://mturk@localhost/mturk?unix_socket=/Applications/MAMP/tmp/mysql/mysql.sock
+
+- Run the PsiTurk server as normal.
+
+Congratulations, if you followed these instructions correctly, your app should
+now be using MAMP's MySQL server. 
 
 Copyright
 ---------
