@@ -14,10 +14,15 @@ createHIT.py
 
 Creates an external-question HIT based on your specifications. Modify the script to suite it to your needs.
 
-assesshits.py
+assessHITsApp.py
 ------------
 
-Tools for seeing the status of your existing HITs.
+Tools for seeing the status of your existing HITs and crediting outstanding assignments.
+
+getAllAssignments.py
+------------
+
+Script for use in Python interactive sessions to retrieve information about HITs and assignments in Amazon's database.
 
 Acknowledgment
 --------------
