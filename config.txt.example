@@ -42,9 +42,13 @@ table_name: turkdemo
 
 [Server Parameters]
 
+host: localhost
 port: 5001
 cutoff_time: 30         ; Time in minutes when we assume a subject gave up
 support_IE: true        ; Whether to support Internet Explorer
+
+logfile = server.log
+loglevel = 2 ; 0=DEBUG, 1=INFO, 2=WARNING, 3=ERROR, 4=CRITICAL
 
 debug: true             ; NEVER leave this on when exposing the server to the public.
 
@@ -58,8 +62,4 @@ code_version: 1.0
 num_conds: 1            ; Number of conditions of interest
 num_counters: 1         ; Number of counterbalance alternatives
 
-[User Preferences]
-; These are noncritical preferences related to how the software operates.
-
-loglevel = 2 ; 0=DEBUG, 1=INFO, 2=WARNING, 3=ERROR, 4=CRITICAL
 
