@@ -31,6 +31,17 @@
         color: #eaab0c;
         text-decoration: 1px dotted #ccc;
       }
+	  pre {
+		  overflow: scroll;
+		  width: 720px;
+		  height: 450px;
+	  }
+	  iframe {
+		  position: relative;
+		  width: 750px;
+		  height: 450px;
+		  margin: 0 auto;
+	  }
       .slide {
           
       }
@@ -139,17 +150,17 @@ name: overview
 # Overview
 
 
-1. What is [Amazon Mechanical Turk](https://www.mturk.com) (AMT)?  
+1. What is [Amazon Mechanical Turk](https://www.mturk.com) (AMT)?  [Jump to this section](#whatisamt)
     - Who are the people in the system (demographics, etc...)?
     - How can it be used for research?
     - How good is the data?
 
-2. What are the mechanics of using the system?
+2. What are the mechanics of using the system? [Jump to this section](#part2)
 
     - Step through setting up account
     - Using built-in tools to create simple form-based experiments
     
-3. Building dynamic web experiments (psiTurk)
+3. Building dynamic web experiments (psiTurk) [Jump to this section](#part3)
 
     - Introduce a [simple Python-based web-app](https://github.com/NYUCCL/psiTurk) we developed which could be a starting framework for your experiment
     - Using the AMT sandbox to develop and test your app
@@ -572,6 +583,7 @@ class: center, middle
 
 ---
 
+name: part2
 class: center, middle
  
 .task[Part 2: The mechanics]
@@ -799,6 +811,7 @@ class: center, middle
  
 ---
 
+name: part3
 class: center, middle
 
 .task[Part 3: Using psiTurk]
