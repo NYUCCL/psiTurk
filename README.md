@@ -104,6 +104,7 @@ scenario, the database could become corrupted, resulting in data loss.
 One easy option for Mac users is to use [MAMP](http://www.mamp.info/en), an
 out-of-the-box MySQL server. Instructions as follows:
 
+- Install the Python package for mysql servers using `sudo easy_install mysql-connector-python`.
 - Download the vanilla version of MAMP [here](http://www.mamp.info/en).
 - Install the app to `/Applications`, open it, and click on "Start Servers".
 - Configure the server in `config.txt` as follows:
