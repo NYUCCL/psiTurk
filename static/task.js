@@ -14,17 +14,17 @@ AssertException.prototype.toString = function () {
 
 function assert(exp, message) {
 	if (!exp) {
-	  throw new AssertException(message);
+		throw new AssertException(message);
 	}
 }
 
 function insert_hidden_into_form(findex, name, value ) {
-    var form = document.forms[findex];
-    var hiddenField = document.createElement('input');
-    hiddenField.setAttribute('type', 'hidden');
-    hiddenField.setAttribute('name', name);
-    hiddenField.setAttribute('value', value );
-    form.appendChild( hiddenField );
+	var form = document.forms[findex];
+	var hiddenField = document.createElement('input');
+	hiddenField.setAttribute('type', 'hidden');
+	hiddenField.setAttribute('name', name);
+	hiddenField.setAttribute('value', value );
+	form.appendChild( hiddenField );
 }
 
 
@@ -104,22 +104,20 @@ function swap( arr, exceptions ) {
 	var i;
 	var except = exceptions ? exceptions : [];
 	var shufflelocations = new Array();
-    for (i=0; i<arr.length; i++) {
-        if (except.indexOf(i)==-1) { shufflelocations.push(i); }
-    }
-    
-    for (i=shufflelocations.length-1; i>=0; --i) {
-        var loci = shufflelocations[i];
-        var locj = shufflelocations[randrange(0,i+1)];
-        var tempi = arr[loci];
-        var tempj = arr[locj];
-    	arr[loci] = tempj;
-    	arr[locj] = tempi;
-    }
-    
+	for (i=0; i<arr.length; i++) {
+		if (except.indexOf(i)==-1) shufflelocations.push(i);
+	}
+
+	for (i=shufflelocations.length-1; i>=0; --i) {
+		var loci = shufflelocations[i];
+		var locj = shufflelocations[randrange(0,i+1)];
+		var tempi = arr[loci];
+		var tempj = arr[locj];
+		arr[loci] = tempj;
+		arr[locj] = tempi;
+	}
 	return arr;
 }
-
 
 // Mean of booleans (true==1; false==0)
 function boolpercent(arr) {
@@ -151,7 +149,6 @@ function submitdata() {
 			error: posterror
 	});
 }
-
 
 /********************
 * TASK-GENERAL CODE *
@@ -185,10 +182,8 @@ var ncards = 8,
 // Interface variables
 var cardh = 180, cardw = 140, upper = 0, left = 0, imgh = 100, imgw = 100;
 
-
 // Task objects
 var testobject;
-
 
 // Mutable global variables
 var responsedata = [],
@@ -295,6 +290,38 @@ var TestPhase = function() {
 		givequestionnaire();
 	};
 	
+	var responsefun = function( e) {
+		if (!listening) return;
+			keyCode = e.keyCode;
+		var response;
+		switch (keyCode) {
+			case 82:
+				// "R"
+				response="red";
+				break;
+			case 71:
+				// "G"
+				response="green";
+				break;
+			case 66:
+				// "B"
+				response="blue";
+				break;
+			default:
+				response = "";
+				break;
+		}
+		if ( response.length>0 ) {
+			listening = false;
+			responsefun = function() {};
+			var hit = response == stim[1];
+			var rt = new Date().getTime() - wordon;
+			recordtesttrial (stim[0], stim[1], stim[2], response, hit, rt );
+			remove_word();
+			nextword();
+		}
+	};
+
 	var nextword = function () {
 		if (! stims.length) {
 			finishblock();
@@ -304,35 +331,9 @@ var TestPhase = function() {
 			show_word( stim[0], stim[1] );
 			wordon = new Date().getTime();
 			//stimimage = testcardpaper.image( cardnames[getstim(prescard)], 0, 0, imgw, imgh);
-			responsefun = function( keyCode ) {
-				var response;
-				switch (keyCode) {
-				case 82:
-					// "R"
-					response="red";
-					break;
-				case 71:
-					// "G"
-					response="green";
-					break;
-				case 66:
-					// "B"
-					response="blue";
-					break;
-				default:
-					response = "";
-					break;
-				}
-				if ( response.length>0 ) {
-					responsefun = function() {};
-					var hit = response == stim[1];
-					var rt = new Date().getTime() - wordon;
-					recordtesttrial (stim[0], stim[1], stim[2], response, hit, rt );
-					remove_word();
-					nextword();
-				}
-			};
+			
 			addprompt();
+                        listening = true;
 		}
 	};
 	
@@ -346,12 +347,9 @@ var TestPhase = function() {
 	var remove_word = function(text, color) {
 		R.clear();
 	};
-	$("body").focus().keydown(function(e){keydownfun(e);});
-    keydownfun = function(event) {
-        responsefun( event.keyCode );
-    };
-	//testcardpaper = Raphael(document.getElementById("testcanvas"), w, h);
-	// TODO: expand out to 50
+	$("body").focus().keydown(responsefun); 
+        listening = false;
+
 	var stims = [
 		["SHIP", "red", "unrelated"],
 		["MONKEY", "green", "unrelated"],
@@ -397,11 +395,11 @@ var submitquestionnaire = function() {
 var startTask = function () {
 	// Provide opt-out 
 	window.onbeforeunload = function(){
-    	$.ajax("quitter", {
-    			type: "POST",
-    			async: false,
-    			data: {assignmentId: assignmentId, dataString: datastring}
-    	});
+		$.ajax("quitter", {
+				type: "POST",
+				async: false,
+				data: {assignmentId: assignmentId, dataString: datastring}
+		});
 		alert( "By leaving this page, you opt out of the experiment.  You are forfitting your $1.00 payment and your 1/10 chance to with $10. Please confirm that this is what you meant to do." );
 		return "Are you sure you want to leave the experiment?";
 	};
