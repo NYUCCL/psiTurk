@@ -43,12 +43,17 @@ Just follow these directions to get started:
 5. Making sure that the configuration file is set up to use the Amazon sandbox,
    issue the following commands from the PsiTurk root folder:
 
-        python mturk/createHIT.py    # To post a HIT to the sandbox    
+        python mturk/createHIT.py    # To post a HIT to the sandbox
         python app.py                # To start the debugging server
 
 6. You should be ready to go! Point your browser to the [worker
    sandbox](https://workersandbox.mturk.com/mturk/findhits) and try to find your
    HIT.
+
+*Note*: If you are just testing the server without posting your HIT to Amazon,
+you can see the experiment at the following link:
+http://localhost:5001/mturk?assignmentId=debug&hitId=debug&workerId=debug
+
 
 Experiment design
 =================
