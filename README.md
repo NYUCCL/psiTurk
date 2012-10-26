@@ -81,7 +81,7 @@ following changes to the configuration file:
     question_url: http://yoururl:yourport/mturk
 
 replacing `yoururl` with the url to your surver, and `yourport` with the port
-you have configured in the `config.txt` file (by default, 5001).
+you have configured in `config.txt` (by default, 5001).
 
 
 Server
@@ -101,7 +101,7 @@ Then simply run using:
 
     sh run_gunicorn.sh
 
-You can configure gunicorn in the `config.txt` file under `Server Parameters`.
+You can configure gunicorn in `config.txt` under `Server Parameters`.
 
 Flask apps like PsiTurk can be deployed as a CGI, fastCGI, or WSGI app on any
 server system, so there are many alternative options for deployment.
