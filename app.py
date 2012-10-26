@@ -4,7 +4,11 @@ import datetime
 import logging
 from functools import wraps
 from random import choice
-from collections import Counter
+try:
+    from collections import Counter
+except ImportError:
+    # Collections don't exist in Python <2.6
+    from counter import Counter
 
 # Importing flask
 from flask import Flask, render_template, request, Response, make_response
