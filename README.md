@@ -72,6 +72,18 @@ your experiment, adust `num_conds` and `num_counters` in `config.txt`.
 Deployment
 ==========
 
+Configuration
+------------
+To make your experiment available on the internet, you will need to make the
+following changes to the configuration file:
+
+    host: 0.0.0.0
+    question_url: http://yoururl:yourport/mturk
+
+replacing `yoururl` with the url to your surver, and `yourport` with the port
+you have configured in the `config.txt` file (by default, 5001).
+
+
 Server
 ------
 We **strongly** recommend you not deploy your experiment using the debugging
@@ -106,20 +118,10 @@ properly, simultaneous access (say, from multiple users submitting their data
 at the same time) could destabilize your database. In the worst (unlikely)
 scenario, the database could become corrupted, resulting in data loss.
 
-One easy option for Mac users is to use [MAMP](http://www.mamp.info/en), an
-out-of-the-box MySQL server. Instructions as follows:
-
-- Install the Python package for mysql servers using `sudo easy_install mysql-connector-python`.
-- Download the vanilla version of MAMP [here](http://www.mamp.info/en).
-- Install the app to `/Applications`, open it, and click on "Start Servers".
-- Configure the server in `config.txt` as follows:
-
-    database_url: mysql://mturk@localhost/mturk?unix_socket=/Applications/MAMP/tmp/mysql/mysql.sock
-
-- Run the PsiTurk server as normal.
-
-Congratulations, if you followed these instructions correctly, your app should
-now be using MAMP's MySQL server. 
+Instructions for setting up a MySQL server on a Mac can be found 
+[in the wiki](https://github.com/NYUCCL/psiTurk/wiki/Macintosh-Configuration).
+Other platforms, check out instructions at
+[mysql.org](http://dev.mysql.com/doc/refman/5.5/en//installing.html).
 
 Copyright
 =========
