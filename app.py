@@ -14,9 +14,10 @@ except ImportError:
 from flask import Flask, render_template, request, Response, make_response
 
 # Database setup
-from db import db_session
+from db import db_session, init_db
 from models import Participant
 from sqlalchemy import or_
+
 
 from config import config
 
@@ -511,10 +512,11 @@ def regularpage(pagename=None):
 ###########################################################
 # let's start
 ###########################################################
+
+# Initialize database if necessary
+init_db()  
+
 if __name__ == '__main__':
-    from db import init_db
-    init_db()
-    
     print "Starting webserver."
     app.run(debug=config.getboolean('Server Parameters', 'debug'), host='0.0.0.0', port=config.getint('Server Parameters', 'port'))
 
