@@ -10,6 +10,8 @@ experiment. It uses AMT's _External Question_ HIT type, meaning that you can
 collect data using any website. As long as you can turn your experiment into a
 website, you can run it with PsiTurk!
 
+You can direct questions to our [Q&A Google group](https://groups.google.com/d/forum/psiturk).
+
 Dependencies
 ============
 
@@ -34,19 +36,21 @@ Quick Start
 
 Just follow these directions to get started:
 
-1. Install the dependencies. 
-2. Sign up for an AWS account, available [here](http://aws.amazon.com/).
-3. Sign up for a Mechanical Turk requester account, available
+1. Check out this repository in git, or download the whole thing using the
+   'ZIP' button near the top of this page.
+2. Install the dependencies. 
+3. Sign up for an AWS account, available [here](http://aws.amazon.com/).
+4. Sign up for a Mechanical Turk requester account, available
    [here](https://requester.mturk.com/).
-4. Rename the config file from `config.txt.example` to `config.txt`. Update it
+5. Rename the config file from `config.txt.example` to `config.txt`. Update it
    with your secret AWS code.
-5. Making sure that the configuration file is set up to use the Amazon sandbox,
+6. Making sure that the configuration file is set up to use the Amazon sandbox,
    issue the following commands from the PsiTurk root folder:
 
         python mturk/createHIT.py    # To post a HIT to the sandbox
         python app.py                # To start the debugging server
 
-6. You should be ready to go! Point your browser to the [worker
+7. You should be ready to go! Point your browser to the [worker
    sandbox](https://workersandbox.mturk.com/mturk/findhits) and try to find your
    HIT.
 
@@ -68,6 +72,8 @@ them into `templates/exp.html`. PsiTurk actively manages the condition and
 counterbalance subjects are assigned to, helping you fill them in evenly. To
 tell PsiTurk how many conditions and counterbalance identities are possible in
 your experiment, adust `num_conds` and `num_counters` in `config.txt`.
+Community
+=========
 
 Deployment
 ==========
