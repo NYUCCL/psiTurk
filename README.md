@@ -72,8 +72,6 @@ them into `templates/exp.html`. PsiTurk actively manages the condition and
 counterbalance subjects are assigned to, helping you fill them in evenly. To
 tell PsiTurk how many conditions and counterbalance identities are possible in
 your experiment, adust `num_conds` and `num_counters` in `config.txt`.
-Community
-=========
 
 Deployment
 ==========
