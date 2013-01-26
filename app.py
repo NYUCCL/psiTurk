@@ -223,7 +223,8 @@ def mturkroute():
         raise ExperimentError('hit_assign_worker_id_not_set_in_mturk')
     # Person has accepted the HIT, entering them into the database.
     hitId = request.args['hitId']
-    assignmentId = request.args['assignmentId']
+    #  Turn assignmentId into unique combination of assignment and worker Id 
+    assignmentId = request.args['assignmentId'] + '.' + request.args['workerId']
     already_in_db = False
     if request.args.has_key('workerId'):
         workerId = request.args['workerId']
@@ -259,6 +260,8 @@ def mturkroute():
                                assignmentId = assignmentId)
     elif status == DEBRIEFED:
         # They've done the debriefing but perhaps haven't submitted the HIT yet..
+        # Turn asignmentId into original assignment id before sending it back to AMT
+        assignmentId = assignmentId.split('.')[0]
         return render_template('thanks.html', 
                                using_sandbox=USING_SANDBOX, 
                                hitid = hitId, 
