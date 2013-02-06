@@ -193,11 +193,11 @@ var responsedata = [],
 
 // Data handling functions
 function recordinstructtrial (instructname, rt ) {
-	trialvals = [assignmentId, "INSTRUCT", instructname, rt];
+	trialvals = [workerId, assignmentId, "INSTRUCT", instructname, rt];
 	datastring = datastring.concat( trialvals, "\n" );
 }
 function recordtesttrial (word, color, trialtype, resp, hit, rt ) {
-	trialvals = [assignmentId, currenttrial,  "TEST", word, color, hit, resp, hit, rt];
+	trialvals = [workerId, assignmentId, currenttrial,  "TEST", word, color, hit, resp, hit, rt];
 	datastring = datastring.concat( trialvals, "\n" );
 	currenttrial++;
 }
@@ -388,6 +388,7 @@ var submitquestionnaire = function() {
 		datastring = datastring.concat( "\n", this.id, ":",  this.value);
 	});
 	insert_hidden_into_form(0, "assignmentid", assignmentId );
+	insert_hidden_into_form(0, "workerid", workerId );
 	insert_hidden_into_form(0, "data", datastring );
 	$('form').submit();
 };
@@ -398,7 +399,7 @@ var startTask = function () {
 		$.ajax("quitter", {
 				type: "POST",
 				async: false,
-				data: {assignmentId: assignmentId, dataString: datastring}
+				data: {assignmentId: assignmentId, workerId: workerId, dataString: datastring}
 		});
 		alert( "By leaving this page, you opt out of the experiment.  You are forfitting your $1.00 payment and your 1/10 chance to with $10. Please confirm that this is what you meant to do." );
 		return "Are you sure you want to leave the experiment?";

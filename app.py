@@ -256,7 +256,9 @@ def mturkroute():
         raise ExperimentError('already_started_exp_mturk')
     elif status == COMPLETED:
         # They've done the whole task, but haven't signed the debriefing yet.
+        print 'workerid sent to debriefing.html:', workerId
         return render_template('debriefing.html', 
+                               workerId = workerId,
                                assignmentId = assignmentId)
     elif status == DEBRIEFED:
         # They've done the debriefing but perhaps haven't submitted the HIT yet..
@@ -313,7 +315,6 @@ def start_exp():
                         all()
     numrecs = len(matches)
     if numrecs == 0:
-        
         # Choose condition and counterbalance
         subj_cond, subj_counter = get_random_condcount()
         
@@ -335,7 +336,7 @@ def start_exp():
         print "Error, hit/assignment appears in database more than once (serious problem)"
         raise ExperimentError( 'hit_assign_appears_in_database_more_than_once' )
     
-    return render_template('exp.html', assignmentId = part.assignmentid, cond=part.cond, counter=part.counterbalance )
+    return render_template('exp.html', workerId=part.workerid, assignmentId=part.assignmentid, cond=part.cond, counter=part.counterbalance )
 
 @app.route('/inexp', methods=['POST'])
 def enterexp():
@@ -410,11 +411,13 @@ def savedata():
     if not (request.form.has_key('assignmentid') and request.form.has_key('data')):
         raise ExperimentError('improper_inputs')
     assignmentId = request.form['assignmentid']
+    workerId = request.form['workerid']
     datastring = request.form['data']
     print assignmentId, datastring
     
     user = Participant.query.\
             filter(Participant.assignmentid == assignmentId).\
+            filter(Participant.workerid == workerId).\
             one()
     user.status = COMPLETED
     user.datastring = datastring
@@ -422,7 +425,7 @@ def savedata():
     db_session.add(user)
     db_session.commit()
     
-    return render_template('debriefing.html', assignmentId=assignmentId)
+    return render_template('debriefing.html', workerId=workerId, assignmentId=assignmentId)
 
 @app.route('/complete', methods=['POST'])
 def completed():
@@ -432,15 +435,16 @@ def completed():
     adequately debriefed, and that response is logged in the database.
     """
     print "accessing the /complete route"
-    print request.form.keys()
     if not (request.form.has_key('assignmentid') and request.form.has_key('agree')):
         raise ExperimentError('improper_inputs')
     assignmentId = request.form['assignmentid']
-    agreed = request.form['agree']  
-    print assignmentId, agreed
+    workerId = request.form['workerid']
+    agreed = request.form['agree']
+    print workerId, assignmentId, agreed
     
     user = Participant.query.\
             filter(Participant.assignmentid == assignmentId).\
+            filter(Participant.workerid == workerId).\
             one()
     user.status = DEBRIEFED
     user.debriefed = agreed == 'true'

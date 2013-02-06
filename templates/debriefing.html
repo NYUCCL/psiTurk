@@ -33,7 +33,7 @@
 		sollemnes in futurum.
 		
 		<p>If you have any questions about this research, you may contact the
-		principal investigator, Principal Investigator.<p>
+		principal investigator, Principal Investigator.</p>
 		</div>
 
 			<p class="cool">Do you agree to the following statement statement?</p>
@@ -48,10 +48,12 @@
 					</tr></table> 
 					<form id="accept" action="complete" method="post">
 						<input type="hidden" name="assignmentid" value="{{ assignmentId }}" />
+						<input type="hidden" name="workerid" value="{{ workerId }}" />
 						<input type="hidden" name="agree" value="true" />
 					</form>
 					<form id="decline" action="complete" method="post">
 						<input type="hidden" name="assignmentid" value="{{ assignmentId }}" />
+						<input type="hidden" name="workerid" value="{{ workerId }}" />
 						<input type="hidden" name="agree" value="false" />
 					</form>
 			</div>
