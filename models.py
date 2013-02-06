@@ -14,7 +14,8 @@ class Participant(Base):
     """
     __tablename__ = TABLENAME
     
-    assignmentid =Column(String(128), primary_key=True)
+    key =Column(String(256), primary_key=True)
+    assignmentid =Column(String(128))
     hitid = Column(String(128))
     workerid = Column(String(128))
     ipaddress = Column(String(128))
@@ -29,6 +30,7 @@ class Participant(Base):
     datastring = Column(Text, nullable=True)
     
     def __init__(self, hitid, ipaddress, assignmentid, workerid, cond, counterbalance):
+        self.key = workerid + ":" + assignmentid
         self.hitid = hitid
         self.ipaddress = ipaddress
         self.assignmentid = assignmentid
