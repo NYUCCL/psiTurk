@@ -181,7 +181,6 @@ def get_random_condcount():
                    filter(or_(Participant.status == 4, 
                               Participant.status == 5, 
                               Participant.beginhit > starttime)).\
-                   filter(Participant.cond<4).\
                    all()
     counts = Counter()
     for cond in range(numconds):
