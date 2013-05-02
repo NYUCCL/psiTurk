@@ -503,6 +503,14 @@ def dumpdata():
     response.headers['Content-Type'] = 'text/csv'
     return response
 
+@app.route('/dashboard', methods=['GET'])
+def dashbaord():
+    """
+    Serves dashboard.
+    """
+    return render_template('dashboard.html')
+
+
 #----------------------------------------------
 # generic route
 #----------------------------------------------
