@@ -1,66 +1,22 @@
 
+/*
+ * Requires:
+ *     psiturk.js
+ *     utils.js
+ */
+
+// Global variables
+var optoutmessage = "By leaving this page, you opt out of the experiment.  You are forfitting your $1.00 payment and your 1/10 chance to with $10. Please confirm that this is what you meant to do.";
+
 /**********************
 * Domain general code *
 **********************/
 
 // Helper functions
 
-// Assert functions stolen from 
-// http://aymanh.com/9-javascript-tips-you-may-not-know#assertion
-function AssertException(message) { this.message = message; }
-AssertException.prototype.toString = function () {
-	return 'AssertException: ' + this.message;
-};
-
-function assert(exp, message) {
-	if (!exp) {
-		throw new AssertException(message);
-	}
-}
-
-function insert_hidden_into_form(findex, name, value ) {
-	var form = document.forms[findex];
-	var hiddenField = document.createElement('input');
-	hiddenField.setAttribute('type', 'hidden');
-	hiddenField.setAttribute('name', name);
-	hiddenField.setAttribute('value', value );
-	form.appendChild( hiddenField );
-}
-
-
-// Preload images (not currently in use)
-function imagepreload(src) 
-{
-	var heavyImage = new Image(); 
-	heavyImage.src = src;
-}
-
-/** 
- * SUBSTITUTE PLACEHOLDERS WITH string values 
- * @param {String} str The string containing the placeholders 
- * @param {Array} arr The array of values to substitute 
- * From Fotiman on this forum:
- * http://www.webmasterworld.com/javascript/3484761.htm
- */ 
-function substitute(str, arr) 
-{ 
-	var i, pattern, re, n = arr.length; 
-	for (i = 0; i < n; i++) { 
-		pattern = "\\{" + i + "\\}"; 
-		re = new RegExp(pattern, "g"); 
-		str = str.replace(re, arr[i]); 
-	} 
-	return str; 
-} 
-
-function randrange ( lower, upperbound ) {
-	// Finds a random integer from 'lower' to 'upperbound-1'
-	return Math.floor( Math.random() * upperbound + lower );
-}
-
 // We want to be able to alias the order of stimuli to a single number which
 // can be stored and which can easily replicate a given stimulus order.
-function changeorder( arr, ordernum ) {
+function changeorder(arr, ordernum) {
 	var thisorder = ordernum;
 	var shufflelocations = new Array();
 	for (var i=0; i<arr.length; i++) {
@@ -78,13 +34,13 @@ function changeorder( arr, ordernum ) {
 	return arr;
 }
 
-// Fisher-Yates shuffle algorithm.
-// modified from http://sedition.com/perl/javascript-fy.html
-function shuffle( arr, exceptions ) {
+// Fisher-Yates shuffle algorithm, with "exceptions," indices that don't change order
+function shuffle(arr, exceptions) {
 	var i;
 	exceptions = exceptions || [];
 	var shufflelocations = new Array();
 	for (i=0; i<arr.length; i++) {
+		// Create a list of candidate shuffle locations, excluding exceptions.
 		if (exceptions.indexOf(i)==-1) { shufflelocations.push(i); }
 	}
 	for (i=shufflelocations.length-1; i>=0; --i) {
@@ -100,7 +56,7 @@ function shuffle( arr, exceptions ) {
 
 // This function swaps two array members at random, provided they are not in
 // the exceptions list.
-function swap( arr, exceptions ) {
+function swap(arr, exceptions) {
 	var i;
 	var except = exceptions ? exceptions : [];
 	var shufflelocations = new Array();
@@ -136,19 +92,6 @@ function appendtobody( tag, id, contents ) {
 	return el;
 }
 
-// Data submission
-// NOTE: Ended up not using this.
-function posterror() { alert( "There was an error. TODO: Prompt to resubmit here." ); }
-function submitdata() {
-	$.ajax("submit", {
-			type: "POST",
-			async: false,
-			data: {datastring: datastring},
-			// dataType: 'text',
-			success: thanks,
-			error: posterror
-	});
-}
 
 /********************
 * TASK-GENERAL CODE *
@@ -185,22 +128,24 @@ var cardh = 180, cardw = 140, upper = 0, left = 0, imgh = 100, imgw = 100;
 // Task objects
 var testobject;
 
-// Mutable global variables
-var responsedata = [],
-    currenttrial = 1,
-    datastring = "",
-    lastperfect = false;
+// Data submit functions
+var recordinstructtrial = function (instructname, rt ) {
+	taskdata.addtrial([workerId, assignmentId, "INSTRUCT", instructname, rt]);
+};
+var recordtesttrial = function (word, color, trialtype, resp, hit, rt ) {
+	taskdata.addtrial([workerId, assignmentId, currenttrial,  "TEST", word, color, hit, resp, hit, rt]);
+};
 
-// Data handling functions
-function recordinstructtrial (instructname, rt ) {
-	trialvals = [workerId, assignmentId, "INSTRUCT", instructname, rt];
-	datastring = datastring.concat( trialvals, "\n" );
-}
-function recordtesttrial (word, color, trialtype, resp, hit, rt ) {
-	trialvals = [workerId, assignmentId, currenttrial,  "TEST", word, color, hit, resp, hit, rt];
-	datastring = datastring.concat( trialvals, "\n" );
-	currenttrial++;
-}
+// TODO this url needs to bring the next screen, we're no longer doing it with a POST
+// Also questionnaire answers are now saved separately from the main csv.
+var thanksurl = "/thanks";
+// TODO: Make posterror prompt to resubmit.
+var posterror = function() { alert( "There was an error submitting." ); };
+// TODO: Make sure taskfinished works properly
+var taskfinished = function() { window.location = thanksurl; };
+var finalsave = function() {
+	taskdata.save({error: posterror, success: taskfinished});
+};
 
 /********************
 * HTML snippets
@@ -225,6 +170,8 @@ var Instructions = function( screens ) {
 	var that = this,
 		currentscreen = "",
 		timestamp;
+	// TODO: Replace this with a backbone collection that fills itself with the appropriate values
+	// TODO Values should probably be defined in the config or something.
 	for( i=0; i<screens.length; i++) {
 		pagename = screens[i];
 		$.ajax({ 
@@ -254,7 +201,7 @@ var Instructions = function( screens ) {
 		});
 	};
 	this.startTest = function() {
-		// startTask();
+		// Backbone.Notifications.trigger('_psiturk_finishedistructions', optoutmessage);
 		testobject = new TestPhase();
 	};
 	this.nextForm();
@@ -316,7 +263,7 @@ var TestPhase = function() {
 			responsefun = function() {};
 			var hit = response == stim[1];
 			var rt = new Date().getTime() - wordon;
-			recordtesttrial (stim[0], stim[1], stim[2], response, hit, rt );
+			taskdata.recordtesttrial(stim[0], stim[1], stim[2], response, hit, rt );
 			remove_word();
 			nextword();
 		}
@@ -366,48 +313,31 @@ var TestPhase = function() {
 	return this;
 };
 
-/*************
-* Finish up  *
-*************/
+/****************
+* Questionnaire *
+****************/
+
+// We may want this to end up being a backbone view
 var givequestionnaire = function() {
 	var timestamp = new Date().getTime();
 	showpage('postquestionnaire');
-	recordinstructtrial( "postquestionnaire", (new Date().getTime())-timestamp );
+	taskdata.recordinstructtrial("postquestionnaire", (new Date().getTime())-timestamp );
 	$("#continue").click(function () {
-		finish();
-		submitquestionnaire();
+		teardownTask();
+		addqustionnaire();
+		finalsave();
 	});
 	// $('#continue').click( function(){ trainobject = new TrainingPhase(); } );
 	// postback();
 };
-var submitquestionnaire = function() {
+var addqustionnaire = function() {
 	$('textarea').each( function(i, val) {
-		datastring = datastring.concat( "\n", this.id, ":",  this.value);
+		taskdata[this.id] = this.value;
 	});
 	$('select').each( function(i, val) {
-		datastring = datastring.concat( "\n", this.id, ":",  this.value);
+		taskdata[this.id] = this.value;
 	});
-	insert_hidden_into_form(0, "assignmentid", assignmentId );
-	insert_hidden_into_form(0, "workerid", workerId );
-	insert_hidden_into_form(0, "data", datastring );
-	$('form').submit();
 };
 
-var startTask = function () {
-	// Provide opt-out 
-	window.onbeforeunload = function(){
-		$.ajax("quitter", {
-				type: "POST",
-				async: false,
-				data: {assignmentId: assignmentId, workerId: workerId, dataString: datastring}
-		});
-		alert( "By leaving this page, you opt out of the experiment.  You are forfitting your $1.00 payment and your 1/10 chance to with $10. Please confirm that this is what you meant to do." );
-		return "Are you sure you want to leave the experiment?";
-	};
-};
-
-var finish = function () {
-	window.onbeforeunload = function(){ };
-};
 
 // vi: et! ts=4 sw=4
