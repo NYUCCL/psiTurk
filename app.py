@@ -11,7 +11,7 @@ except ImportError:
     from counter import Counter
 
 # Importing flask
-from flask import Flask, render_template, request, Response, make_response
+from flask import Flask, render_template, request, Response, make_response, jsonify
 
 # Database setup
 from db import db_session, init_db
@@ -506,10 +506,18 @@ def dumpdata():
     response.headers['Content-Type'] = 'text/csv'
     return response
 
-@app.route('/dashboard', methods=['GET', 'POST'])
+@app.route('/dashboard', methods=['GET'])
 def dashbaord():
     """
     Serves dashboard.
+    """
+    return render_template('dashboard.html')
+
+
+@app.route('/dashboard_model', methods=['GET', 'POST'])
+def dashbaord_model():
+    """
+    Sync for dashboard model.
     """
     my_dashboard = dashboard.PsiTurkConfig(filename="config.txt")
 
@@ -521,6 +529,7 @@ def dashbaord():
         my_dashboard.set_serialized(config_model)
 
     return render_template('dashboard.html')
+
 
 
 #----------------------------------------------
