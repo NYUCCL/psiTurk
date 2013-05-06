@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>psiTurk Dashboard</title>
+    <!-- Load the script "static/dashboard/js/main.js" as our entry point -->
+    <script data-main="static/dashboard/js/main" src="static/dashboard/js/libs/require.js"></script>
+    <link href="static/dashboard/css/inspiritas.css" rel="stylesheet">
+    <link rel="stylesheet" href="static/dashboard/css/font-awesome.css">
+</head>
+<body>
+
+<!-- Navbar
+  ================================================== -->
+<div class="navbar navbar-static-top navbar-inverse">
+  <div class="navbar-inner">
+    <div class="container">
+      <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </a>
+
+      <a class="brand" href="#">psiTurk</a>
+      <span class="tagline">making online research accessible. <a href="#">Read more.</a></span>
+
+      <div class="nav-collapse collapse" id="main-menu">
+        <div class="auth pull-right">
+          <span class="name"></span><br/>
+          <span class="links">
+            <a href="#">Settings</a>
+            <a href="#">Logout</a>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+    <div class="row-fluid">
+      <div class="span3" id="sidebar">
+      </div>
+      <div class="span9" id="content-wrapper">
+        <div id="content">
+          <!-- Content will be placed here by template engine via Backbone -->
+        </div>
+      </div>
+    </div>
+</div> <!-- /container -->
+</body>
+</html>
