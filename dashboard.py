@@ -8,11 +8,11 @@ class PsiTurkConfig:
         self.filename = filename
         if not os.path.exists(self.filename):
             print("Creating config file...")
-            self.LoadDefaultConfig()
+            self.load_default_config()
         else:
             print("Using current config file...")
-            self.LoadDefaultConfig()
-            self.LoadConfig()
+            self.load_default_config()
+            self.load_config()
 
     def set(self, section, key, value):
         configfilepath = os.path.join(os.path.dirname(os.path.abspath(__file__)),
@@ -60,6 +60,7 @@ class PsiTurkConfig:
         Config.set('HIT Configuration', 'duration', '2')
         Config.set('HIT Configuration', 'US_only', 'true')
         Config.set('HIT Configuration', 'Approve_Requirement', '95')
+        Config.set('HIT Configuration', 'using_sandbox', 'true')
 
         # Database Parameters
         Config.set('Database Parameters', 'database_url', 'sqlite:///participants.db')
