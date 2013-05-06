@@ -4,6 +4,7 @@
  *     backbone
  */
 
+
 /****************
  * Internals    *
  ***************/
@@ -13,12 +14,24 @@ Backbone.Notifications = {};
 _.extend(Backbone.Notifications, Backbone.Events);
 
 var startTask = function (msg) {
+
+        taskdata.save();
+
+	$.ajax("inexp", {
+			type: "POST",
+			async: true,
+			data: {assignmentId: assignmentId}
+	});
+        
 	// Provide opt-out 
 	$(window).on("beforeunload", function(){
+
+                taskdata.save();
+
 		$.ajax("quitter", {
 				type: "POST",
 				async: false,
-				data: {assignmentId: assignmentId, workerId: workerId, dataString: datastring}
+				data: {assignmentId: assignmentId, workerId: workerId, dataString: ""}
 		});
 		alert(msg);
 		return "Are you sure you want to leave the experiment?";
@@ -26,46 +39,85 @@ var startTask = function (msg) {
 };
 
 var TaskView = Backbone.View.extend({
+
 	initialize: function() {
-		Backbone.Notifications.on('_psiturk_finishedistructions', startTask);
+
+		Backbone.Notifications.on('_psiturk_finishedinstructions', startTask);
+
 		Backbone.Notifications.on('_psiturk_finishedtask', function(msg) {
 			$(window).off("beforeunload");
 		});
-	}
+
+	},
+
 });
+var taskview = new TaskView();
+
+
 
 /****************
  * MODEL        *
  ***************/
 
-var taskdata = Backbone.Model.extend({
-	url: "/data", // Save will PUT to /data, with mimetype 'application/JSON'
-	id: assignmentid,  // Determines the sync url, TODO make sure htis is unique!
-	addtrial: function(trialinfo) {
-		this.trials = this.trials.concat(trialinfo, "\n" );
-		this.currenttrial++;
-	},
-	currenttrial: 0,
-	trials: ""
+var TaskData = Backbone.Model.extend({
+
+        urlRoot: "/data", // Save will PUT to /data, with mimetype 'application/JSON'
+        id: assignmentId,
+
+        defaults: {
+                currenttrial: 0,
+                data: "",
+                questiondata: {}
+        },
+
+        addTrialData: function(trialdata) {
+                this.set({"data": this.get("data").concat(trialdata, "\n")});
+                this.set({"currenttrial": this.get("currenttrial")+1});
+        },
+
+        addQuestionData: function(field, response) {
+                qd = this.get("questiondata");
+                qd[field] = response;
+                this.set("questiondata", qd);
+        },
+
 });
+var taskdata = new TaskData();
+
 
 // Data handling functions
-
+/*
 var savedata = function(callbacks) {
 	// TODO: app.py must be updated to accept a PUT with /data/assignmentid
 	var exceptions = exceptions || [];
 	taskdata.save(callbacks);
 };
-
+*/
 
 /*******
  * API *
  ******/
+var psiTurk = {
 
-var finishInstructions = function(optmessage) {
-	Backbone.Notifications.trigger('_psiturk_finishedistructions', optmessage);
+        addTrialData: function(trialdata) {
+                taskdata.addTrialData(trialdata);
+        },
+
+        addQuestionData: function(field, response) {
+                taskdata.addQuestionData(field, response);
+        },
+
+        finishInstructions: function(optmessage) {
+                Backbone.Notifications.trigger('_psiturk_finishedinstructions', optmessage);
+        },
+
+        teardownTask: function(optmessage) {
+                Backbone.Notifications.trigger('_psiturk_finishedtask', optmessage);
+        },
+
+        saveData: function() {
+                taskdata.save();
+        },
+
 };
 
-var teardownTask = function(optmessage) {
-	Backbone.Notifications.trigger('_psiturk_finishedtask', optmessage);
-};

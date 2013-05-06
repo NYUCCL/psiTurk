@@ -380,6 +380,24 @@ def inexpsave():
         db_session.commit()
     return render_template('error.html', errornum= experiment_errors['intermediate_save'])
 
+@app.route('/data/<assignmentId>', methods=['PUT'])
+def update(assignmentId=None):
+    """
+    Save experiment data.
+    """
+    print "accessing the /data route with id:", assignmentId
+
+    if not request.json.has_key('data'):
+        raise ExperimentError('improper_inputs')
+    
+    user = Participant.query.\
+            filter(Participant.assignmentid == assignmentId).\
+            one()
+    user.datastring = request.json['data']
+    db_session.add(user)
+    db_session.commit()
+    return "Success"
+
 @app.route('/quitter', methods=['POST'])
 def quitter():
     """

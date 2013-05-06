@@ -98,11 +98,12 @@ function appendtobody( tag, id, contents ) {
 ********************/
 
 // Globals defined initially.
-var maxblocks = 2;
+var maxblocks = 1;
 var keydownfun = function() {};
+var currenttrial = 0;
 
 // Stimulus info
-var ncards = 8,
+var ncards = 2,
     cardnames = [
 	"static/images/STIM00.PNG",
 	"static/images/STIM01.PNG",
@@ -130,10 +131,10 @@ var testobject;
 
 // Data submit functions
 var recordinstructtrial = function (instructname, rt ) {
-	taskdata.addtrial([workerId, assignmentId, "INSTRUCT", instructname, rt]);
+	psiTurk.addTrialData([workerId, assignmentId, "INSTRUCT", instructname, rt]);
 };
 var recordtesttrial = function (word, color, trialtype, resp, hit, rt ) {
-	taskdata.addtrial([workerId, assignmentId, currenttrial,  "TEST", word, color, hit, resp, hit, rt]);
+	psiTurk.addTrialData([workerId, assignmentId, currenttrial,  "TEST", word, color, hit, resp, hit, rt]);
 };
 
 // TODO this url needs to bring the next screen, we're no longer doing it with a POST
@@ -143,9 +144,12 @@ var thanksurl = "/thanks";
 var posterror = function() { alert( "There was an error submitting." ); };
 // TODO: Make sure taskfinished works properly
 var taskfinished = function() { window.location = thanksurl; };
-var finalsave = function() {
-	taskdata.save({error: posterror, success: taskfinished});
-};
+
+/*var finalsave = function() {
+	psiTurk.saveData({error: posterror, success: taskfinished});
+};*/
+
+
 
 /********************
 * HTML snippets
@@ -170,7 +174,8 @@ var Instructions = function( screens ) {
 	var that = this,
 		currentscreen = "",
 		timestamp;
-	// TODO: Replace this with a backbone collection that fills itself with the appropriate values
+	
+    // TODO: Replace this with a backbone collection that fills itself with the appropriate values
 	// TODO Values should probably be defined in the config or something.
 	for( i=0; i<screens.length; i++) {
 		pagename = screens[i];
@@ -201,8 +206,10 @@ var Instructions = function( screens ) {
 		});
 	};
 	this.startTest = function() {
-		// Backbone.Notifications.trigger('_psiturk_finishedistructions', optoutmessage);
-		testobject = new TestPhase();
+		
+        // Backbone.Notifications.trigger('_psiturk_finishedistructions', optoutmessage);
+		psiTurk.finishInstructions();
+        testobject = new TestPhase();
 	};
 	this.nextForm();
 };
@@ -263,7 +270,7 @@ var TestPhase = function() {
 			responsefun = function() {};
 			var hit = response == stim[1];
 			var rt = new Date().getTime() - wordon;
-			taskdata.recordtesttrial(stim[0], stim[1], stim[2], response, hit, rt );
+			recordtesttrial(stim[0], stim[1], stim[2], response, hit, rt );
 			remove_word();
 			nextword();
 		}
@@ -321,21 +328,22 @@ var TestPhase = function() {
 var givequestionnaire = function() {
 	var timestamp = new Date().getTime();
 	showpage('postquestionnaire');
-	taskdata.recordinstructtrial("postquestionnaire", (new Date().getTime())-timestamp );
+	recordinstructtrial("postquestionnaire", (new Date().getTime())-timestamp );
 	$("#continue").click(function () {
-		teardownTask();
 		addqustionnaire();
-		finalsave();
+		psiTurk.teardownTask(); // including final save        
+    	psiTurk.saveData({error: posterror, success: taskfinished});
+
 	});
 	// $('#continue').click( function(){ trainobject = new TrainingPhase(); } );
 	// postback();
 };
 var addqustionnaire = function() {
 	$('textarea').each( function(i, val) {
-		taskdata[this.id] = this.value;
+        psiTurk.addQuestionData(this.id, this.value);
 	});
 	$('select').each( function(i, val) {
-		taskdata[this.id] = this.value;
+        psiTurk.addQuestionData(this.id, this.value);		
 	});
 };
 
