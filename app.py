@@ -18,6 +18,9 @@ from db import db_session, init_db
 from models import Participant
 from sqlalchemy import or_
 
+# Importing dashboard
+import dashboard
+
 
 from config import config
 
@@ -508,6 +511,15 @@ def dashbaord():
     """
     Serves dashboard.
     """
+    my_dashboard = dashboard.PsiTurkConfig(filename="config.txt")
+
+    if request.method == 'GET':
+        return jsonify(my_dashboard.get_serialized())
+
+    if request.method == 'POST':
+        config_model = request.json['configModel']
+        my_dashboard.set_serialized(config_model)
+
     return render_template('dashboard.html')
 
 
