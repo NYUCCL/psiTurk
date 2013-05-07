@@ -13,11 +13,6 @@ except ImportError:
 # Importing flask
 from flask import Flask, render_template, request, Response, make_response, jsonify
 
-# Importing dashboard
-import dashboard
-# Intialize config file for database params
-my_dashboard = dashboard.PsiTurkConfig()
-
 # Database setup
 from db import db_session, init_db
 from models import Participant
@@ -509,30 +504,6 @@ def dumpdata():
     response.headers['Content-Type'] = 'text/csv'
     return response
 
-@app.route('/dashboard', methods=['GET'])
-def dashbaord():
-    """
-    Serves dashboard.
-    """
-    return render_template('dashboard.html')
-
-
-@app.route('/dashboard_model', methods=['GET', 'POST'])
-def dashbaord_model():
-    """
-    Sync for dashboard model.
-    """
-    my_dashboard = dashboard.PsiTurkConfig()
-
-    if request.method == 'GET':
-        return jsonify(my_dashboard.get_serialized())
-
-    if request.method == 'POST':
-        config_model = request.json
-        my_dashboard.set_serialized(config_model)
-
-    return render_template('dashboard.html')
-
 
 
 #----------------------------------------------
@@ -552,9 +523,8 @@ def regularpage(pagename=None):
 ###########################################################
 
 # Initialize database if necessary
-init_db()  
+init_db()
 
 if __name__ == '__main__':
     print "Starting webserver."
     app.run(debug=config.getboolean('Server Parameters', 'debug'), host='0.0.0.0', port=config.getint('Server Parameters', 'port'))
-
