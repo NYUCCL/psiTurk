@@ -11,18 +11,32 @@
     return t;
   };
   define([ "backbone", "inspiritas", "text!templates/aws-info.html", "text!templates/overview.html", "text!templates/hit-config.html", "text!templates/database.html", "text!templates/server-params.html", "text!templates/expt-info.html" ], function(e, n, r, i, s, o, u, a) {
-    var f, l;
-    f = function(e) {
+    var f;
+    return f = function(e) {
       function n() {
         return n.__super__.constructor.apply(this, arguments);
       }
       t(n, e);
-      n.prototype.events = {
-        "click a": "pushstateClick",
-        "click li": "pushstateClick"
+      n.prototype.el = $("#content");
+      n.prototype.save = function(e) {
+        var t, n, r;
+        e.preventDefault();
+        r = $(e.target).data("section");
+        n = {};
+        t = {};
+        $.each($("#myform").serializeArray(), function(e, t) {
+          return n[t.name] = t.value;
+        });
+        t[r] = n;
+        this.options.config.save(t);
+        return this.render();
       };
       n.prototype.pushstateClick = function(e) {
         return e.preventDefault();
+      };
+      n.prototype.events = {
+        "click a": "pushstateClick",
+        "click #save_data": "save"
       };
       n.prototype.initialize = function() {
         return this.render();
@@ -33,12 +47,49 @@
           $("li").removeClass("selected");
           return $(this).addClass("selected");
         });
-        e = _.template(r);
         l = _.template(i);
-        f = _.template(s);
-        t = _.template(o);
-        c = _.template(u);
-        n = _.template(a);
+        e = _.template(r, {
+          input: {
+            aws_access_key_id: this.options.config.get("AWS Access").aws_access_key_id,
+            aws_secret_access_key: this.options.config.get("AWS Access").aws_secret_access_key
+          }
+        });
+        f = _.template(s, {
+          input: {
+            title: this.options.config.get("HIT Configuration").title,
+            description: this.options.config.get("HIT Configuration").description,
+            keywords: this.options.config.get("HIT Configuration").keywords,
+            question_url: this.options.config.get("HIT Configuration").question_url,
+            max_assignments: this.options.config.get("HIT Configuration").max_assignments,
+            hit_lifetime: this.options.config.get("HIT Configuration").hit_lifetime,
+            reward: this.options.config.get("HIT Configuration").reward,
+            duration: this.options.config.get("HIT Configuration").duration,
+            us_only: this.options.config.get("HIT Configuration").us_only,
+            approve_requirement: this.options.config.get("HIT Configuration").approve_requirement,
+            using_sandbox: this.options.config.get("HIT Configuration").using_sandbox
+          }
+        });
+        t = _.template(o, {
+          input: {
+            database_url: this.options.config.get("Database Parameters").database_url,
+            table_name: this.options.config.get("Database Parameters").table_name
+          }
+        });
+        c = _.template(u, {
+          input: {
+            host: this.options.config.get("Server Parameters").host,
+            port: this.options.config.get("Server Parameters").port,
+            cutoff_time: this.options.config.get("Server Parameters").cutoff_time,
+            support_ie: this.options.config.get("Server Parameters").support_ie
+          }
+        });
+        n = _.template(a, {
+          input: {
+            code_version: this.options.config.get("Task Parameters").code_version,
+            num_conds: this.options.config.get("Task Parameters").num_conds,
+            num_counters: this.options.config.get("Task Parameters").num_counters
+          }
+        });
         $("#overview").on("click", function() {
           $("#content").html(l);
           return loadCharts();
@@ -61,6 +112,5 @@
       };
       return n;
     }(e.View);
-    return l = new f;
   });
 }).call(this);
