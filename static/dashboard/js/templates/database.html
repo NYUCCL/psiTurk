@@ -7,19 +7,22 @@
 
   <div class="row-fluid">
     <div class="span12">
-      <form class="form-horizontal">
+      <form class="form-horizontal" id="myform">
         <br>
         <div class="control-group">
-          <label class="control-label" for="input01">Database URL</label>
+          <label class="control-label" for="database_url">Database URL</label>
           <div class="controls">
-            <input type="text" class="input-large" id="input01" placeholder="sqlite:///participants.db">
+            <input type="text" class="input-large" id="database_url" name="database_url" value="<%= input.database_url %>" disabled>
           </div>
         </div>
         <div class="control-group">
-          <label class="control-label" for="input01">Table name</label>
+          <label class="control-label" for="table_name">Table name</label>
           <div class="controls">
-            <input type="text" placeholder="turkdemo">
+            <input type="text" id="table_name" name="table_name" value="<%= input.table_name %>">
           </div>
+        </div>
+        <div class="form-actions">
+          <button id="save_data" class="btn btn-primary save" data-section="Database Parameters">Save changes</button>
         </div>
       </form>
     </div>

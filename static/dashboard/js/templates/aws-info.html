@@ -4,7 +4,6 @@
   <div class="sub-header">
     <h2>AWS Info</h2>
   </div>
-
   <div class="row-fluid">
     <div class="span12">
       <div class="alert alert-block">
@@ -13,25 +12,24 @@
         Services account.
 
         If you already have an AWS account, your key can be retreived from:
-        http://aws-portal.amazon.com/gp/aws/developer/account/index.html?action=access-key
+        <a href="http://aws-portal.amazon.com/gp/aws/developer/account/index.html?action=access-key">http://aws-portal.amazon.com/gp/aws/developer/account/index.html?action=access-key</a>
       </div>
       </div>
-      <form class="form-horizontal">
+      <form class="form-horizontal" id="myform">
         <div class="control-group">
-          <label class="control-label" for="input01">Your Access Key Id</label>
+          <label class="control-label" for="aws_access_key_id" >Your Access Key Id</label>
           <div class="controls">
-            <input type="password" class="input-large" placeholder="4sAKLfjasLKFjsdKALf" id="input01">
+            <input type="password" class="input-large" value="<%= input.aws_access_key_id %>"  name="aws_access_key_id" id="aws_access_key_id">
           </div>
         </div>
         <div class="control-group">
-          <label class="control-label" for="input01">Secret Access Key</label>
+          <label class="control-label" for="aws_secret_access_key">Secret Access Key</label>
           <div class="controls">
-            <input type="password" class="input-large" placeholder="234kl234h2qelJ43LK32j4lK2143jlk34" id="input01">
+            <input type="password" class="input-large" value="<%= input.aws_secret_access_key %>" name="aws_secret_access_key" id="aws_secret_access_key">
           </div>
         </div>
         <div class="form-actions">
-          <button type="submit" class="btn btn-primary">Save changes</button>
-          <button type="reset" class="btn">Cancel</button>
+          <button id="save_data" class="btn btn-primary save" data-section="AWS Access">Save changes</button>
         </div>
       </form>
     </div>

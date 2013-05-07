@@ -7,30 +7,29 @@
 
   <div class="row-fluid">
     <div class="span12">
-      <form class="form-horizontal">
+      <form class="form-horizontal" id="myform">
         <div class="control-group">
-          <label class="control-label" for="input01">Code version</label>
+          <label class="control-label" for="code_version">Code version</label>
           <div class="controls">
-            <input type="text" class="input" id="input01" placeholder="1.0">
+            <input type="text" class="input" id="conde_version" name="code_version" value="<%= input.code_version %>">
           </div>
         </div>
         <div class="control-group">
           <label class="control-label" for="input01">Number of conditions</label>
           <div class="controls">
-            <input type="text" class="input" id="input01" placeholder="5001">
+            <input type="text" class="input" id="num_conds" name="num_conds" value="<%= input.num_conds %>">
             <p class="help-block">Number of conditions of interest.</p>
           </div>
         </div>
         <div class="control-group">
-          <label class="control-label" for="input01">Numnber of Counters</label>
+          <label class="control-label" for="num_conters">Number of counters</label>
           <div class="controls">
-            <input type="text" class="input" placeholder="1">
+            <input type="text" class="input" name="num_counters" id="num_counters" value="<%= input.num_counters %>">
             <p class="help-block">Number of counterbalance alternatives.</p>
           </div>
         </div>
       <div class="form-actions">
-        <button type="submit" class="btn btn-primary">Save changes</button>
-        <button type="reset" class="btn">Cancel</button>
+        <button id="save_data" class="btn btn-primary save" data-section="Task Parameters">Save changes</button>
       </div>
     </form>
   </div>

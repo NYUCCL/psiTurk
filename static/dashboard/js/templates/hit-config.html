@@ -7,83 +7,90 @@
 
   <div class="row-fluid">
     <div class="span12">
-      <form class="form-horizontal">
+      <form class="form-horizontal" id="myform">
         <h4>Basic Task Setup</h4>
         <br>
         <div class="control-group">
-          <label class="control-label" for="input01">Title</label>
+          <label class="control-label" for="title">Title</label>
           <div class="controls">
-            <input type="text" class="input-large" id="input01" placeholder="Perceptual Reaction TIme">
+            <input type="text" class="input-large" id="title" name="title" value="<%= input.title %>">
           </div>
         </div>
         <div class="control-group">
-          <label class="control-label" for="input01">Description</label>
+          <label class="control-label" for="description">Description</label>
           <div class="controls">
-            <textarea class="input-xlarge" id="textarea" rows="5" placeholder="Make a series of perceptual judgments"></textarea>
+            <input type="text" class="input-xlarge" id="description" name="description" rows="5" value="<%= input.description %>">
           </div>
         </div>
         <div class="control-group">
-          <label class="control-label" for="input01">Keywords</label>
+          <label class="control-label" for="keywords">Keywords</label>
           <div class="controls">
-            <input type="text" class="input" placeholder="Perception, Psychology">
+            <input type="text" class="input" id="keywords" name="keywords" value="<%= input.keywords %>">
           </div>
         </div>
         <div class="control-group">
-          <label class="control-label" for="inputError">Ad URL</label>
+          <label class="control-label" for="question_url">Ad URL</label>
           <div class="controls">
-            <input type="text" placeholder="http://localhost:5001/mturk">
+            <input type="text" name="question_url" name="question_url" value="<%= input.question_url %>">
             <p class="help-block">URL turkers will see in your ad.</p>
           </div>
         </div>
         <div class="control-group">
-          <label class="control-label" for="inputSuccess">Max Assignments</label>
+          <label class="control-label" for="max_assignments">Max Assignments</label>
           <div class="controls">
-            <input type="text" class="input-small" placeholder="10">
+            <input type="text" class="input-small" name="max_assignments" id="max_assignments" value="<%= input.max_assignments %>">
             <p class="help-block">Number of turkers who can accept this HIT</p>
           </div>
         </div>
         <div class="control-group">
-          <label class="control-label" for="input01">HIT lifetime</label>
+          <label class="control-label" for="hit_lifetime">HIT lifetime</label>
           <div class="controls">
-            <input type="password" class="input-small" id="input01" placeholder="24">
+            <input type="text" class="input-small" id="hit_lifetime" value="<%= input.hit_lifetime %>">
             <p class="help-block">In hours, how long the HIT will be available.</p>
           </div>
         </div>
         <div class="control-group">
-          <label class="control-label" for="textarea">Reward</label>
+          <label class="control-label" for="reward">Reward</label>
           <div class="controls">
-            <input type="text" class="input-small" placeholder="0.1">
+            <input type="text" class="input-small" id="reward" name="reward" value="<%= input.reward %>">
             <p class="help-block">In dollars</p>
           </div>
         </div>
         <div class="control-group">
-          <label class="control-label" for="textarea">Duration</label>
+          <label class="control-label" for="duration">Duration</label>
           <div class="controls">
-            <input type="text" class="input-small" placeholder="2">
+            <input type="text" class="input-small" name="duration" id="dureation" value="<%= input.duration %>">
             <p class="help-block">How long turkers have to complete once accepted.</p>
           </div>
+        </div>
+        <div class="control-group">
+        <label class="control-label" for="using_sandbox">Using sandbox?</label>
+          <label class="checkbox inline">
+            <input type='hidden' value='0' id="using_sandbox" name="using_sandbox">
+            <input type="checkbox" id="using_sandbox" name="using_sandbox" value="1" checked="checked">Yes
+          </label>
         </div>
         <h4>Requirements for workers</h4>
         <br>
         <div class="control-group">
-          <label class="control-label" for="textarea">Approve Requirement</label>
+          <label class="control-label" for="approve_requirement">Approve Requirement</label>
           <div class="controls">
-            <input type="text" class="input-small" placeholder="95">
+            <input type="text" class="input-small" name="approve_requirement" id="approve_requirement" value="<%= input.approve_requirement %>">
             <p class="help-block">What % of previous assignments have been approved.</p>
           </div>
         </div>
         <div class="control-group">
-        <label class="control-label" for="optionsCheckbox">Location</label>
+        <label class="control-label" for="us_only">Location</label>
           <label class="checkbox inline">
-            <input type="checkbox" id="inlineCheckbox1" value="option1"> US only 
+            <input type='hidden' value='0' id="us_only" name="us_only">
+            <input type="checkbox" id="us_only" name="us_only" value="1" checked="checked">US only
           </label>
         </div>
-      <div class="form-actions">
-        <button type="submit" class="btn btn-primary">Save changes</button>
-        <button type="reset" class="btn">Cancel</button>
-      </div>
-    </form>
+        <div class="form-actions">
+          <button id="save_data" class="btn btn-primary save" data-section="HIT Configuration">Save changes</button>
+        </div>
+      </form>
+    </div>
   </div>
-</div>
 
 </section>
