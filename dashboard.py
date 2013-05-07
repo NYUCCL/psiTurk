@@ -4,14 +4,14 @@ import os
 Config = ConfigParser.ConfigParser()
 
 class PsiTurkConfig:
-    def __init__(self, filename):
+    def __init__(self, filename="config.txt"):
         self.filename = filename
         if not os.path.exists(self.filename):
             print("Creating config file...")
             self.load_default_config()
+            self.load_config()
         else:
             print("Using current config file...")
-            self.load_default_config()
             self.load_config()
 
     def set(self, section, key, value):
@@ -35,6 +35,18 @@ class PsiTurkConfig:
             print("No config file present!")
         else:
             return(Config._sections)
+
+    def set_serialized(self, config_model):
+        configfilepath = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                      self.filename)
+        cfgfile = open(configfilepath, 'w')
+
+        for section, fields in config_model.iteritems():
+            for field in fields:
+                Config.set(section, field, config_model[section][field])
+
+        Config.write(cfgfile)
+        cfgfile.close()
 
     def load_default_config(self):
         # Open new config file
