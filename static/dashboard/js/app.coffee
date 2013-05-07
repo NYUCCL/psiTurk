@@ -4,6 +4,7 @@ define [
       'underscore'
       'backbone'
       'router'
+      'models/ConfigModel'
       'views/SidebarView'
       'views/ContentView'
       'text!templates/overview.html'
@@ -14,31 +15,38 @@ define [
       _
       Backbone
       Router
+      ConfigModel
       SidebarView
       ContentView
       OverviewTemplate
       SideBarTemplate
     ) ->
+
+      # Prevent links from reloading the page
+      events:
+        'click a' : 'pushstateClick'
+        'click li' : 'pushstateClick'
+
+      pushstateClick: (event) ->
+        event.preventDefault()
+
       initialize: ->
         #  Pass in our Router module and call it's initialize function
         Router.initialize()
-        
-        # Prevent links from reloading the page
-        events:
-          'click a' : 'pushstateClick'
-          'click li' : 'pushstateClick'
 
-        pushstateClick: (event) ->
-          event.preventDefault()
+        # Load configuration file
+        config = new ConfigModel
+        config.fetch()
 
         # Load and add content html
-        overviewContent = _.template(OverviewTemplate)
-        $('#content').html(overviewContent)
+        overviewContentHTML = _.template(OverviewTemplate)
+        $('#content').html(overviewContentHTML)
 
         # Load and add side bar html
-        sideBar = _.template(SideBarTemplate)
-        $('#sidebar').html(sideBar)
-        SidebarView.initialize()
+        sideBarHTML = _.template(SideBarTemplate)
+        $('#sidebar').html(sideBarHTML)
+        sidebarView = new SidebarView({config: config})
+        sidebarView.initialize()
 
         # Load content view after html; req's ids to be present
         ContentView.initialize()
