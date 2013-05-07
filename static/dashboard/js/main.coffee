@@ -1,4 +1,4 @@
-# Filename: main.js
+# Filename: main.coffee
 
 # Require.js allows us to configure shortcut alias
 require.config
