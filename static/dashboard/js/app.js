@@ -10,19 +10,19 @@
         return e.preventDefault();
       },
       initialize: function() {
-        var n, f, l, c;
+        var n, f, l, c, h;
         r.initialize();
+        l = t.template(u);
+        e("#content").html(l);
         n = new i;
-        n.fetch();
-        f = t.template(u);
-        e("#content").html(f);
-        l = t.template(a);
-        e("#sidebar").html(l);
-        c = new s({
+        c = t.template(a);
+        e("#sidebar").html(c);
+        h = new s({
           config: n
         });
-        c.initialize();
-        return o.initialize();
+        h.initialize();
+        f = new o;
+        return f.initialize();
       }
     };
   });

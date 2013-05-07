@@ -34,13 +34,13 @@ define [
         #  Pass in our Router module and call it's initialize function
         Router.initialize()
 
-        # Load configuration file
-        config = new ConfigModel
-        config.fetch()
 
         # Load and add content html
         overviewContentHTML = _.template(OverviewTemplate)
         $('#content').html(overviewContentHTML)
+
+        # Load configuration file
+        config = new ConfigModel
 
         # Load and add side bar html
         sideBarHTML = _.template(SideBarTemplate)
@@ -49,4 +49,5 @@ define [
         sidebarView.initialize()
 
         # Load content view after html; req's ids to be present
-        ContentView.initialize()
+        contentView = new ContentView()
+        contentView.initialize()

@@ -47,6 +47,9 @@
           $("li").removeClass("selected");
           return $(this).addClass("selected");
         });
+        this.options.config.fetch({
+          async: !1
+        });
         l = _.template(i);
         e = _.template(r, {
           input: {

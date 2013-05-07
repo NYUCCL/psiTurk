@@ -51,6 +51,8 @@ define [
               $('li').removeClass 'selected'
               $(@).addClass 'selected'
 
+            @options.config.fetch async: false
+
             # Load and add config content pages
             overview = _.template(OverviewTemplate)
             awsInfo = _.template(AWSInfoTemplate,
