@@ -2,6 +2,7 @@
 import os
 import datetime
 import logging
+from fnmatch import filter
 from functools import wraps
 from random import choice
 try:
@@ -11,7 +12,7 @@ except ImportError:
     from counter import Counter
 
 # Importing flask
-from flask import Flask, render_template, request, Response, make_response
+from flask import Flask, render_template, request, Response, make_response, jsonify
 
 # Database setup
 from db import db_session, init_db
@@ -380,23 +381,34 @@ def inexpsave():
         db_session.commit()
     return render_template('error.html', errornum= experiment_errors['intermediate_save'])
 
-@app.route('/data/<assignmentId>', methods=['PUT'])
-def update(assignmentId=None):
+@app.route('/data/<id>', methods=['PUT'])
+def update(id=None):
     """
-    Save experiment data.
+    Save experiment data, which should be a JSON object and will be stored
+    after converting to string.
     """
-    print "accessing the /data route with id:", assignmentId
+    print "accessing the /data route with id:", id
 
     if not request.json.has_key('data'):
         raise ExperimentError('improper_inputs')
     
     user = Participant.query.\
-            filter(Participant.assignmentid == assignmentId).\
+            filter(Participant.assignmentid == id).\
             one()
-    user.datastring = request.json['data']
+    user.datastring = str(request.json)
     db_session.add(user)
     db_session.commit()
     return "Success"
+
+@app.route('/pages', methods=['GET'])
+def pages():
+    """
+    Load HTML resources found in templates folder
+    """
+    print "accessing the /pages route"
+    files = filter(os.listdir('./templates'), '*.html')
+    pages = [{'name':file, 'html':render_template(file)} for file in files]
+    return jsonify(collection=pages)
 
 @app.route('/quitter', methods=['POST'])
 def quitter():

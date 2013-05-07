@@ -37,17 +37,6 @@
 			    {% endif %}
 			}
 			
-			// TODO replace with a Backbone model
-			// Load resources then run the exp
-			$.ajaxSetup({cache: false});
-			for (i=0; i<pagenames.length; i++) {
-				var pagename = pagenames[i];
-				$.ajax({ 
-					url: pagename + ".html",
-					success: function(pagename){ return function(page){ pages[pagename] = page; } }(pagename),
-					async: false
-				});
-			}
 			runfun();
 		});
 		</script>

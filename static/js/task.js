@@ -137,34 +137,25 @@ var recordtesttrial = function (word, color, trialtype, resp, hit, rt ) {
 	psiTurk.addTrialData([workerId, assignmentId, currenttrial,  "TEST", word, color, hit, resp, hit, rt]);
 };
 
-// TODO this url needs to bring the next screen, we're no longer doing it with a POST
-// Also questionnaire answers are now saved separately from the main csv.
-var thanksurl = "/thanks";
-// TODO: Make posterror prompt to resubmit.
-var posterror = function() { alert( "There was an error submitting." ); };
-// TODO: Make sure taskfinished works properly
-var taskfinished = function() { window.location = thanksurl; };
-
-/*var finalsave = function() {
-	psiTurk.saveData({error: posterror, success: taskfinished});
-};*/
 
 
 
 /********************
 * HTML snippets
 ********************/
-var pages = {};
 
 var showpage = function(pagename) {
-	$('body').html( pages[pagename] );
+	psiTurk.getPage(pagename, replacebody);
 };
 
-var pagenames = [
-	"postquestionnaire",
-	"test",
-	"instruct"
+var replacebody = function(pagehtml) {
+	$('body').html(pagehtml);
+};
+
+var instructpages = [
+	"instruct.html"
 ];
+
 
 
 /************************
@@ -172,42 +163,32 @@ var pagenames = [
 ************************/
 var Instructions = function( screens ) {
 	var that = this,
-		currentscreen = "",
+		currentscreen = 0,
 		timestamp;
 	
-    // TODO: Replace this with a backbone collection that fills itself with the appropriate values
-	// TODO Values should probably be defined in the config or something.
-	for( i=0; i<screens.length; i++) {
-		pagename = screens[i];
-		$.ajax({ 
-			url: pagename + ".html",
-			success: function(pagename){ return function(page){ pages[pagename] = page; }; }(pagename),
-			async: false
-		});
-	}
-
 	this.recordtrial = function() {
 		rt = (new Date().getTime()) - timestamp;
 		recordinstructtrial( currentscreen, rt  );
 	};
 	
 	this.nextForm = function () {
-		var next = screens.splice(0, 1)[0];
-		currentscreen = next;
-		showpage( next );
+
+		showpage(instructpages[currentscreen]);
+		currentscreen = currentscreen + 1;
+
 		timestamp = new Date().getTime();
-		if ( screens.length === 0 ) $('.continue').click(function() {
-			that.recordtrial();
-			that.startTest();
-		});
-		else $('.continue').click( function() {
-			that.recordtrial();
-			that.nextForm();
-		});
+		if ( currentscreen == instructpages.length ) {
+			$('.continue').click(function() {
+				that.recordtrial();
+				that.startTest();
+			});
+		} else { $('.continue').click( function() {
+				that.recordtrial();
+				that.nextForm();
+			});
+		};
 	};
 	this.startTest = function() {
-		
-        // Backbone.Notifications.trigger('_psiturk_finishedistructions', optoutmessage);
 		psiTurk.finishInstructions();
         testobject = new TestPhase();
 	};
@@ -232,7 +213,7 @@ var TestPhase = function() {
 	
 	var acknowledgment = '<p>Thanks for your response!</p>';
 	var textprompt = '<p id="prompt">Type<br> "R" for Red<br>"B" for blue<br>"G" for green.';
-	showpage( 'test' );
+	showpage('test.html');
 	
 	var addprompt = function() {
 		buttonson = new Date().getTime();
@@ -324,14 +305,23 @@ var TestPhase = function() {
 * Questionnaire *
 ****************/
 
+// TODO this url needs to bring the next screen, we're no longer doing it with a POST
+// Also questionnaire answers are now saved separately from the main csv.
+var thanksurl = "/thanks";
+// TODO: Make posterror prompt to resubmit.
+var posterror = function() { alert( "There was an error submitting." ); };
+// TODO: Make sure taskfinished works properly
+//var taskfinished = function() { window.location = thanksurl; };
+var taskfinished = function() { showpage('thanks.html') };
+
 // We may want this to end up being a backbone view
 var givequestionnaire = function() {
 	var timestamp = new Date().getTime();
-	showpage('postquestionnaire');
+	showpage('postquestionnaire.html');
 	recordinstructtrial("postquestionnaire", (new Date().getTime())-timestamp );
 	$("#continue").click(function () {
 		addqustionnaire();
-		psiTurk.teardownTask(); // including final save        
+		psiTurk.teardownTask();
     	psiTurk.saveData({error: posterror, success: taskfinished});
 
 	});
@@ -340,10 +330,10 @@ var givequestionnaire = function() {
 };
 var addqustionnaire = function() {
 	$('textarea').each( function(i, val) {
-        psiTurk.addQuestionData(this.id, this.value);
+        psiTurk.addTabularData(this.id, this.value);
 	});
 	$('select').each( function(i, val) {
-        psiTurk.addQuestionData(this.id, this.value);		
+        psiTurk.addTabularData(this.id, this.value);		
 	});
 };
 

@@ -47,11 +47,47 @@ var TaskView = Backbone.View.extend({
 		Backbone.Notifications.on('_psiturk_finishedtask', function(msg) {
 			$(window).off("beforeunload");
 		});
-
 	},
 
 });
 var taskview = new TaskView();
+
+
+/****************
+ * HTML PAGES   *
+ ***************/
+var Page = Backbone.Model.extend({
+        defaults: {
+                name: "",
+                html: ""
+        }
+});
+var PageCollection = Backbone.Collection.extend({
+
+        model: Page,
+        url: '/pages',
+
+        // need this because Flask won't return JSON with
+        // array at the top level
+        parse: function(response) {
+                return response.collection;
+        },
+
+        getHTML: function(pagename, callback) {
+
+                matches = this.where({name: pagename});
+                if (matches.length > 0) {
+                    html = matches[0].get('html');
+                } else {
+                    html = "Page not found";
+                };
+                callback(html);
+        },
+
+
+});
+var pages = new PageCollection();
+pages.fetch({async:false});
 
 
 
@@ -75,7 +111,7 @@ var TaskData = Backbone.Model.extend({
                 this.set({"currenttrial": this.get("currenttrial")+1});
         },
 
-        addQuestionData: function(field, response) {
+        addTabularData: function(field, response) {
                 qd = this.get("questiondata");
                 qd[field] = response;
                 this.set("questiondata", qd);
@@ -85,26 +121,25 @@ var TaskData = Backbone.Model.extend({
 var taskdata = new TaskData();
 
 
-// Data handling functions
-/*
-var savedata = function(callbacks) {
-	// TODO: app.py must be updated to accept a PUT with /data/assignmentid
-	var exceptions = exceptions || [];
-	taskdata.save(callbacks);
-};
-*/
-
 /*******
  * API *
  ******/
 var psiTurk = {
 
+        // Get HTML file from collection and pass on to any callback
+        getPage: function(pagename, callback) {
+                pages.getHTML(pagename, callback);
+        },
+
+        // Use to add a line of data with any number of columns
         addTrialData: function(trialdata) {
                 taskdata.addTrialData(trialdata);
         },
 
-        addQuestionData: function(field, response) {
-                taskdata.addQuestionData(field, response);
+        // Use to add data value for one column. If a value already
+        // exists for that column, it will be overwritten
+        addTabularData: function(field, value) {
+                taskdata.addTabularData(field, value);
         },
 
         finishInstructions: function(optmessage) {
@@ -115,8 +150,8 @@ var psiTurk = {
                 Backbone.Notifications.trigger('_psiturk_finishedtask', optmessage);
         },
 
-        saveData: function() {
-                taskdata.save();
+        saveData: function(callbacks) {
+                taskdata.save(callbacks);
         },
 
 };
