@@ -2,9 +2,10 @@
 define [
     'inspiritas'
   ], (Inspiritas) ->
+    class ContentView extends Backbone.View
 
-    initialize: ->
-      @render()
+      initialize: ->
+        @render()
 
-    render: ->
-      loadCharts()
+      render: ->
+        loadCharts()
