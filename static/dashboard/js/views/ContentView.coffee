@@ -1,7 +1,7 @@
 #  Filename: ContentView.coffee
 define [
     'inspiritas'
-  ], (Inspiritas)->
+  ], (Inspiritas) ->
 
     initialize: ->
       @render()
