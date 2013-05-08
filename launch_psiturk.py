@@ -4,6 +4,7 @@
 from psiturk_server import PsiTurkServer
 import multiprocessing
 from config import config
+import webbrowser
 
 workers = multiprocessing.cpu_count() * 2 + 1
 if __name__ == "__main__":
@@ -14,5 +15,9 @@ if __name__ == "__main__":
         'loglevels': loglevels,
         'loglevel': loglevels[config.getint("Server Parameters", "loglevel")]
     }
+
+
+launchurl = "http://"+config.get("Server Parameters", "host")+":"+str(config.getint('Server Parameters', 'port'))+"/dashboard"
+webbrowser.open(launchurl, new=1, autoraise=True)
 
 PsiTurkServer(options).run()
