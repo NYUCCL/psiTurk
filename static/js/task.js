@@ -133,9 +133,6 @@ var instructpages = [
 ];
 
 
-
-
-
 /************************
 * CODE FOR INSTRUCTIONS *
 ************************/
@@ -288,23 +285,22 @@ var TestPhase = function() {
 var thanksurl = "/thanks";
 // TODO: Make posterror prompt to resubmit.
 var posterror = function() { alert( "There was an error submitting." ); };
-// TODO: Make sure taskfinished works properly
-//var taskfinished = function() { window.location = thanksurl; };
 var taskfinished = function() { showpage('thanks.html') };
 
 // We may want this to end up being a backbone view
 var givequestionnaire = function() {
+	
 	var timestamp = new Date().getTime();
 	showpage('postquestionnaire.html');
 	recordinstructtrial("postquestionnaire", (new Date().getTime())-timestamp );
+	
 	$("#continue").click(function () {
 		addqustionnaire();
 		psiTurk.teardownTask();
-    	psiTurk.saveData({error: posterror, success: taskfinished});
+    	psiTurk.saveData();
+		taskfinished();
 
 	});
-	// $('#continue').click( function(){ trainobject = new TrainingPhase(); } );
-	// postback();
 };
 var addqustionnaire = function() {
 	$('textarea').each( function(i, val) {
