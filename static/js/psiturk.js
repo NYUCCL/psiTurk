@@ -74,27 +74,60 @@ var PageCollection = Backbone.Collection.extend({
         },
 
         getHTML: function(pagename, callback) {
-
                 matches = this.where({name: pagename});
                 if (matches.length > 0) {
-                    html = matches[0].get('html');
+                    callback(matches[0].get('html'));
                 } else {
-                    html = "Page not found";
+                    console.log("Page not found: ", pagename);
                 };
-                callback(html);
         },
 
 
 });
 var pages = new PageCollection();
-pages.fetch({async:false});
-
+pages.fetch({async: false});
 
 
 /****************
- * MODEL        *
+ * IMAGES       *
  ***************/
+var ExpImage = Backbone.Model.extend({
+        defaults: {
+                name: "",
+                loc: "",
+                el: null,
+        },
 
+        initialize: function() {
+                var img = new Image();
+                img.src = this.get('loc');
+                this.set('el', img);
+        },
+});
+var ImageCollection = Backbone.Collection.extend({
+
+        model: ExpImage,
+        url: '/images',
+
+        parse: function(response) {
+                return response.collection;
+        },
+
+        getImage: function(imagename, callback) {
+                matches = this.where({name: imagename});
+                if (matches.length > 0) {
+                    callback(matches[0].get('el'));
+                } else {
+                    console.log('Image not found: ', imagename);
+                };
+        },
+});
+var images = new ImageCollection();
+
+
+/****************
+ * TASK DATA    *
+ ***************/
 var TaskData = Backbone.Model.extend({
 
         urlRoot: "/data", // Save will PUT to /data, with mimetype 'application/JSON'
@@ -126,32 +159,44 @@ var taskdata = new TaskData();
  ******/
 var psiTurk = {
 
-        // Get HTML file from collection and pass on to any callback
+        // Get HTML file from collection and pass on to a callback
         getPage: function(pagename, callback) {
                 pages.getHTML(pagename, callback);
         },
 
-        // Use to add a line of data with any number of columns
+        // Preload images from static/images (not done by default)
+        preloadImages: function() {
+                images.fetch({async: false});
+        },
+        
+        // Get a single image element and pass to callback
+        getImage: function(imagename, callback) {
+                images.getImage(imagename, callback);
+        },
+
+        // Add a line of data with any number of columns
         addTrialData: function(trialdata) {
                 taskdata.addTrialData(trialdata);
         },
 
-        // Use to add data value for one column. If a value already
+        // Add data value for a named column. If a value already
         // exists for that column, it will be overwritten
         addTabularData: function(field, value) {
                 taskdata.addTabularData(field, value);
         },
 
+        // Sync data with server
+        saveData: function(callbacks) {
+                taskdata.save(callbacks);
+        },
+        
+        // Notify app that participant has begun main experiment
         finishInstructions: function(optmessage) {
                 Backbone.Notifications.trigger('_psiturk_finishedinstructions', optmessage);
         },
 
         teardownTask: function(optmessage) {
                 Backbone.Notifications.trigger('_psiturk_finishedtask', optmessage);
-        },
-
-        saveData: function(callbacks) {
-                taskdata.save(callbacks);
         },
 
 };

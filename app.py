@@ -351,6 +351,7 @@ def enterexp():
     if not request.form.has_key('assignmentid'):
         raise ExperimentError('improper_inputs')
     assignmentId = request.form['assignmentid']
+
     user = Participant.query.\
             filter(Participant.assignmentid == assignmentId).\
             one()
@@ -409,6 +410,20 @@ def pages():
     files = filter(os.listdir('./templates'), '*.html')
     pages = [{'name':file, 'html':render_template(file)} for file in files]
     return jsonify(collection=pages)
+
+@app.route('/images', methods=['GET'])
+def images():
+    """
+    Return URLs for images
+    """
+    print "accessing the /images route"
+    imgpath = 'static/images/'
+    extensions = ['*.jpg', '*.jpeg', '*.png', '*.tif', '*.tiff']
+    imgfiles = []
+    for ext in extensions:
+        for f in filter(os.listdir(imgpath), ext):
+            imgfiles.append({'name':f, 'loc':imgpath + f})
+    return jsonify(collection=imgfiles)
 
 @app.route('/quitter', methods=['POST'])
 def quitter():

@@ -102,30 +102,6 @@ var maxblocks = 1;
 var keydownfun = function() {};
 var currenttrial = 0;
 
-// Stimulus info
-var ncards = 2,
-    cardnames = [
-	"static/images/STIM00.PNG",
-	"static/images/STIM01.PNG",
-	"static/images/STIM02.PNG",
-	"static/images/STIM03.PNG",
-	"static/images/STIM04.PNG",
-	"static/images/STIM05.PNG",
-	"static/images/STIM06.PNG",
-	"static/images/STIM07.PNG",
-	"static/images/STIM08.PNG",
-	"static/images/STIM09.PNG",
-	"static/images/STIM10.PNG",
-	"static/images/STIM11.PNG",
-	"static/images/STIM12.PNG",
-	"static/images/STIM13.PNG",
-	"static/images/STIM14.PNG",
-	"static/images/STIM15.PNG"],
-	categorynames= [ "A", "B" ];
-
-// Interface variables
-var cardh = 180, cardw = 140, upper = 0, left = 0, imgh = 100, imgw = 100;
-
 // Task objects
 var testobject;
 
@@ -155,6 +131,8 @@ var replacebody = function(pagehtml) {
 var instructpages = [
 	"instruct.html"
 ];
+
+
 
 
 
