@@ -316,8 +316,6 @@ def start_exp():
     
     # check first to see if this hitId or assignmentId exists.  if so check to see if inExp is set
     matches = Participant.query.\
-                        filter(Participant.hitid == hitId).\
-                        filter(Participant.assignmentid == assignmentId).\
                         filter(Participant.workerid == workerId).\
                         all()
     numrecs = len(matches)
@@ -345,13 +343,30 @@ def start_exp():
         db_session.add(part)
         db_session.commit()
     
-    elif numrecs==1:
-        part = matches[0]
-        if part.status>=STARTED: # in experiment (or later) can't restart at this point
-            raise ExperimentError( 'already_started_exp' )
     else:
-        print "Error, hit/assignment appears in database more than once (serious problem)"
-        raise ExperimentError( 'hit_assign_appears_in_database_more_than_once' )
+        # A couple possible problems here:
+        # 1: They've already done an assignment, then we should tell them they can't do another one
+        # 2: They've already worked on this assignment, and got too far to start over.
+        # 3: They're in the database twice for the same assignment, that should never happen.
+        # 4: They're returning and all is well.
+        already_entered = False
+        nrecords = 0
+        for record in matches:
+            other_assignment = False
+            if record.assignmentid != assignmentId:
+                other_assignment = True
+            else:
+                nrecords += 1
+        if nrecords <= 1 and not other_assignment:
+            part = matches[0]
+            if part.status>=STARTED: # in experiment (or later) can't restart at this point
+                raise ExperimentError('already_started_exp')
+        else:
+            if nrecords > 1:
+                print "Error, hit/assignment appears in database more than once (serious problem)"
+                raise ExperimentError('hit_assign_appears_in_database_more_than_once')
+            if other_assignment:
+                raise ExperimentError('already_did_exp_hit')
     
     return render_template('exp.html', uniqueId=part.uniqueid)
 
