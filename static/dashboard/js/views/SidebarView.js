@@ -19,16 +19,25 @@
       t(n, e);
       n.prototype.el = $("#content");
       n.prototype.save = function(e) {
-        var t, n, r;
+        var t, n, r, s;
         e.preventDefault();
-        r = $(e.target).data("section");
+        s = $(e.target).data("section");
         n = {};
         t = {};
         $.each($("#myform").serializeArray(), function(e, t) {
           return n[t.name] = t.value;
         });
-        t[r] = n;
+        t[s] = n;
         this.options.config.save(t);
+        $("li").removeClass("selected");
+        $("#overview").addClass("selected");
+        r = _.template(i, {
+          input: {
+            balance: this.options.ataglance.get("balance")
+          }
+        });
+        $("#content").html(r);
+        loadCharts();
         return this.render();
       };
       n.prototype.pushstateClick = function(e) {
@@ -50,7 +59,14 @@
         this.options.config.fetch({
           async: !1
         });
-        l = _.template(i);
+        this.options.ataglance.fetch({
+          async: !1
+        });
+        l = _.template(i, {
+          input: {
+            balance: this.options.ataglance.get("balance")
+          }
+        });
         e = _.template(r, {
           input: {
             aws_access_key_id: this.options.config.get("AWS Access").aws_access_key_id,

@@ -16,7 +16,7 @@ define [
         OverviewTemplate
         HITConfigTemplate
         DatabaseTemplate
-        HitConfigTemplate
+        ServerParamsTemplate
         ExptInfoTemplate
       ) ->
         class SideBarView extends Backbone.View
@@ -24,7 +24,9 @@ define [
           el: $('#content')
 
           save: (event) ->
+            # Prevent clicks from reloading page
             event.preventDefault()
+
             # Get section name of form posted
             section = $(event.target).data 'section'
             inputData = {}
@@ -33,6 +35,16 @@ define [
               inputData[field.name] = field.value)
             configData[section] = inputData
             @options.config.save configData
+
+            # Load overview and change sidebar link
+            $('li').removeClass 'selected'
+            $('#overview').addClass 'selected'
+            overview = _.template(OverviewTemplate,
+              input:
+                balance: @options.ataglance.get("balance"))
+            $('#content').html(overview)
+            loadCharts()
+
             @render()
 
           pushstateClick: (event) ->
@@ -52,9 +64,12 @@ define [
               $(@).addClass 'selected'
 
             @options.config.fetch async: false
+            @options.ataglance.fetch async: false
 
             # Load and add config content pages
-            overview = _.template(OverviewTemplate)
+            overview = _.template(OverviewTemplate,
+              input:
+                balance: @options.ataglance.get("balance"))
             awsInfo = _.template(AWSInfoTemplate,
               input:
                 aws_access_key_id: @options.config.get("AWS Access").aws_access_key_id
@@ -76,7 +91,7 @@ define [
               input:
                 database_url: @options.config.get("Database Parameters").database_url
                 table_name: @options.config.get("Database Parameters").table_name)
-            serverParams = _.template(HitConfigTemplate,
+            serverParams = _.template(ServerParamsTemplate,
               input:
                 host: @options.config.get("Server Parameters").host
                 port: @options.config.get("Server Parameters").port
