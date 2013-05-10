@@ -11,6 +11,7 @@
       bootstrap: "libs/bootstrap",
       inspiritas: "libs/inspiritas",
       highcharts: "libs/highcharts",
+      exporting: "libs/exporting",
       dropdown: "libs/bootstrap-dropdown",
       collapse: "libs/bootstrap-collapse",
       nod: "libs/nod"
@@ -23,7 +24,10 @@
         deps: ["jquery"],
         exports: "Highcharts"
       },
-      inspiritas: ["highcharts", "jquery"],
+      exporting: {
+        deps: ["highcharts"]
+      },
+      inspiritas: ["highcharts", "jquery", "exporting"],
       nod: ["jquery", "bootstrap"],
       backbone: {
         deps: ["underscore", "jquery"],
@@ -35,7 +39,7 @@
     }
   });
 
-  require(["jquery", "app", "highcharts", "bootstrap", "dropdown", "collapse"], function($, App, Highcharts) {
+  require(["jquery", "app", "highcharts", "exporting", "bootstrap", "dropdown", "collapse"], function($, App, Highcharts, Exporting) {
     return App.initialize();
   });
 

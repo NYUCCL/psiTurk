@@ -11,6 +11,7 @@ require.config
     bootstrap: "libs/bootstrap"
     inspiritas: "libs/inspiritas"
     highcharts: "libs/highcharts"
+    exporting: "libs/exporting"
     dropdown: "libs/bootstrap-dropdown"
     collapse: "libs/bootstrap-collapse"
     nod: "libs/nod"
@@ -26,8 +27,9 @@ require.config
     highcharts:
       deps: ["jquery"]
       exports: "Highcharts" #attaches "Backbone" to the window object
-
-    inspiritas: ["highcharts", "jquery"]
+    exporting:
+      deps: ["highcharts"]
+    inspiritas: ["highcharts", "jquery", "exporting"]
     nod: ["jquery", "bootstrap"]
     backbone:
       deps: ["underscore", "jquery"]
@@ -41,6 +43,7 @@ require [
   "jquery"
   "app"
   "highcharts"
+  "exporting"
   "bootstrap"
   "dropdown"
   "collapse"],
@@ -48,5 +51,6 @@ require [
     $
     App
     Highcharts
+    Exporting
   ) ->
     App.initialize()
