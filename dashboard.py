@@ -1,5 +1,11 @@
 import ConfigParser
+import datetime
 import os
+from boto.mturk.connection import MTurkConnection
+from boto.mturk.question import ExternalQuestion
+from boto.mturk.qualification import LocaleRequirement, PercentAssignmentsApprovedRequirement, Qualifications
+from flask import jsonify
+
 
 Config = ConfigParser.ConfigParser()
 
@@ -14,6 +20,7 @@ class PsiTurkConfig:
             print("Using current config file...")
             self.load_config()
 
+    # Config methods
     def set(self, section, key, value):
         configfilepath = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                       self.filename)
@@ -117,13 +124,14 @@ class PsiTurkConfig:
         self.reward = Config.get('HIT Configuration', 'reward')
         self.duration = Config.get('HIT Configuration', 'duration')
         self.US_only = Config.get('HIT Configuration', 'US_only')
-        self.Approve_Requirment = Config.get('HIT Configuration', 'Approve_Requirement')
+        self.Approve_Requirement = Config.get('HIT Configuration', 'Approve_Requirement')
+        self.using_sandbox = Config.get('HIT Configuration', 'using_sandbox')
 
         # Database Parameters
         self.database_url = Config.get('Database Parameters', 'database_url')
         self.table_name =  Config.get('Database Parameters', 'table_name')
 
-        #Server Parameters
+        # Server Parameters
         self.host = Config.get('Server Parameters', 'host')
         self.port = Config.get('Server Parameters', 'port')
         self.cutoff_time = Config.get('Server Parameters', 'cutoff_time')
@@ -138,3 +146,72 @@ class PsiTurkConfig:
         self.code_version = Config.get('Task Parameters', 'code_version')
         self.num_conds = Config.get('Task Parameters', 'num_conds')
         self.num_counters = Config.get('Task Parameters', 'num_counters')
+
+class MTurkServices:
+    def __init__(self, config):
+        self.config = config
+
+    def check_balance(self):
+        # Check if AWS acct info has been entereed
+        if not(self.config.aws_access_key_id == 'YourAccessKeyId') and \
+           not(self.config.aws_secret_access_key == 'YourSecreteAccessKey'):
+            mturkparams = dict(
+                aws_access_key_id=self.config.aws_access_key_id,
+                aws_secret_access_key=self.config.aws_secret_access_key,
+                host='mechanicalturk.amazonaws.com')
+            self.mtc = MTurkConnection(**mturkparams)
+
+            return(self.mtc.get_account_balance()[0])
+        else:
+            return('$10,000')
+
+    def turk_connect(self, host):
+        mturkparams = dict(
+            aws_access_key_id=self.config.aws_access_key_id,
+            aws_secret_access_key=self.config.aws_secret_access_key,
+            host=host)
+        self.mtc = MTurkConnection(**mturkparams)
+
+        # Configure portal
+        experimentPortalURL = self.config.question_url
+        frameheight = 600
+        mturkQuestion = ExternalQuestion(experimentPortalURL, frameheight)
+
+        # Qualification:
+        quals = Qualifications()
+        approve_requirement = self.config.Approve_Requirement
+        quals.add(
+            PercentAssignmentsApprovedRequirement("GreaterThanOrEqualTo",
+                                                  approve_requirement))
+        if self.config.US_only:
+            quals.add(LocaleRequirement("EqualTo", "US"))
+
+        # Specify all the HIT parameters
+        self.paramdict = dict(
+            hit_type = None,
+            question = mturkQuestion,
+            lifetime = datetime.timedelta(hours=int(self.config.HIT_lifetime)),
+            max_assignments = self.config.max_assignments,
+            title = self.config.title,
+            description = self.config.description,
+            keywords = self.config.keywords,
+            reward = self.config.reward,
+            duration = datetime.timedelta(hours=int(self.config.duration)),
+            approval_delay = None,
+            questions = None,
+            qualifications = quals
+        )
+
+    def create_hit(self):
+        if self.config.using_sandbox:
+            host = 'mechanicalturk.sandbox.amazonaws.com'
+        else:
+            host = 'mechanicalturk.amazonaws.com'
+        self.turk_connect(host)
+        myhit = self.mtc.create_hit(**self.paramdict)[0]
+        hitid = myhit.HITId
+
+    def get_summary(self):
+        balance = self.check_balance()
+        summary = jsonify(balance=str(balance))
+        return(summary)
