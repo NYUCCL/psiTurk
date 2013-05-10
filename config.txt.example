@@ -55,6 +55,8 @@ debug: true             ; NEVER leave this on when exposing the server to the pu
 login_username: examplename
 login_pw: examplepassword
 
+favicon_url: http://www.nyu.edu/favicon.ico
+
 [Task Parameters]
 
 code_version: 1.0

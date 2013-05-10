@@ -11,7 +11,7 @@ except ImportError:
     from counter import Counter
 
 # Importing flask
-from flask import Flask, render_template, request, Response, make_response, jsonify
+from flask import Flask, render_template, request, Response, make_response, redirect, jsonify
 
 # Database setup
 from db import db_session, init_db
@@ -122,6 +122,15 @@ class ExperimentError(Exception):
                                errornum=self.errornum, 
                                **request.args)
 
+#----------------------------------------------
+# favicon
+#----------------------------------------------
+@app.route('/favicon.ico')
+def favicon():
+    """
+    Serving a favicon
+    """
+    return redirect(config.get('Server Parameters', 'favicon_url'))
 
 @app.errorhandler(ExperimentError)
 def handleExpError(e):
