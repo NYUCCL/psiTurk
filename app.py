@@ -1,4 +1,3 @@
-
 import os
 import datetime
 import logging
@@ -38,7 +37,7 @@ CODE_VERSION = config.get('Task Parameters', 'code_version')
 
 # Database configuration and constants
 TABLENAME = config.get('Database Parameters', 'table_name')
-SUPPORTIr = config.getboolean('Server Parameters', 'support_IE')
+SUPPORT_IE = config.getboolean('Server Parameters', 'support_IE')
 
 # Status codes
 ALLOCATED = 1
@@ -119,7 +118,6 @@ class ExperimentError(Exception):
     def __str__(self):
         return repr(self.value)
     def error_page(self, request):
-        print dict(request.args)
         return render_template(self.template, 
                                errornum=self.errornum, 
                                **request.args)
@@ -218,7 +216,7 @@ def mturkroute():
       These arguments will have appropriate values and we should enter the person
       in the database and provide a link to the experiment popup.
     """
-    if not SUPPORTIE:
+    if not SUPPORT_IE:
         # Handler for IE users if IE is not supported.
         if request.user_agent.browser == "msie":
             return render_template( 'ie.html' )
@@ -259,7 +257,6 @@ def mturkroute():
         raise ExperimentError('already_started_exp_mturk')
     elif status == COMPLETED:
         # They've done the whole task, but haven't signed the debriefing yet.
-        print 'workerid sent to debriefing.html:', workerId
         return render_template('debriefing.html', 
                                workerId = workerId,
                                assignmentId = assignmentId)
@@ -293,7 +290,7 @@ def give_consent():
     hitId = request.args['hitId']
     assignmentId = request.args['assignmentId']
     workerId = request.args['workerId']
-    print hitId, assignmentId, workerId
+    print "Accessing /consent: ", hitId, assignmentId, workerId
     return render_template('consent.html', hitid = hitId, assignmentid=assignmentId, workerid=workerId)
 
 @app.route('/exp', methods=['GET'])
@@ -306,8 +303,7 @@ def start_exp():
     hitId = request.args['hitId']
     assignmentId = request.args['assignmentId']
     workerId = request.args['workerId']
-    print hitId, assignmentId, workerId
-    
+    print "Accessing /exp: ", hitId, assignmentId, workerId
     
     # check first to see if this hitId or assignmentId exists.  if so check to see if inExp is set
     matches = Participant.query.\
@@ -359,7 +355,7 @@ def enterexp():
     experiment applet (meaning they can't do part of the experiment and
     referesh to start over).
     """
-    print "/inexp"
+    print "Accessing /inexp"
     if not request.form.has_key('uniqueId'):
         raise ExperimentError('improper_inputs')
     uniqueId = request.form['uniqueId']
@@ -372,27 +368,6 @@ def enterexp():
     db_session.add(user)
     db_session.commit()
     return "Success"
-
-@app.route('/inexpsave', methods=['POST'])
-def inexpsave():
-    """
-    The experiments script updates the server periodically on subjects'
-    progress. This lets us better understand attrition.
-    """
-    print "accessing the /inexpsave route"
-    print request.form.keys()
-    if request.form.has_key('assignmentid') and request.form.has_key('dataString'):
-        assignmentId = request.form['assignmentid']
-        datastring = request.form['dataString']  
-        print "getting the save data", assignmentId, datastring
-        user = Participant.query.\
-                filter(Participant.assignmentid == assignmentId).\
-                one()
-        user.datastring = datastring
-        user.status = STARTED
-        db_session.add(user)
-        db_session.commit()
-    return render_template('error.html', errornum= experiment_errors['intermediate_save'])
 
 @app.route('/sync/<id>', methods=['PUT'])
 def update(id=None):
