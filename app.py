@@ -38,7 +38,7 @@ CODE_VERSION = config.get('Task Parameters', 'code_version')
 
 # Database configuration and constants
 TABLENAME = config.get('Database Parameters', 'table_name')
-SUPPORTIE = config.getboolean('Server Parameters', 'support_IE')
+SUPPORTIr = config.getboolean('Server Parameters', 'support_IE')
 
 # Status codes
 ALLOCATED = 1
@@ -115,12 +115,15 @@ class ExperimentError(Exception):
     def __init__(self, value):
         self.value = value
         self.errornum = experiment_errors[self.value]
+        self.template = "error.html"
     def __str__(self):
         return repr(self.value)
     def error_page(self, request):
-        return render_template('error.html', 
+        print dict(request.args)
+        return render_template(self.template, 
                                errornum=self.errornum, 
                                **request.args)
+
 
 @app.errorhandler(ExperimentError)
 def handleExpError(e):
@@ -272,8 +275,7 @@ def mturkroute():
         raise ExperimentError('already_did_exp_hit')
     elif status == ALLOCATED or not status:
         # Participant has not yet agreed to the consent. They might not
-        # even have accepted the HIT. The mturkindex template will treat
-        # them appropriately regardless.
+        # even have accepted the HIT. 
         return render_template('mturkindex.html', 
                                hitid = hitId, 
                                assignmentid = assignmentId, 
@@ -318,14 +320,24 @@ def start_exp():
         # Choose condition and counterbalance
         subj_cond, subj_counter = get_random_condcount()
         
-        if not request.remote_addr:
-            myip = "UKNOWNIP"
-        else:
-            myip = request.remote_addr
+        ip = "UNKNOWN" if not request.remote_addr else request.remote_addr
+        browser = "UNKNOWN" if not request.user_agent.browser else request.user_agent.browser
+        platform = "UNKNOWN" if not request.user_agent.platform else request.user_agent.platform
+        language = "UNKNOWN" if not request.user_agent.language else request.user_agent.language
         
         # set condition here and insert into database
-        part = Participant( hitId, myip, assignmentId, workerId, subj_cond, subj_counter)
-        db_session.add( part )
+        participant_attributes = dict(
+            assignmentid = assignmentId,
+            workerid = workerId,
+            hitid = hitId,
+            cond = subj_cond,
+            counterbalance = subj_counter,
+            ipaddress = ip,
+            browser = browser,
+            platform = platform,
+            language = language)
+        part = Participant(**participant_attributes)
+        db_session.add(part)
         db_session.commit()
     
     elif numrecs==1:
@@ -336,7 +348,7 @@ def start_exp():
         print "Error, hit/assignment appears in database more than once (serious problem)"
         raise ExperimentError( 'hit_assign_appears_in_database_more_than_once' )
     
-    return render_template('exp.html', workerId=part.workerid, assignmentId=part.assignmentid, cond=part.cond, counter=part.counterbalance )
+    return render_template('exp.html', uniqueId=part.uniqueid)
 
 @app.route('/inexp', methods=['POST'])
 def enterexp():
@@ -348,12 +360,12 @@ def enterexp():
     referesh to start over).
     """
     print "/inexp"
-    if not request.form.has_key('assignmentid'):
+    if not request.form.has_key('uniqueId'):
         raise ExperimentError('improper_inputs')
-    assignmentId = request.form['assignmentid']
+    uniqueId = request.form['uniqueId']
 
     user = Participant.query.\
-            filter(Participant.assignmentid == assignmentId).\
+            filter(Participant.uniqueid == uniqueId).\
             one()
     user.status = STARTED
     user.beginexp = datetime.datetime.now()
@@ -382,24 +394,33 @@ def inexpsave():
         db_session.commit()
     return render_template('error.html', errornum= experiment_errors['intermediate_save'])
 
-@app.route('/data/<id>', methods=['PUT'])
+@app.route('/sync/<id>', methods=['PUT'])
 def update(id=None):
     """
     Save experiment data, which should be a JSON object and will be stored
     after converting to string.
     """
-    print "accessing the /data route with id:", id
-
-    if not request.json.has_key('data'):
-        raise ExperimentError('improper_inputs')
+    print "accessing the /sync route with id:", id
     
-    user = Participant.query.\
-            filter(Participant.assignmentid == id).\
-            one()
-    user.datastring = str(request.json)
-    db_session.add(user)
-    db_session.commit()
-    return "Success"
+    try:
+        user = Participant.query.\
+                filter(Participant.uniqueid == id).\
+                one()
+    except:
+        print "DB error: Unique user not found."
+    
+    if request.json.has_key('data'):
+        user.datastring = str(request.json)
+        db_session.add(user)
+        db_session.commit()
+    
+    resp = {"condition": user.cond,
+            "counterbalance": user.counterbalance,
+            "assignmentId": user.assignmentid,
+            "workerId": user.workerid,
+            "hitId": user.hitid}
+    
+    return jsonify(**resp)
 
 @app.route('/pages', methods=['GET'])
 def pages():
@@ -428,22 +449,19 @@ def images():
 @app.route('/quitter', methods=['POST'])
 def quitter():
     """
-    Subjects post data as they quit, to help us better understand the quitters.
+    Mark quitter as such.
     """
-    print "accessing the /quitter route"
-    print request.form.keys()
-    if request.form.has_key('assignmentid') and request.form.has_key('dataString'):
-        assignmentId = request.form['assignmentid']
-        datastring = request.form['dataString']  
-        print "getting the save data", assignmentId, datastring
+    try:
+        uniqueId = request.form['uniqueId']
+        print "Marking quitter", uniqueId
         user = Participant.query.\
-                filter(Participant.assignmentid == assignmentId).\
+                filter(Participant.uniqueid == uniqueId).\
                 one()
-        user.datastring = datastring
         user.status = QUITEARLY
         db_session.add(user)
         db_session.commit()
-    return render_template('error.html', errornum= experiment_errors['tried_to_quit'])
+    except:
+        return render_template('error.html', errornum= experiment_errors['tried_to_quit'])
 
 @app.route('/debrief', methods=['POST', 'GET'])
 def savedata():

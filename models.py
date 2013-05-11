@@ -14,27 +14,28 @@ class Participant(Base):
     """
     __tablename__ = TABLENAME
     
-    assignmentid =Column(String(128), primary_key=True)
-    workerid = Column(String(128), primary_key=True)
-    hitid = Column(String(128))
+    uniqueid =Column(String(128), primary_key=True)
+    assignmentid =Column(String(128), nullable=False)
+    workerid = Column(String(128), nullable=False)
+    hitid = Column(String(128), nullable=False)
     ipaddress = Column(String(128))
+    browser = Column(String(128))
+    platform = Column(String(128))
+    language = Column(String(128))
     cond = Column(Integer)
     counterbalance = Column(Integer)
     codeversion = Column(String(128))
-    beginhit = Column(DateTime, nullable=True)
-    beginexp = Column(DateTime, nullable=True)
-    endhit = Column(DateTime, nullable=True)
+    beginhit = Column(DateTime)
+    beginexp = Column(DateTime)
+    endhit = Column(DateTime)
     status = Column(Integer, default = 1)
     debriefed = Column(Boolean)
-    datastring = Column(Text, nullable=True)
+    datastring = Column(Text)
     
-    def __init__(self, hitid, ipaddress, assignmentid, workerid, cond, counterbalance):
-        self.hitid = hitid
-        self.ipaddress = ipaddress
-        self.assignmentid = assignmentid
-        self.workerid = workerid
-        self.cond = cond
-        self.counterbalance = counterbalance
+    def __init__(self, **kwargs):
+        self.uniqueid = "{workerid}:{assignmentid}".format(**kwargs)
+        for key in kwargs:
+            setattr(self, key, kwargs[key])
         self.status = 1
         self.codeversion = CODE_VERSION
         self.debriefed = False
@@ -42,8 +43,8 @@ class Participant(Base):
     
     def __repr__( self ):
         return "Subject(%s, %s, %r, %r, %s)" % ( 
-            self.assignmentid, 
-            self.workerid, 
+            self.uniqueid, 
             self.cond, 
             self.status,
-            self.codeversion )
+            self.codeversion)
+

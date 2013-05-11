@@ -10,24 +10,11 @@ function assert(exp, message) {
 	}
 }
 
-function insert_hidden_into_form(findex, name, value ) {
-	var form = document.forms[findex];
-	var hiddenField = document.createElement('input');
-	hiddenField.setAttribute('type', 'hidden');
-	hiddenField.setAttribute('name', name);
-	hiddenField.setAttribute('value', value );
-	form.appendChild( hiddenField );
-}
-
-
-// Preload images (not currently in use)
-function imagepreload(src) 
-{
-	var heavyImage = new Image(); 
-	heavyImage.src = src;
-}
-
-function randrange(lower, upperbound) {
-	// Finds a random integer from 'lower' to 'upperbound-1'
-	return Math.floor( Math.random() * upperbound + lower );
+// Mean of booleans (true==1; false==0)
+function boolpercent(arr) {
+	var count = 0;
+	for (var i=0; i<arr.length; i++) {
+		if (arr[i]) { count++; } 
+	}
+	return 100* count / arr.length;
 }

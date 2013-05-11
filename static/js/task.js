@@ -5,84 +5,9 @@
  *     utils.js
  */
 
-// Global variables
-var optoutmessage = "By leaving this page, you opt out of the experiment.  You are forfitting your $1.00 payment and your 1/10 chance to with $10. Please confirm that this is what you meant to do.";
-
 /**********************
 * Domain general code *
 **********************/
-
-// Helper functions
-
-// We want to be able to alias the order of stimuli to a single number which
-// can be stored and which can easily replicate a given stimulus order.
-function changeorder(arr, ordernum) {
-	var thisorder = ordernum;
-	var shufflelocations = new Array();
-	for (var i=0; i<arr.length; i++) {
-		shufflelocations.push(i);
-	}
-	for (i=arr.length-1; i>=0; --i) {
-		var loci = shufflelocations[i];
-		var locj = shufflelocations[thisorder%(i+1)];
-		thisorder = Math.floor(thisorder/(i+1));
-		var tempi = arr[loci];
-		var tempj = arr[locj];
-		arr[loci] = tempj;
-		arr[locj] = tempi;
-	}
-	return arr;
-}
-
-// Fisher-Yates shuffle algorithm, with "exceptions," indices that don't change order
-function shuffle(arr, exceptions) {
-	var i;
-	exceptions = exceptions || [];
-	var shufflelocations = new Array();
-	for (i=0; i<arr.length; i++) {
-		// Create a list of candidate shuffle locations, excluding exceptions.
-		if (exceptions.indexOf(i)==-1) { shufflelocations.push(i); }
-	}
-	for (i=shufflelocations.length-1; i>=0; --i) {
-		var loci = shufflelocations[i];
-		var locj = shufflelocations[randrange(0, i+1)];
-		var tempi = arr[loci];
-		var tempj = arr[locj];
-		arr[loci] = tempj;
-		arr[locj] = tempi;
-	}
-	return arr;
-}
-
-// This function swaps two array members at random, provided they are not in
-// the exceptions list.
-function swap(arr, exceptions) {
-	var i;
-	var except = exceptions ? exceptions : [];
-	var shufflelocations = new Array();
-	for (i=0; i<arr.length; i++) {
-		if (except.indexOf(i)==-1) shufflelocations.push(i);
-	}
-
-	for (i=shufflelocations.length-1; i>=0; --i) {
-		var loci = shufflelocations[i];
-		var locj = shufflelocations[randrange(0,i+1)];
-		var tempi = arr[loci];
-		var tempj = arr[locj];
-		arr[loci] = tempj;
-		arr[locj] = tempi;
-	}
-	return arr;
-}
-
-// Mean of booleans (true==1; false==0)
-function boolpercent(arr) {
-	var count = 0;
-	for (var i=0; i<arr.length; i++) {
-		if (arr[i]) { count++; } 
-	}
-	return 100* count / arr.length;
-}
 
 // View functions
 function appendtobody( tag, id, contents ) {
@@ -107,18 +32,19 @@ var testobject;
 
 // Data submit functions
 var recordinstructtrial = function (instructname, rt ) {
-	psiTurk.addTrialData([workerId, assignmentId, "INSTRUCT", instructname, rt]);
+	psiTurk.recordTrialData([uniqueId, "INSTRUCT", instructname, rt]);
 };
 var recordtesttrial = function (word, color, trialtype, resp, hit, rt ) {
-	psiTurk.addTrialData([workerId, assignmentId, currenttrial,  "TEST", word, color, hit, resp, hit, rt]);
+	psiTurk.recordTrialData([uniqueId, currenttrial,  "TEST", word, color, hit, resp, hit, rt]);
 };
-
 
 
 
 /********************
-* HTML snippets
+* HTML manipulation
 ********************/
+
+// TODO Replace with views.
 
 var showpage = function(pagename) {
 	psiTurk.getPage(pagename, replacebody);
@@ -128,15 +54,16 @@ var replacebody = function(pagehtml) {
 	$('body').html(pagehtml);
 };
 
-var instructpages = [
-	"instruct.html"
-];
 
 
 /************************
 * CODE FOR INSTRUCTIONS *
 ************************/
 var Instructions = function( screens ) {
+	var instructpages = [
+		"instruct.html"
+	];
+	
 	var that = this,
 		currentscreen = 0,
 		timestamp;
@@ -161,7 +88,7 @@ var Instructions = function( screens ) {
 				that.recordtrial();
 				that.nextForm();
 			});
-		};
+		}
 	};
 	this.startTest = function() {
 		psiTurk.finishInstructions();
@@ -271,7 +198,7 @@ var TestPhase = function() {
 		["BLUE", "green", "incongruent"],
 		["RED", "blue", "incongruent"]
 		];
-	shuffle( stims );
+	_.shuffle(stims);
 	nextword();
 	return this;
 };
@@ -280,12 +207,7 @@ var TestPhase = function() {
 * Questionnaire *
 ****************/
 
-// TODO this url needs to bring the next screen, we're no longer doing it with a POST
-// Also questionnaire answers are now saved separately from the main csv.
-var thanksurl = "/thanks";
-// TODO: Make posterror prompt to resubmit.
-var posterror = function() { alert( "There was an error submitting." ); };
-var taskfinished = function() { showpage('thanks.html') };
+var taskfinished = function() { showpage('thanks.html'); };
 
 // We may want this to end up being a backbone view
 var givequestionnaire = function() {
@@ -295,21 +217,44 @@ var givequestionnaire = function() {
 	recordinstructtrial("postquestionnaire", (new Date().getTime())-timestamp );
 	
 	$("#continue").click(function () {
-		addqustionnaire();
+		recordQuestionnaire();
 		psiTurk.teardownTask();
-    	psiTurk.saveData();
+    	psiTurk.saveData({success: function() {taskfinished();}, error: prompt_to_resubmit});
 		taskfinished();
-
 	});
 };
-var addqustionnaire = function() {
+
+var promptResubmit = function() {
+	replacebody("<h1>Oops!</h1><p>Something went wrong submitting your HIT. This might happen if you lose your internet connection. Press the button to resubmit.</p><button id='resubmit'>Resubmit</button>");
+	$("#resubmit").click(finishTask);
+};
+
+var finishTask = function() {
+	replacebody("<h1>Trying to resubmit...</h1>");
+	reprompt = setTimeout(prompt_to_resubmit, 10000);
+	psiTurk.saveData({success: function() {clearInterval(reprompt); taskfinished();}, error: promptResubmit});
+};
+
+
+
+var recordQuestionnaire = function() {
 	$('textarea').each( function(i, val) {
-        psiTurk.addTabularData(this.id, this.value);
+        psiTurk.recordUnstructuredData(this.id, this.value);
 	});
 	$('select').each( function(i, val) {
-        psiTurk.addTabularData(this.id, this.value);		
+        psiTurk.recordUnstructuredData(this.id, this.value);		
 	});
 };
 
+var prompt_to_resubmit = function() {
+};
 
-// vi: et! ts=4 sw=4
+
+/*******************
+ * Run Task
+ ******************/
+$(window).load( function(){
+	instructobject = new Instructions(['instruct']);
+});
+
+// vi: noexpandtab tabstop=4 shiftwidth=4
