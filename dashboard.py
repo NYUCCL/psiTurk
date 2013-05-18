@@ -5,6 +5,7 @@ from boto.mturk.connection import MTurkConnection
 from boto.mturk.question import ExternalQuestion
 from boto.mturk.qualification import LocaleRequirement, PercentAssignmentsApprovedRequirement, Qualifications
 from flask import jsonify
+import socket
 
 
 Config = ConfigParser.ConfigParser()
@@ -215,3 +216,16 @@ class MTurkServices:
         balance = self.check_balance()
         summary = jsonify(balance=str(balance))
         return(summary)
+
+class Server:
+    def __init__(self):
+      pass
+
+    def is_port_available(self, port, ip='127.0.0.1'):
+      s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+      try:
+          s.connect((ip, int(port)))
+          s.shutdown(2)
+          return 0
+      except:
+          return 1

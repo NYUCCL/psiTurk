@@ -1,5 +1,6 @@
 # Import flask
-from flask import Flask, render_template, request, Response, make_response, jsonify
+from flask import Flask, render_template, request,\
+                  Response, make_response, jsonify
 
 # Import dashboard
 import dashboard as Dashboard
@@ -9,6 +10,7 @@ IS_SECURE = False
 
 app = Flask(__name__)
 
+# Routes for handling dashboard activity
 @app.route('/dashboard', methods=['GET'])
 def dashboard():
     """
@@ -57,11 +59,19 @@ def create_hit():
     """
     config = Dashboard.PsiTurkConfig()
     services = Dashboard.MTurkServices(config)
-
     services.create_hit()
-
     return "HIT created"
 
+@app.route('/is_port_available', methods=['GET'])
+def create_hit():
+    """
+    Check if port is available on localhost
+    """
+    if request.method == 'GET':
+        port = request.args["port"]
+        server = Dashboard.Server()
+        return jsonify(is_available=server.is_port_available(port))
+    return "port check"
 
 if __name__ == '__main__':
     print "Starting psiTurk dashboard..."
@@ -69,4 +79,4 @@ if __name__ == '__main__':
         app.run(debug=False, port=5000)
     else:
         print "WARNING! Your server is exposed to the public."
-        app.run(debug=True, host='0.0.0.0',  port=5000)
+        app.run(debug=True, host='0.0.0.0', port=5000)
