@@ -36,3 +36,5 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
+static/dashboard/js/templates/screen_off.r
+static/dashboard/js/templates/explain_way.py
