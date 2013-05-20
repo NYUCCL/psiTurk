@@ -12,17 +12,58 @@
       initialize: function() {
         var n, l, c, h, p, d;
         r.initialize();
+        e(function() {
+          var t;
+          t = io.connect("/server_status");
+          t.on("connect", function() {
+            return e.ajax({
+              url: "/monitor_server",
+              async: !1
+            });
+          });
+          return t.on("status", function(t) {
+            if (parseInt(t) === 0) {
+              e("#server_status").css({
+                color: "green"
+              });
+              e("#server_on").click(function(e) {
+                return e.preventDefault;
+              }).css({
+                color: "grey"
+              });
+              return e("#server_off").css({
+                color: "orange"
+              });
+            }
+            e("#server_status").css({
+              color: "red"
+            });
+            e("#server_off").click(function(e) {
+              return e.preventDefault;
+            }).css({
+              color: "grey"
+            });
+            return e("#server_on").css({
+              color: "orange"
+            });
+          });
+        });
         n = new s;
         n.fetch({
           async: !1
         });
+        l = new i;
+        l.fetch({
+          async: !1
+        });
         h = t.template(a, {
           input: {
-            balance: n.get("balance")
+            balance: n.get("balance"),
+            debug: l.get("Server Parameters").debug === "True" ? "checked" : "",
+            using_sandbox: l.get("HIT Configuration").using_sandbox === "True" ? "checked" : ""
           }
         });
         e("#content").html(h);
-        l = new i;
         p = t.template(f);
         e("#sidebar").html(p);
         d = new o({

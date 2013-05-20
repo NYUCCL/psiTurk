@@ -36,18 +36,42 @@ define [
         #  Pass in our Router module and call it's initialize function
         Router.initialize()
 
+        # Listen for server status via socket.io
+        $ ->
+          socket = io.connect '/server_status'
+          socket.on "connect", ->
+            $.ajax
+              url: "/monitor_server"
+              async: false
+          socket.on 'status', (data) ->
+            if parseInt(data) is 0
+              $('#server_status').css({"color": "green"})
+              $('#server_on')
+                .click((e) -> e.preventDefault)
+                .css "color": "grey"
+              $('#server_off').css "color": "orange"
+            else
+              $('#server_status').css({"color": "red"})
+              $('#server_off')
+                .click((e) -> e.preventDefault)
+                .css "color": "grey"
+              $('#server_on').css "color": "orange"
+
         # Load at-a-glance model and data
         ataglance = new AtAGlanceModel
         ataglance.fetch async: false
 
+        # Load configuration model
+        config = new ConfigModel
+        config.fetch async: false
+
         # Load and add content html
         overviewContentHTML = _.template(OverviewTemplate,
           input:
-            balance: ataglance.get("balance"))
+            balance: ataglance.get("balance")
+            debug: if config.get("Server Parameters").debug is "True" then "checked" else ""
+            using_sandbox: if config.get("HIT Configuration").using_sandbox is "True" then "checked" else "")
         $('#content').html(overviewContentHTML)
-
-        # Load configuration model
-        config = new ConfigModel
 
         # Load and add side bar html
         sideBarHTML = _.template(SideBarTemplate)
@@ -64,3 +88,4 @@ define [
         # Have run button listen for clicks and tell server to create HITS
         $('#run').on "click", ->
           $.ajax url: "/create_hit"
+
