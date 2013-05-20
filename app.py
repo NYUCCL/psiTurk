@@ -35,6 +35,7 @@ logging.basicConfig( filename=logfilepath, format='%(asctime)s %(message)s', lev
 # constants
 USING_SANDBOX = config.getboolean('HIT Configuration', 'using_sandbox')
 CODE_VERSION = config.get('Task Parameters', 'code_version')
+HASH = config.get('Server Parameters', 'hash')
 
 # Database configuration and constants
 TABLENAME = config.get('Database Parameters', 'table_name')
@@ -85,6 +86,15 @@ def requires_auth(f):
             return authenticate()
         return f(*args, **kwargs)
     return decorated
+
+#----------------------------------------------
+# Server routines
+#----------------------------------------------
+def shutdown_server():
+    func = request.environ.get('werkzeug.server.shutdown')
+    if func is None:
+        raise RuntimeError('Not running with the Werkzeug Server')
+    func()
 
 #----------------------------------------------
 # ExperimentError Exception, for db errors, etc.
@@ -505,6 +515,17 @@ def dumpdata():
     return response
 
 
+#----------------------------------------------
+# psiTurk server routes
+#----------------------------------------------
+@app.route('/shutdown', methods=['GET'])
+def shutdown():
+    external_hash = request.args['hash']
+    if external_hash == HASH:
+        shutdown_server()
+        return 'Server shutting down...'
+    else:
+        return 'Unauthorized'
 
 #----------------------------------------------
 # generic route
