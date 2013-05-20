@@ -31,7 +31,7 @@
         <div class="control-group">
           <label class="control-label" for="question_url">Ad URL</label>
           <div class="controls">
-            <input type="text" name="question_url" name="question_url" value="<%= input.question_url %>">
+            <input type="text" name="question_url" id="question_url" name="question_url" value="<%= input.question_url %>">
             <p class="help-block">URL turkers will see in your ad.</p>
           </div>
         </div>
@@ -59,16 +59,9 @@
         <div class="control-group">
           <label class="control-label" for="duration">Duration</label>
           <div class="controls">
-            <input type="text" class="input-small" name="duration" id="dureation" value="<%= input.duration %>">
+            <input type="text" class="input-small" name="duration" id="duration" value="<%= input.duration %>">
             <p class="help-block">How long turkers have to complete once accepted.</p>
           </div>
-        </div>
-        <div class="control-group">
-        <label class="control-label" for="using_sandbox">Using sandbox?</label>
-          <label class="checkbox inline">
-            <input type='hidden' value='0' id="using_sandbox" name="using_sandbox">
-            <input type="checkbox" id="using_sandbox" name="using_sandbox" value="1" checked="checked">Yes
-          </label>
         </div>
         <h4>Requirements for workers</h4>
         <br>
@@ -87,7 +80,7 @@
           </label>
         </div>
         <div class="form-actions">
-          <button id="save_data" class="btn btn-primary save" data-section="HIT Configuration">Save changes</button>
+          <button type="submit" id="save_data" class="btn btn-primary save" data-section="HIT Configuration">Save changes</button>
         </div>
       </form>
     </div>

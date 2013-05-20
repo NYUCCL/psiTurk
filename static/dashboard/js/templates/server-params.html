@@ -11,13 +11,13 @@
         <div class="control-group">
           <label class="control-label" for="host">Host</label>
           <div class="controls">
-            <input type="text" class="input" id="host" name="host" value="<%= input.host %>" disabled>
+            <input type="text" class="input" id="host" name="host" value="<%= input.host %>">
           </div>
         </div>
         <div class="control-group">
           <label class="control-label" for="port">Port</label>
           <div class="controls">
-            <input type="text" class="input" id="port" name="port" value="<%= input.port %>" disabled>
+            <input type="text" class="input" id="port" name="port" value="<%= input.port %>">
           </div>
         </div>
         <div class="control-group">
@@ -30,18 +30,14 @@
         <div class="control-group">
           <label class="control-label" for="optionsCheckbox"></label>
           <div class="controls">
-              <label class="checkbox inline">
-                <input type="hidden" id="support_ie" name="support_ie" value="0">
-                <input type="checkbox" id="support_ie" name="support_ie" value="1"> Support Internet Explorer
-              </label>
-              <label class="checkbox inline">
-                <input type="hidden" id="debug" name="debug" value="0">
-                <input type="checkbox" id="debug" value="1" name="debug" checked="checked"> Debug
-              </label>
+            <label class="checkbox inline">
+              <input type="hidden" id="support_ie" name="support_ie" value="0">
+              <input type="checkbox" id="support_ie" name="support_ie" value="1"> Support Internet Explorer
+            </label>
           </div>
         </div>
       <div class="form-actions">
-        <button id="save_data" class="btn btn-primary save" data-section="Server Parameters">Save changes</button>
+        <button type="submit" id="save_data" class="btn btn-primary save" data-section="Server Parameters">Save changes</button>
       </div>
     </form>
   </div>
