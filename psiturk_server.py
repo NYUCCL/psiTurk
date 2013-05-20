@@ -17,6 +17,7 @@ class PsiTurkServer(Application):
         self.usage = None
         self.callable = None
         self.options = options
+        self.prog = None
         self.do_load_config()
     
     def init(self, *args):
