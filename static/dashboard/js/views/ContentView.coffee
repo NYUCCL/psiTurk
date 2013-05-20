@@ -9,3 +9,4 @@ define [
 
       render: ->
         loadCharts()
+        # Start monitoring server once app is loaded
