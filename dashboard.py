@@ -4,8 +4,11 @@ import os
 from boto.mturk.connection import MTurkConnection
 from boto.mturk.question import ExternalQuestion
 from boto.mturk.qualification import LocaleRequirement, PercentAssignmentsApprovedRequirement, Qualifications
+from socketio.namespace import BaseNamespace
 from flask import jsonify
 import socket
+import threading
+import time
 
 
 Config = ConfigParser.ConfigParser()
@@ -217,15 +220,49 @@ class MTurkServices:
         summary = jsonify(balance=str(balance))
         return(summary)
 
-class Server:
-    def __init__(self):
-      pass
 
-    def is_port_available(self, port, ip='127.0.0.1'):
-      s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-      try:
-          s.connect((ip, int(port)))
-          s.shutdown(2)
-          return 0
-      except:
-          return 1
+# Pub/sub routine for full-duplex communication between dashboard server and client
+class ServerNamespace(BaseNamespace):
+    sockets = {}
+    def recv_connect(self):
+        self.sockets[id(self)] = self
+    def disconnect(self, *args, **kwargs):
+        if id(self) in self.sockets:
+            del self.sockets[id(self)]
+        super(ServerNamespace, self).disconnect(*args, **kwargs)
+    # broadcast to all sockets on this channel!
+    @classmethod
+    def broadcast(self, event, message):
+        for ws in self.sockets.values():
+            ws.emit(event, message)
+
+class Server:
+    def __init__(self, port, ip='127.0.0.1'):
+        self.port = port
+        self.ip = ip
+        self.state = self.is_port_available(self.port)
+
+    def check_port_state(self):
+        current_state = self.is_port_available(self.port)
+        if current_state is not self.state:
+            self.state = current_state
+            ServerNamespace.broadcast('status', current_state)  # Update socket listeners
+
+    def is_port_available(self, port):
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            s.connect((self.ip, int(port)))
+            s.shutdown(2)
+            return 0
+        except:
+            return 1
+
+    def monitor(self):
+        self.check_port_state()
+        t = threading.Timer(3, self.monitor)
+        t.start()
+
+    def start_monitoring(self):
+        print(self.state)
+        ServerNamespace.broadcast('status', self.state)  # Notify socket listeners
+        self.monitor()
