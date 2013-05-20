@@ -213,10 +213,6 @@ def get_random_condcount():
 # routes
 #----------------------------------------------
 
-@app.route('/dashboard')
-def dashboard():
-    return "Insert cool dashboard here"
-
 @app.route('/mturk', methods=['GET'])
 def mturkroute():
     """
