@@ -21,15 +21,24 @@
       </a>
 
       <a class="brand" href="#">psiTurk</a>
-      <span class="tagline">making online research accessible. <a href="#">Read more.</a></span>
+      <span class="tagline">making online research accessible. <a href="http://gureckislab.org/blog/?p=1297">Read more.</a></span>
 
       <div class="nav-collapse collapse" id="main-menu">
-        <div class="auth pull-right">
-          <span class="name"></span><br/>
+        <div class="auth pull-right" style="width:200px; margin-right:-20px">
           <span class="links">
-            <a href="#">Settings</a>
-            <a href="#">Logout</a>
-          </span>
+              <i class="icon-circle" style="color: grey; margin: 0 3px 0 0" id="server_status"></i>
+                Server
+                <span id="server_controls">
+                  [<a href="#" id="server_on" style="color:grey">on</a>|<a href="#" id="server_off" style="color:grey">off</a>]
+                </span>
+              <span class='row'>
+              <i class="icon-circle" style="margin: 0 3px 0 10px; color: grey" id="experiment_status"></i>
+                Experiment
+                <span id="server_controls" style="color:grey">
+                  [<a href="#" id="run" style="color:grey">run</a>|<a href="#" id="expire" style="color:grey">expire</a>]
+                </span>
+              </span>
+            </span>
         </div>
       </div>
     </div>
@@ -41,7 +50,8 @@
       <div class="span3" id="sidebar">
       </div>
       <div class="span9" id="content-wrapper">
-        <div id="content" style="min-height: 250px">
+        <div id="content" style="min-height: 250px;">
+          <img src="static/dashboard/css/images/ajax-loader.gif" style="margin:115px 0px 0px 325px">
           <!-- Content will be placed here by template engine via Backbone -->
         </div>
       </div>
