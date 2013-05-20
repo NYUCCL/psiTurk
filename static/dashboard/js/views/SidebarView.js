@@ -10,9 +10,9 @@
     t.__super__ = n.prototype;
     return t;
   };
-  define([ "backbone", "inspiritas", "text!templates/aws-info.html", "text!templates/overview.html", "text!templates/hit-config.html", "text!templates/database.html", "text!templates/server-params.html", "text!templates/expt-info.html" ], function(e, n, r, i, s, o, u, a) {
-    var f;
-    return f = function(e) {
+  define([ "backbone", "inspiritas", "text!templates/aws-info.html", "text!templates/overview.html", "text!templates/hit-config.html", "text!templates/database.html", "text!templates/server-params.html", "text!templates/expt-info.html", "views/validators" ], function(e, n, r, i, s, o, u, a, f) {
+    var l;
+    return l = function(e) {
       function n() {
         return n.__super__.constructor.apply(this, arguments);
       }
@@ -38,6 +38,10 @@
         });
         $("#content").html(r);
         loadCharts();
+        $.ajax({
+          url: "/monitor_server",
+          async: !1
+        });
         return this.render();
       };
       n.prototype.pushstateClick = function(e) {
@@ -45,13 +49,33 @@
       };
       n.prototype.events = {
         "click a": "pushstateClick",
-        "click #save_data": "save"
+        "click #save_data": "save",
+        "click input#debug": "saveDebugState",
+        "click input#using_sandbox": "saveUsingSandboxState"
+      };
+      n.prototype.saveDebugState = function() {
+        var e;
+        e = $("input#debug").is(":checked");
+        return this.options.config.save({
+          "Server Parameters": {
+            debug: e
+          }
+        });
+      };
+      n.prototype.saveUsingSandboxState = function() {
+        var e;
+        e = $("input#using_sandbox").is(":checked");
+        return this.options.config.save({
+          "HIT Configuration": {
+            using_sandbox: e
+          }
+        });
       };
       n.prototype.initialize = function() {
         return this.render();
       };
       n.prototype.render = function() {
-        var e, t, n, f, l, c;
+        var e, t, n, l, c, h, p;
         $("li").on("click", function() {
           $("li").removeClass("selected");
           return $(this).addClass("selected");
@@ -62,7 +86,7 @@
         this.options.ataglance.fetch({
           async: !1
         });
-        l = _.template(i, {
+        c = _.template(i, {
           input: {
             balance: this.options.ataglance.get("balance")
           }
@@ -73,7 +97,7 @@
             aws_secret_access_key: this.options.config.get("AWS Access").aws_secret_access_key
           }
         });
-        f = _.template(s, {
+        l = _.template(s, {
           input: {
             title: this.options.config.get("HIT Configuration").title,
             description: this.options.config.get("HIT Configuration").description,
@@ -94,7 +118,7 @@
             table_name: this.options.config.get("Database Parameters").table_name
           }
         });
-        c = _.template(u, {
+        h = _.template(u, {
           input: {
             host: this.options.config.get("Server Parameters").host,
             port: this.options.config.get("Server Parameters").port,
@@ -109,24 +133,31 @@
             num_counters: this.options.config.get("Task Parameters").num_counters
           }
         });
+        p = new f;
         $("#overview").on("click", function() {
-          $("#content").html(l);
-          return loadCharts();
+          $("#content").html(c);
+          loadCharts();
+          return p.loadValidators();
         });
         $("#aws-info").on("click", function() {
-          return $("#content").html(e);
+          $("#content").html(e);
+          return p.loadValidators();
         });
         $("#hit-config").on("click", function() {
-          return $("#content").html(f);
+          $("#content").html(l);
+          return p.loadValidators();
         });
         $("#database").on("click", function() {
-          return $("#content").html(t);
+          $("#content").html(t);
+          return p.loadValidators();
         });
         $("#server-params").on("click", function() {
-          return $("#content").html(c);
+          $("#content").html(h);
+          return p.loadValidators();
         });
         return $("#expt-info").on("click", function() {
-          return $("#content").html(n);
+          $("#content").html(n);
+          return p.loadValidators();
         });
       };
       return n;

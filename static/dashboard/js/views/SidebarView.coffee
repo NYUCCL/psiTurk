@@ -8,6 +8,7 @@ define [
         'text!templates/database.html'
         'text!templates/server-params.html'
         'text!templates/expt-info.html'
+        'views/validators'
       ],
       (
         Backbone
@@ -18,6 +19,7 @@ define [
         DatabaseTemplate
         ServerParamsTemplate
         ExptInfoTemplate
+        Validators
       ) ->
         class SideBarView extends Backbone.View
 
@@ -27,7 +29,6 @@ define [
             # Prevent clicks from reloading page
             event.preventDefault()
 
-            # Get section name of form posted
             section = $(event.target).data 'section'
             inputData = {}
             configData = {}
@@ -45,6 +46,10 @@ define [
             $('#content').html(overview)
             loadCharts()
 
+            $.ajax
+              url: "/monitor_server"
+              async: false
+
             @render()
 
           pushstateClick: (event) ->
@@ -53,6 +58,20 @@ define [
           events:
             'click a': 'pushstateClick'
             'click #save_data': 'save'
+            'click input#debug': 'saveDebugState'
+            'click input#using_sandbox': 'saveUsingSandboxState'
+
+          saveDebugState: ->
+            debug = $("input#debug").is(':checked')
+            @options.config.save 
+              "Server Parameters":
+                debug: debug
+
+          saveUsingSandboxState: ->
+            using_sandbox = $("input#using_sandbox").is(':checked')
+            @options.config.save 
+              "HIT Configuration":
+                using_sandbox: using_sandbox
 
           initialize: ->
             @render()
@@ -103,18 +122,24 @@ define [
                 num_conds: @options.config.get("Task Parameters").num_conds,
                 num_counters: @options.config.get("Task Parameters").num_counters)
 
+            validator = new Validators
             # Have options respond to clicks
             $('#overview').on 'click', ->
               $('#content').html(overview)
               loadCharts()
+              validator.loadValidators()
             $('#aws-info').on 'click', ->
               $('#content').html(awsInfo)
+              validator.loadValidators()
             $('#hit-config').on 'click', ->
               $('#content').html(hitConfig)
+              validator.loadValidators()
             $('#database').on 'click', ->
               $('#content').html(database)
+              validator.loadValidators()
             $('#server-params').on 'click', ->
               $('#content').html(serverParams)
+              validator.loadValidators()
             $('#expt-info').on 'click', ->
               $('#content').html(exptInfo)
-
+              validator.loadValidators()
