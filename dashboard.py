@@ -20,6 +20,7 @@ class PsiTurkConfig:
             print("Creating config file...")
             self.load_default_config()
             self.load_config()
+            self.generate_hash()
         else:
             print("Using current config file...")
             self.load_config()
@@ -39,6 +40,15 @@ class PsiTurkConfig:
         else:
             print("Option not available.")
             return(False)
+
+    def generate_hash(self):
+        self.hash = str(os.urandom(16).encode('hex'))
+        configfilepath = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                              self.filename)
+        cfgfile = open(configfilepath, 'w')
+        Config.set('Server Parameters', 'hash', self.hash)
+        Config.write(cfgfile)
+        cfgfile.close()
 
     def get_serialized(self):
         # Serializing data is necessary to communicate w/ backbone frontend.
