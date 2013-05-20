@@ -1,12 +1,13 @@
 # Import flask
 from flask import Flask, render_template, request,\
                   Response, make_response, jsonify
-
-# Import dashboard
+import werkzeug.serving
+from gevent import monkey
+from socketio import socketio_manage
+from socketio.server import SocketIOServer
 import dashboard as Dashboard
 
-# Can dashboard be accessed externally?
-IS_SECURE = False
+monkey.patch_all()
 
 app = Flask(__name__)
 
@@ -17,13 +18,6 @@ def dashboard():
     Serves dashboard.
     """
     return render_template('dashboard.html')
-
-# @app.route('/dashboard', methods=['GET'])
-# def dashbaord():
-#     """
-#     Serves dashboard.
-#     """
-#     return render_template('dashboard.html')
 
 @app.route('/dashboard_model', methods=['GET', 'POST'])
 def dashbaord_model():
@@ -57,26 +51,55 @@ def create_hit():
     """
     Create HIT on AMT
     """
-    config = Dashboard.PsiTurkConfig()
-    services = Dashboard.MTurkServices(config)
-    services.create_hit()
     return "HIT created"
 
-@app.route('/is_port_available', methods=['GET'])
+@app.route('/monitor_server', methods=['GET'])
+def monitor_server():
+    config = Dashboard.PsiTurkConfig()
+    server = Dashboard.Server(port=config.port)
+    server.start_monitoring()
+    return "Monitoring"
+
+@app.route('/is_port_available', methods=['POST'])
 def create_hit():
     """
     Check if port is available on localhost
     """
-    if request.method == 'GET':
-        port = request.args["port"]
-        server = Dashboard.Server()
-        return jsonify(is_available=server.is_port_available(port))
+    if request.method == 'POST':
+        test_port = request.json['port']
+        config = Dashboard.PsiTurkConfig()
+        if test_port == config.port:
+            is_available = 1
+        else:
+            server = Dashboard.Server(port=test_port)
+            is_available = server.is_port_available(test_port)
+        return jsonify(is_available=is_available)
     return "port check"
 
-if __name__ == '__main__':
-    print "Starting psiTurk dashboard..."
-    if IS_SECURE:
-        app.run(debug=False, port=5000)
+@app.route('/socket.io/<path:rest>')
+def push_stream(rest):
+    try:
+        socketio_manage(request.environ, {'/server_status': Dashboard.ServerNamespace}, request)
+    except:
+        app.logger.error("Exception while handling socketio connection",
+                     exc_info=True)
+
+@app.route("/server_status", methods=["GET"])
+def say():
+    status = request.args.get('status', None)
+    if status:
+        Dashboard.ServerNamespace.broadcast('status', status)
+        return Response("Status change")
     else:
-        print "WARNING! Your server is exposed to the public."
-        app.run(debug=True, host='0.0.0.0', port=5000)
+        return Response("Missing status")
+
+
+@werkzeug.serving.run_with_reloader
+def run_dev_server():
+    app.debug = True
+    port = 5000
+    SocketIOServer(('', port), app, resource="socket.io").serve_forever()
+
+if __name__ == "__main__":
+    app.run(debug=True, port=5000)
+    run_dev_server()

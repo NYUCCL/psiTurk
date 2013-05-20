@@ -15,6 +15,7 @@ require.config
     dropdown: "libs/bootstrap-dropdown"
     collapse: "libs/bootstrap-collapse"
     nod: "libs/nod"
+    socketio: "libs/socketio"
 
 
   # Shim sets the configuration for third party scripts that are not AMD compatible
@@ -30,7 +31,7 @@ require.config
     exporting:
       deps: ["highcharts"]
     inspiritas: ["highcharts", "jquery", "exporting"]
-    nod: ["jquery", "bootstrap"]
+    nod: ["jquery"]
     backbone:
       deps: ["underscore", "jquery"]
       exports: "Backbone" #attaches "Backbone" to the window object
@@ -46,7 +47,9 @@ require [
   "exporting"
   "bootstrap"
   "dropdown"
-  "collapse"],
+  "collapse"
+  "socketio",
+  "nod"],
   (
     $
     App
