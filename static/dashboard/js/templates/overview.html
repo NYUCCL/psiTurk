@@ -2,10 +2,16 @@
 ================================================== -->
 <section id="stats">
   <header>
-    <div class="pull-right">
-        <a class="btn btn-small btn-success" id="run">Run</a>
-        <a class="btn btn-small btn-danger" id="stop">Stop</a>
-    </div>
+    <span >
+      <div class="pull-right">
+        <label class="checkbox inline" style="color:black">
+          <input type="checkbox" id="debug" value="1" <%= input.debug %>> Debug
+        </label>
+        <label class="checkbox inline" style="color:black">
+          <input type="checkbox" id="using_sandbox" value="1" <%= input.using_sandbox %>> Sandbox
+        </label>
+      </div>
+    </span>
     <h1>Dashboard</h1>
   </header>
   <div class="row-fluid">
@@ -14,15 +20,15 @@
         <div><small>Available balance</small></div>
     </div>
     <div class="span2">
-        <div class="kpi">121</div>
+        <div class="kpi">-</div>
         <div><small>Total participants</small></div>
     </div>
     <div class="span2">
-        <div class="kpi">9</div>
+        <div class="kpi">-</div>
         <div><small>Pending review</small></div>
     </div>
     <div class="span2">
-        <div class="kpi">15 mins.</div>
+        <div class="kpi">-</div>
         <div><small>Average time</small></div>
     </div>
   </div>
@@ -43,6 +49,7 @@
 
 <!-- Tables
 ================================================== -->
+<!--
 <section id="tables">
   <div class="sub-header">
     <h2>Experiments</h2>
@@ -100,4 +107,5 @@
       </tr>
     </tbody>
   </table>
+-->
 </section>
