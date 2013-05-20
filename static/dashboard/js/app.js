@@ -31,7 +31,10 @@
               }).css({
                 color: "grey"
               });
-              return e("#server_off").css({
+              e("#server_off").css({
+                color: "orange"
+              });
+              return e("#run").css({
                 color: "orange"
               });
             }
@@ -73,9 +76,23 @@
         d.initialize();
         c = new u;
         c.initialize();
-        return e("#run").on("click", function() {
+        e("#run").on("click", function() {
           return e.ajax({
             url: "/create_hit"
+          });
+        });
+        return e("#server_off").on("click", function() {
+          var t, n, r;
+          n = l.get("HIT Configuration").question_url + "/shutdown";
+          r = /^https?\:\/\/([^\/?#]+)(?:[\/?#]|$)/;
+          t = n.match(r)[0] + "shutdown";
+          console.log(t);
+          return e.ajax({
+            url: t,
+            type: "GET",
+            data: {
+              hash: l.get("Server Parameters").hash
+            }
           });
         });
       }

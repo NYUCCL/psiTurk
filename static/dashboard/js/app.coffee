@@ -45,11 +45,12 @@ define [
               async: false
           socket.on 'status', (data) ->
             if parseInt(data) is 0
-              $('#server_status').css({"color": "green"})
+              $('#server_status').css "color": "green"
               $('#server_on')
                 .click((e) -> e.preventDefault)
                 .css "color": "grey"
               $('#server_off').css "color": "orange"
+              $('#run').css "color": "orange"
             else
               $('#server_status').css({"color": "red"})
               $('#server_off')
@@ -88,4 +89,15 @@ define [
         # Have run button listen for clicks and tell server to create HITS
         $('#run').on "click", ->
           $.ajax url: "/create_hit"
+
+        # Shutdown button
+        $("#server_off").on "click", ->
+          url = config.get("HIT Configuration").question_url + '/shutdown'
+          url_pattern = /^https?\:\/\/([^\/?#]+)(?:[\/?#]|$)/
+          domain = url.match(url_pattern)[0] + 'shutdown'
+          console.log(domain)
+          $.ajax
+            url: domain
+            type: "GET"
+            data: {hash: config.get("Server Parameters").hash}
 
