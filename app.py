@@ -393,7 +393,7 @@ def enterexp():
     db_session.commit()
     return "Success"
 
-@app.route('/sync/<id>', methods=['PUT'])
+@app.route('/sync/<id>', methods=['GET', 'PUT'])
 def update(id=None):
     """
     Save experiment data, which should be a JSON object and will be stored
@@ -408,7 +408,7 @@ def update(id=None):
     except:
         print "DB error: Unique user not found."
     
-    if request.json.has_key('data'):
+    if hasattr(request, 'json'):
         user.datastring = str(request.json)
         db_session.add(user)
         db_session.commit()
