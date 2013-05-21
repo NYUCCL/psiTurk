@@ -2,10 +2,12 @@
 from flask import Flask, render_template, request,\
                   Response, make_response, jsonify
 import werkzeug.serving
+import subprocess
 from gevent import monkey
 from socketio import socketio_manage
 from socketio.server import SocketIOServer
 import dashboard as Dashboard
+
 
 monkey.patch_all()
 
@@ -83,9 +85,10 @@ def push_stream(rest):
     except:
         app.logger.error("Exception while handling socketio connection",
                      exc_info=True)
+    return "socket attempt"
 
 @app.route("/server_status", methods=["GET"])
-def say():
+def status():
     status = request.args.get('status', None)
     if status:
         Dashboard.ServerNamespace.broadcast('status', status)
@@ -93,6 +96,10 @@ def say():
     else:
         return Response("Missing status")
 
+@app.route("/launch", methods=["GET"])
+def launch():
+    subprocess.Popen("python psiturk_server.py", shell=True)
+    return "psiTurk launching..."
 
 @werkzeug.serving.run_with_reloader
 def run_dev_server():
