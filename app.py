@@ -462,31 +462,28 @@ def quitter():
     except:
         return render_template('error.html', errornum= experiment_errors['tried_to_quit'])
 
-@app.route('/debrief', methods=['POST', 'GET'])
+@app.route('/debrief', methods=['GET'])
 def savedata():
     """
     User has finished the experiment and is posting their data in the form of a
     (long) string. They will receive a debreifing back.
     """
-    print request.form.keys()
-    if not (request.form.has_key('assignmentid') and request.form.has_key('data')):
+    print request.args.keys()
+    if not request.args.has_key('uniqueId'):
         raise ExperimentError('improper_inputs')
-    assignmentId = request.form['assignmentid']
-    workerId = request.form['workerid']
-    datastring = request.form['data']
-    print assignmentId, datastring
+    else:
+        uniqueId = request.args['uniqueId']
+    print "/debrief called with", uniqueId
     
     user = Participant.query.\
-            filter(Participant.assignmentid == assignmentId).\
-            filter(Participant.workerid == workerId).\
+            filter(Participant.uniqueid == uniqueId).\
             one()
     user.status = COMPLETED
-    user.datastring = datastring
     user.endhit = datetime.datetime.now()
     db_session.add(user)
     db_session.commit()
     
-    return render_template('debriefing.html', workerId=workerId, assignmentId=assignmentId)
+    return render_template('debriefing.html', workerId=user.workerid, assignmentId=user.assignmentid)
 
 @app.route('/complete', methods=['POST'])
 def completed():

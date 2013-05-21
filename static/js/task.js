@@ -207,7 +207,7 @@ var TestPhase = function() {
 * Questionnaire *
 ****************/
 
-var taskfinished = function() { showpage('thanks.html'); };
+var taskfinished = function() { window.location="/debrief?uniqueId=" + psiTurk.taskdata.id; };
 
 // We may want this to end up being a backbone view
 var givequestionnaire = function() {
