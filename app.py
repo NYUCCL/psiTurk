@@ -2,7 +2,9 @@
 import os
 import datetime
 import logging
+import psutil
 from functools import wraps
+import subprocess
 from random import choice
 try:
     from collections import Counter
@@ -87,14 +89,24 @@ def requires_auth(f):
         return f(*args, **kwargs)
     return decorated
 
+
 #----------------------------------------------
 # Server routines
 #----------------------------------------------
 def shutdown_server():
-    func = request.environ.get('werkzeug.server.shutdown')
-    if func is None:
-        raise RuntimeError('Not running with the Werkzeug Server')
-    func()
+    # This assumes that psiTurk is the only gunicorn process. Otherwise, problems...
+    gunicorn_pid = find_process("gunicorn: master")
+    os.kill(gunicorn_pid, 15)
+
+def find_process(name):
+    ps = subprocess.Popen(['ps', 'aux'], stdout=subprocess.PIPE, close_fds=True)
+    grep = subprocess.Popen(['grep', str(name)], stdin=ps.stdout, stdout=subprocess.PIPE, close_fds=True)
+    remove_grep = subprocess.Popen(['grep', '-v','grep'], stdin=grep.stdout, stdout=subprocess.PIPE, close_fds=True)
+    awk = subprocess.Popen(['awk', '{print $2}'], stdin=remove_grep.stdout,\
+                           stdout=subprocess.PIPE, close_fds=True).communicate()[0]
+    return int(awk)
+
+
 
 #----------------------------------------------
 # ExperimentError Exception, for db errors, etc.
@@ -518,14 +530,16 @@ def dumpdata():
 #----------------------------------------------
 # psiTurk server routes
 #----------------------------------------------
-@app.route('/shutdown', methods=['GET'])
+@app.route('/shutdown', methods=["GET"])
 def shutdown():
     external_hash = request.args['hash']
     if external_hash == HASH:
+        print 'Server shutting down...'
         shutdown_server()
         return 'Server shutting down...'
     else:
         return 'Unauthorized'
+
 
 #----------------------------------------------
 # generic route
