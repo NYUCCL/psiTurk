@@ -1,10 +1,12 @@
 import ConfigParser
 import datetime
 import os
+import subprocess
 from boto.mturk.connection import MTurkConnection
 from boto.mturk.question import ExternalQuestion
 from boto.mturk.qualification import LocaleRequirement, PercentAssignmentsApprovedRequirement, Qualifications
 from socketio.namespace import BaseNamespace
+from psiturk_server import PsiTurkServer
 from flask import jsonify
 import socket
 import threading
@@ -24,6 +26,11 @@ class PsiTurkConfig:
         else:
             print("Using current config file...")
             self.load_config()
+            self.check_hash()
+
+    def check_hash(self):
+        if not self.get("Server Parameters", "hash"):
+            self.generate_hash()
 
     # Config methods
     def set(self, section, key, value):
@@ -42,13 +49,8 @@ class PsiTurkConfig:
             return(False)
 
     def generate_hash(self):
-        self.hash = str(os.urandom(16).encode('hex'))
-        configfilepath = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                              self.filename)
-        cfgfile = open(configfilepath, 'w')
-        Config.set('Server Parameters', 'hash', self.hash)
-        Config.write(cfgfile)
-        cfgfile.close()
+        self.user_hash = str(os.urandom(16).encode('hex'))
+        self.set('Server Parameters', 'hash', self.user_hash)
 
     def get_serialized(self):
         # Serializing data is necessary to communicate w/ backbone frontend.
@@ -246,6 +248,7 @@ class ServerNamespace(BaseNamespace):
         for ws in self.sockets.values():
             ws.emit(event, message)
 
+
 class Server:
     def __init__(self, port, ip='127.0.0.1'):
         self.port = port
@@ -269,10 +272,12 @@ class Server:
 
     def monitor(self):
         self.check_port_state()
-        t = threading.Timer(3, self.monitor)
+        t = threading.Timer(2, self.monitor)
         t.start()
 
+    def launch_psiturk(self):
+        subprocess.Popen("python psiturk_server.py", shell=True)
+
     def start_monitoring(self):
-        print(self.state)
         ServerNamespace.broadcast('status', self.state)  # Notify socket listeners
         self.monitor()
