@@ -31,9 +31,14 @@
         this.options.config.save(t);
         $("li").removeClass("selected");
         $("#overview").addClass("selected");
+        this.options.config.fetch({
+          async: !1
+        });
         r = _.template(i, {
           input: {
-            balance: this.options.ataglance.get("balance")
+            balance: this.options.ataglance.get("balance"),
+            debug: this.options.config.get("Server Parameters").debug === "True" ? "checked" : "",
+            using_sandbox: this.options.config.get("HIT Configuration").using_sandbox === "True" ? "checked" : ""
           }
         });
         $("#content").html(r);
@@ -49,9 +54,23 @@
       };
       n.prototype.events = {
         "click a": "pushstateClick",
-        "click #save_data": "save",
+        "click .save_data": "save",
+        "click #server-parms-save": "serverParamsSave",
         "click input#debug": "saveDebugState",
         "click input#using_sandbox": "saveUsingSandboxState"
+      };
+      n.prototype.serverParamsSave = function() {
+        var e, t, n;
+        t = this.options.config.get("HIT Configuration").question_url + "/shutdown";
+        n = /^https?\:\/\/([^\/:?#]+)(?:[\/:?#]|$)/i;
+        e = t.match(n)[0] + this.options.config.get("Server Parameters").port + "/shutdown";
+        return $.ajax({
+          url: e,
+          type: "GET",
+          data: {
+            hash: this.options.config.get("Server Parameters").hash
+          }
+        });
       };
       n.prototype.saveDebugState = function() {
         var e;
@@ -75,7 +94,7 @@
         return this.render();
       };
       n.prototype.render = function() {
-        var e, t, n, l, c, h, p;
+        var e, t, n, l, c, h, p = this;
         $("li").on("click", function() {
           $("li").removeClass("selected");
           return $(this).addClass("selected");
@@ -85,11 +104,6 @@
         });
         this.options.ataglance.fetch({
           async: !1
-        });
-        c = _.template(i, {
-          input: {
-            balance: this.options.ataglance.get("balance")
-          }
         });
         e = _.template(r, {
           input: {
@@ -118,7 +132,7 @@
             table_name: this.options.config.get("Database Parameters").table_name
           }
         });
-        h = _.template(u, {
+        c = _.template(u, {
           input: {
             host: this.options.config.get("Server Parameters").host,
             port: this.options.config.get("Server Parameters").port,
@@ -133,31 +147,41 @@
             num_counters: this.options.config.get("Task Parameters").num_counters
           }
         });
-        p = new f;
+        h = new f;
         $("#overview").on("click", function() {
-          $("#content").html(c);
-          loadCharts();
-          return p.loadValidators();
+          var e;
+          p.options.config.fetch({
+            async: !1
+          });
+          e = _.template(i, {
+            input: {
+              balance: p.options.ataglance.get("balance"),
+              debug: p.options.config.get("Server Parameters").debug === "True" ? "checked" : "",
+              using_sandbox: p.options.config.get("HIT Configuration").using_sandbox === "True" ? "checked" : ""
+            }
+          });
+          $("#content").html(e);
+          return loadCharts();
         });
         $("#aws-info").on("click", function() {
           $("#content").html(e);
-          return p.loadValidators();
+          return h.loadValidators();
         });
         $("#hit-config").on("click", function() {
           $("#content").html(l);
-          return p.loadValidators();
+          return h.loadValidators();
         });
         $("#database").on("click", function() {
           $("#content").html(t);
-          return p.loadValidators();
+          return h.loadValidators();
         });
         $("#server-params").on("click", function() {
-          $("#content").html(h);
-          return p.loadValidators();
+          $("#content").html(c);
+          return h.loadValidators();
         });
         return $("#expt-info").on("click", function() {
           $("#content").html(n);
-          return p.loadValidators();
+          return h.loadValidators();
         });
       };
       return n;

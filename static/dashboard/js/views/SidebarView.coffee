@@ -40,9 +40,12 @@ define [
             # Load overview and change sidebar link
             $('li').removeClass 'selected'
             $('#overview').addClass 'selected'
+            @options.config.fetch async: false
             overview = _.template(OverviewTemplate,
               input:
-                balance: @options.ataglance.get("balance"))
+                balance: @options.ataglance.get("balance")
+                debug: if @options.config.get("Server Parameters").debug is "True" then "checked" else ""
+                using_sandbox: if @options.config.get("HIT Configuration").using_sandbox is "True" then "checked" else "")
             $('#content').html(overview)
             loadCharts()
 
@@ -57,9 +60,20 @@ define [
 
           events:
             'click a': 'pushstateClick'
-            'click #save_data': 'save'
+            'click .save_data': 'save'
+            'click #server-parms-save': 'serverParamsSave'
             'click input#debug': 'saveDebugState'
             'click input#using_sandbox': 'saveUsingSandboxState'
+  
+          serverParamsSave: ->
+            # Reset server on save
+            url = @options.config.get("HIT Configuration").question_url + '/shutdown'
+            url_pattern =  /^https?\:\/\/([^\/:?#]+)(?:[\/:?#]|$)/i
+            domain = url.match(url_pattern)[0] + @options.config.get("Server Parameters").port + '/shutdown'
+            $.ajax
+              url: domain
+              type: "GET"
+              data: {hash: @options.config.get("Server Parameters").hash}
 
           saveDebugState: ->
             debug = $("input#debug").is(':checked')
@@ -69,7 +83,7 @@ define [
 
           saveUsingSandboxState: ->
             using_sandbox = $("input#using_sandbox").is(':checked')
-            @options.config.save 
+            @options.config.save
               "HIT Configuration":
                 using_sandbox: using_sandbox
 
@@ -86,9 +100,6 @@ define [
             @options.ataglance.fetch async: false
 
             # Load and add config content pages
-            overview = _.template(OverviewTemplate,
-              input:
-                balance: @options.ataglance.get("balance"))
             awsInfo = _.template(AWSInfoTemplate,
               input:
                 aws_access_key_id: @options.config.get("AWS Access").aws_access_key_id
@@ -124,10 +135,15 @@ define [
 
             validator = new Validators
             # Have options respond to clicks
-            $('#overview').on 'click', ->
+            $('#overview').on 'click', =>
+              @options.config.fetch async: false
+              overview = _.template(OverviewTemplate,
+                input:
+                  balance: @options.ataglance.get("balance")
+                  debug: if @options.config.get("Server Parameters").debug is "True" then "checked" else ""
+                  using_sandbox: if @options.config.get("HIT Configuration").using_sandbox is "True" then "checked" else "")
               $('#content').html(overview)
               loadCharts()
-              validator.loadValidators()
             $('#aws-info').on 'click', ->
               $('#content').html(awsInfo)
               validator.loadValidators()
