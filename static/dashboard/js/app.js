@@ -26,9 +26,7 @@
               e("#server_status").css({
                 color: "green"
               });
-              e("#server_on").click(function(e) {
-                return e.preventDefault;
-              }).css({
+              e("#server_on").css({
                 color: "grey"
               });
               e("#server_off").css({
@@ -41,9 +39,7 @@
             e("#server_status").css({
               color: "red"
             });
-            e("#server_off").click(function(e) {
-              return e.preventDefault;
-            }).css({
+            e("#server_off").css({
               color: "grey"
             });
             return e("#server_on").css({
@@ -81,18 +77,57 @@
             url: "/create_hit"
           });
         });
-        return e("#server_off").on("click", function() {
+        e("#server_off").on("click", function() {
           var t, n, r;
           n = l.get("HIT Configuration").question_url + "/shutdown";
-          r = /^https?\:\/\/([^\/?#]+)(?:[\/?#]|$)/;
-          t = n.match(r)[0] + "shutdown";
-          console.log(t);
+          r = /^https?\:\/\/([^\/:?#]+)(?:[\/:?#]|$)/i;
+          t = n.match(r)[0] + l.get("Server Parameters").port + "/shutdown";
           return e.ajax({
             url: t,
             type: "GET",
             data: {
               hash: l.get("Server Parameters").hash
             }
+          });
+        });
+        return e("#server_on").on("click", function() {
+          return e.ajax({
+            url: "/launch",
+            type: "GET",
+            success: e(function() {
+              var t;
+              t = io.connect("/server_status");
+              t.on("connect", function() {
+                return e.ajax({
+                  url: "/monitor_server"
+                });
+              });
+              return t.on("status", function(t) {
+                if (parseInt(t) === 0) {
+                  e("#server_status").css({
+                    color: "green"
+                  });
+                  e("#server_on").css({
+                    color: "grey"
+                  });
+                  e("#server_off").css({
+                    color: "orange"
+                  });
+                  return e("#run").css({
+                    color: "orange"
+                  });
+                }
+                e("#server_status").css({
+                  color: "red"
+                });
+                e("#server_off").css({
+                  color: "grey"
+                });
+                return e("#server_on").css({
+                  color: "orange"
+                });
+              });
+            })
           });
         });
       }
