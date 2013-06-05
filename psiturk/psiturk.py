@@ -22,7 +22,7 @@ from sqlalchemy import or_
 from config import config
 
 # Set up logging
-logfilepath = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+logfilepath = os.path.join(os.getcwd(),
                            config.get("Server Parameters", "logfile"))
 
 loglevels = [logging.DEBUG, logging.INFO, logging.WARNING, logging.ERROR, logging.CRITICAL]

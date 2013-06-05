@@ -3,9 +3,9 @@ setup(
     name = "PsiTurk",
     version = "0.1",
     packages = ["psiturk"],
-    #entry_points = {
-    #    'console_scripts': ['psiturk = psiturk.psturk:run_server']
-    #},
+    entry_points = {
+        'console_scripts': ['psiturk = psiturk.psiturk:run_webserver']
+    },
     setup_requires = ["Flask", "boto", "SQLAlchemy"],
     extras_require = {
         "gunicorn": "gunicorn"
