@@ -41,6 +41,16 @@ var startTask = function () {
 Backbone.Notifications.on('_psiturk_finishedinstructions', startTask);
 Backbone.Notifications.on('_psiturk_finishedtask', function(msg) { $(window).off("beforeunload"); });
 
+$(window).blur( function() {
+	Backbone.Notifications.trigger('_psiturk_lostfocus');
+});
+
+$(window).focus( function() {
+	Backbone.Notifications.trigger('_psiturk_gainedfocus');	
+});
+
+
+
 
 /****************
  * HTML PAGES   *
@@ -125,9 +135,16 @@ var TaskData = Backbone.Model.extend({
 		currenttrial: 0,
 		bonus: 0,
 		data: "",
-		questiondata: {}
+		questiondata: {},
+		eventdata: []
 	},
 	
+	initialize: function() {
+		this.addEvent('initialized');
+		this.listenTo(Backbone.Notifications, '_psiturk_lostfocus', this.addEventLostFocus);
+		this.listenTo(Backbone.Notifications, '_psiturk_gainedfocus', this.addEventGainedFocus);
+	},
+
 	addTrialData: function(trialdata) {
 		this.set({"data": this.get("data").concat(trialdata, "\n")});
 		this.set({"currenttrial": this.get("currenttrial")+1});
@@ -137,8 +154,26 @@ var TaskData = Backbone.Model.extend({
 		qd = this.get("questiondata");
 		qd[field] = response;
 		this.set("questiondata", qd);
-	}
+	},
+
+	addEventGainedFocus: function() { this.addEvent('gainedfocus') },
+
+	addEventLostFocus: function() { this.addEvent('lostfocus') },
+	
+	addEvent: function(eventtype) {
+		var ed = this.get('eventdata');
+		var timestamp = new Date().getTime();
+		if (eventtype == 'initialized') {
+			var interval = 0;
+		} else {
+			var interval = timestamp - ed[ed.length-1]['timestamp'];
+		}
+		ed.push({'eventtype': eventtype, 'timestamp': timestamp, 'interval':interval});
+		this.set('eventdata', ed);
+	},
+
 });
+
 
 
 /*******
@@ -200,5 +235,8 @@ var PsiTurk = function() {
 };
 
 psiTurk = new PsiTurk();
+
+
+
 
 // vi: noexpandtab nosmartindent shiftwidth=4 tabstop=4
