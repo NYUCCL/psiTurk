@@ -51,6 +51,19 @@ $(window).focus( function() {
 
 
 
+// track changes in window size
+function triggerResize() {
+	Backbone.Notifications.trigger('_psiturk_windowresize', [window.innerWidth, window.innerHeight]);
+};
+
+var to = false;
+$(window).resize(function(){
+ if(to !== false)
+    clearTimeout(to);
+ to = setTimeout(triggerResize, 200);
+});
+
+
 
 /****************
  * HTML PAGES   *
@@ -136,13 +149,18 @@ var TaskData = Backbone.Model.extend({
 		bonus: 0,
 		data: "",
 		questiondata: {},
-		eventdata: []
+		eventdata: [],
+		useragent: ""
 	},
 	
 	initialize: function() {
-		this.addEvent('initialized');
-		this.listenTo(Backbone.Notifications, '_psiturk_lostfocus', this.addEventLostFocus);
-		this.listenTo(Backbone.Notifications, '_psiturk_gainedfocus', this.addEventGainedFocus);
+		this.useragent = navigator.userAgent;
+		this.addEvent('initialized', null);
+		this.addEvent('window_resize', [window.innerWidth, window.innerHeight]);
+
+		this.listenTo(Backbone.Notifications, '_psiturk_lostfocus', function() { this.addEvent('focus', 'off'); });
+		this.listenTo(Backbone.Notifications, '_psiturk_gainedfocus', function() { this.addEvent('focus', 'on'); });
+		this.listenTo(Backbone.Notifications, '_psiturk_windowresize', function(newsize) { this.addEvent('window_resize', newsize); });
 	},
 
 	addTrialData: function(trialdata) {
@@ -156,19 +174,18 @@ var TaskData = Backbone.Model.extend({
 		this.set("questiondata", qd);
 	},
 
-	addEventGainedFocus: function() { this.addEvent('gainedfocus') },
+	addEvent: function(eventtype, value) {
 
-	addEventLostFocus: function() { this.addEvent('lostfocus') },
-	
-	addEvent: function(eventtype) {
 		var ed = this.get('eventdata');
 		var timestamp = new Date().getTime();
+
 		if (eventtype == 'initialized') {
 			var interval = 0;
 		} else {
 			var interval = timestamp - ed[ed.length-1]['timestamp'];
 		}
-		ed.push({'eventtype': eventtype, 'timestamp': timestamp, 'interval':interval});
+
+		ed.push({'eventtype': eventtype, 'value': value, 'timestamp': timestamp, 'interval': interval});
 		this.set('eventdata', ed);
 	},
 
