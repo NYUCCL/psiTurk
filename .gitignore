@@ -1,2 +1,9 @@
+# Documents for running the app:
 config.txt
 participants.db
+
+# Build outputs
+build
+dist
+PsiTurk.egg-info
+boto-2.9.5-py2.7.egg
