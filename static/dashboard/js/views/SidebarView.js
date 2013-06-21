@@ -10,69 +10,73 @@
     t.__super__ = n.prototype;
     return t;
   };
-  define([ "backbone", "inspiritas", "text!templates/aws-info.html", "text!templates/overview.html", "text!templates/hit-config.html", "text!templates/database.html", "text!templates/server-params.html", "text!templates/expt-info.html", "views/validators" ], function(e, n, r, i, s, o, u, a, f) {
-    var l;
-    return l = function(e) {
-      function n() {
-        return n.__super__.constructor.apply(this, arguments);
+  define([ "backbone", "text!templates/aws-info.html", "text!templates/overview.html", "text!templates/hit-config.html", "text!templates/database.html", "text!templates/server-params.html", "text!templates/expt-info.html", "views/validators" ], function(e, n, r, i, s, o, u, a) {
+    var f;
+    return f = function(e) {
+      function f() {
+        return f.__super__.constructor.apply(this, arguments);
       }
-      t(n, e);
-      n.prototype.el = $("#content");
-      n.prototype.save = function(e) {
-        var t, n, r, s;
+      t(f, e);
+      f.prototype.save = function(e) {
+        var t, n, i, s;
         e.preventDefault();
         s = $(e.target).data("section");
-        n = {};
+        i = {};
         t = {};
         $.each($("#myform").serializeArray(), function(e, t) {
-          return n[t.name] = t.value;
+          return i[t.name] = t.value;
         });
-        t[s] = n;
+        t[s] = i;
         this.options.config.save(t);
         $("li").removeClass("selected");
         $("#overview").addClass("selected");
-        this.options.config.fetch({
-          async: !1
+        n = this.options.config.fetch;
+        n.done(function() {
+          var e;
+          e = _.template(r, {
+            input: {
+              balance: this.options.ataglance.get("balance"),
+              debug: this.options.config.get("Server Parameters").debug === "True" ? "checked" : "",
+              using_sandbox: this.options.config.get("HIT Configuration").using_sandbox === "True" ? "checked" : ""
+            }
+          });
+          return $("#content").html(e);
         });
-        r = _.template(i, {
-          input: {
-            balance: this.options.ataglance.get("balance"),
-            debug: this.options.config.get("Server Parameters").debug === "True" ? "checked" : "",
-            using_sandbox: this.options.config.get("HIT Configuration").using_sandbox === "True" ? "checked" : ""
-          }
-        });
-        $("#content").html(r);
-        loadCharts();
         $.ajax({
-          url: "/monitor_server",
-          async: !1
+          url: "/monitor_server"
         });
         return this.render();
       };
-      n.prototype.pushstateClick = function(e) {
+      f.prototype.pushstateClick = function(e) {
         return e.preventDefault();
       };
-      n.prototype.events = {
+      f.prototype.events = {
         "click a": "pushstateClick",
         "click .save_data": "save",
         "click #server-parms-save": "serverParamsSave",
         "click input#debug": "saveDebugState",
         "click input#using_sandbox": "saveUsingSandboxState"
       };
-      n.prototype.serverParamsSave = function() {
-        var e, t, n;
-        t = this.options.config.get("HIT Configuration").question_url + "/shutdown";
-        n = /^https?\:\/\/([^\/:?#]+)(?:[\/:?#]|$)/i;
-        e = t.match(n)[0] + this.options.config.get("Server Parameters").port + "/shutdown";
-        return $.ajax({
-          url: e,
-          type: "GET",
-          data: {
-            hash: this.options.config.get("Server Parameters").hash
-          }
+      f.prototype.serverParamsSave = function() {
+        var e;
+        this.save();
+        e = this.options.config.fetch();
+        return e.done(function() {
+          var e, t, n;
+          t = this.options.config.get("HIT Configuration").question_url + "/shutdown";
+          n = /^https?\:\/\/([^\/:?#]+)(?:[\/:?#]|$)/i;
+          console.log(this.options.config.get("Server Parameters").port);
+          e = t.match(n)[0] + this.options.config.get("Server Parameters").port + "/shutdown";
+          return $.ajax({
+            url: e,
+            type: "GET",
+            data: {
+              hash: this.options.config.get("Server Parameters").hash
+            }
+          });
         });
       };
-      n.prototype.saveDebugState = function() {
+      f.prototype.saveDebugState = function() {
         var e;
         e = $("input#debug").is(":checked");
         return this.options.config.save({
@@ -81,7 +85,7 @@
           }
         });
       };
-      n.prototype.saveUsingSandboxState = function() {
+      f.prototype.saveUsingSandboxState = function() {
         var e;
         e = $("input#using_sandbox").is(":checked");
         return this.options.config.save({
@@ -90,101 +94,99 @@
           }
         });
       };
-      n.prototype.initialize = function() {
+      f.prototype.initialize = function() {
         return this.render();
       };
-      n.prototype.render = function() {
-        var e, t, n, l, c, h, p = this;
+      f.prototype.render = function() {
+        var e = this;
         $("li").on("click", function() {
           $("li").removeClass("selected");
           return $(this).addClass("selected");
         });
-        this.options.config.fetch({
-          async: !1
-        });
-        this.options.ataglance.fetch({
-          async: !1
-        });
-        e = _.template(r, {
-          input: {
-            aws_access_key_id: this.options.config.get("AWS Access").aws_access_key_id,
-            aws_secret_access_key: this.options.config.get("AWS Access").aws_secret_access_key
-          }
-        });
-        l = _.template(s, {
-          input: {
-            title: this.options.config.get("HIT Configuration").title,
-            description: this.options.config.get("HIT Configuration").description,
-            keywords: this.options.config.get("HIT Configuration").keywords,
-            question_url: this.options.config.get("HIT Configuration").question_url,
-            max_assignments: this.options.config.get("HIT Configuration").max_assignments,
-            hit_lifetime: this.options.config.get("HIT Configuration").hit_lifetime,
-            reward: this.options.config.get("HIT Configuration").reward,
-            duration: this.options.config.get("HIT Configuration").duration,
-            us_only: this.options.config.get("HIT Configuration").us_only,
-            approve_requirement: this.options.config.get("HIT Configuration").approve_requirement,
-            using_sandbox: this.options.config.get("HIT Configuration").using_sandbox
-          }
-        });
-        t = _.template(o, {
-          input: {
-            database_url: this.options.config.get("Database Parameters").database_url,
-            table_name: this.options.config.get("Database Parameters").table_name
-          }
-        });
-        c = _.template(u, {
-          input: {
-            host: this.options.config.get("Server Parameters").host,
-            port: this.options.config.get("Server Parameters").port,
-            cutoff_time: this.options.config.get("Server Parameters").cutoff_time,
-            support_ie: this.options.config.get("Server Parameters").support_ie
-          }
-        });
-        n = _.template(a, {
-          input: {
-            code_version: this.options.config.get("Task Parameters").code_version,
-            num_conds: this.options.config.get("Task Parameters").num_conds,
-            num_counters: this.options.config.get("Task Parameters").num_counters
-          }
-        });
-        h = new f;
-        $("#overview").on("click", function() {
-          var e;
-          p.options.config.fetch({
-            async: !1
-          });
-          e = _.template(i, {
+        return $.when(this.options.config.fetch(), this.options.ataglance.fetch()).done(function() {
+          var t, f, l, c, h, p;
+          t = _.template(n, {
             input: {
-              balance: p.options.ataglance.get("balance"),
-              debug: p.options.config.get("Server Parameters").debug === "True" ? "checked" : "",
-              using_sandbox: p.options.config.get("HIT Configuration").using_sandbox === "True" ? "checked" : ""
+              aws_access_key_id: e.options.config.get("AWS Access").aws_access_key_id,
+              aws_secret_access_key: e.options.config.get("AWS Access").aws_secret_access_key
             }
           });
-          $("#content").html(e);
-          return loadCharts();
-        });
-        $("#aws-info").on("click", function() {
-          $("#content").html(e);
-          return h.loadValidators();
-        });
-        $("#hit-config").on("click", function() {
-          $("#content").html(l);
-          return h.loadValidators();
-        });
-        $("#database").on("click", function() {
-          $("#content").html(t);
-          return h.loadValidators();
-        });
-        $("#server-params").on("click", function() {
-          $("#content").html(c);
-          return h.loadValidators();
-        });
-        return $("#expt-info").on("click", function() {
-          $("#content").html(n);
-          return h.loadValidators();
+          c = _.template(i, {
+            input: {
+              title: e.options.config.get("HIT Configuration").title,
+              description: e.options.config.get("HIT Configuration").description,
+              keywords: e.options.config.get("HIT Configuration").keywords,
+              question_url: e.options.config.get("HIT Configuration").question_url,
+              max_assignments: e.options.config.get("HIT Configuration").max_assignments,
+              hit_lifetime: e.options.config.get("HIT Configuration").hit_lifetime,
+              reward: e.options.config.get("HIT Configuration").reward,
+              duration: e.options.config.get("HIT Configuration").duration,
+              us_only: e.options.config.get("HIT Configuration").us_only,
+              approve_requirement: e.options.config.get("HIT Configuration").approve_requirement,
+              using_sandbox: e.options.config.get("HIT Configuration").using_sandbox
+            }
+          });
+          f = _.template(s, {
+            input: {
+              database_url: e.options.config.get("Database Parameters").database_url,
+              table_name: e.options.config.get("Database Parameters").table_name
+            }
+          });
+          h = _.template(o, {
+            input: {
+              host: e.options.config.get("Server Parameters").host,
+              port: e.options.config.get("Server Parameters").port,
+              cutoff_time: e.options.config.get("Server Parameters").cutoff_time,
+              support_ie: e.options.config.get("Server Parameters").support_ie
+            }
+          });
+          l = _.template(u, {
+            input: {
+              code_version: e.options.config.get("Task Parameters").code_version,
+              num_conds: e.options.config.get("Task Parameters").num_conds,
+              num_counters: e.options.config.get("Task Parameters").num_counters
+            }
+          });
+          p = new a;
+          $("#overview").on("click", function() {
+            var t;
+            t = e.options.config.fetch();
+            return t.done(function() {
+              var t;
+              t = _.template(r, {
+                input: {
+                  balance: e.options.ataglance.get("balance"),
+                  debug: e.options.config.get("Server Parameters").debug === "True" ? "checked" : "",
+                  using_sandbox: e.options.config.get("HIT Configuration").using_sandbox === "True" ? "checked" : ""
+                }
+              });
+              $("#content").html(t);
+              return e.options.chart.refresh();
+            });
+          });
+          $("#aws-info").on("click", function() {
+            $("#content").html(t);
+            return p.loadValidators();
+          });
+          $("#hit-config").on("click", function() {
+            $("#content").html(c);
+            return p.loadValidators();
+          });
+          $("#database").on("click", function() {
+            $("#content").html(f);
+            return p.loadValidators();
+          });
+          $("#server-params").on("click", function() {
+            $("#content").html(h);
+            return p.loadValidators();
+          });
+          return $("#expt-info").on("click", function() {
+            $("#content").html(l);
+            return p.loadValidators();
+          });
         });
       };
-      return n;
+      return f;
     }(e.View);
   });
 }).call(this);

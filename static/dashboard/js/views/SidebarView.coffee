@@ -1,7 +1,6 @@
 #  Filename: SidebarView.coffee
 define [
         "backbone"
-        'inspiritas'
         'text!templates/aws-info.html'
         'text!templates/overview.html'
         'text!templates/hit-config.html'
@@ -12,7 +11,6 @@ define [
       ],
       (
         Backbone
-        Inspiritas
         AWSInfoTemplate
         OverviewTemplate
         HITConfigTemplate
@@ -23,7 +21,7 @@ define [
       ) ->
         class SideBarView extends Backbone.View
 
-          el: $('#content')
+          # el: $('#content')
 
           save: (event) ->
             # Prevent clicks from reloading page
@@ -40,18 +38,19 @@ define [
             # Load overview and change sidebar link
             $('li').removeClass 'selected'
             $('#overview').addClass 'selected'
-            @options.config.fetch async: false
-            overview = _.template(OverviewTemplate,
-              input:
-                balance: @options.ataglance.get("balance")
-                debug: if @options.config.get("Server Parameters").debug is "True" then "checked" else ""
-                using_sandbox: if @options.config.get("HIT Configuration").using_sandbox is "True" then "checked" else "")
-            $('#content').html(overview)
-            loadCharts()
+            configPromise = @options.config.fetch
+            configPromise.done(->
+              overview = _.template(OverviewTemplate,
+                input:
+                  balance: @options.ataglance.get("balance")
+                  debug: if @options.config.get("Server Parameters").debug is "True" then "checked" else ""
+                  using_sandbox: if @options.config.get("HIT Configuration").using_sandbox is "True" then "checked" else "")
+              $('#content').html(overview))
+
+              # @options.chart.getData()
 
             $.ajax
               url: "/monitor_server"
-              async: false
 
             @render()
 
@@ -66,14 +65,18 @@ define [
             'click input#using_sandbox': 'saveUsingSandboxState'
   
           serverParamsSave: ->
+            @save()
             # Reset server on save
-            url = @options.config.get("HIT Configuration").question_url + '/shutdown'
-            url_pattern =  /^https?\:\/\/([^\/:?#]+)(?:[\/:?#]|$)/i
-            domain = url.match(url_pattern)[0] + @options.config.get("Server Parameters").port + '/shutdown'
-            $.ajax
-              url: domain
-              type: "GET"
-              data: {hash: @options.config.get("Server Parameters").hash}
+            configResetPromise = @options.config.fetch()
+            configResetPromise.done(->
+              url = @options.config.get("HIT Configuration").question_url + '/shutdown'
+              url_pattern =  /^https?\:\/\/([^\/:?#]+)(?:[\/:?#]|$)/i
+              console.log(@options.config.get("Server Parameters").port)
+              domain = url.match(url_pattern)[0] + @options.config.get("Server Parameters").port + '/shutdown'
+              $.ajax
+                url: domain
+                type: "GET"
+                data: {hash: @options.config.get("Server Parameters").hash})
 
           saveDebugState: ->
             debug = $("input#debug").is(':checked')
@@ -96,66 +99,68 @@ define [
               $('li').removeClass 'selected'
               $(@).addClass 'selected'
 
-            @options.config.fetch async: false
-            @options.ataglance.fetch async: false
-
-            # Load and add config content pages
-            awsInfo = _.template(AWSInfoTemplate,
-              input:
-                aws_access_key_id: @options.config.get("AWS Access").aws_access_key_id
-                aws_secret_access_key: @options.config.get("AWS Access").aws_secret_access_key)
-            hitConfig = _.template(HITConfigTemplate,
-              input:
-                title: @options.config.get("HIT Configuration").title
-                description: @options.config.get("HIT Configuration").description
-                keywords: @options.config.get("HIT Configuration").keywords
-                question_url: @options.config.get("HIT Configuration").question_url
-                max_assignments: @options.config.get("HIT Configuration").max_assignments
-                hit_lifetime: @options.config.get("HIT Configuration").hit_lifetime
-                reward: @options.config.get("HIT Configuration").reward
-                duration: @options.config.get("HIT Configuration").duration
-                us_only: @options.config.get("HIT Configuration").us_only
-                approve_requirement: @options.config.get("HIT Configuration").approve_requirement
-                using_sandbox: @options.config.get("HIT Configuration").using_sandbox)
-            database = _.template(DatabaseTemplate,
-              input:
-                database_url: @options.config.get("Database Parameters").database_url
-                table_name: @options.config.get("Database Parameters").table_name)
-            serverParams = _.template(ServerParamsTemplate,
-              input:
-                host: @options.config.get("Server Parameters").host
-                port: @options.config.get("Server Parameters").port
-                cutoff_time: @options.config.get("Server Parameters").cutoff_time
-                support_ie: @options.config.get("Server Parameters").support_ie)
-            exptInfo = _.template(ExptInfoTemplate,
-              input:
-                code_version: @options.config.get("Task Parameters").code_version,
-                num_conds: @options.config.get("Task Parameters").num_conds,
-                num_counters: @options.config.get("Task Parameters").num_counters)
-
-            validator = new Validators
-            # Have options respond to clicks
-            $('#overview').on 'click', =>
-              @options.config.fetch async: false
-              overview = _.template(OverviewTemplate,
+            $.when(@options.config.fetch(), @options.ataglance.fetch()).done(=>
+              # Load and add config content pages
+              awsInfo = _.template(AWSInfoTemplate,
                 input:
-                  balance: @options.ataglance.get("balance")
-                  debug: if @options.config.get("Server Parameters").debug is "True" then "checked" else ""
-                  using_sandbox: if @options.config.get("HIT Configuration").using_sandbox is "True" then "checked" else "")
-              $('#content').html(overview)
-              loadCharts()
-            $('#aws-info').on 'click', ->
-              $('#content').html(awsInfo)
-              validator.loadValidators()
-            $('#hit-config').on 'click', ->
-              $('#content').html(hitConfig)
-              validator.loadValidators()
-            $('#database').on 'click', ->
-              $('#content').html(database)
-              validator.loadValidators()
-            $('#server-params').on 'click', ->
-              $('#content').html(serverParams)
-              validator.loadValidators()
-            $('#expt-info').on 'click', ->
-              $('#content').html(exptInfo)
-              validator.loadValidators()
+                  aws_access_key_id: @options.config.get("AWS Access").aws_access_key_id
+                  aws_secret_access_key: @options.config.get("AWS Access").aws_secret_access_key)
+              hitConfig = _.template(HITConfigTemplate,
+                input:
+                  title: @options.config.get("HIT Configuration").title
+                  description: @options.config.get("HIT Configuration").description
+                  keywords: @options.config.get("HIT Configuration").keywords
+                  question_url: @options.config.get("HIT Configuration").question_url
+                  max_assignments: @options.config.get("HIT Configuration").max_assignments
+                  hit_lifetime: @options.config.get("HIT Configuration").hit_lifetime
+                  reward: @options.config.get("HIT Configuration").reward
+                  duration: @options.config.get("HIT Configuration").duration
+                  us_only: @options.config.get("HIT Configuration").us_only
+                  approve_requirement: @options.config.get("HIT Configuration").approve_requirement
+                  using_sandbox: @options.config.get("HIT Configuration").using_sandbox)
+              database = _.template(DatabaseTemplate,
+                input:
+                  database_url: @options.config.get("Database Parameters").database_url
+                  table_name: @options.config.get("Database Parameters").table_name)
+              serverParams = _.template(ServerParamsTemplate,
+                input:
+                  host: @options.config.get("Server Parameters").host
+                  port: @options.config.get("Server Parameters").port
+                  cutoff_time: @options.config.get("Server Parameters").cutoff_time
+                  support_ie: @options.config.get("Server Parameters").support_ie)
+              exptInfo = _.template(ExptInfoTemplate,
+                input:
+                  code_version: @options.config.get("Task Parameters").code_version,
+                  num_conds: @options.config.get("Task Parameters").num_conds,
+                  num_counters: @options.config.get("Task Parameters").num_counters)
+
+              validator = new Validators
+              # Have content area respond to sidebar link clicks
+              $('#overview').on 'click', =>
+                configOverviewPromise = @options.config.fetch()
+                configOverviewPromise.done(=>
+                  overview = _.template(OverviewTemplate,
+                    input:
+                      balance: @options.ataglance.get("balance")
+                      debug: if @options.config.get("Server Parameters").debug is "True" then "checked" else ""
+                      using_sandbox: if @options.config.get("HIT Configuration").using_sandbox is "True" then "checked" else "")
+                  $('#content').html(overview)
+                  @options.chart.refresh())
+              $('#aws-info').on 'click', ->
+                $('#content').html(awsInfo)
+                validator.loadValidators()
+              $('#hit-config').on 'click', ->
+                $('#content').html(hitConfig)
+                validator.loadValidators()
+              $('#database').on 'click', ->
+                $('#content').html(database)
+                validator.loadValidators()
+              $('#server-params').on 'click', ->
+                $('#content').html(serverParams)
+                validator.loadValidators()
+              $('#expt-info').on 'click', ->
+                $('#content').html(exptInfo)
+                validator.loadValidators()
+            )
+
+
