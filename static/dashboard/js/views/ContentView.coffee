@@ -1,12 +1,10 @@
 #  Filename: ContentView.coffee
 define [
-    'inspiritas'
-  ], (Inspiritas) ->
+    'backbone'
+  ], (Backbone) ->
     class ContentView extends Backbone.View
 
-      initialize: ->
-        @render()
+      # initialize: ->
+      #   @render()
 
-      render: ->
-        loadCharts()
-        # Start monitoring server once app is loaded
+      # render: ->
