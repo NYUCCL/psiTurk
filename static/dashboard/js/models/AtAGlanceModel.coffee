@@ -9,4 +9,4 @@ define [
       url: '/at_a_glance_model'
 
       defaults:
-        balance: "$10,000"
+        balance: "-"

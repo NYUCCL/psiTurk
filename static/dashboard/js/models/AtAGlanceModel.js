@@ -16,7 +16,7 @@
       AtAGlanceModel.prototype.url = '/at_a_glance_model';
 
       AtAGlanceModel.prototype.defaults = {
-        balance: "$10,000"
+        balance: "-"
       };
 
       return AtAGlanceModel;
