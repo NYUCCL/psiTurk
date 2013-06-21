@@ -10,6 +10,9 @@ define [
       'views/ContentView'
       'text!templates/overview.html'
       'text!templates/sidebar.html'
+      'views/chartView'
+      'models/ChartModel'
+      'highcharts'
     ],
     (
       $
@@ -22,6 +25,9 @@ define [
       ContentView
       OverviewTemplate
       SideBarTemplate
+      ChartView
+      ChartModel
+      Highcharts
     ) ->
 
       # Prevent links from reloading the page
@@ -32,9 +38,17 @@ define [
       pushstateClick: (event) ->
         event.preventDefault()
 
+
       initialize: ->
         #  Pass in our Router module and call it's initialize function
         Router.initialize()
+
+        # Notify user that server is between states.
+        $('#server_off').on "click", ->
+          $('#server_status').css "color": "yellow"
+
+        $('#server_on').on "click", ->
+          $('#server_status').css "color": "yellow"
 
         # Listen for server status via socket.io
         $ ->
@@ -42,7 +56,6 @@ define [
           socket.on "connect", ->
             $.ajax
               url: "/monitor_server"
-              async: false
           socket.on 'status', (data) ->
             if parseInt(data) is 0
               $('#server_status').css "color": "green"
@@ -58,27 +71,29 @@ define [
 
         # Load at-a-glance model and data
         ataglance = new AtAGlanceModel
-        ataglance.fetch async: false
-
-        # Load configuration model
-        config = new ConfigModel
-        config.fetch async: false
-
-        # Load and add content html
-        overviewContentHTML = _.template(OverviewTemplate,
-          input:
-            balance: ataglance.get("balance")
-            debug: if config.get("Server Parameters").debug is "True" then "checked" else ""
-            using_sandbox: if config.get("HIT Configuration").using_sandbox is "True" then "checked" else "")
-        $('#content').html(overviewContentHTML)
-
-        # Load and add side bar html
-        sideBarHTML = _.template(SideBarTemplate)
-        $('#sidebar').html(sideBarHTML)
-        sidebarView = new SidebarView(
-          config: config
-          ataglance: ataglance)
-        sidebarView.initialize()
+        atAGlancePromise = ataglance.fetch()
+        atAGlancePromise.done(->
+          # Load configuration model
+          config = new ConfigModel
+          configPromise = config.fetch()
+          configPromise.done(->
+            overview = _.template(OverviewTemplate,
+              input:
+                balance: ataglance.get("balance")
+                debug: if config.get("Server Parameters").debug is "True" then "checked" else ""
+                using_sandbox: if config.get("HIT Configuration").using_sandbox is "True" then "checked" else "")
+            $('#content').html(overview)
+            chrtView = new ChartView()
+            chrtView.initialize()
+            chrtView.setChart()
+            # Load and add side bar html
+            sideBarHTML = _.template(SideBarTemplate)
+            $('#sidebar').html(sideBarHTML)
+            sidebarView = new SidebarView(
+              config: config
+              ataglance: ataglance
+              chart: chrtView)
+            sidebarView.initialize()))
 
         # Load content view after html; req's ids to be present
         contentView = new ContentView()
@@ -90,13 +105,9 @@ define [
 
         # Shutdown button
         $("#server_off").on "click", ->
-          url = config.get("HIT Configuration").question_url + '/shutdown'
-          url_pattern =  /^https?\:\/\/([^\/:?#]+)(?:[\/:?#]|$)/i
-          domain = url.match(url_pattern)[0] + config.get("Server Parameters").port + '/shutdown'
           $.ajax
-            url: domain
+            url: '/shutdown'
             type: "GET"
-            data: {hash: config.get("Server Parameters").hash}
 
         # Run button
         $("#server_on").on "click", ->
@@ -109,7 +120,6 @@ define [
                 socket.on "connect", ->
                   $.ajax
                     url: "/monitor_server"
-                    # async: false
                 socket.on 'status', (data) ->
                   if parseInt(data) is 0
                     $('#server_status').css "color": "green"
