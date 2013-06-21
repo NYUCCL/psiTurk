@@ -1,4 +1,5 @@
 # Import flask
+import os
 from flask import Flask, render_template, request,\
                   Response, make_response, jsonify
 import werkzeug.serving
@@ -7,9 +8,13 @@ from gevent import monkey
 from socketio import socketio_manage
 from socketio.server import SocketIOServer
 import dashboard as Dashboard
+import sys
 
 
 monkey.patch_all()
+
+dashboard_port = int(sys.argv[1])
+
 
 app = Flask(__name__)
 
@@ -49,7 +54,7 @@ def at_a_glance_model():
         return services.get_summary()
 
 @app.route('/create_hit', methods=['GET'])
-def create_hit():
+def create_hit_route():
     """
     Create HIT on AMT
     """
@@ -96,17 +101,56 @@ def status():
     else:
         return Response("Missing status")
 
+@app.route("/participant_status", methods=["GET"])
+def participant_status():
+    database = Dashboard.Database()
+    status = database.get_participant_status()
+    print status
+    return status
+
+
+#----------------------------------------------
+# psiTurk server routes
+#----------------------------------------------
 @app.route("/launch", methods=["GET"])
 def launch():
     subprocess.Popen("python psiturk_server.py", shell=True)
     return "psiTurk launching..."
 
+@app.route('/shutdown', methods=["GET"])
+def shutdown():
+    shutdown_server()
+    return 'Server shutting down...'
+
+
+#----------------------------------------------
+# Server routines
+#----------------------------------------------
+def shutdown_server():
+    # This assumes that psiTurk is the only gunicorn process. Otherwise, problems...
+    # gunicorn_pid = int(find_process("gunicorn: master"))
+    # print gunicorn_pid
+    # os.kill(gunicorn_pid, 15)  # Sig 15 allows for processes to exit "gently"
+    psiturk_pids = map(lambda pid: int(pid), find_process('psiturk_server').split())
+    map(lambda pid: os.kill(pid, 15), psiturk_pids)  # Kill processes
+    # map(lambda pid: os.killpg(pid, 15), psiturk_pids)  # Kill parents (gunicorn)
+    return("Threads terminated")
+
+def find_process(name):
+    ps = subprocess.Popen(['ps', 'aux'], stdout=subprocess.PIPE, close_fds=True)
+    grep = subprocess.Popen(['grep', str(name)], stdin=ps.stdout, stdout=subprocess.PIPE, close_fds=True)
+    remove_grep = subprocess.Popen(['grep', '-v','grep'], stdin=grep.stdout, stdout=subprocess.PIPE, close_fds=True)
+    awk = subprocess.Popen(['awk', '{print $2}'], stdin=remove_grep.stdout,\
+                           stdout=subprocess.PIPE, close_fds=True).communicate()[0]
+    return awk
+
+
 @werkzeug.serving.run_with_reloader
 def run_dev_server():
     app.debug = True
-    port = 5000
+    port = dashboard_port
     SocketIOServer(('', port), app, resource="socket.io").serve_forever()
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=dashboard_port)
     run_dev_server()
