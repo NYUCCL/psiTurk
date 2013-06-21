@@ -9,7 +9,6 @@
       text: "libs/text",
       cs: "libs/cs",
       bootstrap: "libs/bootstrap",
-      inspiritas: "libs/inspiritas",
       highcharts: "libs/highcharts",
       exporting: "libs/exporting",
       dropdown: "libs/bootstrap-dropdown",
@@ -28,7 +27,6 @@
       exporting: {
         deps: ["highcharts"]
       },
-      inspiritas: ["highcharts", "jquery", "exporting"],
       nod: ["jquery"],
       backbone: {
         deps: ["underscore", "jquery"],

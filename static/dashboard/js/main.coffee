@@ -9,7 +9,6 @@ require.config
     text: "libs/text"
     cs: "libs/cs"
     bootstrap: "libs/bootstrap"
-    inspiritas: "libs/inspiritas"
     highcharts: "libs/highcharts"
     exporting: "libs/exporting"
     dropdown: "libs/bootstrap-dropdown"
@@ -30,7 +29,6 @@ require.config
       exports: "Highcharts" #attaches "Backbone" to the window object
     exporting:
       deps: ["highcharts"]
-    inspiritas: ["highcharts", "jquery", "exporting"]
     nod: ["jquery"]
     backbone:
       deps: ["underscore", "jquery"]
