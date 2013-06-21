@@ -52,7 +52,7 @@ $(window).focus( function() {
 
 
 // track changes in window size
-function triggerResize() {
+triggerResize = function() {
 	Backbone.Notifications.trigger('_psiturk_windowresize', [window.innerWidth, window.innerHeight]);
 };
 
@@ -175,20 +175,19 @@ var TaskData = Backbone.Model.extend({
 	},
 
 	addEvent: function(eventtype, value) {
-
-		var ed = this.get('eventdata');
-		var timestamp = new Date().getTime();
+		var interval,
+		    ed = this.get('eventdata'),
+		    timestamp = new Date().getTime();
 
 		if (eventtype == 'initialized') {
-			var interval = 0;
+			interval = 0;
 		} else {
-			var interval = timestamp - ed[ed.length-1]['timestamp'];
+			interval = timestamp - ed[ed.length-1]['timestamp'];
 		}
 
 		ed.push({'eventtype': eventtype, 'value': value, 'timestamp': timestamp, 'interval': interval});
 		this.set('eventdata', ed);
-	},
-
+	}
 });
 
 
