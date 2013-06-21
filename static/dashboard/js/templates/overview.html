@@ -8,7 +8,7 @@
           <input type="checkbox" id="debug" value="1" <%= input.debug %>> Debug
         </label>
         <label class="checkbox inline" style="color:black">
-          <input type="checkbox" id="using_sandbox" value="1" <%= input.using_sandbox %>> Sandbox
+          <input type="checkbox" id="using_sandbox" value="1" <%= input.using_sandbox %>> Amazon sandbox
         </label>
       </div>
     </span>
@@ -47,65 +47,55 @@
   </div>
 </section>
 
-<!-- Tables
+<!-- modals
 ================================================== -->
-<!--
-<section id="tables">
-  <div class="sub-header">
-    <h2>Experiments</h2>
+<div id="server-off-modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Warning</h3>
   </div>
-  <table class="table table-striped full-section table-hover">
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Status</th>
-        <th>Completed</th>
-        <th>Version</th>
-        <th></th>
-        <th></th>
-        <th>Data Options</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td class="primary"><strong>Stroop A</strong></td>
-        <td></td>
-        <td>
-            <div class="progress progress-mini">
-              <div class="bar" style="width: 35%"></div>
-            </div>
-        <td>1.0</td>
-        <td></td>
-        <td></td>
-        <td> <button class="btn" type="button">Duplicate</button> <button class="btn btn-success" type="button">Export</button> <button class="btn btn-danger" type="button">Delete</button></td>
-      </tr>
-      <tr>
-        <td class="primary"><strong>Stroop B</strong></td>
-        <td></td>
-        <td>
-            <div class="progress progress-mini">
-              <div class="bar" style="width: 62%"></div>
-            </div>
-        </td>
-        <td>1.2</td>
-        <td></td>
-        <td></td>
-        <td> <button class="btn" type="button">Duplicate</button> <button class="btn btn-success" type="button">Export</button> <button class="btn btn-danger" type="button">Delete</button></td>
-      </tr>
-      <tr>
-        <td class="primary"><strong>Reasoning</strong></td>
-        <td></td>
-        <td>
-            <div class="progress progress-mini">
-              <div class="bar" style="width: 89%"></div>
-            </div>
-        </td>
-        <td>0.2</td>
-        <td></td>
-        <td></td>
-        <td> <button class="btn" type="button">Duplicate</button> <button class="btn btn-success" type="button">Export</button> <button class="btn btn-danger" type="button">Delete</button></td>
-      </tr>
-    </tbody>
-  </table>
--->
-</section>
+  <div class="modal-body">
+    <p><strong>You are about to shutdown the psiTurk server</strong>.
+      If there are any participants currently running in your experiment, they will be forced to quit.
+      You are still responsible for their payment.
+    </p>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+    <button id="shutdownServerBtn" class="btn btn-danger">Shutdown</button>
+  </div>
+</div>
+
+<div id="run-expt-modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Run experiment</h3>
+  </div>
+  <div class="modal-body">
+    <p>
+      Please confirm your settings.
+      <br />
+      <strong>N</strong> participants @ $X/ea x fees = <strong>$xxx.xx</strong>
+      <br />
+      Each participant has <strong>T</strong> mins. to complete your task.
+    </p>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+    <button id="run-expt-btn" class="btn btn-primary">Go!</button>
+  </div>
+</div>
+
+<div id="aws-info-modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Welcome</h3>
+  </div>
+  <div class="modal-body">
+    <p><strong>To begin psiTurk, please provide your Amazon Mechanical Turk credentials.</strong>.
+    </p>
+  </div>
+  <div class="modal-footer">
+    <button id="shutdownServerBtn" class="btn btn-danger">Okay</button>
+  </div>
+</div>
