@@ -4,7 +4,8 @@ import os
 import subprocess
 from boto.mturk.connection import MTurkConnection
 from boto.mturk.question import ExternalQuestion
-from boto.mturk.qualification import LocaleRequirement, PercentAssignmentsApprovedRequirement, Qualifications
+from boto.mturk.qualification import LocaleRequirement, \
+    PercentAssignmentsApprovedRequirement, Qualifications
 from socketio.namespace import BaseNamespace
 from psiturk_server import PsiTurkServer
 from flask import jsonify
@@ -12,6 +13,13 @@ import socket
 import threading
 import time
 
+# Database setup
+from db import db_session, init_db
+from models import Participant
+from sqlalchemy import or_, func
+
+
+# TODO(Jay): Generalize port number from launcher
 
 Config = ConfigParser.ConfigParser()
 
@@ -281,3 +289,23 @@ class Server:
     def start_monitoring(self):
         ServerNamespace.broadcast('status', self.state)  # Notify socket listeners
         self.monitor()
+
+
+class Database:
+    def get_participant_status(self):
+        allocated = Participant.query.filter(Participant.status == 1).count()
+        started = Participant.query.filter(Participant.status == 2).count()
+        completed = Participant.query.filter(Participant.status == 3).count()
+        debriefed = Participant.query.filter(Participant.status == 4).count()
+        credited = Participant.query.filter(Participant.status == 5).count()
+        quit_early = Participant.query.filter(Participant.status == 6).count()
+        total = Participant.query.count()
+        return jsonify(allocated=allocated,
+                       started=started,
+                       completed=completed,
+                       debriefed=debriefed,
+                       credited=credited,
+                       quit_early=quit_early,
+                       total=total)
+    def get_average_time(self):
+        pass
