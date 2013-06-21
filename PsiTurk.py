@@ -3,6 +3,7 @@
 
 from psiturk_server import PsiTurkServer
 import subprocess
+import socket
 import time
 import psutil
 import webbrowser
@@ -10,23 +11,32 @@ from config import config
 import os
 
 
-DASHBOARD_PORT = "5000"  # TODO(Todd, Jay): Change this to user defined param via app
+DEFAULT_DASHBOARD_PORT = 5000  # TODO(Todd, Jay): Change this to user defined param via app
 
 # TODO(): Find a better way to ensure that the dash's port is ready.
-def kill_port(kill_port):
-    str_port_kill = ':' + kill_port
-    p = subprocess.Popen(['lsof', '-i', str_port_kill, '-t'], stdout=subprocess.PIPE)
-    out = p.communicate()[0]
-    ports = [int(port) for port in out.split('\n')[:-1]]
-    commands = [(proc.name, proc.ppid) for proc in psutil.process_iter() if proc.ppid in ports]
-    [os.kill(port, 9) for command, port in commands if command == 'Python']  # sig 9 is porbably too harsh
 
-kill_port(DASHBOARD_PORT)
+def is_port_available(port):
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        s.connect(('127.0.0.1', port))
+        s.shutdown(1)
+        return 0
+    except:
+        return 1
+
+def find_open_port():
+    if is_port_available(DEFAULT_DASHBOARD_PORT):
+        open_port = DEFAULT_DASHBOARD_PORT
+    else:
+        open_port = next(port for port in range(5001, 10000) if is_port_available(port))
+    return(open_port)
+
+dashboard_port = find_open_port()
 
 # Launch dashboard kernel
-subprocess.Popen("python dashboard_server.py", shell=True)
-time.sleep(2)  # Ensure that dashboard has sufficient time to load before launching browser
+subprocess.Popen("python dashboard_server.py " + str(dashboard_port), shell=True)
+time.sleep(3)  # Ensure that dashboard has sufficient time to load before launching browser
 subprocess.Popen("python psiturk_server.py", shell=True)
 
-launchurl = "http://"+config.get("Server Parameters", "host")+":"+DASHBOARD_PORT+"/dashboard"
+launchurl = "http://"+config.get("Server Parameters", "host")+":"+str(dashboard_port)+"/dashboard"
 webbrowser.open(launchurl, new=1, autoraise=True)
