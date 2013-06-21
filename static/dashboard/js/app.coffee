@@ -43,10 +43,6 @@ define [
         #  Pass in our Router module and call it's initialize function
         Router.initialize()
 
-        # Notify user that server is between states.
-        $('#server_off').on "click", ->
-          $('#server_status').css "color": "yellow"
-
         $('#server_on').on "click", ->
           $('#server_status').css "color": "yellow"
 
@@ -101,13 +97,19 @@ define [
 
         # Have run button listen for clicks and tell server to create HITS
         $('#run').on "click", ->
-          $.ajax url: "/create_hit"
+          $('#run-expt-modal').modal('show')
+          $('#crate-hit-btn').on "click", ->
+            $.ajax url: "/create_hit"
 
         # Shutdown button
         $("#server_off").on "click", ->
-          $.ajax
-            url: '/shutdown'
-            type: "GET"
+          $('#server-off-modal').modal('show')
+          $('#shutdownServerBtn').on "click", ->
+            $('#server_status').css "color": "yellow"
+            $.ajax
+              url: '/shutdown'
+              type: "GET"
+              success: $('#server-off-modal').modal('hide')
 
         # Run button
         $("#server_on").on "click", ->

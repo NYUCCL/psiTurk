@@ -12,11 +12,6 @@
       initialize: function() {
         var n, c, h;
         r.initialize();
-        e("#server_off").on("click", function() {
-          return e("#server_status").css({
-            color: "yellow"
-          });
-        });
         e("#server_on").on("click", function() {
           return e("#server_status").css({
             color: "yellow"
@@ -88,14 +83,24 @@
         h = new u;
         h.initialize();
         e("#run").on("click", function() {
-          return e.ajax({
-            url: "/create_hit"
+          e("#run-expt-modal").modal("show");
+          return e("#crate-hit-btn").on("click", function() {
+            return e.ajax({
+              url: "/create_hit"
+            });
           });
         });
         e("#server_off").on("click", function() {
-          return e.ajax({
-            url: "/shutdown",
-            type: "GET"
+          e("#server-off-modal").modal("show");
+          return e("#shutdownServerBtn").on("click", function() {
+            e("#server_status").css({
+              color: "yellow"
+            });
+            return e.ajax({
+              url: "/shutdown",
+              type: "GET",
+              success: e("#server-off-modal").modal("hide")
+            });
           });
         });
         return e("#server_on").on("click", function() {
