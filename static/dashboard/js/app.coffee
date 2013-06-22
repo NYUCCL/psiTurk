@@ -38,9 +38,8 @@ define [
       pushstateClick: (event) ->
         event.preventDefault()
 
-
       initialize: ->
-        #  Pass in our Router module and call it's initialize function
+        #  Pass in our router module and call it's initialize function
         Router.initialize()
 
         $('#server_on').on "click", ->
@@ -66,18 +65,18 @@ define [
               $('#server_on').css "color": "orange"
 
         # Load at-a-glance model and data
-        ataglance = new AtAGlanceModel
-        atAGlancePromise = ataglance.fetch()
-        atAGlancePromise.done(->
+        @ataglance = new AtAGlanceModel
+        atAGlancePromise = @ataglance.fetch()
+        atAGlancePromise.done(=>
           # Load configuration model
-          config = new ConfigModel
-          configPromise = config.fetch()
-          configPromise.done(->
+          @config = new ConfigModel
+          configPromise = @config.fetch()
+          configPromise.done(=>
             overview = _.template(OverviewTemplate,
               input:
-                balance: ataglance.get("balance")
-                debug: if config.get("Server Parameters").debug is "True" then "checked" else ""
-                using_sandbox: if config.get("HIT Configuration").using_sandbox is "True" then "checked" else "")
+                balance: @ataglance.get("balance")
+                debug: if @config.get("Server Parameters").debug is "True" then "checked" else ""
+                using_sandbox: if @config.get("HIT Configuration").using_sandbox is "True" then "checked" else "")
             $('#content').html(overview)
             chrtView = new ChartView()
             chrtView.initialize()
@@ -86,10 +85,11 @@ define [
             sideBarHTML = _.template(SideBarTemplate)
             $('#sidebar').html(sideBarHTML)
             sidebarView = new SidebarView(
-              config: config
-              ataglance: ataglance
+              config: @config
+              ataglance: @ataglance
               chart: chrtView)
-            sidebarView.initialize()))
+            sidebarView.initialize()
+          ))
 
         # Load content view after html; req's ids to be present
         contentView = new ContentView()
@@ -134,3 +134,5 @@ define [
                     $('#server_off')
                       .css "color": "grey"
                     $('#server_on').css "color": "orange"
+
+

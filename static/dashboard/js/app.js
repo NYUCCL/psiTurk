@@ -10,7 +10,7 @@
         return e.preventDefault();
       },
       initialize: function() {
-        var n, c, h;
+        var n, c, h = this;
         r.initialize();
         e("#server_on").on("click", function() {
           return e("#server_status").css({
@@ -51,37 +51,37 @@
             });
           });
         });
-        c = new s;
-        n = c.fetch();
+        this.ataglance = new s;
+        n = this.ataglance.fetch();
         n.done(function() {
-          var n, r;
-          n = new i;
-          r = n.fetch();
-          return r.done(function() {
-            var r, i, s, u;
-            i = t.template(a, {
+          var n;
+          h.config = new i;
+          n = h.config.fetch();
+          return n.done(function() {
+            var n, r, i, s;
+            r = t.template(a, {
               input: {
-                balance: c.get("balance"),
-                debug: n.get("Server Parameters").debug === "True" ? "checked" : "",
-                using_sandbox: n.get("HIT Configuration").using_sandbox === "True" ? "checked" : ""
+                balance: h.ataglance.get("balance"),
+                debug: h.config.get("Server Parameters").debug === "True" ? "checked" : "",
+                using_sandbox: h.config.get("HIT Configuration").using_sandbox === "True" ? "checked" : ""
               }
             });
-            e("#content").html(i);
-            r = new l;
-            r.initialize();
-            r.setChart();
-            s = t.template(f);
-            e("#sidebar").html(s);
-            u = new o({
-              config: n,
-              ataglance: c,
-              chart: r
+            e("#content").html(r);
+            n = new l;
+            n.initialize();
+            n.setChart();
+            i = t.template(f);
+            e("#sidebar").html(i);
+            s = new o({
+              config: h.config,
+              ataglance: h.ataglance,
+              chart: n
             });
-            return u.initialize();
+            return s.initialize();
           });
         });
-        h = new u;
-        h.initialize();
+        c = new u;
+        c.initialize();
         e("#run").on("click", function() {
           e("#run-expt-modal").modal("show");
           return e("#crate-hit-btn").on("click", function() {
