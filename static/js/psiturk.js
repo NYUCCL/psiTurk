@@ -138,7 +138,7 @@ var ImageCollection = Backbone.Collection.extend({
 var TaskData = Backbone.Model.extend({
 	urlRoot: "/sync", // Save will PUT to /data, with mimetype 'application/JSON'
 	id: uniqueId,
-
+	
 	defaults: {
 		condition: 0,
 		counterbalance: 0,
@@ -164,6 +164,7 @@ var TaskData = Backbone.Model.extend({
 	},
 
 	addTrialData: function(trialdata) {
+		trialdata = [this.get("id"), this.get("currenttrial")].concat(trialdata);
 		this.set({"data": this.get("data").concat(trialdata, "\n")});
 		this.set({"currenttrial": this.get("currenttrial")+1});
 	},
@@ -206,53 +207,47 @@ var PsiTurk = function() {
 	var images = new ImageCollection();
 	images.fetch({async: false});
 	
-	return {
-		/*  DATA: */
-		pages: pages,
-		images: images,
-		taskdata: taskdata,
-		
-		/*  METHODS: */
-		// Get HTML file from collection and pass on to a callback
-		getPage: function(pagename, callback) {
-			pages.getHTML(pagename, callback);
-		},
-		
-		// Get a single image element and pass to callback
-		getImage: function(imagename, callback) {
-			images.getImage(imagename, callback);
-		},
-		
-		// Add a line of data with any number of columns
-		recordTrialData: function(trialdata) {
-			taskdata.addTrialData(trialdata);
-		},
-		
-		// Add data value for a named column. If a value already
-		// exists for that column, it will be overwritten
-		recordUnstructuredData: function(field, value) {
-			taskdata.addUnstructuredData(field, value);
-		},
-		
-		// Save data to server
-		saveData: function(callbacks) {
-			taskdata.save(undefined, callbacks);
-		},
-		
-		// Notify app that participant has begun main experiment
-		finishInstructions: function(optmessage) {
-			Backbone.Notifications.trigger('_psiturk_finishedinstructions', optmessage);
-		},
-		
-		teardownTask: function(optmessage) {
-			Backbone.Notifications.trigger('_psiturk_finishedtask', optmessage);
-		}
+	/*  DATA: */
+	this.pages = pages;
+	this.images = images;
+	this.taskdata = taskdata;
+	
+	/*  METHODS: */
+	// Get HTML file from collection and pass on to a callback
+	this.getPage = function(pagename, callback) {
+		pages.getHTML(pagename, callback);
 	};
+	
+	// Get a single image element and pass to callback
+	this.getImage = function(imagename, callback) {
+		images.getImage(imagename, callback);
+	};
+	
+	// Add a line of data with any number of columns
+	this.recordTrialData = function(trialdata) {
+		taskdata.addTrialData(trialdata);
+	};
+	
+	// Add data value for a named column. If a value already
+	// exists for that column, it will be overwritten
+	this.recordUnstructuredData = function(field, value) {
+		taskdata.addUnstructuredData(field, value);
+	};
+	
+	// Save data to server
+	this.saveData = function(callbacks) {
+		taskdata.save(undefined, callbacks);
+	};
+	
+	// Notify app that participant has begun main experiment
+	this.finishInstructions = function(optmessage) {
+		Backbone.Notifications.trigger('_psiturk_finishedinstructions', optmessage);
+	};
+	
+	this.teardownTask = function(optmessage) {
+		Backbone.Notifications.trigger('_psiturk_finishedtask', optmessage);
+	};
+	return this;
 };
-
-psiTurk = new PsiTurk();
-
-
-
 
 // vi: noexpandtab nosmartindent shiftwidth=4 tabstop=4

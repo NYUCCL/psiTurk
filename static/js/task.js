@@ -33,10 +33,10 @@ var testobject;
 
 // Data submit functions
 var recordinstructtrial = function (instructname, rt ) {
-	psiTurk.recordTrialData([uniqueId, "INSTRUCT", instructname, rt]);
+	psiTurk.recordTrialData(["INSTRUCT", instructname, rt]);
 };
 var recordtesttrial = function (word, color, trialtype, resp, hit, rt ) {
-	psiTurk.recordTrialData([uniqueId, currenttrial,  "TEST", word, color, hit, resp, hit, rt]);
+	psiTurk.recordTrialData(["TEST", word, color, hit, resp, hit, rt]);
 };
 
 
