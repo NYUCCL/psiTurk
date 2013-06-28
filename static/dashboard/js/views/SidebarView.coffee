@@ -28,12 +28,12 @@ define [
 
         # TODO(Jay): This module is getting heavy.
         # Refactor into separate, lighter modules, esp non-essential sidebar code
+        # and repeated table refresh code
         class SideBarView extends Backbone.View
 
           save: (event) ->
             # Prevent clicks from reloading page
             event.preventDefault()
-            console.log "made it!!"
 
             section = $(event.target).data 'section'
             inputData = {}
@@ -46,28 +46,17 @@ define [
             # Load overview and change sidebar link
             $('li').removeClass 'selected'
             $('#overview').addClass 'selected'
-            configPromise = @options.config.fetch()
-            @options.ataglance.fetch
-              error: =>
-                $('#aws-info-modal').modal('show')
-                $('.save').click (event) =>
-                  event.preventDefault()
-                  @save(event)
-                  $('#aws-info-modal').modal('hide')
-
-                # $('#aws-info-modal').modal('hide')
-                # @getCredentials()
-              complete: =>
-                configPromise.done(=>
-                  overview = _.template(OverviewTemplate,
-                    input:
-                      balance: @options.ataglance.get("balance")
-                      debug: if @options.config.get("Server Parameters").debug is "True" then "checked" else ""
-                      using_sandbox: if @options.config.get("HIT Configuration").using_sandbox is "True" then "checked" else "")
-                  $('#content').html(overview)
-                  # Load HIT table
-                  hit_view = new HITView collection: new HITs
-                  $("#tables").html hit_view.render().el)
+            $.when @options.config.fetch(), @options.ataglance.fetch()
+              .then(=>
+                overview = _.template(OverviewTemplate,
+                  input:
+                    balance: @options.ataglance.get("balance")
+                    debug: if @options.config.get("Server Parameters").debug is "True" then "checked" else ""
+                    using_sandbox: if @options.config.get("HIT Configuration").using_sandbox is "True" then "checked" else "")
+                $('#content').html(overview)
+                # Load HIT table
+                hit_view = new HITView collection: new HITs
+                $("#tables").html hit_view.render().el)
 
             $.ajax
               url: "/monitor_server"
@@ -111,30 +100,20 @@ define [
                 using_sandbox: using_sandbox,
               {
                 complete: =>
-                  $.when(@options.config.fetch(), @options.ataglance.fetch()).done(=>
-                    overview = _.template(OverviewTemplate,
-                      input:
-                        balance: @options.ataglance.get("balance")
-                        debug: if @options.config.get("Server Parameters").debug is "True" then "checked" else ""
-                        using_sandbox: if @options.config.get("HIT Configuration").using_sandbox is "True" then "checked" else "")
-                    $('#content').html(overview)
-                    # Load HIT table
-                    hit_view = new HITView collection: new HITs
-                    $("#tables").html hit_view.render().el)
+                  $.when @options.config.fetch(), @options.ataglance.fetch()
+                    .done(=>
+                      overview = _.template(OverviewTemplate,
+                        input:
+                          balance: @options.ataglance.get("balance")
+                          debug: if @options.config.get("Server Parameters").debug is "True" then "checked" else ""
+                          using_sandbox: if @options.config.get("HIT Configuration").using_sandbox is "True" then "checked" else "")
+                      $('#content').html(overview)
+                      # Load HIT table
+                      hit_view = new HITView collection: new HITs
+                      $("#tables").html hit_view.render().el)
               }, {
                 error: (error) => console.log "error"
               })
-              # configPromise = @options.config.fetch()
-              # configPromise.done(=>
-              #   overview = _.template(OverviewTemplate,
-              #     input:
-              #       balance: @options.ataglance.get("balance")
-              #       debug: if @options.config.get("Server Parameters").debug is "True" then "checked" else ""
-              #       using_sandbox: if @options.config.get("HIT Configuration").using_sandbox is "True" then "checked" else "")
-              #   $('#content').html(overview)
-              #   # Load HIT table
-              #   hit_view = new HITView collection: new HITs
-              #   $("#tables").html hit_view.render().el)
 
           initialize: ->
             @render()
@@ -146,18 +125,31 @@ define [
               @save(event)
               $('#aws-info-modal').modal('hide')
 
+          getExperimentStatus: ->
+            $.ajax
+              url: '/get_hits'
+              type: "GET"
+              success: (data) ->
+                if data.hits.length > 0
+                  $('#experiment_status').css "color": "green"
+                  $('#run').css({"color": "grey"})
+                else
+                  $('#experiment_status').css "color": "grey"
+                  $('#run').css({"color": "orange"})
+
           loadOverview: ->
-            configOverviewPromise = @options.config.fetch()
-            configOverviewPromise.done(=>
-              overview = _.template(OverviewTemplate,
-                input:
-                  balance: @options.ataglance.get("balance")
-                  debug: if @options.config.get("Server Parameters").debug is "True" then "checked" else ""
-                  using_sandbox: if @options.config.get("HIT Configuration").using_sandbox is "True" then "checked" else "")
-              $('#content').html(overview)
-              # Load HIT table
-              hit_view = new HITView collection: new HITs
-              $("#tables").html hit_view.render().el)
+            #configOverviewPromise = @options.config.fetch()
+            $.when @options.config.fetch(), @options.ataglance.fetch()
+              .then(=>
+                overview = _.template(OverviewTemplate,
+                  input:
+                    balance: @options.ataglance.get("balance")
+                    debug: if @options.config.get("Server Parameters").debug is "True" then "checked" else ""
+                    using_sandbox: if @options.config.get("HIT Configuration").using_sandbox is "True" then "checked" else "")
+                $('#content').html(overview)
+                # Load HIT table
+                hit_view = new HITView collection: new HITs
+                $("#tables").html hit_view.render().el)
 
           render: =>
             # Highlight sidebar selections on click
@@ -166,10 +158,10 @@ define [
               $(@).addClass 'selected'
 
             # Load content
-            $.when(@options.config.fetch(), @options.ataglance.fetch()).done(=>
-              # Check if AWS credentials are loaded and valid
-              if @options.config.get("AWS Access").aws_access_key_id is "YourAccessKeyId" or @options.config.get("AWS Access").aws_secret_access_key is "YourSecretAccessKey"
-                @getCredentials()
+            $.when @options.config.fetch(), @options.ataglance.fetch()
+              .done(=>
+                if @options.config.get("AWS Access").aws_access_key_id is "YourAccessKeyId" or @options.config.get("AWS Access").aws_secret_access_key is "YourSecretAccessKey"
+                  @getCredentials()
 
               # Load and add config content pages
               awsInfo = _.template(AWSInfoTemplate,
@@ -234,9 +226,13 @@ define [
             hit_view = new HITView collection: new HITs
             $("#tables").html hit_view.render().el
 
-            # TODO(): Figure out why events is not firing when triggered.
+            # TODO(): Figure out why backbone.events are not firing when triggered.
             # These are just a temporary hack around the issue.
-            $(document).on "click", '.save', (event) ->
+
+            # $(document).on "click", '.save', (event) =>
+            #   # event.preventDefault()
+            #   @save(event)
+            $(document).on "click", '.save_data', (event) =>
               event.preventDefault()
               @save(event)
             $(document).on "click", 'input#using_sandbox', =>
@@ -248,6 +244,8 @@ define [
             $(document).on "click", '#server-parms-save', =>
               @serverParamsSave()
 
+            updateExperimentStatus = _.bind(@getExperimentStatus, @)
+            updateOverview = _.bind(@loadOverview, @)
 
             # Bind table buttons
             $(document).on "click", '.extend', ->
@@ -258,16 +256,24 @@ define [
                 mturk_request: "expire_hit"
                 hitid: $(@).attr('id')
               $('#expire-btn').on 'click', ->
-                expirePromise = $.ajax
+                $.ajax
                   contentType: "application/json; charset=utf-8"
                   url: '/mturk_services'
                   type: "POST"
                   dataType: 'json'
                   data: data
                   complete: ->
-                    # reload HIT table
-                    hit_view = new HITView collection: new HITs
-                    $("#tables").html hit_view.render().el
+                    updateExperimentStatus()
+                    updateOverview()
                   error: (error) ->
-                    console.log(error)
+                    console.log("failed to update status")
+                $('#expire-modal').modal('hide')
+
+            $(document).on "click", '.extend', ->
+              $('#extend-modal').modal('show')
+              data = JSON.stringify
+                mturk_request: "extend_hit"
+                hitid: $(@).attr('id')
+                # Get time + worker data via text fields
+              $('#expire-btn').on 'click', ->
                 $('#expire-modal').modal('hide')
