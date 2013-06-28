@@ -35,7 +35,8 @@ dashboard_port = find_open_port()
 
 # Launch dashboard kernel
 subprocess.Popen("python dashboard_server.py " + str(dashboard_port), shell=True)
-time.sleep(3)  # Ensure that dashboard has sufficient time to load before launching browser
+#TODO(Jay, John): Find a cleverer way to ensure server is up before launching browser.
+time.sleep(5)  # Ensure that dashboard has sufficient time to load before launching browser
 subprocess.Popen("python psiturk_server.py", shell=True)
 
 launchurl = "http://"+config.get("Server Parameters", "host")+":"+str(dashboard_port)+"/dashboard"
