@@ -12,8 +12,12 @@ from flask import jsonify
 import socket
 import threading
 import time
+import pytz
+import json
+# from datetime import datetime
+import iso8601  # parses time with timezones (e.g., from Amazon)
 
-# Database setup
+# Database 
 from db import db_session, init_db
 from models import Participant
 from sqlalchemy import or_, func
@@ -32,7 +36,6 @@ class PsiTurkConfig:
             self.load_config()
             self.generate_hash()
         else:
-            print("Using current config file...")
             self.load_config()
             self.check_hash()
 
@@ -172,30 +175,43 @@ class PsiTurkConfig:
         self.num_counters = Config.get('Task Parameters', 'num_counters')
 
 class MTurkServices:
-    def __init__(self, config):
+    def __init__(self, config=None):
         self.config = config
 
-    def check_balance(self):
-        # Check if AWS acct info has been entereed
-        if not(self.config.aws_access_key_id == 'YourAccessKeyId') and \
-           not(self.config.aws_secret_access_key == 'YourSecreteAccessKey'):
-            mturkparams = dict(
-                aws_access_key_id=self.config.aws_access_key_id,
-                aws_secret_access_key=self.config.aws_secret_access_key,
-                host='mechanicalturk.amazonaws.com')
-            self.mtc = MTurkConnection(**mturkparams)
+    def get_active_hits(self):
+        self.connect_to_turk()
+        # hits = self.mtc.search_hits()
+        hits = self.mtc.get_all_hits()
+        active_hits = [hit for hit in hits if not(hit.expired)]
+        # active_hits = [hit for hit in hits]
+        hits_data = [{'hitid': hit.HITId,
+                      'title': hit.Title,
+                      'status': hit.HITStatus,
+                      'max_assignments': hit.MaxAssignments,
+                      'number_assignments_completed': hit.NumberOfAssignmentsCompleted,
+                      'number_assignments_pending': hit.NumberOfAssignmentsCompleted,
+                      'number_assignments_available': hit.NumberOfAssignmentsAvailable,
+                      # 'expired': hit.expired,  # redundant but useful for other queries
+                      'creation_time': hit.CreationTime,
+                      'expiration': hit.Expiration,
+                      'btn': '<button class="btn btn-large">Test</button>'
+                      }
+                    for hit in active_hits]
+        return(hits_data)
 
-            return(self.mtc.get_account_balance()[0])
+    def connect_to_turk(self):
+        is_sandbox = json.loads(self.config.using_sandbox.lower())
+        if is_sandbox:
+            host = 'mechanicalturk.sandbox.amazonaws.com'
         else:
-            return('$10,000')
-
-    def turk_connect(self, host):
+            host = 'mechanicalturk.amazonaws.com'
         mturkparams = dict(
             aws_access_key_id=self.config.aws_access_key_id,
             aws_secret_access_key=self.config.aws_secret_access_key,
             host=host)
         self.mtc = MTurkConnection(**mturkparams)
 
+        #TODO(): This should probably be moved to a separate method.
         # Configure portal
         experimentPortalURL = self.config.question_url
         frameheight = 600
@@ -226,14 +242,45 @@ class MTurkServices:
             qualifications = quals
         )
 
-    def create_hit(self):
-        if self.config.using_sandbox:
+    def check_balance(self):
+        is_sandbox = json.loads(self.config.using_sandbox.lower())
+        if is_sandbox:
             host = 'mechanicalturk.sandbox.amazonaws.com'
         else:
             host = 'mechanicalturk.amazonaws.com'
-        self.turk_connect(host)
+
+        # Check if AWS acct info has been entered
+        is_signed_up = not(self.config.aws_access_key_id == 'YourAccessKeyId') and \
+                       not(self.config.aws_secret_access_key == 'YourSecreteAccessKey')
+
+        if is_signed_up:
+            mturkparams = dict(
+                aws_access_key_id=self.config.aws_access_key_id,
+                aws_secret_access_key=self.config.aws_secret_access_key,
+                host=host)
+            self.mtc = MTurkConnection(**mturkparams)
+
+            return(self.mtc.get_account_balance()[0])
+        else:
+            return('-')
+
+    def create_hit(self):
+        self.connect_to_turk()
         myhit = self.mtc.create_hit(**self.paramdict)[0]
-        hitid = myhit.HITId
+        self.hitid = myhit.HITId
+
+    # TODO(Jay): Have a wrapper around functions that serializes them. 
+    # Default output should not be serialized.
+    def expire_hit(self, hitid):
+        self.connect_to_turk()
+        self.mtc.expire_hit(hitid)
+
+    def extend_hit(self, assignments_increment=None, expiration_increment=None):
+        self.connect_to_turk()
+        if self.hitid is not EXP_STARTED:
+            self.mtc.extend_hit(self.hitid, assignments_increment, expiration_increment)
+        else:
+            print "Warning: HIT extension failed."
 
     def get_summary(self):
         balance = self.check_balance()
@@ -242,6 +289,7 @@ class MTurkServices:
 
 
 # Pub/sub routine for full-duplex communication between dashboard server and client
+# This is critical for server log viewer in dashboard
 class ServerNamespace(BaseNamespace):
     sockets = {}
     def recv_connect(self):
@@ -307,5 +355,11 @@ class Database:
                        credited=credited,
                        quit_early=quit_early,
                        total=total)
+    # TODO()
     def get_average_time(self):
+        pass
+
+
+class Session:
+    def __init__(self):
         pass
