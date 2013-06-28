@@ -5,6 +5,7 @@
     <!-- Load the script "static/dashboard/js/main.js" as our entry point -->
     <script data-main="static/dashboard/js/main" src="static/dashboard/js/libs/require.js"></script>
     <link href="static/dashboard/css/inspiritas.css" rel="stylesheet">
+    <link href="static/dashboard/css/backbone.tableview.css" rel="stylesheet">
     <link rel="stylesheet" href="static/dashboard/css/font-awesome.css">
 </head>
 <body>
@@ -24,7 +25,7 @@
       <span class="tagline">It's raining N! <a href="http://gureckislab.org/blog/?p=1297">Read more.</a></span>
 
       <div class="nav-collapse collapse" id="main-menu">
-        <div class="auth pull-right" style="width:300px; margin-right:-20px">
+        <div class="auth pull-right" style="width:300px; margin-right:-75px">
           <span class="links">
               <i class="icon-circle" style="color: grey; margin: 0 3px 0 0" id="server_status"></i>
                 Server
@@ -35,7 +36,7 @@
               <i class="icon-circle" style="margin: 0 3px 0 10px; color: grey" id="experiment_status"></i>
                 Experiment
                 <span id="server_controls" style="color:grey">
-                  [<a href="#" id="run" style="color:grey">run</a>|<a href="#" id="expire" style="color:grey">expire</a>|<a href="#" id="add_time" style="color:grey">add time</a>|<a href="#" id="add_time" style="color:grey">add slots</a>]
+                  [<a href="#" id="run" style="color:grey">run</a>]
                 </span>
               </span>
             </span>
@@ -60,5 +61,101 @@
       </div>
     </div>
 </div> <!-- /container -->
+
+<!-- Modals
+================================================== -->
+<div id="server-off-modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Warning</h3>
+  </div>
+  <div class="modal-body">
+    <p><strong>You are about to shutdown the psiTurk server</strong>.
+      If there are any participants currently running in your experiment, they will be forced to quit.
+      You are still responsible for their payment.
+    </p>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+    <button id="shutdownServerBtn" class="btn btn-danger">Shutdown</button>
+  </div>
+</div>
+
+<div id="run-expt-modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Run experiment</h3>
+  </div>
+  <div class="modal-body">
+    <p>
+      Please confirm your settings.
+      <br />
+      <strong>N</strong> participants @ $X/ea x fees = <strong>$xxx.xx</strong>
+      <br />
+      Each participant has <strong>T</strong> mins. to complete your task.
+    </p>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+    <button id="run-expt-btn" class="btn btn-primary">Go!</button>
+  </div>
+</div>
+
+<div id="aws-info-modal" class="modal hide fade" data-keyboard="false" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <h3 id="myModalLabel">Welcome!</h3>
+  </div>
+  <div class="modal-body">
+    <p>
+      <strong>To begin psiTurk, please provide your Amazon Mechanical Turk credentials.</strong>
+    </p>
+    <div class="row-fluid">
+      <div class="span12">
+        <div class="alert alert-block">
+          An AWS key is required for posting new HITs to mechanical turk as well as
+          monitoring existing HITs. You receive your key when you open an Amazon Web
+          Services account.
+          If you already have an AWS account, your key can be retrieved from:
+          <a href="http://aws-portal.amazon.com/gp/aws/developer/account/index.html?action=access-key">http://aws-portal.amazon.com/gp/aws/developer/account/index.html?action=access-key</a>
+        </div>
+        </div>
+        <form class="form-horizontal" id="myform">
+          <div class="control-group">
+            <label class="control-label" for="aws_access_key_id" >Your Access Key Id</label>
+            <div class="controls">
+              <input type="password" class="input-large" value=""  name="aws_access_key_id" id="aws_access_key_id">
+            </div>
+          </div>
+          <div class="control-group">
+            <label class="control-label" for="aws_secret_access_key">Secret Access Key</label>
+            <div class="controls">
+              <input type="password" class="input-large" value="" name="aws_secret_access_key" id="aws_secret_access_key">
+            </div>
+          </div>
+          <div class="form-actions modal-footer">
+            <button id="aws-info-save" class="btn btn-primary save save-data" data-section="AWS Access">Save changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="expire-modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Expire experiment</h3>
+  </div>
+  <div class="modal-body">
+    <p>
+      <strong>Warning!</strong> Terminating experiment early.
+    </p>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+    <button id="expire-btn" class="btn btn-danger">Expire</button>
+  </div>
+</div>
+
 </body>
 </html>
