@@ -10,9 +10,12 @@ define [
       'views/ContentView'
       'text!templates/overview.html'
       'text!templates/sidebar.html'
-      'views/chartView'
-      'models/ChartModel'
-      'highcharts'
+      'views/HITView'
+      'models/HITModel'
+      'collections/HITCollection'
+      # 'views/ChartView'
+      # 'models/ChartModel'
+      # 'highcharts'
     ],
     (
       $
@@ -25,9 +28,12 @@ define [
       ContentView
       OverviewTemplate
       SideBarTemplate
-      ChartView
-      ChartModel
-      Highcharts
+      HITView
+      HIT
+      HITs
+      # ChartView
+      # ChartModel
+      # Highcharts
     ) ->
 
       # Prevent links from reloading the page
@@ -57,7 +63,6 @@ define [
               $('#server_on')
                 .css "color": "grey"
               $('#server_off').css "color": "orange"
-              $('#run').css "color": "orange"
             else
               $('#server_status').css({"color": "red"})
               $('#server_off')
@@ -78,17 +83,16 @@ define [
                 debug: if @config.get("Server Parameters").debug is "True" then "checked" else ""
                 using_sandbox: if @config.get("HIT Configuration").using_sandbox is "True" then "checked" else "")
             $('#content').html(overview)
-            chrtView = new ChartView()
-            chrtView.initialize()
-            chrtView.setChart()
+            # chrtView = new ChartView()
+            # chrtView.initialize()
+            # chrtView.setChart()
             # Load and add side bar html
             sideBarHTML = _.template(SideBarTemplate)
             $('#sidebar').html(sideBarHTML)
             sidebarView = new SidebarView(
               config: @config
-              ataglance: @ataglance
-              chart: chrtView)
-            sidebarView.initialize()
+              ataglance: @ataglance)
+              # chart: chrtView)
           ))
 
         # Load content view after html; req's ids to be present
@@ -96,10 +100,38 @@ define [
         contentView.initialize()
 
         # Have run button listen for clicks and tell server to create HITS
+        # TODO(Jay): Combine and abstract the following functions-DRY principle.
         $('#run').on "click", ->
           $('#run-expt-modal').modal('show')
-          $('#crate-hit-btn').on "click", ->
-            $.ajax url: "/create_hit"
+          $('#run-expt-btn').on "click", ->
+            $.ajax
+              contentType: "application/json; charset=utf-8"
+              url: '/mturk_services'
+              type: "POST"
+              dataType: 'json'
+              data: JSON.stringify mturk_request : "create_hit"
+              success: ->
+                $('#expire').css "color": "orange"
+                $('#extend').css "color": "orange"
+              complete: ->
+                # reload HIT table
+                $('#run-expt-modal').modal('hide')
+                hit_view = new HITView collection: new HITs
+                $("#tables").html hit_view.render().el
+              error: (error) ->
+                console.log(error)
+                $('#expire-modal').modal('hide')
+
+        $('#expire').on "click", ->
+          # $('#expire-expt-modal').modal('show')
+          # $('#expire-expt-btn').on "click", ->
+          $.ajax
+            contentType: "application/json; charset=utf-8"
+            url: '/mturk_services'
+            type: "POST"
+            dataType: 'json'
+            data: JSON.stringify
+              mturk_request: "get_active_hits"
 
         # Shutdown button
         $("#server_off").on "click", ->
@@ -128,11 +160,32 @@ define [
                     $('#server_on')
                       .css "color": "grey"
                     $('#server_off').css "color": "orange"
-                    $('#run').css "color": "orange"
                   else
                     $('#server_status').css({"color": "red"})
                     $('#server_off')
                       .css "color": "grey"
                     $('#server_on').css "color": "orange"
 
+        # Expire button
+        getExperimentStatus = ->
+          $.ajax
+            contentType: "application/json; charset=utf-8"
+            url: '/mturk_services'
+            type: "POST"
+            dataType: 'json'
+            data: JSON.stringify
+              mturk_request: "get_active_hits"
+            success: (data) ->
+              if data.hits.length > 0
+                $('#experiment_status').css "color": "green"
+                $('#run').css({"color": "grey"})
+                $('#expire').css({"color": "orange"})
+                $('#extend').css({"color": "orange"})
+                $('#extend').css({"color": "orange"})
+              else
+                $('#experiment_status').css "color": "green"
+                $('#run').css({"color": "orange"})
+                $('#expire').css({"color": "grey"})
+                $('#extend').css({"color": "grey"})
 
+        getExperimentStatus()
