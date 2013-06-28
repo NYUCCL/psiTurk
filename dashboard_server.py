@@ -53,19 +53,39 @@ def at_a_glance_model():
     if request.method == 'GET':
         return services.get_summary()
 
-@app.route('/create_hit', methods=['GET'])
-def create_hit_route():
+@app.route('/mturk_services', methods=['POST'])
+def turk_services():
     """
-    Create HIT on AMT
     """
-    return "HIT created"
+    config = Dashboard.PsiTurkConfig()
+    services = Dashboard.MTurkServices(config)
+    mturk_request = request.json
+    if "mturk_request" in request.json:
+        if request.json["mturk_request"] == "create_hit":
+            services.create_hit()
+            return("hit created")
+        elif request.json["mturk_request"] == "expire_hit":
+            hitid = request.json["hitid"]
+            services.expire_hit(hitid)
+            return("hit expired")
+        elif request.json["mturk_request"] == "get_active_hits":
+            return(jsonify(hits=services.get_active_hits()))
+    return "psiTurk failed to recognize your request."
+
+@app.route('/get_hits', methods=['GET'])
+def get_hits():
+    """
+    """
+    config = Dashboard.PsiTurkConfig()
+    services = Dashboard.MTurkServices(config)
+    return(jsonify(hits=services.get_active_hits()))
 
 @app.route('/monitor_server', methods=['GET'])
 def monitor_server():
     config = Dashboard.PsiTurkConfig()
     server = Dashboard.Server(port=config.port)
     server.start_monitoring()
-    return "Monitoring"
+    return "Monitoring..."
 
 @app.route('/is_port_available', methods=['POST'])
 def create_hit():
@@ -105,7 +125,6 @@ def status():
 def participant_status():
     database = Dashboard.Database()
     status = database.get_participant_status()
-    print status
     return status
 
 
