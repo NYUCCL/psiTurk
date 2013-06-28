@@ -8,6 +8,9 @@ define [
         'text!templates/server-params.html'
         'text!templates/expt-info.html'
         'views/validators'
+        'views/HITView'
+        'models/HITModel'
+        'collections/HITCollection'
       ],
       (
         Backbone
@@ -18,14 +21,19 @@ define [
         ServerParamsTemplate
         ExptInfoTemplate
         Validators
+        HITView
+        HIT
+        HITs
       ) ->
-        class SideBarView extends Backbone.View
 
-          # el: $('#content')
+        # TODO(Jay): This module is getting heavy.
+        # Refactor into separate, lighter modules, esp non-essential sidebar code
+        class SideBarView extends Backbone.View
 
           save: (event) ->
             # Prevent clicks from reloading page
             event.preventDefault()
+            console.log "made it!!"
 
             section = $(event.target).data 'section'
             inputData = {}
@@ -38,16 +46,28 @@ define [
             # Load overview and change sidebar link
             $('li').removeClass 'selected'
             $('#overview').addClass 'selected'
-            configPromise = @options.config.fetch
-            configPromise.done(->
-              overview = _.template(OverviewTemplate,
-                input:
-                  balance: @options.ataglance.get("balance")
-                  debug: if @options.config.get("Server Parameters").debug is "True" then "checked" else ""
-                  using_sandbox: if @options.config.get("HIT Configuration").using_sandbox is "True" then "checked" else "")
-              $('#content').html(overview))
+            configPromise = @options.config.fetch()
+            @options.ataglance.fetch
+              error: =>
+                $('#aws-info-modal').modal('show')
+                $('.save').click (event) =>
+                  event.preventDefault()
+                  @save(event)
+                  $('#aws-info-modal').modal('hide')
 
-              # @options.chart.getData()
+                # $('#aws-info-modal').modal('hide')
+                # @getCredentials()
+              complete: =>
+                configPromise.done(=>
+                  overview = _.template(OverviewTemplate,
+                    input:
+                      balance: @options.ataglance.get("balance")
+                      debug: if @options.config.get("Server Parameters").debug is "True" then "checked" else ""
+                      using_sandbox: if @options.config.get("HIT Configuration").using_sandbox is "True" then "checked" else "")
+                  $('#content').html(overview)
+                  # Load HIT table
+                  hit_view = new HITView collection: new HITs
+                  $("#tables").html hit_view.render().el)
 
             $.ajax
               url: "/monitor_server"
@@ -60,18 +80,18 @@ define [
           events:
             'click a': 'pushstateClick'
             'click .save_data': 'save'
+            'click #aws-info-save': 'save'
             'click #server-parms-save': 'serverParamsSave'
             'click input#debug': 'saveDebugState'
             'click input#using_sandbox': 'saveUsingSandboxState'
-  
+
           serverParamsSave: ->
             @save()
-            # Reset server on save
+            # Update server on save
             configResetPromise = @options.config.fetch()
             configResetPromise.done(->
               url = @options.config.get("HIT Configuration").question_url + '/shutdown'
               url_pattern =  /^https?\:\/\/([^\/:?#]+)(?:[\/:?#]|$)/i
-              console.log(@options.config.get("Server Parameters").port)
               domain = url.match(url_pattern)[0] + @options.config.get("Server Parameters").port + '/shutdown'
               $.ajax
                 url: domain
@@ -86,20 +106,71 @@ define [
 
           saveUsingSandboxState: ->
             using_sandbox = $("input#using_sandbox").is(':checked')
-            @options.config.save
+            @options.config.save(
               "HIT Configuration":
-                using_sandbox: using_sandbox
+                using_sandbox: using_sandbox,
+              {
+                complete: =>
+                  $.when(@options.config.fetch(), @options.ataglance.fetch()).done(=>
+                    overview = _.template(OverviewTemplate,
+                      input:
+                        balance: @options.ataglance.get("balance")
+                        debug: if @options.config.get("Server Parameters").debug is "True" then "checked" else ""
+                        using_sandbox: if @options.config.get("HIT Configuration").using_sandbox is "True" then "checked" else "")
+                    $('#content').html(overview)
+                    # Load HIT table
+                    hit_view = new HITView collection: new HITs
+                    $("#tables").html hit_view.render().el)
+              }, {
+                error: (error) => console.log "error"
+              })
+              # configPromise = @options.config.fetch()
+              # configPromise.done(=>
+              #   overview = _.template(OverviewTemplate,
+              #     input:
+              #       balance: @options.ataglance.get("balance")
+              #       debug: if @options.config.get("Server Parameters").debug is "True" then "checked" else ""
+              #       using_sandbox: if @options.config.get("HIT Configuration").using_sandbox is "True" then "checked" else "")
+              #   $('#content').html(overview)
+              #   # Load HIT table
+              #   hit_view = new HITView collection: new HITs
+              #   $("#tables").html hit_view.render().el)
 
           initialize: ->
             @render()
 
-          render: ->
+          getCredentials: ->
+            $('#aws-info-modal').modal('show')
+            $('.save').click (event) =>
+              event.preventDefault()
+              @save(event)
+              $('#aws-info-modal').modal('hide')
+
+          loadOverview: ->
+            configOverviewPromise = @options.config.fetch()
+            configOverviewPromise.done(=>
+              overview = _.template(OverviewTemplate,
+                input:
+                  balance: @options.ataglance.get("balance")
+                  debug: if @options.config.get("Server Parameters").debug is "True" then "checked" else ""
+                  using_sandbox: if @options.config.get("HIT Configuration").using_sandbox is "True" then "checked" else "")
+              $('#content').html(overview)
+              # Load HIT table
+              hit_view = new HITView collection: new HITs
+              $("#tables").html hit_view.render().el)
+
+          render: =>
             # Highlight sidebar selections on click
             $('li').on 'click', ->
               $('li').removeClass 'selected'
               $(@).addClass 'selected'
 
+            # Load content
             $.when(@options.config.fetch(), @options.ataglance.fetch()).done(=>
+              # Check if AWS credentials are loaded and valid
+              if @options.config.get("AWS Access").aws_access_key_id is "YourAccessKeyId" or @options.config.get("AWS Access").aws_secret_access_key is "YourSecretAccessKey"
+                @getCredentials()
+
               # Load and add config content pages
               awsInfo = _.template(AWSInfoTemplate,
                 input:
@@ -134,18 +205,13 @@ define [
                   num_conds: @options.config.get("Task Parameters").num_conds,
                   num_counters: @options.config.get("Task Parameters").num_counters)
 
-              validator = new Validators
               # Have content area respond to sidebar link clicks
-              $('#overview').on 'click', =>
-                configOverviewPromise = @options.config.fetch()
-                configOverviewPromise.done(=>
-                  overview = _.template(OverviewTemplate,
-                    input:
-                      balance: @options.ataglance.get("balance")
-                      debug: if @options.config.get("Server Parameters").debug is "True" then "checked" else ""
-                      using_sandbox: if @options.config.get("HIT Configuration").using_sandbox is "True" then "checked" else "")
-                  $('#content').html(overview)
-                  @options.chart.refresh())
+              validator = new Validators
+              $('#overview').off('click').on 'click', =>
+                $('li').removeClass 'selected'
+                $('#overview').addClass 'selected'
+                @loadOverview()
+                  # @options.chart.refresh())
               $('#aws-info').on 'click', ->
                 $('#content').html(awsInfo)
                 validator.loadValidators()
@@ -164,3 +230,44 @@ define [
             )
 
 
+            # Load HIT table
+            hit_view = new HITView collection: new HITs
+            $("#tables").html hit_view.render().el
+
+            # TODO(): Figure out why events is not firing when triggered.
+            # These are just a temporary hack around the issue.
+            $(document).on "click", '.save', (event) ->
+              event.preventDefault()
+              @save(event)
+            $(document).on "click", 'input#using_sandbox', =>
+              @saveUsingSandboxState()
+            $(document).on "click", 'input#debug', =>
+              @saveDebugState()
+            $(document).on "click", '#aws-info-save', =>
+              @save()
+            $(document).on "click", '#server-parms-save', =>
+              @serverParamsSave()
+
+
+            # Bind table buttons
+            $(document).on "click", '.extend', ->
+              "blah"
+            $(document).on "click", '.expire', ->
+              $('#expire-modal').modal('show')
+              data = JSON.stringify
+                mturk_request: "expire_hit"
+                hitid: $(@).attr('id')
+              $('#expire-btn').on 'click', ->
+                expirePromise = $.ajax
+                  contentType: "application/json; charset=utf-8"
+                  url: '/mturk_services'
+                  type: "POST"
+                  dataType: 'json'
+                  data: data
+                  complete: ->
+                    # reload HIT table
+                    hit_view = new HITView collection: new HITs
+                    $("#tables").html hit_view.render().el
+                  error: (error) ->
+                    console.log(error)
+                $('#expire-modal').modal('hide')
