@@ -13,6 +13,7 @@ define [
       'views/HITView'
       'models/HITModel'
       'collections/HITCollection'
+      'views/RunExptView'
       # 'views/ChartView'
       # 'models/ChartModel'
       # 'highcharts'
@@ -31,6 +32,7 @@ define [
       HITView
       HIT
       HITs
+      RunExptView
       # ChartView
       # ChartModel
       # Highcharts
@@ -43,6 +45,18 @@ define [
 
       pushstateClick: (event) ->
         event.preventDefault()
+
+      getExperimentStatus: ->
+        $.ajax
+          url: '/get_hits'
+          type: "GET"
+          success: (data) ->
+            if data.hits.length > 0
+              $('#experiment_status').css "color": "green"
+              $('#run').css({"color": "grey"})
+            else
+              $('#experiment_status').css "color": "grey"
+              $('#run').css({"color": "orange"})
 
       initialize: ->
         #  Pass in our router module and call it's initialize function
@@ -89,10 +103,10 @@ define [
             # Load and add side bar html
             sideBarHTML = _.template(SideBarTemplate)
             $('#sidebar').html(sideBarHTML)
-            sidebarView = new SidebarView(
+            sidebarView = new SidebarView
               config: @config
-              ataglance: @ataglance)
-              # chart: chrtView)
+              ataglance: @ataglance
+              # chart: chrtView
           ))
 
         # Load content view after html; req's ids to be present
@@ -100,38 +114,46 @@ define [
         contentView.initialize()
 
         # Have run button listen for clicks and tell server to create HITS
+        # Before running expt, get latest config and verify
         # TODO(Jay): Combine and abstract the following functions-DRY principle.
+        # There's a general pattern of loading ajax data and updating GUI which
+        # can easily be abstracted
+        updateExperimentStatus = _.bind(@getExperimentStatus, @)  # bind "this" to current namespace, before it's buried by callbacks
         $('#run').on "click", ->
-          $('#run-expt-modal').modal('show')
-          $('#run-expt-btn').on "click", ->
-            $.ajax
-              contentType: "application/json; charset=utf-8"
-              url: '/mturk_services'
-              type: "POST"
-              dataType: 'json'
-              data: JSON.stringify mturk_request : "create_hit"
-              success: ->
-                $('#expire').css "color": "orange"
-                $('#extend').css "color": "orange"
-              complete: ->
-                # reload HIT table
-                $('#run-expt-modal').modal('hide')
-                hit_view = new HITView collection: new HITs
-                $("#tables").html hit_view.render().el
-              error: (error) ->
-                console.log(error)
-                $('#expire-modal').modal('hide')
+          @config = new ConfigModel
+          configPromise = @config.fetch()
+          configPromise.done =>
+            runExptView = new RunExptView config: @config
+            $('#run-expt-modal').modal('show')
+            $('.run-expt').on "keyup", (event) =>
+              inputData = {}
+              configData = {}
+              $.each($('#expt-form').serializeArray(), (i, field) ->
+                inputData[field.name] = field.value
+              )
+              # Update amounts in GUI
+              $('#total').html (inputData["reward"]*inputData["max_assignments"]*1.10).toFixed(2)
+              $('#fee input').val (inputData["reward"]*inputData["max_assignments"]*.10).toFixed(2)
 
-        $('#expire').on "click", ->
-          # $('#expire-expt-modal').modal('show')
-          # $('#expire-expt-btn').on "click", ->
-          $.ajax
-            contentType: "application/json; charset=utf-8"
-            url: '/mturk_services'
-            type: "POST"
-            dataType: 'json'
-            data: JSON.stringify
-              mturk_request: "get_active_hits"
+              configData["HIT Configuration"] = inputData
+              @config.save configData
+
+            $('#run-expt-btn').on "click", ->
+              $.ajax
+                contentType: "application/json; charset=utf-8"
+                url: '/mturk_services'
+                type: "POST"
+                dataType: 'json'
+                data: JSON.stringify mturk_request : "create_hit"
+                complete: ->
+                  # reload HIT table
+                  $('#run-expt-modal').modal('hide')
+                  hit_view = new HITView collection: new HITs
+                  $("#tables").html hit_view.render().el
+                  updateExperimentStatus()
+                error: (error) ->
+                  console.log(error)
+                  $('#expire-modal').modal('hide')
 
         # Shutdown button
         $("#server_off").on "click", ->
@@ -143,7 +165,7 @@ define [
               type: "GET"
               success: $('#server-off-modal').modal('hide')
 
-        # Run button
+        # Server status
         $("#server_on").on "click", ->
           $.ajax
             url: '/launch'
@@ -166,26 +188,4 @@ define [
                       .css "color": "grey"
                     $('#server_on').css "color": "orange"
 
-        # Expire button
-        getExperimentStatus = ->
-          $.ajax
-            contentType: "application/json; charset=utf-8"
-            url: '/mturk_services'
-            type: "POST"
-            dataType: 'json'
-            data: JSON.stringify
-              mturk_request: "get_active_hits"
-            success: (data) ->
-              if data.hits.length > 0
-                $('#experiment_status').css "color": "green"
-                $('#run').css({"color": "grey"})
-                $('#expire').css({"color": "orange"})
-                $('#extend').css({"color": "orange"})
-                $('#extend').css({"color": "orange"})
-              else
-                $('#experiment_status').css "color": "green"
-                $('#run').css({"color": "orange"})
-                $('#expire').css({"color": "grey"})
-                $('#extend').css({"color": "grey"})
-
-        getExperimentStatus()
+        @getExperimentStatus()
