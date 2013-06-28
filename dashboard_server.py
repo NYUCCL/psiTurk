@@ -68,8 +68,12 @@ def turk_services():
             hitid = request.json["hitid"]
             services.expire_hit(hitid)
             return("hit expired")
-        elif request.json["mturk_request"] == "get_active_hits":
-            return(jsonify(hits=services.get_active_hits()))
+        elif request.json["mturk_request"] == "extend_hit":
+           hitid = request.json["hitid"]
+           assignments_increment = request.json["assignments_increment"]
+           expiration_increment = request.json["expiration_increment"]
+           services.extend_hit(hitid, assignments_increment, expiration_increment)
+           return("hit expired")
     return "psiTurk failed to recognize your request."
 
 @app.route('/get_hits', methods=['GET'])

@@ -275,12 +275,9 @@ class MTurkServices:
         self.connect_to_turk()
         self.mtc.expire_hit(hitid)
 
-    def extend_hit(self, assignments_increment=None, expiration_increment=None):
+    def extend_hit(self, hitid, assignments_increment=None, expiration_increment=None):
         self.connect_to_turk()
-        if self.hitid is not EXP_STARTED:
-            self.mtc.extend_hit(self.hitid, assignments_increment, expiration_increment)
-        else:
-            print "Warning: HIT extension failed."
+        self.mtc.extend_hit(hitid, assignments_increment, expiration_increment)
 
     def get_summary(self):
         balance = self.check_balance()
