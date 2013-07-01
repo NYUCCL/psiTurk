@@ -113,7 +113,7 @@
             </div>
           </div>
           <div class="form-actions modal-footer">
-            <button id="aws-info-save" class="btn btn-primary save save-data" data-section="AWS Access">Save changes</button>
+            <button id="aws-info-save" class="btn btn-primary save save-data" data-section="AWS Access">Login</button>
           </div>
         </form>
       </div>
@@ -140,16 +140,35 @@
 <div id="extend-modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-    <h3 id="myModalLabel">Expire experiment</h3>
+    <h3 id="myModalLabel">Extend experiment</h3>
   </div>
   <div class="modal-body">
-    <p>
-      <strong>Warning!</strong> Terminating experiment early.
-    </p>
+    <p>Please use the following fields to extend the HIT.</p>
+    <br>
+    <br>
+    <div class="container" style="width:80%">
+      <form id="extend-form">
+        <table class="table">
+          <tr>
+            <td>Extend time (mins.)</td>
+            <td>
+              <input type="number" class="extend-expt" name="extend-time" id="extend-time" style="width: 45px; padding: 1px" value="0"> 
+            </td>
+            <td>Extend number of workers</td>
+            <td>
+              <input type="number" id="extend-workers" name="extend-workers" class="extend-workers" style="width: 45px; padding: 1px" value="0"> 
+            </td>
+          </tr>
+        </table>
+      </form>
+      <br>
+      <br>
+    </div>
   </div>
+
   <div class="modal-footer">
     <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
-    <button id=extend-btn" class="btn">Extend</button>
+    <button id="extend-btn" class="btn">Extend</button>
   </div>
 </div>
 
