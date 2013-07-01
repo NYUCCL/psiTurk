@@ -507,6 +507,10 @@ def dumpdata():
     response.headers['Content-Type'] = 'text/csv'
     return response
 
+@app.route("/ppid")
+def ppid():
+    ppid = os.getppid()
+    return str(ppid)
 
 #----------------------------------------------
 # generic route
