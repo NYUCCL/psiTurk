@@ -38,9 +38,9 @@ def get_dashboard_port():
 
 def launch_dashboard_server():
     # Launch dashboard kernel
-    p = subprocess.Popen("python dashboard_server.py ", shell=True, preexec_fn=os.setsid)
-    return p
-    # subprocess.Popen("python psiturk_server.py", shell=True)
+    subprocess.Popen("python dashboard_server.py ", shell=True, preexec_fn=os.setsid)
+    # return p
+    subprocess.Popen("python psiturk_server.py", shell=True)
 
 def kill_dashboard(process):
     os.killpg(process.pid, signal.SIGTERM)
