@@ -14,9 +14,6 @@ define [
       'models/HITModel'
       'collections/HITCollection'
       'views/RunExptView'
-      # 'views/ChartView'
-      # 'models/ChartModel'
-      # 'highcharts'
     ],
     (
       $
@@ -33,9 +30,6 @@ define [
       HIT
       HITs
       RunExptView
-      # ChartView
-      # ChartModel
-      # Highcharts
     ) ->
 
       # Prevent links from reloading the page
@@ -45,6 +39,34 @@ define [
 
       pushstateClick: (event) ->
         event.preventDefault()
+
+      getCredentials: ->
+        $('#aws-info-modal').modal('show')
+        $('.save').click (event) =>
+          event.preventDefault()
+          @save(event)
+          $('#aws-info-modal').modal('hide')
+
+      verifyAWSLogin: ->
+        config = new ConfigModel
+        configPromise = config.fetch()
+        configPromise.done =>
+          key_id = config.get("AWS Access").aws_access_key_id
+          secret_key = config.get("AWS Access").aws_secret_access_key
+          inputData = {}
+          inputData["aws_access_key_id"] = key_id
+          inputData["aws_secret_access_key"] = secret_key
+          $.ajax
+            url: "/verify_aws_login"
+            type: "POST"
+            dataType: "json"
+            contentType: "application/json; charset=utf-8"
+            data: JSON.stringify inputData
+            success: (response) =>
+              if response.aws_accnt is "False"
+                @getCredentials()
+            error: ->
+              console.log("aws verification failed")
 
       getExperimentStatus: ->
         $.ajax
@@ -58,9 +80,26 @@ define [
               $('#experiment_status').css "color": "grey"
               $('#run').css({"color": "orange"})
 
+      save: (event) ->
+        # Prevent clicks from reloading page
+        event.preventDefault()
+
+        section = $(event.target).data 'section'
+        inputData = {}
+        configData = {}
+        $.each($('#myform').serializeArray(), (i, field) ->
+          inputData[field.name] = field.value)
+        configData[section] = inputData
+        @config = new ConfigModel
+        configPromise = @config.fetch()
+        configPromise.done =>
+          @config.save configData,
+            complete: => @verifyAWSLogin()
+
       initialize: ->
         #  Pass in our router module and call it's initialize function
         Router.initialize()
+        @verifyAWSLogin()
 
         $('#server_on').on "click", ->
           $('#server_status').css "color": "yellow"
@@ -97,16 +136,11 @@ define [
                 debug: if @config.get("Server Parameters").debug is "True" then "checked" else ""
                 using_sandbox: if @config.get("HIT Configuration").using_sandbox is "True" then "checked" else "")
             $('#content').html(overview)
-            # chrtView = new ChartView()
-            # chrtView.initialize()
-            # chrtView.setChart()
-            # Load and add side bar html
             sideBarHTML = _.template(SideBarTemplate)
             $('#sidebar').html(sideBarHTML)
             sidebarView = new SidebarView
               config: @config
               ataglance: @ataglance
-              # chart: chrtView
           ))
 
         # Load content view after html; req's ids to be present
@@ -161,7 +195,7 @@ define [
           $('#shutdownServerBtn').on "click", ->
             $('#server_status').css "color": "yellow"
             $.ajax
-              url: '/shutdown'
+              url: '/shutdown_psiturk'
               type: "GET"
               success: $('#server-off-modal').modal('hide')
 

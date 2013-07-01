@@ -9,6 +9,41 @@
       pushstateClick: function(event) {
         return event.preventDefault();
       },
+      getCredentials: function() {
+        var _this = this;
+        $("#aws-info-modal").modal("show");
+        return $(".save").click(function(event) {
+          event.preventDefault();
+          _this.save(event);
+          return $("#aws-info-modal").modal("hide");
+        });
+      },
+      verifyAWSLogin: function() {
+        var config, configPromise, _this = this;
+        config = new ConfigModel;
+        configPromise = config.fetch();
+        return configPromise.done(function() {
+          var inputData, key_id, secret_key;
+          key_id = config.get("AWS Access").aws_access_key_id;
+          secret_key = config.get("AWS Access").aws_secret_access_key;
+          inputData = {};
+          inputData.aws_access_key_id = key_id;
+          inputData.aws_secret_access_key = secret_key;
+          return $.ajax({
+            url: "/verify_aws_login",
+            type: "POST",
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify(inputData),
+            success: function(response) {
+              if (response.aws_accnt === "False") return _this.getCredentials();
+            },
+            error: function() {
+              return console.log("aws verification failed");
+            }
+          });
+        });
+      },
       getExperimentStatus: function() {
         return $.ajax({
           url: "/get_hits",
@@ -31,9 +66,30 @@
           }
         });
       },
+      save: function(event) {
+        var configData, configPromise, inputData, section, _this = this;
+        event.preventDefault();
+        section = $(event.target).data("section");
+        inputData = {};
+        configData = {};
+        $.each($("#myform").serializeArray(), function(i, field) {
+          return inputData[field.name] = field.value;
+        });
+        configData[section] = inputData;
+        this.config = new ConfigModel;
+        configPromise = this.config.fetch();
+        return configPromise.done(function() {
+          return _this.config.save(configData, {
+            complete: function() {
+              return _this.verifyAWSLogin();
+            }
+          });
+        });
+      },
       initialize: function() {
         var atAGlancePromise, contentView, updateExperimentStatus, _this = this;
         Router.initialize();
+        this.verifyAWSLogin();
         $("#server_on").on("click", function() {
           return $("#server_status").css({
             color: "yellow"
@@ -152,7 +208,7 @@
               color: "yellow"
             });
             return $.ajax({
-              url: "/shutdown",
+              url: "/shutdown_psiturk",
               type: "GET",
               success: $("#server-off-modal").modal("hide")
             });
