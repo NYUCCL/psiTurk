@@ -6,38 +6,55 @@ import subprocess
 import socket
 import time
 import psutil
-import webbrowser
-from config import config
 import os
+import sys
+import argparse
+import zmq
+import time
 
 
-DEFAULT_DASHBOARD_PORT = 5000  # TODO(Todd, Jay): Change this to user defined param via app
+parser = argparse.ArgumentParser(description='Launch psiTurk and psiTurk dashboard.')
+parser.add_argument('-p', '--port', default=5000,
+                    help='optional port for dashboard. default is 5000.')
+parser.add_argument('-k', '--kill', default=False,
+                    help='kill dashboard.')
+args = parser.parse_args()
+dashboard_port = args.port
 
-# TODO(): Find a better way to ensure that the dash's port is ready.
 
-def is_port_available(port):
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    try:
-        s.connect(('127.0.0.1', port))
-        s.shutdown(1)
-        return 0
-    except:
-        return 1
+def listen_for_dashboard(pubsub_socket_port):
+    context = zmq.Context()
+    pubsub_socket = context.socket(zmq.SUB)
+    pubsub_socket.bind("tcp://127.0.0.1:" + pubsub_socket_port)
+    topicfilter = "dashboard"
+    pubsub_socket.setsockopt(zmq.SUBSCRIBE, '')
+    return pubsub_socket
 
-def find_open_port():
-    if is_port_available(DEFAULT_DASHBOARD_PORT):
-        open_port = DEFAULT_DASHBOARD_PORT
-    else:
-        open_port = next(port for port in range(5001, 10000) if is_port_available(port))
-    return(open_port)
+def get_dashboard_port():
+    return(dashboard_port)
 
-dashboard_port = find_open_port()
+# if args.kill:
+#     kill_dashboard(p)
 
-# Launch dashboard kernel
-subprocess.Popen("python dashboard_server.py " + str(dashboard_port), shell=True)
-#TODO(Jay, John): Find a cleverer way to ensure server is up before launching browser.
-time.sleep(5)  # Ensure that dashboard has sufficient time to load before launching browser
-subprocess.Popen("python psiturk_server.py", shell=True)
+def launch_dashboard_server():
+    # Launch dashboard kernel
+    p = subprocess.Popen("python dashboard_server.py ", shell=True, preexec_fn=os.setsid)
+    return p
+    # subprocess.Popen("python psiturk_server.py", shell=True)
 
-launchurl = "http://"+config.get("Server Parameters", "host")+":"+str(dashboard_port)+"/dashboard"
-webbrowser.open(launchurl, new=1, autoraise=True)
+def kill_dashboard(process):
+    os.killpg(process.pid, signal.SIGTERM)
+
+def launch_psiturk():
+    # pubsub_socket = listen_for_dashboard(open_port)
+    launch_dashboard_server(open_port)
+    # while True:
+    #     string = pubsub_socket.recv()
+    #     topic, message = string.split()
+    #     print string
+    #     sys.stdout.flush()
+    #     if topic == "dashboard" and message == "up":
+    #         pass
+    #         # launch_browser(open_port)
+
+launch_dashboard_server()
