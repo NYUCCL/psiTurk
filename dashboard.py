@@ -199,6 +199,27 @@ class MTurkServices:
                     for hit in active_hits]
         return(hits_data)
 
+    def verify_aws_login(self, key_id, secret_key):
+        is_sandbox = json.loads(self.config.using_sandbox.lower())
+        if is_sandbox:
+            host = 'mechanicalturk.sandbox.amazonaws.com'
+        else:
+            host = 'mechanicalturk.amazonaws.com'
+        mturkparams = dict(
+            aws_access_key_id=key_id,
+            aws_secret_access_key=secret_key,
+            host=host)
+        print(mturkparams)
+        self.mtc = MTurkConnection(**mturkparams)
+        try:
+            self.mtc.get_account_balance()
+        except:
+            print('bad')
+            return 0
+        else:
+            print('good')
+            return 1
+
     def connect_to_turk(self):
         is_sandbox = json.loads(self.config.using_sandbox.lower())
         if is_sandbox:
@@ -210,6 +231,7 @@ class MTurkServices:
             aws_secret_access_key=self.config.aws_secret_access_key,
             host=host)
         self.mtc = MTurkConnection(**mturkparams)
+        self.mtc.get_account_balance()
 
         #TODO(): This should probably be moved to a separate method.
         # Configure portal
@@ -277,7 +299,8 @@ class MTurkServices:
 
     def extend_hit(self, hitid, assignments_increment=None, expiration_increment=None):
         self.connect_to_turk()
-        self.mtc.extend_hit(hitid, assignments_increment, expiration_increment)
+        self.mtc.extend_hit(hitid, assignments_increment=int(assignments_increment))
+        self.mtc.extend_hit(hitid, expiration_increment=int(expiration_increment)*60)
 
     def get_summary(self):
         balance = self.check_balance()
