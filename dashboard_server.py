@@ -239,7 +239,7 @@ def shutdown_psiturk():
 def run_dev_server():
     app.debug = True
     port = dashboard_port
-    #launch_browser(dashboard_port)
+    launch_browser(dashboard_port)
     SocketIOServer(('', port), app, resource="socket.io").serve_forever()
 
 if __name__ == "__main__":
