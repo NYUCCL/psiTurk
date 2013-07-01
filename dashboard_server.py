@@ -9,11 +9,43 @@ from socketio import socketio_manage
 from socketio.server import SocketIOServer
 import dashboard as Dashboard
 import sys
+import webbrowser
+# import zmq
+import socket
+from config import config
+import signal
+import urllib2
 
 
 monkey.patch_all()
 
-dashboard_port = int(sys.argv[1])
+
+def launch_browser(port):
+    launchurl = "http://"+config.get("Server Parameters", "host")+":"+str(port)+"/dashboard"
+    webbrowser.open(launchurl, new=1, autoraise=True)
+
+def is_port_available(port):
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        s.connect(('127.0.0.1', port))
+        s.shutdown(1)
+        return 0
+    except:
+        return 1
+
+# Pass messages between psiturk and dashboard via socket
+# pubsub_socket_port = int(sys.argv[1])
+# print(pubsub_socket_port)
+# context = zmq.Context()
+# pubsub_socket = context.socket(zmq.PUB)
+# pubsub_socket.connect("tcp://127.0.0.1:" + str(pubsub_socket_port))
+
+def find_open_port():
+    open_port = next(port for port in range(5000, 10000) if is_port_available(port))
+    return(open_port)
+
+# dashboard_port = find_open_port()
+dashboard_port = find_open_port()
 
 
 app = Flask(__name__)
@@ -52,6 +84,18 @@ def at_a_glance_model():
 
     if request.method == 'GET':
         return services.get_summary()
+
+@app.route('/verify_aws_login', methods=['POST'])
+def verify_aws():
+    """
+    """
+    config = Dashboard.PsiTurkConfig()
+    services = Dashboard.MTurkServices(config)
+    key_id = request.json['aws_access_key_id']
+    secret_key = request.json['aws_secret_access_key']
+    is_valid = str(bool(services.verify_aws_login(key_id, secret_key)))
+    return jsonify(aws_accnt=is_valid)
+
 
 @app.route('/mturk_services', methods=['POST'])
 def turk_services():
@@ -110,7 +154,9 @@ def create_hit():
 @app.route('/socket.io/<path:rest>')
 def push_stream(rest):
     try:
-        socketio_manage(request.environ, {'/server_status': Dashboard.ServerNamespace}, request)
+        socketio_manage(request.environ, {
+          '/server_status': Dashboard.ServerNamespace
+        }, request)
     except:
         app.logger.error("Exception while handling socketio connection",
                      exc_info=True)
@@ -140,38 +186,60 @@ def launch():
     subprocess.Popen("python psiturk_server.py", shell=True)
     return "psiTurk launching..."
 
-@app.route('/shutdown', methods=["GET"])
+@app.route("/shutdown_dashboard", methods=["GET"])
 def shutdown():
-    shutdown_server()
-    return 'Server shutting down...'
+    print("shutting down dashboard...")
+    pid = os.getpid()
+    os.kill(pid, signal.SIGKILL)
+    return("shutting down dashboard...")
+
+@app.route("/shutdown_psiturk", methods=["GET"])
+def shutdown_psiturk():
+    config = Dashboard.PsiTurkConfig()
+    psiturk_server_url = "http://"+config.get("Server Parameters", "host")+":"+config.get("Server Parameters", "port")+"/ppid"
+    ppid_request = urllib2.Request(psiturk_server_url)
+    ppid = urllib2.urlopen(ppid_request).read()
+    print("shutting down dashboard...")
+    os.kill(int(ppid), signal.SIGKILL)
+    return("shutting down dashboard...")
+
+# alt method for shutting down psiturk + gunicorn 
+# @app.route('/shutdown', methods=["GET"])
+# def shutdown():
+#     shutdown_server()
+#     return 'Server shutting down...'
 
 
 #----------------------------------------------
 # Server routines
 #----------------------------------------------
-def shutdown_server():
-    # This assumes that psiTurk is the only gunicorn process. Otherwise, problems...
-    # gunicorn_pid = int(find_process("gunicorn: master"))
-    # print gunicorn_pid
-    # os.kill(gunicorn_pid, 15)  # Sig 15 allows for processes to exit "gently"
-    psiturk_pids = map(lambda pid: int(pid), find_process('psiturk_server').split())
-    map(lambda pid: os.kill(pid, 15), psiturk_pids)  # Kill processes
-    # map(lambda pid: os.killpg(pid, 15), psiturk_pids)  # Kill parents (gunicorn)
-    return("Threads terminated")
 
-def find_process(name):
-    ps = subprocess.Popen(['ps', 'aux'], stdout=subprocess.PIPE, close_fds=True)
-    grep = subprocess.Popen(['grep', str(name)], stdin=ps.stdout, stdout=subprocess.PIPE, close_fds=True)
-    remove_grep = subprocess.Popen(['grep', '-v','grep'], stdin=grep.stdout, stdout=subprocess.PIPE, close_fds=True)
-    awk = subprocess.Popen(['awk', '{print $2}'], stdin=remove_grep.stdout,\
-                           stdout=subprocess.PIPE, close_fds=True).communicate()[0]
-    return awk
+# def shutdown_server():
+#     psiturk_pids = map(lambda pid: int(pid), find_process('psiturk_server').split())
+#     map(lambda pid: os.kill(pid, 15), psiturk_pids)  # Kills parents and zombies
+#     return("Threads terminated")
+# 
+# def find_process(name):
+#     # Requires a 'NIX system. Alternative would be to write subprocess.pid to file
+#     # and os.kill using saved pid. Would prefer a more elegant solution...
+#     ps = subprocess.Popen(['ps', 'aux'], stdout=subprocess.PIPE, close_fds=True)
+#     grep = subprocess.Popen(['grep', str(name)], stdin=ps.stdout, stdout=subprocess.PIPE, close_fds=True)
+#     remove_grep = subprocess.Popen(['grep', '-v','grep'], stdin=grep.stdout, stdout=subprocess.PIPE, close_fds=True)
+#     awk = subprocess.Popen(['awk', '{print $2}'], stdin=remove_grep.stdout,\
+#                            stdout=subprocess.PIPE, close_fds=True).communicate()[0]
+#     return awk
 
+# Msg passing via zmq... possible future implementation
+# def notify_psiturk():
+#     topic = "dashboard"
+#     messagedata = "up"
+#     pubsub_socket.send("%s %s" % (topic, messagedata))
 
 @werkzeug.serving.run_with_reloader
 def run_dev_server():
     app.debug = True
     port = dashboard_port
+    #launch_browser(dashboard_port)
     SocketIOServer(('', port), app, resource="socket.io").serve_forever()
 
 if __name__ == "__main__":
