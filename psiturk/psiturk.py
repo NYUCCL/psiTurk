@@ -1,13 +1,13 @@
 import os
 import datetime
 import logging
-from fnmatch import filter
+import fnmatch
 from functools import wraps
 from random import choice
 try:
     from collections import Counter
 except ImportError:
-    # Collections don't exist in Python <2.6
+    # Collections don't exist in Python <2.7
     from counter import Counter
 
 # Importing flask
@@ -20,6 +20,7 @@ from sqlalchemy import or_
 
 
 from config import config
+
 
 # Set up logging
 logfilepath = os.path.join(os.getcwd(),
@@ -34,6 +35,7 @@ logging.basicConfig( filename=logfilepath, format='%(asctime)s %(message)s', lev
 # constants
 USING_SANDBOX = config.getboolean('HIT Configuration', 'using_sandbox')
 CODE_VERSION = config.get('Task Parameters', 'code_version')
+HASH = config.get('Server Parameters', 'hash')
 
 # Database configuration and constants
 TABLENAME = config.get('Database Parameters', 'table_name')
@@ -48,7 +50,7 @@ CREDITED = 5
 QUITEARLY = 6
 
 
-app = Flask(__name__)
+app = Flask("Psiturk_Server")
 
 #----------------------------------------------
 # function for authentication
@@ -421,16 +423,20 @@ def update(id=None):
     
     return jsonify(**resp)
 
+# Consider deprecating: 
+# Hard to support file lookup on external hosts
 @app.route('/pages', methods=['GET'])
 def pages():
     """
     Load HTML resources found in templates folder
     """
     print "accessing the /pages route"
-    files = filter(os.listdir('./templates'), '*.html')
+    files = fnmatch.filter(os.listdir('./templates'), '*.html')
     pages = [{'name':file, 'html':render_template(file)} for file in files]
     return jsonify(collection=pages)
 
+# Consider deprecating: 
+# Hard to support file lookup on external hosts
 @app.route('/images', methods=['GET'])
 def images():
     """
@@ -441,7 +447,7 @@ def images():
     extensions = ['*.jpg', '*.jpeg', '*.png', '*.tif', '*.tiff']
     imgfiles = []
     for ext in extensions:
-        for f in filter(os.listdir(imgpath), ext):
+        for f in fnmatch.filter(os.listdir(imgpath), ext):
             imgfiles.append({'name':f, 'loc':imgpath + f})
     return jsonify(collection=imgfiles)
 
@@ -560,6 +566,12 @@ def dumpdata():
     response.headers['Content-Disposition'] = 'attachment;filename=data.csv'
     response.headers['Content-Type'] = 'text/csv'
     return response
+
+# Is this a security risk?
+@app.route("/ppid")
+def ppid():
+    ppid = os.getppid()
+    return str(ppid)
 
 #----------------------------------------------
 # generic route

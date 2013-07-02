@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>psiTurk Dashboard</title>
+    <!-- Load the script "static/dashboard/js/main.js" as our entry point -->
+    <script data-main="static/dashboard/js/main" src="static/dashboard/js/libs/require.js"></script>
+    <link href="static/dashboard/css/inspiritas.css" rel="stylesheet">
+    <link href="static/dashboard/css/backbone.tableview.css" rel="stylesheet">
+    <link rel="stylesheet" href="static/dashboard/css/font-awesome.css">
+</head>
+<body>
+
+<!-- Navbar
+  ================================================== -->
+<div class="navbar navbar-static-top navbar-inverse">
+  <div class="navbar-inner">
+    <div class="container">
+      <a class="btn btn-navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </a>
+
+      <a class="brand" href="#">psiTurk</a>
+      <span class="tagline">It's raining N! <a href="http://gureckislab.org/blog/?p=1297">Read more.</a></span>
+
+      <div class="navbar" id="main-menu">
+        <div class="auth pull-right" style="width:300px; margin-right:-75px">
+          <span class="links">
+              <i class="icon-circle" style="color: grey; margin: 0 3px 0 0" id="server_status"></i>
+                Server
+                <span id="server_controls">
+                  [<a href="#" id="server_on" style="color:grey">on</a>|<a href="#" id="server_off" style="color:grey">off</a>]
+                </span>
+              <span class='row'>
+              <i class="icon-circle" style="margin: 0 3px 0 10px; color: grey" id="experiment_status"></i>
+                Experiment
+                <span id="server_controls" style="color:grey">
+                  [<a href="#" id="run" style="color:grey">run</a>]
+                </span>
+              </span>
+            </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+    <div class="row-fluid">
+      <div class="span2" id="sidebar" style="min-width:150px">
+      </div>
+      <div class="span10" id="content-wrapper">
+        <div id="content" style="min-height: 500px; width:1000px">
+          <!-- Content will be placed here by template engine via Backbone -->
+          <div class="row-fluid" style="margin:250px 0px 250px 500px">
+            <img src="static/dashboard/css/images/ajax-loader.gif">
+            <p style="margin: 15px 0px 0 -45px">It's about to rain N...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+</div> <!-- /container -->
+
+<!-- Modals
+================================================== -->
+<div id="server-off-modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Warning</h3>
+  </div>
+  <div class="modal-body">
+    <p><strong>You are about to shutdown the psiTurk server</strong>.
+      If there are any participants currently running in your experiment, they will be forced to quit.
+      You are still responsible for their payment.
+    </p>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+    <button id="shutdownServerBtn" class="btn btn-danger">Shutdown</button>
+  </div>
+</div>
+
+<div id="aws-info-modal" class="modal hide fade" data-keyboard="false" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <h3 id="myModalLabel">Welcome!</h3>
+  </div>
+  <div class="modal-body">
+    <p>
+      <strong>To begin psiTurk, please provide your Amazon Mechanical Turk credentials.</strong>
+    </p>
+    <div class="row-fluid">
+      <div class="span12">
+        <div class="alert alert-block">
+          An AWS key is required for posting new HITs to mechanical turk as well as
+          monitoring existing HITs. You receive your key when you open an Amazon Web
+          Services account.
+          If you already have an AWS account, your key can be retrieved from:
+          <a href="http://aws-portal.amazon.com/gp/aws/developer/account/index.html?action=access-key">http://aws-portal.amazon.com/gp/aws/developer/account/index.html?action=access-key</a>
+        </div>
+        </div>
+        <form class="form-horizontal" id="myform">
+          <div class="control-group">
+            <label class="control-label" for="aws_access_key_id" >Your Access Key Id</label>
+            <div class="controls">
+              <input type="password" class="input-large" value=""  name="aws_access_key_id" id="aws_access_key_id">
+            </div>
+          </div>
+          <div class="control-group">
+            <label class="control-label" for="aws_secret_access_key">Secret Access Key</label>
+            <div class="controls">
+              <input type="password" class="input-large" value="" name="aws_secret_access_key" id="aws_secret_access_key">
+            </div>
+          </div>
+          <div class="form-actions modal-footer">
+            <button id="aws-info-save" class="btn btn-primary save save-data" data-section="AWS Access">Login</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="expire-modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Expire experiment</h3>
+  </div>
+  <div class="modal-body">
+    <p>
+      <strong>Warning!</strong> Terminating experiment early.
+    </p>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+    <button id="expire-btn" class="btn btn-danger">Expire</button>
+  </div>
+</div>
+
+<div id="extend-modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Extend experiment</h3>
+  </div>
+  <div class="modal-body">
+    <p>Please use the following fields to extend the HIT.</p>
+    <br>
+    <br>
+    <div class="container" style="width:80%">
+      <form id="extend-form">
+        <table class="table">
+          <tr>
+            <td>Extend time (mins.)</td>
+            <td>
+              <input type="number" class="extend-expt" name="extend-time" id="extend-time" style="width: 45px; padding: 1px" value="0"> 
+            </td>
+            <td>Extend number of workers</td>
+            <td>
+              <input type="number" id="extend-workers" name="extend-workers" class="extend-workers" style="width: 45px; padding: 1px" value="0"> 
+            </td>
+          </tr>
+        </table>
+      </form>
+      <br>
+      <br>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+    <button id="extend-btn" class="btn">Extend</button>
+  </div>
+</div>
+
+<div id="run-expt-body">
+</div>
+
+</body>
+</html>

@@ -1,3 +1,66 @@
-range	app.py	/^dimorders = range(24)$/
-timedelta	app.py	/^    starttime = datetime.datetime.now() + datetime/
-wraps	app.py	/^    @wraps(f)$/
+ALLOCATED	app.py	/^ALLOCATED = 1$/;"	v
+CODE_VERSION	app.py	/^CODE_VERSION = config.get('Task Parameters', 'code_version')$/;"	v
+COMPLETED	app.py	/^COMPLETED = 3$/;"	v
+CREDITED	app.py	/^CREDITED = 5$/;"	v
+Counter	app.py	/^    from collections import Counter$/;"	i
+Counter	app.py	/^    from counter import Counter$/;"	i
+DEBRIEFED	app.py	/^DEBRIEFED = 4$/;"	v
+ExperimentError	app.py	/^class ExperimentError(Exception):$/;"	c
+Flask	app.py	/^from flask import Flask, render_template, request, Response, make_response$/;"	i
+Participant	app.py	/^from models import Participant$/;"	i
+QUITEARLY	app.py	/^QUITEARLY = 6$/;"	v
+Response	app.py	/^from flask import Flask, render_template, request, Response, make_response$/;"	i
+STARTED	app.py	/^STARTED = 2$/;"	v
+SUPPORTIE	app.py	/^SUPPORTIE = config.getboolean('Server Parameters', 'support_IE')$/;"	v
+TABLENAME	app.py	/^TABLENAME = config.get('Database Parameters', 'table_name')$/;"	v
+USING_SANDBOX	app.py	/^USING_SANDBOX = config.getboolean('HIT Configuration', 'using_sandbox')$/;"	v
+__init__	app.py	/^    def __init__(self, value):$/;"	m	class:ExperimentError
+__str__	app.py	/^    def __str__(self):$/;"	m	class:ExperimentError	file:
+app	app.py	/^app = Flask(__name__)$/;"	v
+app	static/dashboard/js/boilerplate/backbone-boilerplate-coffeescript/app/app.coffee	/^		app =$/;"	v
+authenticate	app.py	/^def authenticate():$/;"	f
+check_auth	app.py	/^def check_auth(username, password):$/;"	f
+choice	app.py	/^from random import choice$/;"	i
+completed	app.py	/^def completed():$/;"	f
+config	app.py	/^from config import config$/;"	i
+dashbaord	app.py	/^def dashbaord():$/;"	f
+database	static/dashboard/js/views/SidebarView.coffee	/^            database = _.template(DatabaseTemplate)$/;"	v
+datetime	app.py	/^import datetime$/;"	i
+db_session	app.py	/^from db import db_session, init_db$/;"	i
+decorated	app.py	/^    def decorated(*args, **kwargs):$/;"	f	function:requires_auth
+dumpdata	app.py	/^def dumpdata():$/;"	f
+enterexp	app.py	/^def enterexp():$/;"	f
+error_page	app.py	/^    def error_page(self, request):$/;"	m	class:ExperimentError
+experiment_errors	app.py	/^experiment_errors = dict($/;"	v
+get_people	app.py	/^def get_people(people):$/;"	f
+get_random_condcount	app.py	/^def get_random_condcount():$/;"	f
+give_consent	app.py	/^def give_consent():$/;"	f
+handleExpError	app.py	/^def handleExpError(e):$/;"	f
+inexpsave	app.py	/^def inexpsave():$/;"	f
+init_db	app.py	/^from db import db_session, init_db$/;"	i
+logfilepath	app.py	/^logfilepath = os.path.join(os.path.dirname(os.path.abspath(__file__)),$/;"	v
+logging	app.py	/^import logging$/;"	i
+loglevel	app.py	/^loglevel = loglevels[config.getint('Server Parameters', 'loglevel')]$/;"	v
+loglevels	app.py	/^loglevels = [logging.DEBUG, logging.INFO, logging.WARNING, logging.ERROR, logging.CRITICAL]$/;"	v
+make_response	app.py	/^from flask import Flask, render_template, request, Response, make_response$/;"	i
+mturkroute	app.py	/^def mturkroute():$/;"	f
+or_	app.py	/^from sqlalchemy import or_$/;"	i
+os	app.py	/^import os$/;"	i
+overview	static/dashboard/js/views/SidebarView.coffee	/^            overview = _.template(OverviewTemplate)$/;"	v
+overviewContent	static/dashboard/js/app.coffee	/^        overviewContent = _.template(OverviewTemplate)$/;"	v
+path	static/dashboard/js/boilerplate/backbone-boilerplate-coffeescript/app/app.coffee	/^				path = path + '.html'$/;"	v
+queryname	app.py	/^queryname = config.get('Server Parameters', 'login_username')$/;"	v
+querypw	app.py	/^querypw = config.get('Server Parameters', 'login_pw')$/;"	v
+quitter	app.py	/^def quitter():$/;"	f
+regularpage	app.py	/^def regularpage(pagename=None):$/;"	f
+render_template	app.py	/^from flask import Flask, render_template, request, Response, make_response$/;"	i
+request	app.py	/^from flask import Flask, render_template, request, Response, make_response$/;"	i
+requires_auth	app.py	/^def requires_auth(f):$/;"	f
+savedata	app.py	/^def savedata():$/;"	f
+shutdown_session	app.py	/^def shutdown_session(exception=None):$/;"	f
+sideBar	static/dashboard/js/app.coffee	/^        sideBar = _.template(SideBarTemplate)$/;"	v
+start_exp	app.py	/^def start_exp():$/;"	f
+updatestatus	app.py	/^def updatestatus():$/;"	f
+viewdata	app.py	/^def viewdata():$/;"	f
+wrapper	app.py	/^def wrapper(func, args):$/;"	f
+wraps	app.py	/^from functools import wraps$/;"	i
