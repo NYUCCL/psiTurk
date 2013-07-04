@@ -7,7 +7,8 @@ setup(
     entry_points = {
         'console_scripts': ['psiturk = psiturk.launch:launch']
     },
-    setup_requires = ["Flask", "boto", "SQLAlchemy", "gevent", "gevent-socketio", "gunicorn", "iso8601"],
+    setup_requires = [],
+    install_requires = ["Flask", "boto", "SQLAlchemy", "gevent", "gevent-socketio", "gunicorn", "iso8601"],
     extras_require = {},
     author = "NYU Computation and Cognition Lab",
     author_email = "http://nyuccl.org",
