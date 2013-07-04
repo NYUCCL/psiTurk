@@ -11,16 +11,19 @@ import dashboard as Dashboard
 import webbrowser
 # import zmq
 import socket
-from config import config
+from PsiTurkConfig import PsiTurkConfig
 import signal
 import urllib2
 
+config = PsiTurkConfig()
 
 monkey.patch_all()
 
 
 def launch_browser(port):
-    launchurl = "http://{host}:{port}/dashboard".format(host=config.get("Server Parameters", "host"), port=port)
+    launchurl = "http://{host}:{port}/dashboard".format(
+        host=config.get("Server Parameters", "host"), 
+        port=port)
     webbrowser.open(launchurl, new=1, autoraise=True)
 
 def is_port_available(port):
@@ -47,7 +50,7 @@ parser = argparse.ArgumentParser(description='Launch psiTurk and psiTurk dashboa
 parser.add_argument('-p', '--port', default=72361,
                     help='optional port for dashboard. default is 72361.')
 args = parser.parse_args()
-dashboard_port = args.port
+dashboard_port = int(args.port)
 
 #dashboard_port = find_open_port()
 
@@ -67,8 +70,6 @@ def dashbaord_model():
     """
     Sync for dashboard model.
     """
-    config = Dashboard.PsiTurkConfig()
-
     if request.method == 'GET':
         return jsonify(config.get_serialized())
 
@@ -83,7 +84,6 @@ def at_a_glance_model():
     """
     Sync for dashboard at-a-glance pane.
     """
-    config = Dashboard.PsiTurkConfig()
     services = Dashboard.MTurkServices(config)
 
     if request.method == 'GET':
@@ -93,11 +93,15 @@ def at_a_glance_model():
 def verify_aws():
     """
     """
-    config = Dashboard.PsiTurkConfig()
+    print "Verifying aws login, dashboard_server 1."
     services = Dashboard.MTurkServices(config)
+    print "Verifying aws login, dashboard_server 2."
     key_id = request.json['aws_access_key_id']
+    print "Verifying aws login, dashboard_server 3."
     secret_key = request.json['aws_secret_access_key']
-    is_valid = str(bool(services.verify_aws_login(key_id, secret_key)))
+    print "Verifying aws login, dashboard_server 4."
+    is_valid = services.verify_aws_login(key_id, secret_key)
+    print "Verifying aws login, dashboard_server 5."
     return jsonify(aws_accnt=is_valid)
 
 
@@ -105,7 +109,6 @@ def verify_aws():
 def turk_services():
     """
     """
-    config = Dashboard.PsiTurkConfig()
     services = Dashboard.MTurkServices(config)
     mturk_request = request.json
     if "mturk_request" in request.json:
@@ -128,14 +131,12 @@ def turk_services():
 def get_hits():
     """
     """
-    config = Dashboard.PsiTurkConfig()
     services = Dashboard.MTurkServices(config)
     return(jsonify(hits=services.get_active_hits()))
 
 @app.route('/monitor_server', methods=['GET'])
 def monitor_server():
-    config = Dashboard.PsiTurkConfig()
-    server = Dashboard.Server(port=config.port)
+    server = Dashboard.Server(port=config.getint('Server Parameters', 'port'))
     server.start_monitoring()
     return "Monitoring..."
 
@@ -146,8 +147,7 @@ def is_port_available_route():
     """
     if request.method == 'POST':
         test_port = request.json['port']
-        config = Dashboard.PsiTurkConfig()
-        if test_port == config.port:
+        if test_port == config.getint('Server Parameters', 'port'):
             is_available = 1
         else:
             server = Dashboard.Server(port=test_port)
@@ -199,8 +199,9 @@ def shutdown():
 
 @app.route("/shutdown_psiturk", methods=["GET"])
 def shutdown_psiturk():
-    config = Dashboard.PsiTurkConfig()
-    psiturk_server_url = "http://"+config.get("Server Parameters", "host")+":"+config.get("Server Parameters", "port")+"/ppid"
+    psiturk_server_url = "http://{host}:{port}/ppid".format(
+        host=config.get("Server Parameters", "host"), 
+        port=config.getint("Server Parameters", "port"))
     ppid_request = urllib2.Request(psiturk_server_url)
     ppid = urllib2.urlopen(ppid_request).read()
     print("shutting down dashboard...")
@@ -210,10 +211,8 @@ def shutdown_psiturk():
 @werkzeug.serving.run_with_reloader
 def run_dev_server():
     app.debug = True
-    port = dashboard_port
-    config = Dashboard.PsiTurkConfig()
-    launch_browser(port)
-    SocketIOServer(('', int(port)), app, resource="socket.io").serve_forever() 
+    launch_browser(dashboard_port)
+    SocketIOServer(('', dashboard_port), app, resource="socket.io").serve_forever() 
 
 if __name__ == "__main__":
     app.run(debug=True, port=dashboard_port)

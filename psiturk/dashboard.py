@@ -2,7 +2,7 @@ import ConfigParser
 import datetime
 import os
 import subprocess
-from boto.mturk.connection import MTurkConnection
+from boto.mturk.connection import MTurkConnection, MTurkRequestError
 from boto.mturk.question import ExternalQuestion
 from boto.mturk.qualification import LocaleRequirement, \
     PercentAssignmentsApprovedRequirement, Qualifications
@@ -10,159 +10,22 @@ from socketio.namespace import BaseNamespace
 from flask import jsonify
 import socket
 import threading
-import json
 # from datetime import datetime
 
 
 # TODO(Jay): Generalize port number from launcher
 
-Config = ConfigParser.ConfigParser()
-
-# TODO:
-# This class duplicates the default config class in many ways, it should probably instead extend it
-class PsiTurkConfig:
-    def __init__(self, filename="config.txt"):
-        self.filename = filename
-        if not os.path.exists(self.filename):
-            print("Creating config file...")
-            self.write_default_config()
-            self.load_config()
-            self.generate_hash()
-        else:
-            self.load_config()
-            self.check_hash()
-
-    def check_hash(self):
-        if not self.get("Server Parameters", "hash"):
-            self.generate_hash()
-
-    # Config methods
-    def set(self, section, key, value):
-        cfgfile = open(self.filename, 'w')
-        Config.set(section, key, value)
-        Config.write(cfgfile)
-        cfgfile.close()
-
-    def get(self, section, key):
-        if Config.has_option(section, key):
-            return(Config.get(section, key))
-        else:
-            print("Option not available.")
-            return(False)
-
-    def generate_hash(self):
-        self.user_hash = str(os.urandom(16).encode('hex'))
-        self.set('Server Parameters', 'hash', self.user_hash)
-
-    def get_serialized(self):
-        # Serializing data is necessary to communicate w/ backbone frontend.
-        if not os.path.exists(self.filename):
-            print("No config file present!")
-        else:
-            return(Config._sections)
-
-    def set_serialized(self, config_model):
-        cfgfile = open(self.filename, 'w')
-
-        for section, fields in config_model.iteritems():
-            for field in fields:
-                Config.set(section, field, config_model[section][field])
-
-        Config.write(cfgfile)
-        cfgfile.close()
-
-    def write_default_config(self):
-        cfgfile = open(self.filename, 'w')
-        sections = ['AWS Access', 'HIT Configuration', 'Database Parameters',
-                    'Server Parameters', 'Task Parameters']
-        map(Config.add_section, sections)
-        # AWS Access Section
-        Config.set('AWS Access', 'aws_access_key_id', 'YourAccessKeyId')
-        Config.set('AWS Access', 'aws_secret_access_key', 'YourSecreteAccessKey')
-        # HIT Configuration
-        Config.set('HIT Configuration', 'title', 'Perceptual Reaction Time')
-        Config.set('HIT Configuration', 'description', 'Make a series of perceptual judgments.')
-        Config.set('HIT Configuration', 'keywords', 'Perception, Psychology')
-        Config.set('HIT Configuration', 'question_url', 'http://localhost:5001/mturk')
-        Config.set('HIT Configuration', 'max_assignments', '10')
-        Config.set('HIT Configuration', 'HIT_lifetime', '24')
-        Config.set('HIT Configuration', 'reward', '1')
-        Config.set('HIT Configuration', 'duration', '2')
-        Config.set('HIT Configuration', 'US_only', 'true')
-        Config.set('HIT Configuration', 'Approve_Requirement', '95')
-        Config.set('HIT Configuration', 'using_sandbox', 'true')
-
-        # Database Parameters
-        Config.set('Database Parameters', 'database_url', 'sqlite:///participants.db')
-        Config.set('Database Parameters', 'table_name', 'turkdemo')
-
-        #Server Parameters
-        Config.set('Server Parameters', 'host', 'localhost')
-        Config.set('Server Parameters', 'port', '5001')
-        Config.set('Server Parameters', 'cutoff_time', '30')
-        Config.set('Server Parameters', 'support_IE', 'true')
-        Config.set('Server Parameters', 'logfile', 'server.log')
-        Config.set('Server Parameters', 'loglevel', '2')
-        Config.set('Server Parameters', 'debug', 'true')
-        Config.set('Server Parameters', 'login_username', 'examplename')
-        Config.set('Server Parameters', 'login_pw', 'examplepassword')
-
-        # Task Parameters
-        Config.set('Task Parameters', 'code_version', '1.0')
-        Config.set('Task Parameters', 'num_conds', '1')
-        Config.set('Task Parameters', 'num_counters', '1')
-
-        # Write config file to drive
-        Config.write(cfgfile)
-        cfgfile.close()
-
-    def load_config(self):
-        Config.read(self.filename)
-        # AWS Access Section
-        self.aws_access_key_id = Config.get('AWS Access', 'aws_access_key_id', 'YourAccessKeyId')
-        self.aws_secret_access_key = Config.get('AWS Access', 'aws_secret_access_key', 'YourSecreteAccessKey')
-
-        # HIT Configuration
-        self.title = Config.get('HIT Configuration', 'title')
-        self.description = Config.get('HIT Configuration', 'description')
-        self.keywords = Config.get('HIT Configuration', 'keywords')
-        self.question_url = Config.get('HIT Configuration', 'question_url')
-        self.max_assignments = Config.get('HIT Configuration', 'max_assignments')
-        self.HIT_lifetime = Config.get('HIT Configuration', 'HIT_lifetime')
-        self.reward = Config.get('HIT Configuration', 'reward')
-        self.duration = Config.get('HIT Configuration', 'duration')
-        self.US_only = Config.get('HIT Configuration', 'US_only')
-        self.Approve_Requirement = Config.get('HIT Configuration', 'Approve_Requirement')
-        self.using_sandbox = Config.get('HIT Configuration', 'using_sandbox')
-
-        # Database Parameters
-        self.database_url = Config.get('Database Parameters', 'database_url')
-        self.table_name =  Config.get('Database Parameters', 'table_name')
-
-        # Server Parameters
-        self.host = Config.get('Server Parameters', 'host')
-        self.port = Config.get('Server Parameters', 'port')
-        self.cutoff_time = Config.get('Server Parameters', 'cutoff_time')
-        self.support_IE = Config.get('Server Parameters', 'support_IE')
-        self.logfile = Config.get('Server Parameters', 'logfile')
-        self.loglevel = Config.get('Server Parameters', 'loglevel')
-        self.debug = Config.get('Server Parameters', 'debug')
-        self.login_username = Config.get('Server Parameters', 'login_username')
-        self.login_pw = Config.get('Server Parameters', 'login_pw')
-
-        # Task Parameters
-        self.code_version = Config.get('Task Parameters', 'code_version')
-        self.num_conds = Config.get('Task Parameters', 'num_conds')
-        self.num_counters = Config.get('Task Parameters', 'num_counters')
-
 class MTurkServices:
-    def __init__(self, config=None):
+    def __init__(self, config):
         self.config = config
 
     def get_active_hits(self):
         self.connect_to_turk()
         # hits = self.mtc.search_hits()
-        hits = self.mtc.get_all_hits()
+        try:
+            hits = self.mtc.get_all_hits()
+        except MTurkRequestError:
+            print('AWS Credentials invalid')
         active_hits = [hit for hit in hits if not(hit.expired)]
         # active_hits = [hit for hit in hits]
         hits_data = [{'hitid': hit.HITId,
@@ -181,8 +44,8 @@ class MTurkServices:
         return(hits_data)
 
     def verify_aws_login(self, key_id, secret_key):
-        return 1  # TODO restore verification.
-        is_sandbox = json.loads(self.config.using_sandbox.lower())
+        print "Verifying aws login"
+        is_sandbox = self.config.getboolean('HIT Configuration', 'using_sandbox')
         if is_sandbox:
             host = 'mechanicalturk.sandbox.amazonaws.com'
         else:
@@ -195,75 +58,76 @@ class MTurkServices:
         self.mtc = MTurkConnection(**mturkparams)
         try:
             self.mtc.get_account_balance()
-        except:
-            print('bad')
+        except MTurkRequestError:
+            print('AWS Credentials invalid')
             return 0
         else:
-            print('good')
+            print('AWS Credentials valid')
             return 1
 
     def connect_to_turk(self):
-        is_sandbox = json.loads(self.config.using_sandbox.lower())
+        is_sandbox = self.config.getboolean('HIT Configuration', 'using_sandbox')
         if is_sandbox:
             host = 'mechanicalturk.sandbox.amazonaws.com'
         else:
             host = 'mechanicalturk.amazonaws.com'
         mturkparams = dict(
-            aws_access_key_id=self.config.aws_access_key_id,
-            aws_secret_access_key=self.config.aws_secret_access_key,
+            aws_access_key_id = self.config.get('AWS Access', 'aws_access_key_id'),
+            aws_secret_access_key = self.config.get('AWS Access', 'aws_secret_access_key'),
             host=host)
         self.mtc = MTurkConnection(**mturkparams)
-        self.mtc.get_account_balance()
-
+        
         #TODO(): This should probably be moved to a separate method.
         # Configure portal
-        experimentPortalURL = self.config.question_url
+        experimentPortalURL = self.config.get('HIT Configuration', 'question_url')
         frameheight = 600
         mturkQuestion = ExternalQuestion(experimentPortalURL, frameheight)
 
         # Qualification:
         quals = Qualifications()
-        approve_requirement = self.config.Approve_Requirement
+        approve_requirement = self.config.get('HIT Configuration', 'Approve_Requirement')
         quals.add(
             PercentAssignmentsApprovedRequirement("GreaterThanOrEqualTo",
                                                   approve_requirement))
-        if self.config.US_only:
+        if self.config.getboolean('HIT Configuration', 'US_only'):
             quals.add(LocaleRequirement("EqualTo", "US"))
 
         # Specify all the HIT parameters
         self.paramdict = dict(
             hit_type = None,
             question = mturkQuestion,
-            lifetime = datetime.timedelta(hours=int(self.config.HIT_lifetime)),
-            max_assignments = self.config.max_assignments,
-            title = self.config.title,
-            description = self.config.description,
-            keywords = self.config.keywords,
-            reward = self.config.reward,
-            duration = datetime.timedelta(hours=int(self.config.duration)),
+            lifetime = datetime.timedelta(hours=self.config.getint('HIT Configuration', 'HIT_lifetime')),
+            max_assignments = self.config.get('HIT Configuration', 'max_assignments'),
+            title = self.config.get('HIT Configuration', 'title'),
+            description = self.config.get('HIT Configuration', 'description'),
+            keywords = self.config.get('HIT Configuration', 'keywords'),
+            reward = self.config.get('HIT Configuration', 'reward'),
+            duration = datetime.timedelta(hours=self.config.getint('HIT Configuration', 'duration')),
             approval_delay = None,
             questions = None,
             qualifications = quals
         )
+    
+    def is_signed_up(self):
+        access_key_id = self.config.get('AWS Access', 'aws_access_key_id')
+        access_key = self.config.get('AWS Access', 'aws_secret_access_key')
+        return (access_key_id != 'YourAccessKeyId') and \
+               (access_key != 'YourSecreteAccessKey')
 
     def check_balance(self):
-        is_sandbox = json.loads(self.config.using_sandbox.lower())
+        is_sandbox = self.config.getboolean('HIT Configuration', 'using_sandbox')
         if is_sandbox:
             host = 'mechanicalturk.sandbox.amazonaws.com'
         else:
             host = 'mechanicalturk.amazonaws.com'
-
-        # Check if AWS acct info has been entered
-        is_signed_up = not(self.config.aws_access_key_id == 'YourAccessKeyId') and \
-                       not(self.config.aws_secret_access_key == 'YourSecreteAccessKey')
-
-        if is_signed_up:
+        
+        if self.is_signed_up():
             mturkparams = dict(
-                aws_access_key_id=self.config.aws_access_key_id,
-                aws_secret_access_key=self.config.aws_secret_access_key,
+                aws_access_key_id=self.config.get('AWS Access', 'aws_access_key_id'),
+                aws_secret_access_key=self.config.get('AWS Access', 'aws_secret_access_key'),
                 host=host)
             self.mtc = MTurkConnection(**mturkparams)
-
+            
             return(self.mtc.get_account_balance()[0])
         else:
             return('-')

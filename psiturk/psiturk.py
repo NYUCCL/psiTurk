@@ -7,7 +7,6 @@ from random import choice
 try:
     from collections import Counter
 except ImportError:
-    # Collections don't exist in Python <2.7
     from counter import Counter
 
 # Importing flask
@@ -19,8 +18,9 @@ from models import Participant
 from sqlalchemy import or_
 
 
-from config import config
+from PsiTurkConfig import PsiTurkConfig
 
+config = PsiTurkConfig()
 
 # Set up logging
 logfilepath = os.path.join(os.getcwd(),
@@ -35,7 +35,6 @@ logging.basicConfig( filename=logfilepath, format='%(asctime)s %(message)s', lev
 # constants
 USING_SANDBOX = config.getboolean('HIT Configuration', 'using_sandbox')
 CODE_VERSION = config.get('Task Parameters', 'code_version')
-HASH = config.get('Server Parameters', 'hash')
 
 # Database configuration and constants
 TABLENAME = config.get('Database Parameters', 'table_name')
