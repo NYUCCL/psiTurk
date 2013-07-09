@@ -31,6 +31,8 @@ var currenttrial = 0;
 // Task objects
 var testobject;
 
+var psiTurk = PsiTurk();
+
 // Data submit functions
 var recordinstructtrial = function (instructname, rt ) {
 	psiTurk.recordTrialData(["INSTRUCT", instructname, rt]);
