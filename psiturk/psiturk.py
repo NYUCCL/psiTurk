@@ -594,6 +594,5 @@ def run_webserver():
     app.run(debug=config.getboolean('Server Parameters', 'debug'), host='0.0.0.0', port=config.getint('Server Parameters', 'port'))
 
 if __name__ == '__main__':
-    print "Starting webserver."
     run_webserver()
 

@@ -4,8 +4,14 @@ setup(
     name = "PsiTurk",
     version = "0.1",
     packages = ["psiturk"],
+    include_package_data = True,
+    zip_safe = False,
     entry_points = {
-        'console_scripts': ['psiturk = psiturk.launch:launch']
+        'console_scripts': [
+            'psiturk = psiturk.dashboard_server:launch',
+            'psiturk-dashboard = psiturk.dashboard_server:launch',
+            'psiturk-server = psiturk.psiturk_server:launch'
+        ]
     },
     setup_requires = [],
     install_requires = ["Flask", "boto", "SQLAlchemy", "gevent", "gevent-socketio", "gunicorn", "iso8601"],

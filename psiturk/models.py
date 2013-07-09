@@ -3,7 +3,9 @@ import datetime
 from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text
 
 from db import Base
-from config import config
+from PsiTurkConfig import PsiTurkConfig
+
+config = PsiTurkConfig()
 
 TABLENAME = config.get('Database Parameters', 'table_name')
 CODE_VERSION = config.get('Task Parameters', 'code_version')

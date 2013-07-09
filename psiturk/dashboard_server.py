@@ -4,6 +4,7 @@ import argparse
 from flask import Flask, render_template, request, Response, jsonify
 import werkzeug.serving
 import subprocess
+import gevent
 from gevent import monkey
 from socketio import socketio_manage
 from socketio.server import SocketIOServer
@@ -46,16 +47,10 @@ def find_open_port():
     open_port = next(port for port in range(5000, 10000) if is_port_available(port))
     return(open_port)
 
-parser = argparse.ArgumentParser(description='Launch psiTurk and psiTurk dashboard.')
-parser.add_argument('-p', '--port', default=72361,
-                    help='optional port for dashboard. default is 72361.')
-args = parser.parse_args()
-dashboard_port = int(args.port)
 
-#dashboard_port = find_open_port()
-
-
-app = Flask("Psiturk_Dashboard")
+app = Flask("Psiturk_Dashboard", 
+            template_folder=os.path.join(os.path.dirname(__file__), "templates_dashboard"), 
+            static_folder=os.path.join(os.path.dirname(__file__), "static_dashboard"))
 
 # Routes for handling dashboard activity
 @app.route('/dashboard', methods=['GET'])
@@ -186,8 +181,9 @@ def participant_status():
 # psiTurk server routes
 #----------------------------------------------
 @app.route("/launch", methods=["GET"])
-def launch():
-    subprocess.Popen("python psiturk_server.py", shell=True)
+def launch_psiturk():
+    server_script = os.path.join(os.path.dirname(__file__), "psiturk_server.py")
+    subprocess.Popen("python " + server_script, shell=True)
     return "psiTurk launching..."
 
 @app.route("/shutdown_dashboard", methods=["GET"])
@@ -208,12 +204,27 @@ def shutdown_psiturk():
     os.kill(int(ppid), signal.SIGKILL)
     return("shutting down dashboard...")
 
-@werkzeug.serving.run_with_reloader
 def run_dev_server():
     app.debug = True
+
+#@werkzeug.serving.run_with_reloader
+def launch():
+    parser = argparse.ArgumentParser(description='Launch psiTurk dashboard.')
+    parser.add_argument('-p', '--port', default=22361,
+                        help='optional port for dashboard. default is 22361.')
+    args = parser.parse_args()
+    dashboard_port = args.port
+    
+    #app.run(debug=True, port=dashboard_port)
+    stopper = gevent.event.Event()
+    server = SocketIOServer(('', dashboard_port), app, resource="socket.io")
+    server.start() 
     launch_browser(dashboard_port)
-    SocketIOServer(('', dashboard_port), app, resource="socket.io").serve_forever() 
+    try:
+        stopper.wait()
+    except KeyboardInterrupt:
+        print "Dashboard is shutting down. This will not terminate any PsiTurk server processes currently running."
+    #signal(SIGINT, launcher.kill_dashboard)
 
 if __name__ == "__main__":
-    app.run(debug=True, port=dashboard_port)
-    run_dev_server()
+    launch()

@@ -1,8 +1,11 @@
 # myapp.mycustomapplication
+import os
 from gunicorn.app.base import Application
 from gunicorn import util
 import multiprocessing
-from config import config
+from PsiTurkConfig import PsiTurkConfig
+
+config = PsiTurkConfig()
 
 
 class PsiTurkServer(Application):
@@ -36,7 +39,7 @@ class PsiTurkServer(Application):
         '''load method
         Imports our application and returns it to be run.
         '''
-        return util.import_app("psiturk.psiturk:app")
+        return util.import_app("psiturk:app")
 
     def load_user_config(self):
         self.loglevels = ["debug", "info", "warning", "error", "critical"]
