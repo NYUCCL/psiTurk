@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name = "PsiTurk",
-    version = "0.1",
+    version = "1.0a1",
     packages = ["psiturk"],
     include_package_data = True,
     zip_safe = False,
