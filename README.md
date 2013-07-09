@@ -12,47 +12,31 @@ website, you can run it with PsiTurk!
 
 You can direct questions to our [Q&A Google group](https://groups.google.com/d/forum/psiturk).
 
-Dependencies
-============
+Install
+=======
 
-You will need to use a relatively recent version of [Python
-2](http://python.org) with the following modules installed:
+The easiest way to install pip . At a terminal simply type:
 
- * [Flask](http://flask.pocoo.org/) – A lightweight web framework.
- * [SQLAlchemy](http://www.sqlalchemy.org/) – A powerful SQL abstraction layer.
- * [Boto](https://github.com/boto/boto) – A library for interfacing with
-   Amazon services, including MTurk.
- 
-You can install these with the following commands:
+    pip install git+git://github.com/NYUCCL/psiTurk.git@dev
 
-    easy_install Flask-SQLAlchemy
-    easy_install boto
-
-To serve your experiment to participants online, you will need to run this code
-from a web server connected to the internet.
 
 Quick Start
 ===========
 
-Just follow these directions to get started:
+Once PsiTurk is installed, you'll need to set up your environment.
 
-1. Check out this repository in git, or download the whole thing using the
-   'ZIP' button near the top of this page.
-2. Install the dependencies. 
-3. Sign up for an AWS account, available [here](http://aws.amazon.com/).
-4. Sign up for a Mechanical Turk requester account, available
+1. Sign up for an AWS account, available [here](http://aws.amazon.com/).
+2. Sign up for a Mechanical Turk requester account, available
    [here](https://requester.mturk.com/).
-5. Rename the config file from `config.txt.example` to `config.txt`. Update it
-   with your secret AWS code.
-6. Making sure that the configuration file is set up to use the Amazon sandbox,
-   issue the following commands from the PsiTurk root folder:
-
-        python mturk/createHIT.py    # To post a HIT to the sandbox
-        python app.py                # To start the debugging server
-
-7. You should be ready to go! Point your browser to the [worker
-   sandbox](https://workersandbox.mturk.com/mturk/findhits) and try to find your
-   HIT.
+3. In a terminal, install psiturk by typing `pip install
+   git+git://github.com/NYUCCL/psiTurk.git@dev`.
+3. To use our example experiment, check out the repository by typing `git clone
+   git://github.com/NYUCCL/psiTurk.git` or download it [as a zip
+   file](https://github.com/NYUCCL/psiTurk/archive/master.zip).  You can modify
+   this experiment to create your own.
+4. Move into the repository with `cd psiturk`.
+5. Start the dashboard by typing `psiturk`. The dashboard should pop up in a browser window.
+6. Enter your AWS account information under the "AWS Info" tag.
 
 *Note*: If you are just testing the server without posting your HIT to Amazon,
 you can see the experiment at the following link:
@@ -63,15 +47,16 @@ Experiment design
 =================
 
 We have provided an example stroop experiment that could form the basis of your
-own experiment. It is a Javascript experiment, with task logic inside the
-participant's browser using Javascript code in `static/task.js`. This
-Javascript code works by dynamically changing the html document served to
-participants in `templates/exp.html`. PsiTurk assigns a condition and
-counterbalance to each participant. These are fed into JavaScript by plugging
-them into `templates/exp.html`. PsiTurk actively manages the condition and
-counterbalance subjects are assigned to, helping you fill them in evenly. To
-tell PsiTurk how many conditions and counterbalance identities are possible in
-your experiment, adust `num_conds` and `num_counters` in `config.txt`.
+own experiment. The task logic is programmed in Javascript, which will run in
+your participant's browser. Most of the code can be found in `static/task.js`.
+It works by dynamically changing the html document served to participants in
+`templates/exp.html` and communicating with the server code which can be found
+in `psiturk/psiturk.py`. PsiTurk assigns a condition and counterbalance to each
+participant. These are fed into JavaScript by plugging them into
+`templates/exp.html`. PsiTurk actively manages the condition and counterbalance
+subjects are assigned to, helping you fill them in evenly. To tell PsiTurk how
+many conditions and counterbalance identities are possible in your experiment,
+adust `num_conds` and `num_counters` in `config.txt`.
 
 Deployment
 ==========
@@ -87,31 +72,6 @@ following changes to the configuration file:
 replacing `yoururl` with the url to your surver, and `yourport` with the port
 you have configured in `config.txt` (by default, 5001).
 
-
-Server
-------
-We **strongly** recommend you not deploy your experiment using the debugging
-server (the one you start using `python app.py`). It is not robust to failures,
-which can leave your participants stranded without a way of submitting their
-completed HITs. Additionally, if you accidentally leave debug mode on, you will
-expose yourself to major security holes.
-
-An alternative we have set up is gunicorn. You can install gunicorn using the
-following command:
-
-    easy_install gunicorn
-
-Then simply run using:
-
-    sh run_gunicorn.sh
-
-You can configure gunicorn in `config.txt` under `Server Parameters`.
-
-Flask apps like PsiTurk can be deployed as a CGI, fastCGI, or WSGI app on any
-server system, so there are many alternative options for deployment.
-Additional options for deploying Flask can be found
-[here](http://flask.pocoo.org/docs/deploying/).
-
 Database
 --------
 
@@ -126,6 +86,16 @@ Instructions for setting up a MySQL server on a Mac can be found
 [in the wiki](https://github.com/NYUCCL/psiTurk/wiki/Macintosh-Configuration).
 Other platforms, check out instructions at
 [mysql.org](http://dev.mysql.com/doc/refman/5.5/en//installing.html).
+
+FAQ
+---
+
+ * **I can't seem to get pip working**.  If you are having trouble setting up
+   Python, we suggest installing the [Enthought Python
+   Distribution](https://www.enthought.com/products/epd/), which is licensed
+   for free to academics [at this
+   link](https://www.enthought.com/products/canopy/academic/). It provides a
+   kitchen-sink-included version of Python which includes `pip`.
 
 Copyright
 =========
