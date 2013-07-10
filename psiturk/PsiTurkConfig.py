@@ -1,9 +1,9 @@
 import os
-from ConfigParser import RawConfigParser
+from ConfigParser import SafeConfigParser
 
-class PsiTurkConfig(RawConfigParser):
+class PsiTurkConfig(SafeConfigParser):
     def __init__(self, filename="config.txt", **kwargs):
-        self.parent = RawConfigParser
+        self.parent = SafeConfigParser
         self.parent.__init__(self, **kwargs)
         self.filename = filename
         if not os.path.exists(self.filename):
@@ -16,8 +16,8 @@ class PsiTurkConfig(RawConfigParser):
         with open(self.filename, 'w') as fp:
             self.parent.write(self, fp)
     
-    def set(self, *args, **kwargs):
-        self.parent.set(self, *args, **kwargs)
+    def set(self, section, field, value,  *args, **kwargs):
+        self.parent.set(self, section, field, str(value), *args, **kwargs)
         self.write()
     
     #def read(self):
@@ -39,8 +39,7 @@ class PsiTurkConfig(RawConfigParser):
         for section, fields in config_model.iteritems():
             for field in fields:
                 self.set(section, field, config_model[section][field])
-        
-        self.write()
+
     
     def write_default_config(self):
         sections = ['AWS Access', 'HIT Configuration', 'Database Parameters',
@@ -61,11 +60,11 @@ class PsiTurkConfig(RawConfigParser):
         self.set('HIT Configuration', 'US_only', 'true')
         self.set('HIT Configuration', 'Approve_Requirement', '95')
         self.set('HIT Configuration', 'using_sandbox', 'true')
-
+        
         # Database Parameters
         self.set('Database Parameters', 'database_url', 'sqlite:///participants.db')
         self.set('Database Parameters', 'table_name', 'turkdemo')
-
+        
         #Server Parameters
         self.set('Server Parameters', 'host', 'localhost')
         self.set('Server Parameters', 'port', '5001')
@@ -76,11 +75,8 @@ class PsiTurkConfig(RawConfigParser):
         self.set('Server Parameters', 'debug', 'true')
         self.set('Server Parameters', 'login_username', 'examplename')
         self.set('Server Parameters', 'login_pw', 'examplepassword')
-
+        
         # Task Parameters
         self.set('Task Parameters', 'code_version', '1.0')
         self.set('Task Parameters', 'num_conds', '1')
         self.set('Task Parameters', 'num_counters', '1')
-
-        # Write config file to drive
-        self.write()
