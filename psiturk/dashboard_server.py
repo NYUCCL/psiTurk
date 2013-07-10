@@ -183,7 +183,7 @@ def participant_status():
 @app.route("/launch", methods=["GET"])
 def launch_psiturk():
     server_script = os.path.join(os.path.dirname(__file__), "psiturk_server.py")
-    subprocess.Popen("python " + server_script, shell=True)
+    subprocess.Popen("python '%s'" % server_script, shell=True)
     return "psiTurk launching..."
 
 @app.route("/shutdown_dashboard", methods=["GET"])
