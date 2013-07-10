@@ -88,15 +88,10 @@ def at_a_glance_model():
 def verify_aws():
     """
     """
-    print "Verifying aws login, dashboard_server 1."
     services = Dashboard.MTurkServices(config)
-    print "Verifying aws login, dashboard_server 2."
     key_id = request.json['aws_access_key_id']
-    print "Verifying aws login, dashboard_server 3."
     secret_key = request.json['aws_secret_access_key']
-    print "Verifying aws login, dashboard_server 4."
     is_valid = services.verify_aws_login(key_id, secret_key)
-    print "Verifying aws login, dashboard_server 5."
     return jsonify(aws_accnt=is_valid)
 
 
