@@ -14,8 +14,7 @@ setup(
         ]
     },
     setup_requires = [],
-    install_requires = ["Flask", "boto>=2.9", "SQLAlchemy", "gevent", "gevent-socketio", "gunicorn", "iso8601"],
-    extras_require = {},
+    install_requires = ["Flask", "SQLAlchemy", "gunicorn", "boto>=2.9", "gevent", "gevent-socketio"],
     author = "NYU Computation and Cognition Lab",
     author_email = "http://nyuccl.org",
     description = "A web framework for dynamic behavioral experiments",

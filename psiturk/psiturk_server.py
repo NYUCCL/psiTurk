@@ -1,9 +1,9 @@
 # myapp.mycustomapplication
-import os
 from gunicorn.app.base import Application
 from gunicorn import util
 import multiprocessing
 from PsiTurkConfig import PsiTurkConfig
+from db import init_db
 
 config = PsiTurkConfig()
 
@@ -50,6 +50,10 @@ class PsiTurkServer(Application):
             'loglevel': self.loglevels[config.getint("Server Parameters", "loglevel")]
         }
 
+def launch():
+    init_db()  
+    PsiTurkServer().run()
+
 
 if __name__ == "__main__":
-    PsiTurkServer().run()
+    launch()
