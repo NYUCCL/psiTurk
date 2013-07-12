@@ -58,7 +58,8 @@ class MTurkServices:
         self.mtc = MTurkConnection(**mturkparams)
         try:
             self.mtc.get_account_balance()
-        except MTurkRequestError:
+        except MTurkRequestError as e:
+            print(e.error_message)
             print('AWS Credentials invalid')
             return 0
         else:
