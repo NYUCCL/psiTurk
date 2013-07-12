@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Using Mechanical Turk for Cognition Experiments - John McDonnell and Todd Gureckis</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <script src="remark-min.js" type="text/javascript"></script>
+    <style type="text/css" media="screen">
+    /* Slideshow styles */
+      @import url(http://fonts.googleapis.com/css?family=Lobster);
+      @import url(http://fonts.googleapis.com/css?family=Open+Sans);
+      @import url(http://fonts.googleapis.com/css?family=Vast+Shadow);
+      @import url(http://fonts.googleapis.com/css?family=Marmelad);
+      @import url(http://fonts.googleapis.com/css?family=Bitter);
+      
+      body { 
+        font-family: 'Open Sans', sans-serif;
+        font-size: 18px;
+      }
+      h1 {
+          font-family: 'Lobster', cursive;
+          color: #444;
+        font-weight: normal;
+        font-size: 55px;
+      }
+      h2 {
+          font-family: 'Open Sans';
+      }
+      a {
+        color: #eaab0c;
+        text-decoration: 1px dotted #ccc;
+      }
+	  pre {
+		  overflow: scroll;
+		  width: 720px;
+		  height: 450px;
+	  }
+	  iframe {
+		  position: relative;
+		  width: 750px;
+		  height: 450px;
+		  margin: 0 auto;
+	  }
+      .slide {
+          
+      }
+      .center {
+        margin: 0 auto;
+      }
+      .footnote {
+        position: absolute;
+        bottom: 3em;
+      }
+      .red    { color: #FF4943; }
+      .gray   { color: #787878; }
+      .green  { color: #92d12d; }
+      .blue   { color: #41C8F0; }
+      .yellow { color: #dbcb14; }
+      .orange { color: #eaab0c; }
+
+      
+      .people {
+          border-top: 1px solid #f1f1f1;
+      }
+      
+
+      .task {
+        /* float: right; */
+        position: absolute;
+        top: 25px;
+        right: 50px;
+        font-size: 18px;
+        padding-top: 0.6em;
+        color: #d3d3d3;
+      }
+      .task a {
+        color: #080;
+        text-decoration: none;
+      }      
+
+      .footnote {
+        position: absolute;
+        bottom: 3em;
+      }
+      
+      .shortlist {
+          font-size: 27px;
+      }
+     
+      .rotatetitle {
+          transform:rotate(-12deg);
+          -ms-transform:rotate(12deg);
+          -moz-transform:rotate(12deg);
+          -webkit-transform:rotate(-12deg);
+          -o-transform:rotate(-12deg);
+
+          -ms-transform-origin:150% -170%;
+          -moz-transform-origin:150% -170%;
+          -webkit-transform-origin:150% -170%;
+          -o-transform-origin:150% -170%;
+
+          font-size: 15px;
+      }
+      .large {
+          font-size: 24px;
+      }
+      
+      .smallquote {
+          font-size: 14px;
+      }
+      
+      .position {
+          color: #ccc;
+          font-size: 12px;
+      }
+      
+   </style>
+  </head>
+  <body>
+    <textarea id="source">
+
+class: center, middle
+ 
+.task[Part 2: The mechanics]
+ 
+<div class="rotatetitle">
+# .blue[Part 2:] What are the mechanics of using the AMT system? 
+</div>
+ 
+---
+
+class: middle
+
+.task[Part 2: The mechanics]
+# Two perspectives:
+ 
+1. What is it like to use AMT as a [**Worker**](#terminology)?
+ 
+2. What is it like to use AMT as a [**Requester**](#terminology)?
+   
+---
+ 
+.task[Part 2: The mechanics]
+# Using AMT as a .blue[**Worker**]
+ 
+1. Sign up on Amazon's site
+ 
+2. Search for tasks (i.e., .red[**HIT**]s) to do online through the AMT interface.
+ 
+3. Worker accepts a .red[**HIT**].  The task appears in a frame within the AMT website.
+ 
+4. After completing the .red[**HIT**], the worker signals to Amazon that they have completed the task
+ 
+<hr>
+ 
+Some important conceptual notes:
+ 
+- (as we will see) .orange[**Requester**]s send out a job with a certain number of .red[**HIT**]s
+ 
+- When a .blue[**Worker**] accepts the .red[**HIT**] is it removed from the .orange[**Requester**]'s account
+ 
+    - If the .blue[**Worker**] doesn't want to do the task they have to _return_ the .red[**HIT**] to the .orange[**Requester**] so someone else can do it
+ 
+- As a .orange[**Requester**] you get to set how long a .red[**HIT**] can be "held" like this
+ 
+---
+ 
+.task[Part 2: The mechanics]
+# What is a .red[**HIT**] ?
+ 
+- In our experiments, a .red[**HIT**] is typically an entire experiment (as might be done in the lab)
+ 
+- However, it is up to the .orange[**Requester**] to determine what constitutes a .red[**HIT**].
+ 
+- Could be one trial in an experiment, and you just offer the .blue[**Worker**] as many .red[**HIT**]s as they care to do
+ 
+- Will see some examples in a minute...
+ 
+---
+
+class: center, middle
+
+.task[Part 2: The mechanics]
+# Demo: Using AMT as a .blue[**Worker**] 
+ 
+<iframe src="http://www.mturk.com/mturk/findhits"></iframe>
+ 
+---
+ 
+.task[Part 2: The mechanics]
+# Using AMT as a .orange[**Requester**]
+ 
+1. Open a Amazon Web Services (AWS) account: [Subscribe here](http://aws.amazon.com)
+ 
+1. Get a Mechanical Turk Requester Account: [Subscribe here](http://requester.mturk.com)
+   
+1. Create a "dummy" email account which you can use to deal with inevitable issues that come up with Workers
+    - Workers will contact you when their computer crashes on the last trial of the task, etc...
+    - Need a way to deal with this efficiently and quickly
+     
+1. Use the built-in Amazon template or "External Question" approach to design your experiment
+ 
+1. Test your code on the "sandbox" website before going live
+    - Important... if you cause problems you WILL be contacted by users with complaints.
+ 
+1. Go live! 
+ 
+ 
+ 
+---
+ 
+.task[Part 2: The mechanics]
+# Using AMT as a .orange[**Requester**]
+### Two key types of .red[**HIT**]s
+ 
+- **Amazon Template**
+    - Hosted directly on Amazon's servers
+    - Mostly restricted to simple HTML
+    - Easy to use (don't need your own server)
+    - Tools for helping you "build" the question
+ 
+- **External Question**
+    - Pushes user off the AMT site to your own website
+    - You can leverage full power of the "Interweb" (custom Javascript, Flash, etc...)
+    - You need to have a publically accessible webserver
+    - Most coding involved
+        - Our software is intended to help with this
+ 
+---
+
+class: center, middle
+.task[Part 2: The mechanics]
+# Demo: Using AMT as a .orange[**Requester**]
+ 
+(using Amazon templates) 
+ 
+<iframe src="https://requester.mturk.com/create/projects/new"></iframe>
+ 
+---
+ 
+.task[Part 2: The mechanics]
+# More about external questions...
+ 
+     
+- The link to the site. Could be anything! Must link back to Amazon at the end (we'll show you how)
+ 
+- You are responsible for:
+    - Hosting
+       - **At minimum** you need a computer with a web-accessible HTTP server running
+       - A static IP address may simplify things
+       - You probably want to avoid trying to host it over WiFi since NAT/Firewalls can make your site inaccessible to the global Internet
+     
+    - Posting your link to Amazon
+     
+    - Communicating back to Amazon when the .red[**HIT**] has been completed
+     
+    - Approving completed .red[**HIT**]s for payment in a timely manner
+     
+    - Dealing quickly with .blue[**Worker**] issues.  Welcome to tech support.
+     
+    - Saving your data in a secure place, etc..
+ 
+---
+ 
+.task[Part 2: The mechanics]
+# Requesting an External Question
+ 
+- **URL** 
+    - basic link to your experiment.
+- **Title**.
+- **Description**.
+- **Keywords**.
+- **Lifetime**. 
+    - _...how long will it be available?_
+- **Duration**. 
+    - _...how long are people allowed to take?_
+- **Qualifications**. 
+    - _...country? ...consistency?_
+ 
+_Oddly, there is no web interface for this. You need to use scripts. Fortunately, we've got you covered in [Part 3](psiturk.html)._
+ 
+---
+ 
+.task[Part 2: The mechanics]
+ 
+# Hosting an Advertisement
+
+- When participants see your HIT in the list, they will see basic metadata:
+
+<img src="images/listing.png" width="750" />
+
+- Once they click "View a HIT in this group," they see whatever your site is serving up, in our case this is the default:
+
+<iframe src="http://puncture.psych.nyu.edu:5001/mturk?assignmentId=ASSIGNMENT_ID_NOT_AVAILABLE&hitId=dummyhit"></iframe>
+ 
+---
+
+# A Participant Accepts
+
+Upon accepting the HIT, they see... whatever you want them to see! In our case,
+it's this:
+
+<iframe src="http://puncture.psych.nyu.edu:5001/mturk?workerId=testing&assignmentId=testing&hitId=testing"></iframe>
+
+---
+
+# A look at the URLs
+
+That last URL would look like this .red[*]:
+
+- http://puncture.psych.nyu.edu:5001/mturk?assignmentId=.red[XX]&hitId=.red[XX]&workerId=.red[XX]
+
+Basic syntax is as follows:
+
+- http://.yellow[yoururl]?.red[**assignmentId**=XX]&.blue[**hitId**=XX]&.green[**workerId**=XX]
+
+	- .yellow[**yoururl**] is wherever your server is ready for requests.
+	- .red[**assignmentId**] is the unique ID assigned by Amazon to the event of
+	  this particular person taking performing this particular HIT.
+	  ASSIGNMENT_ID_NOT_AVAILABLE means they haven't accepted yet.
+	- .blue[**hitId**] is the Amazon ID associated with this HIT.
+	- .green[**workerId**] is the Amazon ID associated with each unique worker.
+
+.footnote[.red[*] The .red[XX] are shorthand for usually long strings of letters and numbers.]
+---
+
+# Finishing up
+
+The last thing served to the participant is a button they can use to inform
+Amazon that they have finished the HIT. This submits a form with their
+identifying information to `http://www.mturk.com/mturk/externalSubmit`.
+
+<iframe src="http://puncture.psych.nyu.edu:5001/mturk?workerId=finished&assignmentId=finished&hitId=finished"></iframe>
+
+---
+
+# Crediting participants
+
+<iframe src="https://requestersandbox.mturk.com/manage"></iframe>
+
+---
+
+class: center, middle
+# End of Part 2
+### .gray[Time for a break!]
+ 
+[Go to the next part](psiturk.html)
+
+
+    </textarea>
+    <div id="slideshow"></div>
+  </body>
+</html>
