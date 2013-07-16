@@ -195,7 +195,7 @@ def shutdown_psiturk():
         port=config.getint("Server Parameters", "port"))
     ppid_request = urllib2.Request(psiturk_server_url)
     ppid = urllib2.urlopen(ppid_request).read()
-    print("shutting down dashboard...")
+    print("shutting down dashboard at pid %s..." % ppid)
     os.kill(int(ppid), signal.SIGKILL)
     return("shutting down dashboard...")
 
