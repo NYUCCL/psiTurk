@@ -1,104 +1,103 @@
-
 /*
  * Requires:
  *     psiturk.js
  *     utils.js
  */
 
-
-/**********************
-* Domain general code *
-**********************/
-
-// View functions
-function appendtobody( tag, id, contents ) {
-	var el = document.createElement( tag );
-	el.id = id;
-	el.innerHTML = contents;
-	return el;
-}
-
-
-/********************
-* TASK-GENERAL CODE *
-********************/
-
-// Globals defined initially.
-var maxblocks = 1;
-var keydownfun = function() {};
-var currenttrial = 0;
-
-// Task objects
-var testobject;
-
+// Initalize psiturk object
 var psiTurk = PsiTurk();
 
-// Data submit functions
-var recordinstructtrial = function (instructname, rt ) {
-	psiTurk.recordTrialData(["INSTRUCT", instructname, rt]);
-};
-var recordtesttrial = function (word, color, trialtype, resp, hit, rt ) {
-	psiTurk.recordTrialData(["TEST", word, color, hit, resp, hit, rt]);
-};
+// List of HTML files for the instructions
+var instruction_pages = [
+	"instruct.html",
+	"instruct2.html"
+];
 
+// Stimuli for a basic Stroop experiment
+var stims = [
+	["SHIP", "red", "unrelated"],
+	["MONKEY", "green", "unrelated"],
+	["ZAMBONI", "blue", "unrelated"],
+	["RED", "red", "congruent"],
+	["GREEN", "green", "congruent"],
+	["BLUE", "blue", "congruent"],
+	["GREEN", "red", "incongruent"],
+	["BLUE", "green", "incongruent"],
+	["RED", "blue", "incongruent"]
+	];
+_.shuffle(stims);
+
+// Task object to keep track of the current phase
+var currentview;
 
 
 /********************
 * HTML manipulation
+*
+* All HTML files in the templates directory are requested 
+* from the server when the PsiTurk object is created above. We
+* need code to get those pages from the PsiTurk object and 
+* insert them into the document.
+*
 ********************/
-
-// TODO Replace with views.
+var replacebody = function(pagehtml) {
+	$('body').html(pagehtml);
+};
 
 var showpage = function(pagename) {
 	psiTurk.getPage(pagename, replacebody);
 };
 
-var replacebody = function(pagehtml) {
-	$('body').html(pagehtml);
-};
 
+/*************************
+* INSTRUCTIONS         
+*************************/
 
-
-/************************
-* CODE FOR INSTRUCTIONS *
-************************/
-var Instructions = function( screens ) {
-	var instructpages = [
-		"instruct.html"
-	];
+var Instructions = function() {
 	
-	var that = this,
-		currentscreen = 0,
-		timestamp;
+	var currentscreen = 0,
+	    timestamp;
 	
-	this.recordtrial = function() {
-		rt = (new Date().getTime()) - timestamp;
-		recordinstructtrial( currentscreen, rt  );
-	};
-	
-	this.nextForm = function () {
-
-		showpage(instructpages[currentscreen]);
+	var next = function() {
+		showpage(instruction_pages[currentscreen]);
+		$('.continue').click(function() {
+			buttonPress();
+		});
+		
 		currentscreen = currentscreen + 1;
 
+		// Record the time that an instructions page is presented
 		timestamp = new Date().getTime();
-		if ( currentscreen == instructpages.length ) {
-			$('.continue').click(function() {
-				that.recordtrial();
-				that.startTest();
-			});
-		} else { $('.continue').click( function() {
-				that.recordtrial();
-				that.nextForm();
-			});
-		}
 	};
-	this.startTest = function() {
-		psiTurk.finishInstructions();
-        testobject = new TestPhase();
+
+	var buttonPress = function() {
+
+		// Record the response time
+		var rt = (new Date().getTime()) - timestamp;
+		psiTurk.recordTrialData(["INSTRUCTIONS", currentscreen, rt]);
+
+		if (currentscreen == instruction_pages.length) {
+			finish();
+		} else {
+			next();
+		};
+
 	};
-	this.nextForm();
+
+	var finish = function() {
+
+		// Record that the user has finished the instructions and 
+		// moved on to the experiment. This changes their status code
+		// in the database.
+		//psiTurk.finishInstructions();
+
+		// Move on to the experiment 
+        currentview = new TestPhase();
+	};
+
+	next();
 };
+
 
 
 /********************
@@ -106,34 +105,31 @@ var Instructions = function( screens ) {
 ********************/
 
 var TestPhase = function() {
-	var i,
-	    that = this, // make 'this' accessble by privileged methods
-	    lock,
-	    stimimage,
-	    buttonson,
-	    prescard,
-	    testcardsleft = new Array();
+
+	var wordon, // time word is presented
+		listening = false,
+		acknowledgment = '<p>Thanks for your response!</p>';
+		resp_prompt = '<p id="prompt">Type<br> "R" for Red<br>"B" for blue<br>"G" for green.';
 	
-	this.hits = new Array();
-	
-	var acknowledgment = '<p>Thanks for your response!</p>';
-	var textprompt = '<p id="prompt">Type<br> "R" for Red<br>"B" for blue<br>"G" for green.';
-	showpage('test.html');
-	
-	var addprompt = function() {
-		buttonson = new Date().getTime();
-		$('#query').html( textprompt ).show();
+	var next = function() {
+		if (stims.length==0) {
+			finish();
+		}
+		else {
+			stim = stims.pop();
+			show_word( stim[0], stim[1] );
+			wordon = new Date().getTime();
+			listening = true;
+			$('#query').html(resp_prompt).show();
+		}
 	};
 	
-	var finishblock = function() {
-		keydownfun = function() {}; // Should unbind keys.
-		givequestionnaire();
-	};
-	
-	var responsefun = function( e) {
+	var response_handler = function(e) {
 		if (!listening) return;
-			keyCode = e.keyCode;
-		var response;
+
+		var keyCode = e.keyCode,
+			response;
+
 		switch (keyCode) {
 			case 82:
 				// "R"
@@ -151,113 +147,113 @@ var TestPhase = function() {
 				response = "";
 				break;
 		}
-		if ( response.length>0 ) {
+		if (response.length>0) {
 			listening = false;
-			responsefun = function() {};
 			var hit = response == stim[1];
 			var rt = new Date().getTime() - wordon;
-			recordtesttrial(stim[0], stim[1], stim[2], response, hit, rt );
+
+			psiTurk.recordTrialData(["TEST", stim[0], stim[1], stim[2], response, hit, rt]);
+			
 			remove_word();
-			nextword();
+			next();
 		}
 	};
 
-	var nextword = function () {
-		if (! stims.length) {
-			finishblock();
-		}
-		else {
-			stim = stims.pop();
-			show_word( stim[0], stim[1] );
-			wordon = new Date().getTime();
-			//stimimage = testcardpaper.image( cardnames[getstim(prescard)], 0, 0, imgw, imgh);
-			
-			addprompt();
-                        listening = true;
-		}
+	var finish = function() {
+		$("body").keydown(function() {}); // Unbind keys
+		currentview = new Questionnaire();
 	};
 	
-	//Set up stimulus.
-	var R = Raphael("stim", 400, 100),
-		font = "64px Helvetica";
+	
+	// Load the test.html snippet into the body of the page
+	showpage('test.html');
+	
+	// This uses the Raphael library to create the stimulus. Note that when
+	// this is created the first argument is the id of an element in the
+	// HTML page (a div with id 'stim')
+	var R = Raphael("stim", 500, 200),
+		font = "100px Helvetica";
 	
 	var show_word = function(text, color) {
-		R.text( 200, 50, text ).attr({font: font, fill: color});
+		R.text( 250, 100, text ).attr({font: font, fill: color});
 	};
 	var remove_word = function(text, color) {
 		R.clear();
 	};
-	$("body").focus().keydown(responsefun); 
-        listening = false;
 
-	var stims = [
-		["SHIP", "red", "unrelated"],
-		["MONKEY", "green", "unrelated"],
-		["ZAMBONI", "blue", "unrelated"],
-		["RED", "red", "congruent"],
-		["GREEN", "green", "congruent"],
-		["BLUE", "blue", "congruent"],
-		["GREEN", "red", "incongruent"],
-		["BLUE", "green", "incongruent"],
-		["RED", "blue", "incongruent"]
-		];
-	_.shuffle(stims);
-	nextword();
-	return this;
+	// Register the response handler that is defined above to handle any
+	// key down events.
+	$("body").focus().keydown(response_handler); 
+
+	// Start the test
+	next();
 };
+
 
 /****************
 * Questionnaire *
 ****************/
 
-var taskfinished = function() { window.location="/debrief?uniqueId=" + psiTurk.taskdata.id; };
+var Questionnaire = function() {
 
-// We may want this to end up being a backbone view
-var givequestionnaire = function() {
+	var error_message = "<h1>Oops!</h1><p>Something went wrong submitting your HIT. This might happen if you lose your internet connection. Press the button to resubmit.</p><button id='resubmit'>Resubmit</button>";
+
+	record_responses = function() {
+
+		psiTurk.recordTrialData(['postquestionnaire', 'submit']);
+
+		$('textarea').each( function(i, val) {
+			psiTurk.recordUnstructuredData(this.id, this.value);
+		});
+		$('select').each( function(i, val) {
+			psiTurk.recordUnstructuredData(this.id, this.value);		
+		});
+
+	};
 	
-	var timestamp = new Date().getTime();
+	finish = function() {
+		debriefing();
+	};
+	
+	prompt_resubmit = function() {
+		replacebody(error_message);
+		$("#resubmit").click(resubmit);
+	};
+
+	resubmit = function() {
+		replacebody("<h1>Trying to resubmit...</h1>");
+		reprompt = setTimeout(prompt_resubmit, 10000);
+		
+		psiTurk.saveData({
+			success: function() {
+				clearInterval(reprompt); 
+				finish();
+			}, 
+			error: prompt_resubmit}
+		);
+	};
+
+	// Load the questionnaire snippet 
 	showpage('postquestionnaire.html');
-	recordinstructtrial("postquestionnaire", (new Date().getTime())-timestamp );
+	psiTurk.recordTrialData(['postquestionnaire', 'begin']);
 	
 	$("#continue").click(function () {
-		recordQuestionnaire();
+		record_responses();
 		psiTurk.teardownTask();
-    	psiTurk.saveData({success: function() {taskfinished();}, error: prompt_to_resubmit});
-		taskfinished();
+    	psiTurk.saveData({success: finish, error: prompt_resubmit});
 	});
-};
-
-var promptResubmit = function() {
-	replacebody("<h1>Oops!</h1><p>Something went wrong submitting your HIT. This might happen if you lose your internet connection. Press the button to resubmit.</p><button id='resubmit'>Resubmit</button>");
-	$("#resubmit").click(finishTask);
-};
-
-var finishTask = function() {
-	replacebody("<h1>Trying to resubmit...</h1>");
-	reprompt = setTimeout(prompt_to_resubmit, 10000);
-	psiTurk.saveData({success: function() {clearInterval(reprompt); taskfinished();}, error: promptResubmit});
+	
 };
 
 
-
-var recordQuestionnaire = function() {
-	$('textarea').each( function(i, val) {
-        psiTurk.recordUnstructuredData(this.id, this.value);
-	});
-	$('select').each( function(i, val) {
-        psiTurk.recordUnstructuredData(this.id, this.value);		
-	});
-};
-
-var prompt_to_resubmit = function() {
-};
+var debriefing = function() { window.location="/debrief?uniqueId=" + psiTurk.taskdata.id; };
 
 
 /*******************
  * Run Task
  ******************/
 $(window).load( function(){
-	instructobject = new Instructions(['instruct']);
+    currentview = new Instructions();
 });
 
 // vi: noexpandtab tabstop=4 shiftwidth=4
