@@ -213,13 +213,18 @@ def launch():
     #app.run(debug=True, port=dashboard_port)
     stopper = gevent.event.Event()
     server = SocketIOServer(('', dashboard_port), app, resource="socket.io")
-    server.start() 
-    launch_browser(dashboard_port)
+    already_running = False
     try:
-        stopper.wait()
-    except KeyboardInterrupt:
-        print "Dashboard is shutting down. This will not terminate any PsiTurk server processes currently running."
-    #signal(SIGINT, launcher.kill_dashboard)
+        server.start() 
+    except socket.error:
+        print "Server is already running!"
+        already_running = True
+    launch_browser(dashboard_port)
+    if not already_running:
+        try:
+            stopper.wait()
+        except KeyboardInterrupt:
+            print "Dashboard is shutting down. This will not terminate any PsiTurk server processes currently running."
 
 if __name__ == "__main__":
     launch()
