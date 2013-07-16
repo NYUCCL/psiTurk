@@ -89,10 +89,10 @@ var Instructions = function() {
 		// Record that the user has finished the instructions and 
 		// moved on to the experiment. This changes their status code
 		// in the database.
-		//psiTurk.finishInstructions();
+		psiTurk.finishInstructions();
 
 		// Move on to the experiment 
-        currentview = new TestPhase();
+		currentview = new TestPhase();
 	};
 
 	next();
@@ -101,15 +101,15 @@ var Instructions = function() {
 
 
 /********************
-* CODE FOR TEST     *
+* STROOP TEST       *
 ********************/
 
 var TestPhase = function() {
 
 	var wordon, // time word is presented
-		listening = false,
-		acknowledgment = '<p>Thanks for your response!</p>';
-		resp_prompt = '<p id="prompt">Type<br> "R" for Red<br>"B" for blue<br>"G" for green.';
+	    listening = false,
+	    acknowledgment = '<p>Thanks for your response!</p>';
+	    resp_prompt = '<p id="prompt">Type<br> "R" for Red<br>"B" for blue<br>"G" for green.';
 	
 	var next = function() {
 		if (stims.length==0) {
