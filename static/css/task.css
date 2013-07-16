@@ -66,23 +66,27 @@ strong {
 
 /* Questionnaire */
 
-.questionnaire p, li {
-    font-size: 150%;
-}
-
-
 input {
-    width: 100px;
-    height: 50px;
-    font-size: 22pt;
+        width: 100px;
+        height: 50px;
+        font-size: 22pt;
 }
 
-input[type="radio"], input[type="checkbox"] {
-	height: 1em;
-	width: 1em;
+.questionnaire {
+    text-align: center;
 }
 
-input[type="number"] {
+.questionnaire .continue {
+    margin: 0 auto;
+    margin-top: 20px;
+}
+
+.questionnaire h1 {
+    text-align: center;
+}
+
+.questionnaire p {
+    text-align: left;
 }
 
 .questionnaire #warning {
@@ -90,26 +94,21 @@ input[type="number"] {
     font-weight: bold;
 }
 
-.questionnaire {
-    font-size: 70%;
-    text-align: left;
-}
-.questionnaire h1 {
-    text-align: center;
-}
 .questionnaire table {
     margin: 0 auto;
 	
-	/* Border stuff: */
-	table-layout: fixed;
-	border-collapse: separate;
-	border-spacing: 0.25em;
-	border: none;
+    /* Border stuff: */
+    table-layout: fixed;
+    border-collapse: separate;
+    border-spacing: 0.25em;
+    border: none;
 }
+
 .questionnaire tr {
     display: block;
-    border-bottom: 2px dashed white;
+    border-bottom: 1px dashed white;
 }
+
 .questionnaire tr:last-child { border: 0; }
 
 .questionnaire td {
@@ -124,20 +123,15 @@ input[type="number"] {
 .questionnaire td:last-child { padding-right: 0; border-right: 0; }
 
 .answer {
-    text-align: left;
+        text-align: left;
 	padding-left: 3em;
 }
 
-.questionnaire .question {
-    position: relative;
-    margin: 20px;
-}
 .questionnaire .questiontext {
 	vertical-align: top;
-    width: 280px;
-    color: #bbbbff;
-    margin: 20px;
-    font-size: 1.2em;
+        width: 300px;
+        margin: 20px;
+        font-size: 1.2em;
 }
 .questiontext em {
 	font-size: 70%;
@@ -149,10 +143,6 @@ input[type="number"] {
 .questionnaire form {
     text-align: right;
 }
-.questionnaire hr {
-    border-bottom: 1px solid #bbbbff;
-}
-
 .questionnaire ul {
 	list-style-type: none;
 	margin: 0;
