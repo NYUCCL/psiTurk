@@ -276,39 +276,7 @@ class: shortlist, middle
 
 ---
 
-.task[Part 1: What is AMT?]
-# Who are the workers?
 
-- 46.80% US, 34% India, 19.20% Other
-
-- United States demographic
-    - 55-65% female
-    - Most make <$60k/year
-    - Median age of 30
-    - Hold bachelor’s and are young
-    - Distribution mostly similar to US internet pop.
-    
-- See Ipeirotis, et al. (2010) or Mason and Siddharth (2011).
-
----
-
-.task[Part 1: What is AMT?]
-# US Distribution
-
-<img src="images/us-turk-distribution.jpg" width="750">
-
-Taken from this [website](http://www-958.ibm.com/software/data/cognos/manyeyes/visualizations/geographic-distribution-of-turkers).
-
----
-
-.task[Part 1: What is AMT?]
-# World Distribution
-
-<img src="images/world-turk-distribution.jpg" width="750">
-
-Tamir (2011)
-
----
 
 .task[Part 1: What is AMT?]
 # What motivates workers?
@@ -374,16 +342,17 @@ Mitch Fernandez, 38, a disabled former United States Army linguist, said by e-ma
 ---
 
 .task[Part 1: What is AMT?]
-# Common concerns? .red[*]
+# Common concerns .red[*]
 
 
-- **Selection Bias**: What type of people use AMT? Are they maybe weird?
+- **Selection Bias**: 
+    - What type of people use AMT? Are they maybe weird?
 
-- **Dishonesty**
+- **Honesty**
     - Turkers can misrepresent their nationality, or other demographics
 
-- **Low payment & motivation**  
-    - The low rates that often get paid on AMT may leave participants less motivated to complete tasks at a high standard
+- **Data Quality**  
+    - The low rates that often get paid on AMT may leave participants less motivated to complete tasks at a sufficiently high standard
 
 - **Contamination of the subject base**  
     - Turkers might participate in the same experiment mutliple times
@@ -396,27 +365,69 @@ Mitch Fernandez, 38, a disabled former United States Army linguist, said by e-ma
 .left.footnote[.red[*]
 These are loosely based on a [recent critical blog post]() of Dan Kahan at Yale University regarding the validity of AMT samples for research in the social sciences.]
 
+
+
+---
+
+
+.task[Part 1: What is AMT?]
+# Who are the workers?
+
+- 46.80% US, 34% India, 19.20% Other
+
+- United States demographic
+    - 55-65% female
+    - Most make <$60k/year
+    - Median age of 30
+    - Hold bachelor’s and are young
+    - Distribution mostly similar to US internet pop.
+    
+- See Ipeirotis, et al. (2010) or Mason and Siddharth (2011).
+
 ---
 
 .task[Part 1: What is AMT?]
-# Ethical Issues
+# US Distribution
 
-- How much should you pay?  As much as the market supports or should it match what you pay in the lab (roughly)?
+<img src="images/us-turk-distribution.jpg" width="750">
 
-- Can you get IRB approval for your experiment (yes, you MUST run it by the IRB first)
-
-    - Some IRBs are more cautious than they need to be, IMHO
-
-    - Since participants never meet experimenter and are free to close browser and walk away at any moment the IRB issues seem non-existent (should be exempt, but check with your  local IRB)
-
-    - Main concern would be if materials/stimuli are controversial and might reflect poorly on the field, sponsors, or university
-
-    - Wasn't very difficult to add to an existing IRB at NYU
+Taken from this [website](http://www-958.ibm.com/software/data/cognos/manyeyes/visualizations/geographic-distribution-of-turkers).
 
 ---
 
+.task[Part 1: What is AMT?]
+# World Distribution
+
+<img src="images/world-turk-distribution.jpg" width="750">
+
+Tamir (2011)
+
+---
+
+
+
+.task[Part 1: What is AMT?]
+# Do turkers misrepresent personal details about themselves?
+ Shapiro, Chandler, and Mueller (2013) investigated this by asking participants to state demographic details about themselves twice with a week's gap in between
+
+- As it turns out, only 10 out of 497 participants gave mismatching information
+
+- But a substantial proportion said they were American while using a foreign IP address
+
+- In addition, participants' score on a range of classic psychometric tests (like the BDI) had high internal consistency (alpha>.9, and test-retest reliability (correlation of .87)
+
+.center[
+**Upshot: Reliability even of sensitive data was generally high, but screening for foreign IPs might be useful if US sample is desired**
+]
+
+
+---
+
+
 class: center, middle
 # How does the data compare to that collected in the lab? .red[*]
+
+
 
 .left.footnote[.red[*]Check out our discussion of this at our [Thinking about Thinking](http://gureckislab.org/blog/) blog ]
 
@@ -432,11 +443,12 @@ name: replicationstudies
 
 - Paolacci, G., Chandler, J., & Ipeirotis, P. G. (2010). [Running experiments on Amazon Mechanical Turk](http://repub.eur.nl/res/pub/31983/jdm10630a[1].pdf). _Judgment and Decision Making_, 5, 411-419.
 
-- Germine, L., Nakayama, K., Duchaine, B.C., Chabris, C.F., Chatterjee, G. & Wilmer, J.B. (2012, in press).  [Is the Web as good as the lab?  Comparable performance from Web and lab in cognitive/perceptual experiments.](http://www.springerlink.com/content/f0244t772070138w/)  _Psychonomic Bulletin & Review_.
+- Buhrmester, M., Kwang, T., & Gosling, S. D. (2011). [Amazon's Mechanical Turk A New Source of Inexpensive, Yet High-Quality, Data?](http://pps.sagepub.com/content/6/1/3.full). _Perspectives on Psychological Science_, 6(1), 3-5.
 
-- Shapiro, D. N., Chandler, J., & Mueller, P. A. (2013). [Using Mechanical Turk to Study Clinical Populations](http://s3.amazonaws.com/academia.edu.documents/30554524/Clinical_Psychological_Science-2013-Shapiro-2167702612469015.pdf?AWSAccessKeyId=AKIAIR6FSIMDFXPEERSA&Expires=1374090987&Signature=%2B4nErhKWOQhoWYY9gpgV0EbvVa0%3D&response-content-disposition=inline). Clinical Psychological Science, 1(2), 213-220.
+- Germine, L., Nakayama, K., Duchaine, B.C., Chabris, C.F., Chatterjee, G. & Wilmer, J.B. (2012).  [Is the Web as good as the lab?  Comparable performance from Web and lab in cognitive/perceptual experiments](http://www.springerlink.com/content/f0244t772070138w/)  _Psychonomic Bulletin & Review_,  19.5.
 
 
+- Shapiro, D. N., Chandler, J., & Mueller, P. A. (2013). [Using Mechanical Turk to Study Clinical Populations](http://s3.amazonaws.com/academia.edu.documents/30554524/Clinical_Psychological_Science-2013-Shapiro-2167702612469015.pdf?AWSAccessKeyId=AKIAIR6FSIMDFXPEERSA&Expires=1374090987&Signature=%2B4nErhKWOQhoWYY9gpgV0EbvVa0%3D&response-content-disposition=inline). _Clinical Psychological Science_, 1(2), 213-220.
 ---
 
 
@@ -549,21 +561,61 @@ class: center, middle
 ---
 
 .task[Part 1: What is AMT?]
-# Summary
+# Lessons
 
-- Eh, it's ok. not perfect.
+- Data replicated somewphat, but not perfectly
     - Hard to tell if problems are with AMT data or with previous work (perhaps selection bias with university students?)
 
-- Important lessons
+- Important outcomes
     - Payment doesn't have much effect beyond signup rate
     - Checking people read and comprehend instructions is critical
     - Cleaning up data may help, but good to decide on criterion ahead of time
     
-- Huge studies run in 3-4 days.  Does this benefit outweight possible disadvantages?  Do you trust your lab data more?
 
 - Note, our other studies (e.g., stroop, etc...) replicate with much higher fidelity.  Learning experiments
 may reflect a sort of special case where caution is particularly advised.
     - See also [this slide](#replicationstudies) for references to other studies reporting success
+
+---
+
+.task[Part 1: What is AMT?]
+# Concerns Revisited
+
+- **Selection Bias**: 
+    - AMT span a broad range of demographics. Arguably the sample is less "weird" than your usual undergraduate population
+
+- **Honesty**
+    - Generally users seem to provide reliable data, although they may falsely pretend to be from the US and checking their IP is one way to prevent that
+
+- **Data Quality**  
+    - Many findings replicate well, but it is advisable to check participants' understanding of your task to make sure they pay attention
+
+- **Contamination of the subject base**  
+    - This can be prevented by keeping track of all  participants and checking new ones against a database (we'll show you how to do this with psiTurk later on)
+
+- **Non-lab setting**  
+    - Truly difficult to control, but by keeping a record of how often participants switch windows or take breaks some distracted participants can be excluded
+
+Ultimately, it's up to you if think you can trust your lab data more!
+
+---
+
+
+.task[Part 1: What is AMT?]
+# A word on Ethics
+
+- How much should you pay?  As much as the market supports or should it match what you pay in the lab (roughly)?
+
+- Can you get IRB approval for your experiment (yes, you MUST run it by the IRB first)
+
+    - Some IRBs are more cautious than they need to be, IMHO
+
+    - Since participants never meet experimenter and are free to close browser and walk away at any moment the IRB issues seem non-existent (should be exempt, but check with your  local IRB)
+
+    - Main concern would be if materials/stimuli are controversial and might reflect poorly on the field, sponsors, or university
+
+    - Wasn't very difficult to add to an existing IRB at NYU
+
 
 ---
 
