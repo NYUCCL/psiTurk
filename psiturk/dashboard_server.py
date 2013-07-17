@@ -86,7 +86,7 @@ def at_a_glance_model():
         if summary:
             return summary
         else:
-            return "unable to access aws"
+            return jsonify(error="unable to access aws")
 
 @app.route('/verify_aws_login', methods=['POST'])
 def verify_aws():
