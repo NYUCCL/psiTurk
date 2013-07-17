@@ -47,6 +47,7 @@ define [
           @save(event)
           $('#aws-info-modal').modal('hide')
 
+
       verifyAWSLogin: ->
         config = new ConfigModel
         configPromise = config.fetch()
@@ -63,7 +64,7 @@ define [
             contentType: "application/json; charset=utf-8"
             data: JSON.stringify inputData
             success: (response) =>
-              if response.aws_accnt is "False"
+              if response.aws_accnt is 0
                 @getCredentials()
             error: ->
               console.log("aws verification failed")
@@ -97,7 +98,6 @@ define [
             complete: => @verifyAWSLogin()
 
       initialize: ->
-        #  Pass in our router module and call it's initialize function
         Router.initialize()
         @verifyAWSLogin()
 
@@ -125,11 +125,11 @@ define [
         # Load at-a-glance model and data
         @ataglance = new AtAGlanceModel
         atAGlancePromise = @ataglance.fetch()
-        atAGlancePromise.done(=>
+        atAGlancePromise.done =>
           # Load configuration model
           @config = new ConfigModel
           configPromise = @config.fetch()
-          configPromise.done(=>
+          configPromise.done =>
             overview = _.template(OverviewTemplate,
               input:
                 balance: @ataglance.get("balance")
@@ -141,7 +141,6 @@ define [
             sidebarView = new SidebarView
               config: @config
               ataglance: @ataglance
-          ))
 
         # Load content view after html; req's ids to be present
         contentView = new ContentView()
