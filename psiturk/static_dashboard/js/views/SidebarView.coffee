@@ -48,6 +48,11 @@ define [
                   success: (response) =>
                     if response.aws_accnt is 0
                       @getCredentials()
+                      $('#aws-indicator').css("color", "red")
+                        .attr("class", "icon-lock")
+                    else
+                      $('#aws-indicator').css("color", "white")
+                        .attr("class", "icon-unlock")
                   error: ->
                     console.log("aws verification failed")
 
@@ -300,7 +305,6 @@ define [
             #$('.save').on "click", (event) ->
             $(document).on "click", '.save', =>
               event.preventDefault()
-              console.log('hi')
               saveConfig(event)
               $(document).on "click", '.save_data', (event) =>
                 event.preventDefault()
@@ -334,7 +338,7 @@ define [
                     updateExperimentStatus()
                     updateOverview()
                   error: (error) ->
-                    console.log("failed to expire HITJ")
+                    console.log("failed to expire HIT")
                 $('#expire-modal').modal('hide')
 
             $(document).on "click", '.extend', ->

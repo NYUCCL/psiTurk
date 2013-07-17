@@ -32,7 +32,10 @@
             data: JSON.stringify(inputData),
             success: function(response) {
               if (response.aws_accnt === 0) {
-                return _this.getCredentials();
+                _this.getCredentials();
+                return $('#aws-indicator').css("color", "red").attr("class", "icon-lock");
+              } else {
+                return $('#aws-indicator').css("color", "white").attr("class", "icon-unlock");
               }
             },
             error: function() {
@@ -351,7 +354,6 @@
         saveConfig = _.bind(this.save, this);
         $(document).on("click", '.save', function() {
           event.preventDefault();
-          console.log('hi');
           saveConfig(event);
           return $(document).on("click", '.save_data', function(event) {
             event.preventDefault();
@@ -391,7 +393,7 @@
                 return updateOverview();
               },
               error: function(error) {
-                return console.log("failed to expire HITJ");
+                return console.log("failed to expire HIT");
               }
             });
             return $('#expire-modal').modal('hide');
