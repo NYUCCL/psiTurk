@@ -38,7 +38,10 @@
             data: JSON.stringify(inputData),
             success: function(response) {
               if (response.aws_accnt === 0) {
-                return _this.getCredentials();
+                _this.getCredentials();
+                return $('#aws-indicator').css("color", "red").attr("class", "icon-lock");
+              } else {
+                return $('#aws-indicator').css("color", "white").attr("class", "icon-unlock");
               }
             },
             error: function() {
@@ -95,7 +98,6 @@
         var atAGlancePromise, contentView, updateExperimentStatus,
           _this = this;
         Router.initialize();
-        this.verifyAWSLogin();
         $('#server_on').on("click", function() {
           return $('#server_status').css({
             "color": "yellow"
@@ -143,7 +145,7 @@
             var overview, sideBarHTML, sidebarView;
             overview = _.template(OverviewTemplate, {
               input: {
-                balance: _this.ataglance.get("balance"),
+                balance: _this.ataglance.get("balance") === "unable to access aws" ? "-" : _this.ataglance.get("balance"),
                 debug: _this.config.get("Server Parameters").debug === "True" ? "checked" : "",
                 using_sandbox: _this.config.get("HIT Configuration").using_sandbox === "True" ? "checked" : ""
               }
@@ -159,6 +161,7 @@
         });
         contentView = new ContentView();
         contentView.initialize();
+        this.verifyAWSLogin();
         updateExperimentStatus = _.bind(this.getExperimentStatus, this);
         $('#run').on("click", function() {
           var configPromise,
