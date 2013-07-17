@@ -1,0 +1,50 @@
+<div class="questionnaire">
+    <h1>Task Complete</h1>
+    <p>Congratulations, you are finished!  You will be eligible for payment once you answer the following questions.</p>
+    <form id="postquiz" action="debrief" method="post">
+        <table>
+            <tr class="question">
+                <td class="questiontext">
+                On a scale of 1-10 (where 10 is the most engaged), please rate how <b>ENGAGING</b> you found the learning task:
+                </td>
+                <td class="answer">
+                    <select id="engagement" name="engagement">
+                        <option value="10">10 - Very engaging</option>
+                        <option value="9">9</option>
+                        <option value="8">8</option>
+                        <option value="7">7</option>
+                        <option value="6">6</option>
+                        <option value="5" SELECTED>5 - Moderately</option>
+                        <option value="4">4</option>
+                        <option value="3">3</option>
+                        <option value="2">2</option>
+                        <option value="1">1</option>
+                        <option value="0">0 - Not engaged</option>
+                    </select>
+                </td>
+            </tr>
+            <tr class="question">
+                <td class="questiontext">
+                On a scale of 1-10 (where 10 is the most difficult), please rate how <b>DIFFICULT</b> you found the learning task:
+                </td>
+                <td class="answer">
+                    <select id="difficulty" name="difficulty">
+                        <option value="10">10 - Very difficult</option>
+                        <option value="9">9</option>
+                        <option value="8">8</option>
+                        <option value="7">7</option>
+                        <option value="6">6</option>
+                        <option value="5" SELECTED>5 - Moderately difficult</option>
+                        <option value="4">4</option>
+                        <option value="3">3</option>
+                        <option value="2">2</option>
+                        <option value="1">1</option>
+                        <option value="0">0 - Easy</option>
+                    </select>
+                </td>
+            </tr>
+        </table>
+    </form>
+    <input type="button" class="continue" id="continue" value="Continue"></input>
+    
+</div>
