@@ -10,26 +10,17 @@ class PsiTurkConfig(SafeConfigParser):
             print("Creating config file...")
             self.write_default_config()
         self.read(self.filename)
-        #self.check_hash()
-    
+
     def write(self):
         with open(self.filename, 'w') as fp:
             self.parent.write(self, fp)
-    
+
     def set(self, section, field, value,  *args, **kwargs):
         self.parent.set(self, section, field, str(value), *args, **kwargs)
         self.write()
-    
+
     #def read(self):
     #    super(ConfigParser, self).read(self.filename)
-
-    #def check_hash(self):
-    #    if not self.get("Server Parameters", "hash"):
-    #        self.generate_hash()
-    
-    #def generate_hash(self):
-    #    self.user_hash = str(os.urandom(16).encode('hex'))
-    #    self.set('Server Parameters', 'hash', self.user_hash)
 
     def get_serialized(self):
         # Serializing data is necessary to communicate w/ backbone frontend.
@@ -40,7 +31,7 @@ class PsiTurkConfig(SafeConfigParser):
             for field in fields:
                 self.set(section, field, config_model[section][field])
 
-    
+
     def write_default_config(self):
         sections = ['AWS Access', 'HIT Configuration', 'Database Parameters',
                     'Server Parameters', 'Task Parameters']
@@ -60,11 +51,11 @@ class PsiTurkConfig(SafeConfigParser):
         self.set('HIT Configuration', 'US_only', 'true')
         self.set('HIT Configuration', 'Approve_Requirement', '95')
         self.set('HIT Configuration', 'using_sandbox', 'true')
-        
+
         # Database Parameters
         self.set('Database Parameters', 'database_url', 'sqlite:///participants.db')
         self.set('Database Parameters', 'table_name', 'turkdemo')
-        
+
         #Server Parameters
         self.set('Server Parameters', 'host', 'localhost')
         self.set('Server Parameters', 'port', '5001')
