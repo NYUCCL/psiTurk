@@ -32,21 +32,26 @@ define [
       RunExptView
     ) ->
 
-      # Prevent links from reloading the page
+      # Prevent links from reloading the page (single page app)
       events:
         'click a' : 'pushstateClick'
         'click li' : 'pushstateClick'
 
+
       pushstateClick: (event) ->
         event.preventDefault()
 
+
+      # Ask user for AWS login
       getCredentials: ->
         $('#aws-info-modal').modal('show')
         $('.save').click (event) =>
           event.preventDefault()
-          @save(event)
+          @saveConfig(event)
           $('#aws-info-modal').modal('hide')
 
+
+      # Verify user supplied credentials on via AWS API
       verifyAWSLogin: ->
         config = new ConfigModel
         configPromise = config.fetch()
@@ -74,6 +79,7 @@ define [
             error: ->
               console.log("aws verification failed"))
 
+
       getExperimentStatus: ->
         $.ajax
           url: '/get_hits'
@@ -86,10 +92,42 @@ define [
               $('#experiment_status').css "color": "grey"
               $('#run').css({"color": "orange"})
 
-      save: (event) ->
+
+      launchPsiTurkServer: ->
+        $.ajax
+          url: '/launch'
+          type: "GET"
+          success:  # Get new socket for monitoring
+            $ ->
+              # socket = io.connect '/server_status'
+              # socket.on "connect", ->
+              #   $.ajax
+              #     url: "/monitor_server"
+              # socket.on 'status', (data) ->
+              #   if parseInt(data) is 0
+              #     $('#server_status').css "color": "green"
+              #     $('#server_on')
+              #       .css "color": "grey"
+              #     $('#server_off').css "color": "orange"
+              #   else
+              #     $('#server_status').css({"color": "red"})
+              #     $('#server_off')
+              #       .css "color": "grey"
+              #     $('#server_on').css "color": "orange"
+
+      stopPsiTurkServer: ->
+        $('#server-off-modal').modal('show')
+        $('#shutdownServerBtn').on "click", ->
+          $('#server_status').css "color": "yellow"
+          $.ajax
+            url: '/shutdown_psiturk'
+            type: "GET"
+            success: $('#server-off-modal').modal('hide')
+
+
+      saveConfig: (event) ->
         # Prevent clicks from reloading page
         event.preventDefault()
-
         section = $(event.target).data 'section'
         inputData = {}
         configData = {}
@@ -102,41 +140,45 @@ define [
           @config.save configData,
             complete: => @verifyAWSLogin())
 
-      initialize: ->
-        Router.initialize()
 
-        $('#server_on').on "click", ->
-          $('#server_status').css "color": "yellow"
+      monitorPsiturkServer: ->
+      # Use long poll to sync dashboard w/ server.
+      # Socket.io is a much better choice, but requires gevent, and thus gcc.
+        UP = 0
+        DOWN = 1
+        $.ajax
+          url: "/monitor_server"
+        $.doTimeout 'server_poll', 2000, ->
+          $.ajax
+            url: "/server_status"
+            success: (data) ->
+             server = parseInt(data.state)
+             # if server is UP or DOWN
+             if server is UP
+               console.log('UP')
+               $('#server_status').css "color": "green"
+               $('#server_on')
+                 .css "color": "grey"
+               $('#server_off').css "color": "orange"
+             else
+               console.log('DOWN')
+               $('#server_status').css({"color": "red"})
+               $('#server_off')
+                 .css "color": "grey"
+               $('#server_on').css "color": "orange"
+          return true
 
-        # Listen for server status via socket.io
-        $ ->
-          socket = io.connect '/server_status'
-          socket.on "connect", ->
-            $.ajax
-              url: "/monitor_server"
-          socket.on 'status', (data) ->
-            if parseInt(data) is 0
-              $('#server_status').css "color": "green"
-              $('#server_on')
-                .css "color": "grey"
-              $('#server_off').css "color": "orange"
-            else
-              $('#server_status').css({"color": "red"})
-              $('#server_off')
-                .css "color": "grey"
-              $('#server_on').css "color": "orange"
-
+      loadAWSData: ->
         # Load at-a-glance model and data
         @ataglance = new AtAGlanceModel
-        atAGlancePromise = @ataglance.fetch() #{error: => @ataglance.set("balance", "-") })
+        atAGlancePromise = @ataglance.fetch()
         atAGlancePromise.done(=>
-          # Load configuration moder
           @config = new ConfigModel
           configPromise = @config.fetch()
           configPromise.done =>
             overview = _.template(OverviewTemplate,
               input:
-                balance: if @ataglance.get("balance") is "unable to access aws" then "-" else @ataglance.get("balance")
+                balance: @ataglance.get("balance")
                 debug: if @config.get("Server Parameters").debug is "True" then "checked" else ""
                 using_sandbox: if @config.get("HIT Configuration").using_sandbox is "True" then "checked" else "")
             $('#content').html(overview)
@@ -145,12 +187,12 @@ define [
             sidebarView = new SidebarView
               config: @config
               ataglance: @ataglance)
-
-        # Load content view after html; req's ids to be present
+        # Load content view after html; req's html ids to be present
         contentView = new ContentView()
         contentView.initialize()
-        @verifyAWSLogin()
 
+
+      loadUIEvents: ->
         # Have run button listen for clicks and tell server to create HITS
         # Before running expt, get latest config and verify
         # TODO(Jay): Combine and abstract the following functions-DRY principle.
@@ -167,11 +209,12 @@ define [
               inputData = {}
               configData = {}
               $.each($('#expt-form').serializeArray(), (i, field) ->
-                inputData[field.name] = field.value
-              )
-              # Update amounts in GUI
-              $('#total').html (inputData["reward"]*inputData["max_assignments"]*1.10).toFixed(2)
-              $('#fee input').val (inputData["reward"]*inputData["max_assignments"]*.10).toFixed(2)
+                inputData[field.name] = field.value)
+              # Update dollar amounts in GUI
+              # Fee is currently set to 10%, but it'd be nice if there was a way to dynamically set this according to AMZ's rates
+              TURK_FEE_RATE = 0.10
+              $('#total').html (inputData["reward"]*inputData["max_assignments"]*(1 + TURK_FEE_RATE)).toFixed(2)
+              $('#fee input').val (inputData["reward"]*inputData["max_assignments"]*TURK_FEE_RATE).toFixed(2)
 
               configData["HIT Configuration"] = inputData
               @config.save configData
@@ -191,39 +234,38 @@ define [
                   updateExperimentStatus()
                 error: (error) ->
                   console.log(error)
-                  $('#expire-modal').modal('hide'))
+                  $('#expire-modal').modal('hide')
+          )
 
-        # Shutdown button
-        $("#server_off").on "click", ->
-          $('#server-off-modal').modal('show')
-          $('#shutdownServerBtn').on "click", ->
-            $('#server_status').css "color": "yellow"
-            $.ajax
-              url: '/shutdown_psiturk'
-              type: "GET"
-              success: $('#server-off-modal').modal('hide')
+        # Shutdown psiTurk server
+        $("#server_off").on "click", =>
+          @stopPsiTurkServer()
 
-        # Server status
-        $("#server_on").on "click", ->
-          $.ajax
-            url: '/launch'
-            type: "GET"
-            success:  # Get new socket for monitoring
-              $ ->
-                socket = io.connect '/server_status'
-                socket.on "connect", ->
-                  $.ajax
-                    url: "/monitor_server"
-                socket.on 'status', (data) ->
-                  if parseInt(data) is 0
-                    $('#server_status').css "color": "green"
-                    $('#server_on')
-                      .css "color": "grey"
-                    $('#server_off').css "color": "orange"
-                  else
-                    $('#server_status').css({"color": "red"})
-                    $('#server_off')
-                      .css "color": "grey"
-                    $('#server_on').css "color": "orange"
+        # Launch psiTurk server
+        $("#server_on").on "click", =>
+          @launchPsiTurkServer()
+          $('#server_status').css "color": "yellow"
 
+        # Save config & restart server
+        $('.restart').on "click", =>
+          @stopPsiTurkServer()
+          @launchPsiTurkServer()
+          $('#server_status').css "color": "yellow"
+
+
+      initialize: ->
+        Router.initialize()
+
+        # Server & API stuff
+        # ==================
+
+        @monitorPsiturkServer()
+        @loadAWSData()
         @getExperimentStatus()
+
+
+        # UI stuff
+        # ========
+
+        @verifyAWSLogin()
+        @loadUIEvents()

@@ -14,7 +14,7 @@
         $('#aws-info-modal').modal('show');
         return $('.save').click(function(event) {
           event.preventDefault();
-          _this.save(event);
+          _this.saveConfig(event);
           return $('#aws-info-modal').modal('hide');
         });
       },
@@ -73,7 +73,27 @@
           }
         });
       },
-      save: function(event) {
+      launchPsiTurkServer: function() {
+        return $.ajax({
+          url: '/launch',
+          type: "GET",
+          success: $(function() {})
+        });
+      },
+      stopPsiTurkServer: function() {
+        $('#server-off-modal').modal('show');
+        return $('#shutdownServerBtn').on("click", function() {
+          $('#server_status').css({
+            "color": "yellow"
+          });
+          return $.ajax({
+            url: '/shutdown_psiturk',
+            type: "GET",
+            success: $('#server-off-modal').modal('hide')
+          });
+        });
+      },
+      saveConfig: function(event) {
         var configData, configPromise, inputData, section,
           _this = this;
         event.preventDefault();
@@ -94,47 +114,50 @@
           });
         });
       },
-      initialize: function() {
-        var atAGlancePromise, contentView, updateExperimentStatus,
-          _this = this;
-        Router.initialize();
-        $('#server_on').on("click", function() {
-          return $('#server_status').css({
-            "color": "yellow"
-          });
+      monitorPsiturkServer: function() {
+        var DOWN, UP;
+        UP = 0;
+        DOWN = 1;
+        $.ajax({
+          url: "/monitor_server"
         });
-        $(function() {
-          var socket;
-          socket = io.connect('/server_status');
-          socket.on("connect", function() {
-            return $.ajax({
-              url: "/monitor_server"
-            });
-          });
-          return socket.on('status', function(data) {
-            if (parseInt(data) === 0) {
-              $('#server_status').css({
-                "color": "green"
-              });
-              $('#server_on').css({
-                "color": "grey"
-              });
-              return $('#server_off').css({
-                "color": "orange"
-              });
-            } else {
-              $('#server_status').css({
-                "color": "red"
-              });
-              $('#server_off').css({
-                "color": "grey"
-              });
-              return $('#server_on').css({
-                "color": "orange"
-              });
+        return $.doTimeout('server_poll', 2000, function() {
+          $.ajax({
+            url: "/server_status",
+            success: function(data) {
+              var server;
+              server = parseInt(data.state);
+              if (server === UP) {
+                console.log('UP');
+                $('#server_status').css({
+                  "color": "green"
+                });
+                $('#server_on').css({
+                  "color": "grey"
+                });
+                return $('#server_off').css({
+                  "color": "orange"
+                });
+              } else {
+                console.log('DOWN');
+                $('#server_status').css({
+                  "color": "red"
+                });
+                $('#server_off').css({
+                  "color": "grey"
+                });
+                return $('#server_on').css({
+                  "color": "orange"
+                });
+              }
             }
           });
+          return true;
         });
+      },
+      loadAWSData: function() {
+        var atAGlancePromise, contentView,
+          _this = this;
         this.ataglance = new AtAGlanceModel;
         atAGlancePromise = this.ataglance.fetch();
         atAGlancePromise.done(function() {
@@ -145,7 +168,7 @@
             var overview, sideBarHTML, sidebarView;
             overview = _.template(OverviewTemplate, {
               input: {
-                balance: _this.ataglance.get("balance") === "unable to access aws" ? "-" : _this.ataglance.get("balance"),
+                balance: _this.ataglance.get("balance"),
                 debug: _this.config.get("Server Parameters").debug === "True" ? "checked" : "",
                 using_sandbox: _this.config.get("HIT Configuration").using_sandbox === "True" ? "checked" : ""
               }
@@ -160,8 +183,11 @@
           });
         });
         contentView = new ContentView();
-        contentView.initialize();
-        this.verifyAWSLogin();
+        return contentView.initialize();
+      },
+      loadUIEvents: function() {
+        var updateExperimentStatus,
+          _this = this;
         updateExperimentStatus = _.bind(this.getExperimentStatus, this);
         $('#run').on("click", function() {
           var configPromise,
@@ -175,14 +201,15 @@
             });
             $('#run-expt-modal').modal('show');
             $('.run-expt').on("keyup", function(event) {
-              var configData, inputData;
+              var TURK_FEE_RATE, configData, inputData;
               inputData = {};
               configData = {};
               $.each($('#expt-form').serializeArray(), function(i, field) {
                 return inputData[field.name] = field.value;
               });
-              $('#total').html((inputData["reward"] * inputData["max_assignments"] * 1.10).toFixed(2));
-              $('#fee input').val((inputData["reward"] * inputData["max_assignments"] * .10).toFixed(2));
+              TURK_FEE_RATE = 0.10;
+              $('#total').html((inputData["reward"] * inputData["max_assignments"] * (1 + TURK_FEE_RATE)).toFixed(2));
+              $('#fee input').val((inputData["reward"] * inputData["max_assignments"] * TURK_FEE_RATE).toFixed(2));
               configData["HIT Configuration"] = inputData;
               return _this.config.save(configData);
             });
@@ -213,57 +240,29 @@
           });
         });
         $("#server_off").on("click", function() {
-          $('#server-off-modal').modal('show');
-          return $('#shutdownServerBtn').on("click", function() {
-            $('#server_status').css({
-              "color": "yellow"
-            });
-            return $.ajax({
-              url: '/shutdown_psiturk',
-              type: "GET",
-              success: $('#server-off-modal').modal('hide')
-            });
-          });
+          return _this.stopPsiTurkServer();
         });
         $("#server_on").on("click", function() {
-          return $.ajax({
-            url: '/launch',
-            type: "GET",
-            success: $(function() {
-              var socket;
-              socket = io.connect('/server_status');
-              socket.on("connect", function() {
-                return $.ajax({
-                  url: "/monitor_server"
-                });
-              });
-              return socket.on('status', function(data) {
-                if (parseInt(data) === 0) {
-                  $('#server_status').css({
-                    "color": "green"
-                  });
-                  $('#server_on').css({
-                    "color": "grey"
-                  });
-                  return $('#server_off').css({
-                    "color": "orange"
-                  });
-                } else {
-                  $('#server_status').css({
-                    "color": "red"
-                  });
-                  $('#server_off').css({
-                    "color": "grey"
-                  });
-                  return $('#server_on').css({
-                    "color": "orange"
-                  });
-                }
-              });
-            })
+          _this.launchPsiTurkServer();
+          return $('#server_status').css({
+            "color": "yellow"
           });
         });
-        return this.getExperimentStatus();
+        return $('.restart').on("click", function() {
+          _this.stopPsiTurkServer();
+          _this.launchPsiTurkServer();
+          return $('#server_status').css({
+            "color": "yellow"
+          });
+        });
+      },
+      initialize: function() {
+        Router.initialize();
+        this.monitorPsiturkServer();
+        this.loadAWSData();
+        this.getExperimentStatus();
+        this.verifyAWSLogin();
+        return this.loadUIEvents();
       }
     };
   });
