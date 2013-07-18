@@ -46,8 +46,13 @@ define [
                   contentType: "application/json; charset=utf-8"
                   data: JSON.stringify inputData
                   success: (response) =>
-                    if response.aws_accnt is "False"
+                    if response.aws_accnt is 0
                       @getCredentials()
+                      $('#aws-indicator').css("color", "red")
+                        .attr("class", "icon-lock")
+                    else
+                      $('#aws-indicator').css("color", "white")
+                        .attr("class", "icon-unlock")
                   error: ->
                     console.log("aws verification failed")
 
@@ -144,6 +149,7 @@ define [
 
           initialize: ->
             @render()
+            @verifyAWSLogin()
 
           getCredentials: ->
             $('#aws-info-modal').modal('show')
@@ -199,8 +205,7 @@ define [
 
             # Load content
             $.when @options.config.fetch(), @options.ataglance.fetch()
-              .done(=>
-                @verifyAWSLogin()
+              .done =>
 
                 # Load and add config content pages
                 awsInfo = _.template(AWSInfoTemplate,
@@ -254,7 +259,6 @@ define [
                 $('#hit-config').on 'click', ->
                   $('#content').html(hitConfig)
                   validator.loadValidators()
-                  console.log('made it')
                   $('#myform').submit(false)
                   #$(document).on "click", '.save', (event) ->
                   $('.save').on "click", (event) ->
@@ -281,9 +285,9 @@ define [
                   $('#myform').submit(false)
                   $('.save').on "click", (event) ->
                     event.preventDefault()
-                    saveConfig(event))
-
-
+                    saveConfig(event)
+                $('#contribute').on 'click', ->
+                  window.open('https://github.com/NYUCCL/psiTurk')
 
             # Load and initialize HIT table
             hit_view = new HITView collection: new HITs
@@ -301,7 +305,6 @@ define [
             #$('.save').on "click", (event) ->
             $(document).on "click", '.save', =>
               event.preventDefault()
-              console.log('hi')
               saveConfig(event)
               $(document).on "click", '.save_data', (event) =>
                 event.preventDefault()
@@ -335,7 +338,7 @@ define [
                     updateExperimentStatus()
                     updateOverview()
                   error: (error) ->
-                    console.log("failed to expire HITJ")
+                    console.log("failed to expire HIT")
                 $('#expire-modal').modal('hide')
 
             $(document).on "click", '.extend', ->

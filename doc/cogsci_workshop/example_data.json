@@ -1,0 +1,39 @@
+{
+    u'assignmentId': u'dougu', 
+    u'workerId': u'dougu33', 
+    u'hitId': u'dougu', 
+    u'useragent': u'', 
+    u'condition': 0
+    u'counterbalance': 0, 
+    u'bonus': 0, 
+    u'currenttrial': 13, 
+        
+    u'questiondata': {
+        u'difficulty': u'5', 
+        u'engagement': u'5'
+    }, 
+        
+    u'eventdata': [
+        {
+            u'eventtype': u'initialized', 
+            u'interval': 0, 
+            u'value': None, 
+            u'timestamp': 1373992507978
+        }, 
+        {
+            u'eventtype': u'window_resize', 
+            u'interval': 0, 
+            u'value': [1439, 1054], 
+            u'timestamp': 1373992507978
+        }, 
+        {
+            u'eventtype': u'focus', 
+            u'interval': 2087, 
+            u'value': u'on', 
+            u'timestamp': 1373992510065
+        }
+    ], 
+        
+    u'data': u',0,1373992521143,INSTRUCTIONS,1,12904\n,1,1373992529547,INSTRUCTIONS,2,8399\n,2,1373992532457,TEST,RED,blue,incongruent,red,false,2883\n,3,1373992533040,TEST,BLUE,green,incongruent,red,false,573\n,4,1373992533272,TEST,GREEN,red,incongruent,red,true,222\n,5,1373992533457,TEST,BLUE,blue,congruent,red,false,176\n,6,1373992533688,TEST,GREEN,green,congruent,red,false,222\n,7,1373992533992,TEST,RED,red,congruent,red,true,295\n,8,1373992534377,TEST,ZAMBONI,blue,unrelated,red,false,375\n,9,1373992534816,TEST,MONKEY,green,unrelated,red,false,430\n,10,1373992535289,TEST,SHIP,red,unrelated,red,true,464\n,11,1373992535296,postquestionnaire,begin\n,12,1373992540984,postquestionnaire,submit\n', 
+    
+}

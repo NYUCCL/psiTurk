@@ -90,34 +90,34 @@
       <strong>To begin psiTurk, please provide your Amazon Mechanical Turk credentials.</strong>
     </p>
     <div class="row-fluid">
-      <div class="span12">
-        <div class="alert alert-block">
-          An AWS key is required for posting new HITs to mechanical turk as well as
-          monitoring existing HITs. You receive your key when you open an Amazon Web
-          Services account.
-          If you already have an AWS account, your key can be retrieved from:
-          <a href="http://aws-portal.amazon.com/gp/aws/developer/account/index.html?action=access-key" target="_blank" >http://aws-portal.amazon.com/gp/aws/developer/account/index.html?action=access-key</a>
-        </div>
-        </div>
-        <form class="form-horizontal" id="myform">
-          <div class="control-group">
-            <label class="control-label" for="aws_access_key_id" >Your Access Key Id</label>
-            <div class="controls">
-              <input type="password" class="input-large" value=""  name="aws_access_key_id" id="aws_access_key_id">
-            </div>
-          </div>
-          <div class="control-group">
-            <label class="control-label" for="aws_secret_access_key">Secret Access Key</label>
-            <div class="controls">
-              <input type="password" class="input-large" value="" name="aws_secret_access_key" id="aws_secret_access_key">
-            </div>
-          </div>
-          <div class="form-actions modal-footer">
-            <button id="aws-info-save" class="btn btn-primary save save-data" data-section="AWS Access">Login</button>
-          </div>
-        </form>
+    <div class="span12">
+      <div class="alert alert-block">
+        An AWS key is required for posting new HITs to mechanical turk as well as
+        monitoring existing HITs. You receive your key when you open an Amazon Web
+        Services account.
+        If you already have an AWS account, your key can be retrieved from:
+        <a href="http://aws-portal.amazon.com/gp/aws/developer/account/index.html?action=access-key" target="_blank" >http://aws-portal.amazon.com/gp/aws/developer/account/index.html?action=access-key</a>
       </div>
+      </div>
+      <form class="form-horizontal" id="myform">
+        <div class="control-group">
+          <label class="control-label" for="aws_access_key_id" >Your Access Key Id</label>
+          <div class="controls">
+            <input type="password" class="input-large" value=""  name="aws_access_key_id" id="aws_access_key_id">
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="control-label" for="aws_secret_access_key">Secret Access Key</label>
+          <div class="controls">
+            <input type="password" class="input-large" value="" name="aws_secret_access_key" id="aws_secret_access_key">
+          </div>
+        </div>
+      </form>
     </div>
+  </div>
+  <div class="modal-footer">
+    <button id="aws-ignore" class="btn" data-dismiss="modal" aria-hidden="true">Proceed without login</button>
+    <button id="aws-info-save" class="btn btn-primary save save-data" data-section="AWS Access">Login</button>
   </div>
 </div>
 

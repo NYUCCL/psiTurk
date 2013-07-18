@@ -50,7 +50,7 @@ define [
       verifyAWSLogin: ->
         config = new ConfigModel
         configPromise = config.fetch()
-        configPromise.done =>
+        configPromise.done(=>
           key_id = config.get("AWS Access").aws_access_key_id
           secret_key = config.get("AWS Access").aws_secret_access_key
           inputData = {}
@@ -63,10 +63,16 @@ define [
             contentType: "application/json; charset=utf-8"
             data: JSON.stringify inputData
             success: (response) =>
-              if response.aws_accnt is "False"
+              if response.aws_accnt is 0
                 @getCredentials()
+                $('#aws-indicator').css("color", "red")
+                  .attr("class", "icon-lock")
+              else
+                $('#aws-indicator').css("color", "white")
+                  .attr("class", "icon-unlock")
+
             error: ->
-              console.log("aws verification failed")
+              console.log("aws verification failed"))
 
       getExperimentStatus: ->
         $.ajax
@@ -92,14 +98,12 @@ define [
         configData[section] = inputData
         @config = new ConfigModel
         configPromise = @config.fetch()
-        configPromise.done =>
+        configPromise.done(=>
           @config.save configData,
-            complete: => @verifyAWSLogin()
+            complete: => @verifyAWSLogin())
 
       initialize: ->
-        #  Pass in our router module and call it's initialize function
         Router.initialize()
-        @verifyAWSLogin()
 
         $('#server_on').on "click", ->
           $('#server_status').css "color": "yellow"
@@ -124,15 +128,15 @@ define [
 
         # Load at-a-glance model and data
         @ataglance = new AtAGlanceModel
-        atAGlancePromise = @ataglance.fetch()
+        atAGlancePromise = @ataglance.fetch() #{error: => @ataglance.set("balance", "-") })
         atAGlancePromise.done(=>
-          # Load configuration model
+          # Load configuration moder
           @config = new ConfigModel
           configPromise = @config.fetch()
-          configPromise.done(=>
+          configPromise.done =>
             overview = _.template(OverviewTemplate,
               input:
-                balance: @ataglance.get("balance")
+                balance: if @ataglance.get("balance") is "unable to access aws" then "-" else @ataglance.get("balance")
                 debug: if @config.get("Server Parameters").debug is "True" then "checked" else ""
                 using_sandbox: if @config.get("HIT Configuration").using_sandbox is "True" then "checked" else "")
             $('#content').html(overview)
@@ -140,12 +144,12 @@ define [
             $('#sidebar').html(sideBarHTML)
             sidebarView = new SidebarView
               config: @config
-              ataglance: @ataglance
-          ))
+              ataglance: @ataglance)
 
         # Load content view after html; req's ids to be present
         contentView = new ContentView()
         contentView.initialize()
+        @verifyAWSLogin()
 
         # Have run button listen for clicks and tell server to create HITS
         # Before running expt, get latest config and verify
@@ -156,7 +160,7 @@ define [
         $('#run').on "click", ->
           @config = new ConfigModel
           configPromise = @config.fetch()
-          configPromise.done =>
+          configPromise.done(=>
             runExptView = new RunExptView config: @config
             $('#run-expt-modal').modal('show')
             $('.run-expt').on "keyup", (event) =>
@@ -187,7 +191,7 @@ define [
                   updateExperimentStatus()
                 error: (error) ->
                   console.log(error)
-                  $('#expire-modal').modal('hide')
+                  $('#expire-modal').modal('hide'))
 
         # Shutdown button
         $("#server_off").on "click", ->

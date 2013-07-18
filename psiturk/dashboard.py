@@ -25,9 +25,8 @@ class MTurkServices:
         try:
             hits = self.mtc.get_all_hits()
         except MTurkRequestError:
-            print('AWS Credentials invalid')
+            return(False)
         active_hits = [hit for hit in hits if not(hit.expired)]
-        # active_hits = [hit for hit in hits]
         hits_data = [{'hitid': hit.HITId,
                       'title': hit.Title,
                       'status': hit.HITStatus,
@@ -35,7 +34,6 @@ class MTurkServices:
                       'number_assignments_completed': hit.NumberOfAssignmentsCompleted,
                       'number_assignments_pending': hit.NumberOfAssignmentsCompleted,
                       'number_assignments_available': hit.NumberOfAssignmentsAvailable,
-                      # 'expired': hit.expired,  # redundant but useful for other queries
                       'creation_time': hit.CreationTime,
                       'expiration': hit.Expiration,
                       'btn': '<button class="btn btn-large">Test</button>'
@@ -58,7 +56,8 @@ class MTurkServices:
         self.mtc = MTurkConnection(**mturkparams)
         try:
             self.mtc.get_account_balance()
-        except MTurkRequestError:
+        except MTurkRequestError as e:
+            print(e.error_message)
             print('AWS Credentials invalid')
             return 0
         else:
@@ -149,9 +148,13 @@ class MTurkServices:
         self.mtc.extend_hit(hitid, expiration_increment=int(expiration_increment)*60)
 
     def get_summary(self):
-        balance = self.check_balance()
-        summary = jsonify(balance=str(balance))
-        return(summary)
+      try:
+          balance = self.check_balance()
+          summary = jsonify(balance=str(balance))
+          return(summary)
+      except MTurkRequestError as e:
+          print(e.error_message)
+          return(False)
 
 
 # Pub/sub routine for full-duplex communication between dashboard server and client

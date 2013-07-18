@@ -82,7 +82,11 @@ def at_a_glance_model():
     services = Dashboard.MTurkServices(config)
 
     if request.method == 'GET':
-        return services.get_summary()
+        summary = services.get_summary()
+        if summary:
+            return summary
+        else:
+            return jsonify(error="unable to access aws")
 
 @app.route('/verify_aws_login', methods=['POST'])
 def verify_aws():
