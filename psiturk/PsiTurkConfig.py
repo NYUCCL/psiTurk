@@ -58,7 +58,7 @@ class PsiTurkConfig(SafeConfigParser):
 
         #Server Parameters
         self.set('Server Parameters', 'host', 'localhost')
-        self.set('Server Parameters', 'port', '5001')
+        self.set('Server Parameters', 'port', '22362')
         self.set('Server Parameters', 'cutoff_time', '30')
         self.set('Server Parameters', 'support_IE', 'true')
         self.set('Server Parameters', 'logfile', 'server.log')
