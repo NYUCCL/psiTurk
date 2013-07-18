@@ -9,8 +9,6 @@ require.config
     text: "libs/text"
     cs: "libs/cs"
     bootstrap: "libs/bootstrap"
-    highcharts: "libs/highcharts"
-    exporting: "libs/exporting"
     dropdown: "libs/bootstrap-dropdown"
     collapse: "libs/bootstrap-collapse"
     nod: "libs/nod"
@@ -19,16 +17,10 @@ require.config
 
   # Shim sets the configuration for third party scripts that are not AMD compatible
   shim:
-
     # Twitter Bootstrap jQuery plugins
     bootstrap: ["jquery"]
     dropdown: ["bootstrap"]
     collapse: ["bootstrap"]
-    highcharts:
-      deps: ["jquery"]
-      exports: "Highcharts" #attaches "Backbone" to the window object
-    exporting:
-      deps: ["highcharts"]
     nod: ["jquery"]
     dotimeout: ["jquery"]
     backbone:
@@ -42,8 +34,6 @@ require.config
 require [
   "jquery"
   "app"
-  "highcharts"
-  "exporting"
   "bootstrap"
   "dropdown"
   "collapse"
@@ -52,7 +42,5 @@ require [
   (
     $
     App
-    Highcharts
-    Exporting
   ) ->
     App.initialize()

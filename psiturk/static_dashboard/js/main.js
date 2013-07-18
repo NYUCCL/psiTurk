@@ -8,8 +8,6 @@
       text: "libs/text",
       cs: "libs/cs",
       bootstrap: "libs/bootstrap",
-      highcharts: "libs/highcharts",
-      exporting: "libs/exporting",
       dropdown: "libs/bootstrap-dropdown",
       collapse: "libs/bootstrap-collapse",
       nod: "libs/nod",
@@ -19,13 +17,6 @@
       bootstrap: ["jquery"],
       dropdown: ["bootstrap"],
       collapse: ["bootstrap"],
-      highcharts: {
-        deps: ["jquery"],
-        exports: "Highcharts"
-      },
-      exporting: {
-        deps: ["highcharts"]
-      },
       nod: ["jquery"],
       dotimeout: ["jquery"],
       backbone: {
@@ -38,7 +29,7 @@
     }
   });
 
-  require(["jquery", "app", "highcharts", "exporting", "bootstrap", "dropdown", "collapse", "dotimeout", "nod"], function($, App, Highcharts, Exporting) {
+  require(["jquery", "app", "bootstrap", "dropdown", "collapse", "dotimeout", "nod"], function($, App) {
     return App.initialize();
   });
 
