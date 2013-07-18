@@ -375,20 +375,23 @@
         updateExperimentStatus = _.bind(this.getExperimentStatus, this);
         updateOverview = _.bind(this.loadOverview, this);
         $(document).on("click", '.expire', function() {
-          var data;
+          var hitid;
+          hitid = $(this).attr('id');
           $('#expire-modal').modal('show');
-          data = JSON.stringify({
-            mturk_request: "expire_hit",
-            hitid: $(this).attr('id')
-          });
           return $('#expire-btn').on('click', function() {
-            $.ajax({
+            var data;
+            data = JSON.stringify({
+              mturk_request: "expire_hit",
+              hitid: hitid
+            });
+            return $.ajax({
               contentType: "application/json; charset=utf-8",
               url: '/mturk_services',
               type: "POST",
               dataType: 'json',
               data: data,
               complete: function() {
+                $('#expire-modal').modal('hide');
                 updateExperimentStatus();
                 return updateOverview();
               },
@@ -396,7 +399,6 @@
                 return console.log("failed to expire HIT");
               }
             });
-            return $('#expire-modal').modal('hide');
           });
         });
         return $(document).on("click", '.extend', function() {
