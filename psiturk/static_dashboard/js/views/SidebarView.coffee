@@ -33,42 +33,6 @@ define [
         # and repeated table refresh code
         class SideBarView extends Backbone.View
 
-          captureUIEvents: =>
-            $('#run').on "click", =>
-              runExptView = new RunExptView config: @options.config
-              $('#run-expt-modal').modal('show')
-              $('.run-expt').on "keyup", (event) =>
-                inputData = {}
-                configData = {}
-                $.each($('#expt-form').serializeArray(), (i, field) ->
-                  inputData[field.name] = field.value)
-                # Update dollar amounts in GUI
-                # Fee is currently set to 10%, but it'd be nice if there was a way to dynamically set this according to AMZ's rates
-                TURK_FEE_RATE = 0.10
-                $('#total').html (inputData["reward"]*inputData["max_assignments"]*(1 + TURK_FEE_RATE)).toFixed(2)
-                $('#fee').val (inputData["reward"]*inputData["max_assignments"]*TURK_FEE_RATE).toFixed(2)
-
-                configData["HIT Configuration"] = inputData
-                @options.config.save configData
-
-              $('#run-expt-btn').on "click", ->
-                $.ajax
-                  contentType: "application/json; charset=utf-8"
-                  url: '/mturk_services'
-                  type: "POST"
-                  dataType: 'json'
-                  data: JSON.stringify mturk_request : "create_hit"
-                  complete: ->
-                    # reload HIT table
-                    $('#run-expt-modal').modal('hide')
-                    hit_view = new HITView collection: new HITs
-                    $("#tables").html hit_view.render().el
-                    updateExperimentStatus()
-                  error: (error) ->
-                    console.log(error)
-                    $('#expire-modal').modal('hide')
-
-
           verifyAWSLogin: ->
             $.when @options.config.fetch()
               .then =>
@@ -189,6 +153,7 @@ define [
             @render()
             @verifyAWSLogin()
             @captureUIEvents()
+            
 
           getCredentials: ->
             $('#aws-info-modal').modal('show')
@@ -198,6 +163,7 @@ define [
               $('#aws-info-modal').modal('hide')
 
           getExperimentStatus: ->
+            console.log("updating status")
             $.ajax
               url: '/get_hits'
               type: "GET"
@@ -209,7 +175,47 @@ define [
                   $('#experiment_status').css "color": "grey"
                   $('#run').css({"color": "orange"})
 
-          loadOverview: ->
+
+
+
+          captureUIEvents: =>
+            $('#run').on "click", =>
+              runExptView = new RunExptView config: @options.config
+              $('#run-expt-modal').modal('show')
+              $('.run-expt').on "keyup", (event) =>
+                inputData = {}
+                configData = {}
+                $.each($('#expt-form').serializeArray(), (i, field) ->
+                  inputData[field.name] = field.value)
+                # Update dollar amounts in GUI
+                # Fee is currently set to 10%, but it'd be nice if there was a way to dynamically set this according to AMZ's rates
+                TURK_FEE_RATE = 0.10
+                $('#total').html (inputData["reward"]*inputData["max_assignments"]*(1 + TURK_FEE_RATE)).toFixed(2)
+                $('#fee').val (inputData["reward"]*inputData["max_assignments"]*TURK_FEE_RATE).toFixed(2)
+
+                configData["HIT Configuration"] = inputData
+                @options.config.save configData
+
+              updateExperimentStatus = _.bind(@getExperimentStatus, @)
+              $('#run-expt-btn').on "click", ->
+                $.ajax
+                  contentType: "application/json; charset=utf-8"
+                  url: '/mturk_services'
+                  type: "POST"
+                  dataType: 'json'
+                  data: JSON.stringify mturk_request : "create_hit"
+                  complete: ->
+                    # reload HIT table
+                    $('#run-expt-modal').modal('hide')
+                    hit_view = new HITView collection: new HITs
+                    $("#tables").html hit_view.render().el
+                    updateExperimentStatus()
+                  error: (error) ->
+                    console.log(error)
+                    $('#expire-modal').modal('hide')
+
+
+          loadOverview: =>
             #configOverviewPromise = @options.config.fetch()
             $.when @options.config.fetch(), @options.ataglance.fetch()
               .then(=>
@@ -223,10 +229,12 @@ define [
                 hit_view = new HITView collection: new HITs
                 $("#tables").html hit_view.render().el
                 saveSandbox = _.bind(@saveUsingSandboxState, @)
+                recaptureUIEvents = _.bind(@captureUIEvents, @)
                 $('input#using_sandbox').on "click", ->
                   saveSandbox()
                 $('input#debug').on "click",  =>
-                  @saveDebugState())
+                  @saveDebugState()
+                recaptureUIEvents())
 
           render: =>
             # Highlight sidebar selections on click

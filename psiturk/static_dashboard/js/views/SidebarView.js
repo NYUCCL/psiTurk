@@ -11,58 +11,11 @@
 
       function SideBarView() {
         this.render = __bind(this.render, this);
+        this.loadOverview = __bind(this.loadOverview, this);
         this.captureUIEvents = __bind(this.captureUIEvents, this);
         _ref = SideBarView.__super__.constructor.apply(this, arguments);
         return _ref;
       }
-
-      SideBarView.prototype.captureUIEvents = function() {
-        var _this = this;
-        return $('#run').on("click", function() {
-          var runExptView;
-          runExptView = new RunExptView({
-            config: _this.options.config
-          });
-          $('#run-expt-modal').modal('show');
-          $('.run-expt').on("keyup", function(event) {
-            var TURK_FEE_RATE, configData, inputData;
-            inputData = {};
-            configData = {};
-            $.each($('#expt-form').serializeArray(), function(i, field) {
-              return inputData[field.name] = field.value;
-            });
-            TURK_FEE_RATE = 0.10;
-            $('#total').html((inputData["reward"] * inputData["max_assignments"] * (1 + TURK_FEE_RATE)).toFixed(2));
-            $('#fee').val((inputData["reward"] * inputData["max_assignments"] * TURK_FEE_RATE).toFixed(2));
-            configData["HIT Configuration"] = inputData;
-            return _this.options.config.save(configData);
-          });
-          return $('#run-expt-btn').on("click", function() {
-            return $.ajax({
-              contentType: "application/json; charset=utf-8",
-              url: '/mturk_services',
-              type: "POST",
-              dataType: 'json',
-              data: JSON.stringify({
-                mturk_request: "create_hit"
-              }),
-              complete: function() {
-                var hit_view;
-                $('#run-expt-modal').modal('hide');
-                hit_view = new HITView({
-                  collection: new HITs
-                });
-                $("#tables").html(hit_view.render().el);
-                return updateExperimentStatus();
-              },
-              error: function(error) {
-                console.log(error);
-                return $('#expire-modal').modal('hide');
-              }
-            });
-          });
-        });
-      };
 
       SideBarView.prototype.verifyAWSLogin = function() {
         var _this = this;
@@ -232,6 +185,7 @@
       };
 
       SideBarView.prototype.getExperimentStatus = function() {
+        console.log("updating status");
         return $.ajax({
           url: '/get_hits',
           type: "GET",
@@ -255,10 +209,59 @@
         });
       };
 
+      SideBarView.prototype.captureUIEvents = function() {
+        var _this = this;
+        return $('#run').on("click", function() {
+          var runExptView, updateExperimentStatus;
+          runExptView = new RunExptView({
+            config: _this.options.config
+          });
+          $('#run-expt-modal').modal('show');
+          $('.run-expt').on("keyup", function(event) {
+            var TURK_FEE_RATE, configData, inputData;
+            inputData = {};
+            configData = {};
+            $.each($('#expt-form').serializeArray(), function(i, field) {
+              return inputData[field.name] = field.value;
+            });
+            TURK_FEE_RATE = 0.10;
+            $('#total').html((inputData["reward"] * inputData["max_assignments"] * (1 + TURK_FEE_RATE)).toFixed(2));
+            $('#fee').val((inputData["reward"] * inputData["max_assignments"] * TURK_FEE_RATE).toFixed(2));
+            configData["HIT Configuration"] = inputData;
+            return _this.options.config.save(configData);
+          });
+          updateExperimentStatus = _.bind(_this.getExperimentStatus, _this);
+          return $('#run-expt-btn').on("click", function() {
+            return $.ajax({
+              contentType: "application/json; charset=utf-8",
+              url: '/mturk_services',
+              type: "POST",
+              dataType: 'json',
+              data: JSON.stringify({
+                mturk_request: "create_hit"
+              }),
+              complete: function() {
+                var hit_view;
+                $('#run-expt-modal').modal('hide');
+                hit_view = new HITView({
+                  collection: new HITs
+                });
+                $("#tables").html(hit_view.render().el);
+                return updateExperimentStatus();
+              },
+              error: function(error) {
+                console.log(error);
+                return $('#expire-modal').modal('hide');
+              }
+            });
+          });
+        });
+      };
+
       SideBarView.prototype.loadOverview = function() {
         var _this = this;
         return $.when(this.options.config.fetch(), this.options.ataglance.fetch().then(function() {
-          var hit_view, overview, saveSandbox;
+          var hit_view, overview, recaptureUIEvents, saveSandbox;
           overview = _.template(OverviewTemplate, {
             input: {
               balance: _this.options.ataglance.get("balance"),
@@ -272,12 +275,14 @@
           });
           $("#tables").html(hit_view.render().el);
           saveSandbox = _.bind(_this.saveUsingSandboxState, _this);
+          recaptureUIEvents = _.bind(_this.captureUIEvents, _this);
           $('input#using_sandbox').on("click", function() {
             return saveSandbox();
           });
-          return $('input#debug').on("click", function() {
+          $('input#debug').on("click", function() {
             return _this.saveDebugState();
           });
+          return recaptureUIEvents();
         }));
       };
 
