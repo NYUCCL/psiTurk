@@ -4,21 +4,14 @@ import argparse
 from flask import Flask, render_template, request, Response, jsonify
 import werkzeug.serving
 import subprocess
-import gevent
-from gevent import monkey
-from socketio import socketio_manage
-from socketio.server import SocketIOServer
 import dashboard as Dashboard
 import webbrowser
-# import zmq
 import socket
 from PsiTurkConfig import PsiTurkConfig
 import signal
 import urllib2
 
 config = PsiTurkConfig()
-
-monkey.patch_all()
 
 
 def launch_browser(port):
@@ -36,19 +29,12 @@ def is_port_available(port):
     except:
         return 1
 
-# Pass messages between psiturk and dashboard via socket
-# pubsub_socket_port = int(sys.argv[1])
-# print(pubsub_socket_port)
-# context = zmq.Context()
-# pubsub_socket = context.socket(zmq.PUB)
-# pubsub_socket.connect("tcp://127.0.0.1:" + str(pubsub_socket_port))
-
 def find_open_port():
     open_port = next(port for port in range(5000, 10000) if is_port_available(port))
     return(open_port)
 
 
-app = Flask("Psiturk_Dashboard", 
+app = Flask("Psiturk_Dashboard",
             template_folder=os.path.join(os.path.dirname(__file__), "templates_dashboard"), 
             static_folder=os.path.join(os.path.dirname(__file__), "static_dashboard"))
 
@@ -149,25 +135,11 @@ def is_port_available_route():
         return jsonify(is_available=is_available)
     return "port check"
 
-@app.route('/socket.io/<path:rest>')
-def push_stream(rest):
-    try:
-        socketio_manage(request.environ, {
-          '/server_status': Dashboard.ServerNamespace
-        }, request)
-    except:
-        app.logger.error("Exception while handling socketio connection",
-                     exc_info=True)
-    return "socket attempt"
-
 @app.route("/server_status", methods=["GET"])
 def status():
-    status = request.args.get('status', None)
-    if status:
-        Dashboard.ServerNamespace.broadcast('status', status)
-        return Response("Status change")
-    else:
-        return Response("Missing status")
+    server = Dashboard.Server(port=config.getint('Server Parameters', 'port'))
+    print(server.check_port_state())
+    return(jsonify(state=server.check_port_state()))
 
 @app.route("/participant_status", methods=["GET"])
 def participant_status():
@@ -199,7 +171,7 @@ def shutdown():
 @app.route("/shutdown_psiturk", methods=["GET"])
 def shutdown_psiturk():
     psiturk_server_url = "http://{host}:{port}/ppid".format(
-        host=config.get("Server Parameters", "host"), 
+        host=config.get("Server Parameters", "host"),
         port=config.getint("Server Parameters", "port"))
     ppid_request = urllib2.Request(psiturk_server_url)
     ppid = urllib2.urlopen(ppid_request).read()
@@ -210,29 +182,20 @@ def shutdown_psiturk():
 def run_dev_server():
     app.debug = True
 
-#@werkzeug.serving.run_with_reloader
 def launch():
     parser = argparse.ArgumentParser(description='Launch psiTurk dashboard.')
     parser.add_argument('-p', '--port', default=22361,
                         help='optional port for dashboard. default is 22361.')
     args = parser.parse_args()
     dashboard_port = args.port
-    
-    #app.run(debug=True, port=dashboard_port)
-    stopper = gevent.event.Event()
-    server = SocketIOServer(('', dashboard_port), app, resource="socket.io")
+
     already_running = False
+    launch_browser(dashboard_port)
     try:
-        server.start() 
+        app.run(debug=True, port=dashboard_port, host='0.0.0.0')
     except socket.error:
         print "Server is already running!"
-        already_running = True
-    launch_browser(dashboard_port)
-    if not already_running:
-        try:
-            stopper.wait()
-        except KeyboardInterrupt:
-            print "Dashboard is shutting down. This will not terminate any PsiTurk server processes currently running."
+
 
 if __name__ == "__main__":
     launch()

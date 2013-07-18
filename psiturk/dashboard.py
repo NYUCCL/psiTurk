@@ -6,11 +6,9 @@ from boto.mturk.connection import MTurkConnection, MTurkRequestError
 from boto.mturk.question import ExternalQuestion
 from boto.mturk.qualification import LocaleRequirement, \
     PercentAssignmentsApprovedRequirement, Qualifications
-from socketio.namespace import BaseNamespace
 from flask import jsonify
 import socket
 import threading
-# from datetime import datetime
 
 
 # TODO(Jay): Generalize port number from launcher
@@ -42,7 +40,6 @@ class MTurkServices:
         return(hits_data)
 
     def verify_aws_login(self, key_id, secret_key):
-        print "Verifying aws login"
         is_sandbox = self.config.getboolean('HIT Configuration', 'using_sandbox')
         if is_sandbox:
             host = 'mechanicalturk.sandbox.amazonaws.com'
@@ -52,7 +49,6 @@ class MTurkServices:
             aws_access_key_id=key_id,
             aws_secret_access_key=secret_key,
             host=host)
-        print(mturkparams)
         self.mtc = MTurkConnection(**mturkparams)
         try:
             self.mtc.get_account_balance()
@@ -157,24 +153,6 @@ class MTurkServices:
           return(False)
 
 
-# Pub/sub routine for full-duplex communication between dashboard server and client
-# This is critical for server log viewer in dashboard
-class ServerNamespace(BaseNamespace):
-    sockets = {}
-    def recv_connect(self):
-        self.sockets[id(self)] = self
-    
-    def disconnect(self, *args, **kwargs):
-        if id(self) in self.sockets:
-            del self.sockets[id(self)]
-        super(ServerNamespace, self).disconnect(*args, **kwargs)
-    # broadcast to all sockets on this channel!
-    @classmethod
-    def broadcast(self, event, message):
-        for ws in self.sockets.values():
-            ws.emit(event, message)
-
-
 class Server:
     def __init__(self, port, ip='127.0.0.1'):
         self.port = port
@@ -183,9 +161,12 @@ class Server:
 
     def check_port_state(self):
         current_state = self.is_port_available(self.port)
+        print str(current_state == self.state)
         if current_state is not self.state:
             self.state = current_state
-            ServerNamespace.broadcast('status', current_state)  # Update socket listeners
+            return(current_state)
+        else:
+            return(-1)
 
     def is_port_available(self, port):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -202,7 +183,4 @@ class Server:
         t.start()
 
     def start_monitoring(self):
-        ServerNamespace.broadcast('status', self.state)  # Notify socket listeners
         self.monitor()
-
-
