@@ -144,7 +144,8 @@ define [
                       $("#tables").html hit_view.render().el
                       saveSandbox = _.bind(@saveUsingSandboxState, @)
                       $('input#using_sandbox').on "click", ->
-                        saveSandbox())
+                        saveSandbox()
+                      @captureUIEvents())  # rebind events after ui reload
               }, {
                 error: (error) => console.log "error"
               })
@@ -153,7 +154,7 @@ define [
             @render()
             @verifyAWSLogin()
             @captureUIEvents()
-            
+
 
           getCredentials: ->
             $('#aws-info-modal').modal('show')
@@ -174,8 +175,6 @@ define [
                 else
                   $('#experiment_status').css "color": "grey"
                   $('#run').css({"color": "orange"})
-
-
 
 
           captureUIEvents: =>
@@ -339,13 +338,8 @@ define [
             # TODO(): Figure out why backbone.events are not firing when triggered.
             # These are just a temporary hack around the issue.
 
-            # $(document).on "click", '.save', (event) =>
-            #   event.preventDefault()
-            #   @save(event)
-
             saveSandbox = _.bind(@saveUsingSandboxState, @)
             saveConfig = _.bind(@save, @)
-            #$('.save').on "click", (event) ->
             $(document).on "click", '.save', =>
               event.preventDefault()
               saveConfig(event)

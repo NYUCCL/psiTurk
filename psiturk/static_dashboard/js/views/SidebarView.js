@@ -156,9 +156,10 @@
               });
               $("#tables").html(hit_view.render().el);
               saveSandbox = _.bind(_this.saveUsingSandboxState, _this);
-              return $('input#using_sandbox').on("click", function() {
+              $('input#using_sandbox').on("click", function() {
                 return saveSandbox();
               });
+              return _this.captureUIEvents();
             }));
           }
         }, {
