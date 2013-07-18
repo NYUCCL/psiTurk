@@ -107,12 +107,21 @@ def turk_services():
            return jsonify(msg="hit expired")
     return jsonify(error="psiTurk failed to recognize your request.")
 
+@app.route('/get_log', methods=['POST'])
+def get_log():
+    """
+    provides an jsonified interface to the log file in the dashbaord
+    """
+    if "log_level" in request.json:
+        return jsonify(log="hello")
+    return jsonify(error="did not specify the log level correctly")
+
 @app.route('/get_hits', methods=['GET'])
 def get_hits():
     """
     """
     services = Dashboard.MTurkServices(config)
-    return(jsonify(hits=services.get_active_hits()))
+    return jsonify(hits=services.get_active_hits())
 
 @app.route('/monitor_server', methods=['GET'])
 def monitor_server():
@@ -172,7 +181,7 @@ def shutdown():
     pid = os.getpid()
     print("shutting down dashboard at pid %s..." % pid)
     os.kill(pid, signal.SIGKILL)
-    return("shutting down dashboard...")
+    return "shutting down dashboard..."
 
 @app.route("/shutdown_psiturk", methods=["GET"])
 def shutdown_psiturk():
@@ -183,7 +192,7 @@ def shutdown_psiturk():
     ppid = urllib2.urlopen(ppid_request).read()
     print("shutting down PsiTurk server at pid %s..." % ppid)
     os.kill(int(ppid), signal.SIGKILL)
-    return("shutting down dashboard...")
+    return "shutting down dashboard..."
 
 def run_dev_server():
     app.debug = True
