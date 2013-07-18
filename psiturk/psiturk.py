@@ -369,7 +369,7 @@ def start_exp():
             if other_assignment:
                 raise ExperimentError('already_did_exp_hit')
     
-    return render_template('exp.html', uniqueId=part.uniqueid)
+    return render_template('exp.html', uniqueId=part.uniqueid, condition=part.cond, countercond=part.counterbalance)
 
 @app.route('/inexp', methods=['POST'])
 def enterexp():
