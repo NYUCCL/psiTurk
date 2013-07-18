@@ -179,43 +179,7 @@ define [
         # There's a general pattern of loading ajax data and updating GUI which
         # can easily be abstracted
         updateExperimentStatus = _.bind(@getExperimentStatus, @)  # bind "this" to current namespace, before it's buried by callbacks
-        $('#run').on "click", ->
-          @config = new ConfigModel
-          configPromise = @config.fetch()
-          configPromise.done(=>
-            runExptView = new RunExptView config: @config
-            $('#run-expt-modal').modal('show')
-            $('.run-expt').on "keyup", (event) =>
-              inputData = {}
-              configData = {}
-              $.each($('#expt-form').serializeArray(), (i, field) ->
-                inputData[field.name] = field.value)
-              # Update dollar amounts in GUI
-              # Fee is currently set to 10%, but it'd be nice if there was a way to dynamically set this according to AMZ's rates
-              TURK_FEE_RATE = 0.10
-              $('#total').html (inputData["reward"]*inputData["max_assignments"]*(1 + TURK_FEE_RATE)).toFixed(2)
-              $('#fee').val (inputData["reward"]*inputData["max_assignments"]*TURK_FEE_RATE).toFixed(2)
 
-              configData["HIT Configuration"] = inputData
-              @config.save configData
-
-            $('#run-expt-btn').on "click", ->
-              $.ajax
-                contentType: "application/json; charset=utf-8"
-                url: '/mturk_services'
-                type: "POST"
-                dataType: 'json'
-                data: JSON.stringify mturk_request : "create_hit"
-                complete: ->
-                  # reload HIT table
-                  $('#run-expt-modal').modal('hide')
-                  hit_view = new HITView collection: new HITs
-                  $("#tables").html hit_view.render().el
-                  updateExperimentStatus()
-                error: (error) ->
-                  console.log(error)
-                  $('#expire-modal').modal('hide')
-          )
 
         # Shutdown psiTurk server
         $("#server_off").on "click", =>

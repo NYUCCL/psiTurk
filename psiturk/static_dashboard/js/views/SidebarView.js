@@ -4,16 +4,65 @@
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  define(["backbone", 'text!templates/aws-info.html', 'text!templates/overview.html', 'text!templates/hit-config.html', 'text!templates/database.html', 'text!templates/server-params.html', 'text!templates/expt-info.html', 'views/validators', 'views/HITView', 'models/HITModel', 'collections/HITCollection'], function(Backbone, AWSInfoTemplate, OverviewTemplate, HITConfigTemplate, DatabaseTemplate, ServerParamsTemplate, ExptInfoTemplate, Validators, HITView, HIT, HITs) {
+  define(["backbone", 'text!templates/aws-info.html', 'text!templates/overview.html', 'text!templates/hit-config.html', 'text!templates/database.html', 'text!templates/server-params.html', 'text!templates/expt-info.html', 'views/validators', 'views/HITView', 'models/HITModel', 'collections/HITCollection', 'views/RunExptView'], function(Backbone, AWSInfoTemplate, OverviewTemplate, HITConfigTemplate, DatabaseTemplate, ServerParamsTemplate, ExptInfoTemplate, Validators, HITView, HIT, HITs, RunExptView) {
     var SideBarView, _ref;
     return SideBarView = (function(_super) {
       __extends(SideBarView, _super);
 
       function SideBarView() {
         this.render = __bind(this.render, this);
+        this.captureUIEvents = __bind(this.captureUIEvents, this);
         _ref = SideBarView.__super__.constructor.apply(this, arguments);
         return _ref;
       }
+
+      SideBarView.prototype.captureUIEvents = function() {
+        var _this = this;
+        return $('#run').on("click", function() {
+          var runExptView;
+          runExptView = new RunExptView({
+            config: _this.options.config
+          });
+          $('#run-expt-modal').modal('show');
+          $('.run-expt').on("keyup", function(event) {
+            var TURK_FEE_RATE, configData, inputData;
+            inputData = {};
+            configData = {};
+            $.each($('#expt-form').serializeArray(), function(i, field) {
+              return inputData[field.name] = field.value;
+            });
+            TURK_FEE_RATE = 0.10;
+            $('#total').html((inputData["reward"] * inputData["max_assignments"] * (1 + TURK_FEE_RATE)).toFixed(2));
+            $('#fee').val((inputData["reward"] * inputData["max_assignments"] * TURK_FEE_RATE).toFixed(2));
+            configData["HIT Configuration"] = inputData;
+            return _this.options.config.save(configData);
+          });
+          return $('#run-expt-btn').on("click", function() {
+            return $.ajax({
+              contentType: "application/json; charset=utf-8",
+              url: '/mturk_services',
+              type: "POST",
+              dataType: 'json',
+              data: JSON.stringify({
+                mturk_request: "create_hit"
+              }),
+              complete: function() {
+                var hit_view;
+                $('#run-expt-modal').modal('hide');
+                hit_view = new HITView({
+                  collection: new HITs
+                });
+                $("#tables").html(hit_view.render().el);
+                return updateExperimentStatus();
+              },
+              error: function(error) {
+                console.log(error);
+                return $('#expire-modal').modal('hide');
+              }
+            });
+          });
+        });
+      };
 
       SideBarView.prototype.verifyAWSLogin = function() {
         var _this = this;
@@ -168,7 +217,8 @@
 
       SideBarView.prototype.initialize = function() {
         this.render();
-        return this.verifyAWSLogin();
+        this.verifyAWSLogin();
+        return this.captureUIEvents();
       };
 
       SideBarView.prototype.getCredentials = function() {

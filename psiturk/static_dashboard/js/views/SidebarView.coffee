@@ -10,7 +10,8 @@ define [
         'views/validators'
         'views/HITView'
         'models/HITModel'
-        'collections/HITCollection'
+        'collections/HITCollection',
+        'views/RunExptView'
       ],
       (
         Backbone
@@ -24,12 +25,49 @@ define [
         HITView
         HIT
         HITs
+        RunExptView
       ) ->
 
         # TODO(Jay): This module is getting heavy.
         # Refactor into separate, lighter modules, esp non-essential sidebar code
         # and repeated table refresh code
         class SideBarView extends Backbone.View
+
+          captureUIEvents: =>
+            $('#run').on "click", =>
+              runExptView = new RunExptView config: @options.config
+              $('#run-expt-modal').modal('show')
+              $('.run-expt').on "keyup", (event) =>
+                inputData = {}
+                configData = {}
+                $.each($('#expt-form').serializeArray(), (i, field) ->
+                  inputData[field.name] = field.value)
+                # Update dollar amounts in GUI
+                # Fee is currently set to 10%, but it'd be nice if there was a way to dynamically set this according to AMZ's rates
+                TURK_FEE_RATE = 0.10
+                $('#total').html (inputData["reward"]*inputData["max_assignments"]*(1 + TURK_FEE_RATE)).toFixed(2)
+                $('#fee').val (inputData["reward"]*inputData["max_assignments"]*TURK_FEE_RATE).toFixed(2)
+
+                configData["HIT Configuration"] = inputData
+                @options.config.save configData
+
+              $('#run-expt-btn').on "click", ->
+                $.ajax
+                  contentType: "application/json; charset=utf-8"
+                  url: '/mturk_services'
+                  type: "POST"
+                  dataType: 'json'
+                  data: JSON.stringify mturk_request : "create_hit"
+                  complete: ->
+                    # reload HIT table
+                    $('#run-expt-modal').modal('hide')
+                    hit_view = new HITView collection: new HITs
+                    $("#tables").html hit_view.render().el
+                    updateExperimentStatus()
+                  error: (error) ->
+                    console.log(error)
+                    $('#expire-modal').modal('hide')
+
 
           verifyAWSLogin: ->
             $.when @options.config.fetch()
@@ -150,6 +188,7 @@ define [
           initialize: ->
             @render()
             @verifyAWSLogin()
+            @captureUIEvents()
 
           getCredentials: ->
             $('#aws-info-modal').modal('show')
@@ -188,7 +227,6 @@ define [
                   saveSandbox()
                 $('input#debug').on "click",  =>
                   @saveDebugState())
-
 
           render: =>
             # Highlight sidebar selections on click
