@@ -72,7 +72,8 @@ class MTurkServices:
             host=host)
         self.mtc = MTurkConnection(**mturkparams)
         
-        #TODO(): This should probably be moved to a separate method.
+    def configure_hit(self):
+
         # Configure portal
         experimentPortalURL = self.config.get('HIT Configuration', 'question_url')
         frameheight = 600
@@ -129,6 +130,7 @@ class MTurkServices:
 
     def create_hit(self):
         self.connect_to_turk()
+        self.configure_hit()
         myhit = self.mtc.create_hit(**self.paramdict)[0]
         self.hitid = myhit.HITId
 
@@ -161,12 +163,12 @@ class Server:
 
     def check_port_state(self):
         current_state = self.is_port_available(self.port)
-        print str(current_state == self.state)
-        if current_state is not self.state:
-            self.state = current_state
-            return(current_state)
-        else:
-            return(-1)
+        return(current_state)
+        # print str(current_state == self.state)
+        # if current_state is not self.state:
+        #     self.state = current_state
+        # else:
+        #     return(-1)
 
     def is_port_available(self, port):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
