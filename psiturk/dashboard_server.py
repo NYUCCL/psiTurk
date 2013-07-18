@@ -1,5 +1,5 @@
 # Import flask
-import os
+import os, sys
 import argparse
 from flask import Flask, render_template, request, Response, jsonify
 import werkzeug.serving
@@ -177,14 +177,18 @@ def participant_status():
 #----------------------------------------------
 @app.route("/launch", methods=["GET"])
 def launch_psiturk():
-    server_script = os.path.join(os.path.dirname(__file__), "psiturk_server.py")
-    subprocess.Popen("python '%s'" % server_script, shell=True)
+    server_command = "{python_exec} '{server_script}'".format(
+        python_exec = sys.executable,
+        server_script = os.path.join(os.path.dirname(__file__), "psiturk_server.py")
+    )
+    print(server_command)
+    subprocess.Popen(server_command, shell=True)
     return "psiTurk launching..."
 
 @app.route("/shutdown_dashboard", methods=["GET"])
 def shutdown():
-    print("shutting down dashboard...")
     pid = os.getpid()
+    print("shutting down dashboard at pid %s..." % pid)
     os.kill(pid, signal.SIGKILL)
     return("shutting down dashboard...")
 
@@ -195,7 +199,7 @@ def shutdown_psiturk():
         port=config.getint("Server Parameters", "port"))
     ppid_request = urllib2.Request(psiturk_server_url)
     ppid = urllib2.urlopen(ppid_request).read()
-    print("shutting down dashboard at pid %s..." % ppid)
+    print("shutting down PsiTurk server at pid %s..." % ppid)
     os.kill(int(ppid), signal.SIGKILL)
     return("shutting down dashboard...")
 

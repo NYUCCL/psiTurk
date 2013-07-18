@@ -198,9 +198,6 @@ class Server:
         t = threading.Timer(2, self.monitor)
         t.start()
 
-    def launch_psiturk(self):
-        subprocess.Popen("python psiturk_server.py", shell=True)
-
     def start_monitoring(self):
         ServerNamespace.broadcast('status', self.state)  # Notify socket listeners
         self.monitor()
