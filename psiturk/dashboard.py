@@ -76,7 +76,8 @@ class MTurkServices:
             host=host)
         self.mtc = MTurkConnection(**mturkparams)
         
-        #TODO(): This should probably be moved to a separate method.
+    def configure_hit(self):
+
         # Configure portal
         experimentPortalURL = self.config.get('HIT Configuration', 'question_url')
         frameheight = 600
@@ -133,6 +134,7 @@ class MTurkServices:
 
     def create_hit(self):
         self.connect_to_turk()
+        self.configure_hit()
         myhit = self.mtc.create_hit(**self.paramdict)[0]
         self.hitid = myhit.HITId
 
