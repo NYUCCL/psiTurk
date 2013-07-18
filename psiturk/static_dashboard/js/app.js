@@ -178,60 +178,10 @@
         contentView = new ContentView();
         return contentView.initialize();
       },
-      loadUIEvents: function() {
+      captureUIEvents: function() {
         var updateExperimentStatus,
           _this = this;
         updateExperimentStatus = _.bind(this.getExperimentStatus, this);
-        $('#run').on("click", function() {
-          var configPromise,
-            _this = this;
-          this.config = new ConfigModel;
-          configPromise = this.config.fetch();
-          return configPromise.done(function() {
-            var runExptView;
-            runExptView = new RunExptView({
-              config: _this.config
-            });
-            $('#run-expt-modal').modal('show');
-            $('.run-expt').on("keyup", function(event) {
-              var TURK_FEE_RATE, configData, inputData;
-              inputData = {};
-              configData = {};
-              $.each($('#expt-form').serializeArray(), function(i, field) {
-                return inputData[field.name] = field.value;
-              });
-              TURK_FEE_RATE = 0.10;
-              $('#total').html((inputData["reward"] * inputData["max_assignments"] * (1 + TURK_FEE_RATE)).toFixed(2));
-              $('#fee').val((inputData["reward"] * inputData["max_assignments"] * TURK_FEE_RATE).toFixed(2));
-              configData["HIT Configuration"] = inputData;
-              return _this.config.save(configData);
-            });
-            return $('#run-expt-btn').on("click", function() {
-              return $.ajax({
-                contentType: "application/json; charset=utf-8",
-                url: '/mturk_services',
-                type: "POST",
-                dataType: 'json',
-                data: JSON.stringify({
-                  mturk_request: "create_hit"
-                }),
-                complete: function() {
-                  var hit_view;
-                  $('#run-expt-modal').modal('hide');
-                  hit_view = new HITView({
-                    collection: new HITs
-                  });
-                  $("#tables").html(hit_view.render().el);
-                  return updateExperimentStatus();
-                },
-                error: function(error) {
-                  console.log(error);
-                  return $('#expire-modal').modal('hide');
-                }
-              });
-            });
-          });
-        });
         $("#server_off").on("click", function() {
           return _this.stopPsiTurkServer();
         });
@@ -250,7 +200,7 @@
         this.loadAWSData();
         this.getExperimentStatus();
         this.verifyAWSLogin();
-        return this.loadUIEvents();
+        return this.captureUIEvents();
       }
     };
   });
