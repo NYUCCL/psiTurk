@@ -83,9 +83,6 @@
       stopPsiTurkServer: function() {
         $('#server-off-modal').modal('show');
         return $('#shutdownServerBtn').on("click", function() {
-          $('#server_status').css({
-            "color": "yellow"
-          });
           return $.ajax({
             url: '/shutdown_psiturk',
             type: "GET",
@@ -115,9 +112,8 @@
         });
       },
       monitorPsiturkServer: function() {
-        var DOWN, UP;
+        var UP;
         UP = 0;
-        DOWN = 1;
         $.ajax({
           url: "/monitor_server"
         });
@@ -128,7 +124,6 @@
               var server;
               server = parseInt(data.state);
               if (server === UP) {
-                console.log('UP');
                 $('#server_status').css({
                   "color": "green"
                 });
@@ -139,7 +134,6 @@
                   "color": "orange"
                 });
               } else {
-                console.log('DOWN');
                 $('#server_status').css({
                   "color": "red"
                 });
@@ -243,17 +237,11 @@
           return _this.stopPsiTurkServer();
         });
         $("#server_on").on("click", function() {
-          _this.launchPsiTurkServer();
-          return $('#server_status').css({
-            "color": "yellow"
-          });
+          return _this.launchPsiTurkServer();
         });
         return $('.restart').on("click", function() {
           _this.stopPsiTurkServer();
-          _this.launchPsiTurkServer();
-          return $('#server_status').css({
-            "color": "yellow"
-          });
+          return _this.launchPsiTurkServer();
         });
       },
       initialize: function() {

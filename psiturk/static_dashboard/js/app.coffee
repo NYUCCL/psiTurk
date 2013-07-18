@@ -118,7 +118,7 @@ define [
       stopPsiTurkServer: ->
         $('#server-off-modal').modal('show')
         $('#shutdownServerBtn').on "click", ->
-          $('#server_status').css "color": "yellow"
+          # $('#server_status').css "color": "yellow"
           $.ajax
             url: '/shutdown_psiturk'
             type: "GET"
@@ -145,7 +145,6 @@ define [
       # Use long poll to sync dashboard w/ server.
       # Socket.io is a much better choice, but requires gevent, and thus gcc.
         UP = 0
-        DOWN = 1
         $.ajax
           url: "/monitor_server"
         $.doTimeout 'server_poll', 2000, ->
@@ -153,15 +152,12 @@ define [
             url: "/server_status"
             success: (data) ->
              server = parseInt(data.state)
-             # if server is UP or DOWN
              if server is UP
-               console.log('UP')
                $('#server_status').css "color": "green"
                $('#server_on')
                  .css "color": "grey"
                $('#server_off').css "color": "orange"
              else
-               console.log('DOWN')
                $('#server_status').css({"color": "red"})
                $('#server_off')
                  .css "color": "grey"
@@ -244,13 +240,13 @@ define [
         # Launch psiTurk server
         $("#server_on").on "click", =>
           @launchPsiTurkServer()
-          $('#server_status').css "color": "yellow"
+           # $('#server_status').css "color": "yellow"
 
         # Save config & restart server
         $('.restart').on "click", =>
           @stopPsiTurkServer()
           @launchPsiTurkServer()
-          $('#server_status').css "color": "yellow"
+          # $('#server_status').css "color": "yellow"
 
 
       initialize: ->
