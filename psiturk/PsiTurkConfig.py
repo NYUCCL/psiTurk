@@ -43,7 +43,7 @@ class PsiTurkConfig(SafeConfigParser):
         self.set('HIT Configuration', 'title', 'Perceptual Reaction Time')
         self.set('HIT Configuration', 'description', 'Make a series of perceptual judgments.')
         self.set('HIT Configuration', 'keywords', 'Perception, Psychology')
-        self.set('HIT Configuration', 'question_url', 'http://localhost:5001/mturk')
+        self.set('HIT Configuration', 'question_url', 'http://localhost:22362/mturk')
         self.set('HIT Configuration', 'max_assignments', '10')
         self.set('HIT Configuration', 'HIT_lifetime', '24')
         self.set('HIT Configuration', 'reward', '1')
@@ -58,7 +58,7 @@ class PsiTurkConfig(SafeConfigParser):
 
         #Server Parameters
         self.set('Server Parameters', 'host', 'localhost')
-        self.set('Server Parameters', 'port', '5001')
+        self.set('Server Parameters', 'port', '22362')
         self.set('Server Parameters', 'cutoff_time', '30')
         self.set('Server Parameters', 'support_IE', 'true')
         self.set('Server Parameters', 'logfile', 'server.log')

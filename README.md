@@ -40,7 +40,7 @@ Once PsiTurk is installed, you'll need to set up your environment.
 
 *Note*: If you are just testing the server without posting your HIT to Amazon,
 you can see the experiment at the following link:
-http://localhost:5001/mturk?assignmentId=debug&hitId=debug&workerId=debug
+http://localhost:22362/mturk?assignmentId=debug&hitId=debug&workerId=debug
 
 
 Experiment design
@@ -70,7 +70,7 @@ following changes to the configuration file:
     question_url: http://yoururl:yourport/mturk
 
 replacing `yoururl` with the url to your surver, and `yourport` with the port
-you have configured in `config.txt` (by default, 5001).
+you have configured in `config.txt` (by default, 22362).
 
 Database
 --------

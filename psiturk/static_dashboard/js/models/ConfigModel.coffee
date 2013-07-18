@@ -16,7 +16,7 @@ define [
           title: "Perceptual Reaction Time"
           description: "Make a series of perceptual judgments."
           keywords: "Perception, Psychology"
-          question_url: "http://localhost:5001/mturk"
+          question_url: "http://localhost:22362/mturk"
           max_assignments: 10
           hit_lifetime: 24
           reward: 1
@@ -29,7 +29,7 @@ define [
           table_name: "turkdemo"
         "Server Parameters":
           host: "localhost"
-          port: 5001
+          port: 22362
           cutoff_time: 30
           support_ie: true
           logfile: "server.log"

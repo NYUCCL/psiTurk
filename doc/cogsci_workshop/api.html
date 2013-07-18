@@ -290,7 +290,7 @@ _Oddly, there is no web interface for this. You need to use scripts. Fortunately
 
 - Once they click "View a HIT in this group," they see whatever your site is serving up, in our case this is the default:
 
-<iframe src="http://puncture.psych.nyu.edu:5001/mturk?assignmentId=ASSIGNMENT_ID_NOT_AVAILABLE&hitId=dummyhit"></iframe>
+<iframe src="http://puncture.psych.nyu.edu:22362/mturk?assignmentId=ASSIGNMENT_ID_NOT_AVAILABLE&hitId=dummyhit"></iframe>
  
 ---
 
@@ -299,7 +299,7 @@ _Oddly, there is no web interface for this. You need to use scripts. Fortunately
 Upon accepting the HIT, they see... whatever you want them to see! In our case,
 it's this:
 
-<iframe src="http://puncture.psych.nyu.edu:5001/mturk?workerId=testing&assignmentId=testing&hitId=testing"></iframe>
+<iframe src="http://puncture.psych.nyu.edu:22362/mturk?workerId=testing&assignmentId=testing&hitId=testing"></iframe>
 
 ---
 
@@ -307,7 +307,7 @@ it's this:
 
 That last URL would look like this .red[*]:
 
-- http://puncture.psych.nyu.edu:5001/mturk?assignmentId=.red[XX]&hitId=.red[XX]&workerId=.red[XX]
+- http://puncture.psych.nyu.edu:22362/mturk?assignmentId=.red[XX]&hitId=.red[XX]&workerId=.red[XX]
 
 Basic syntax is as follows:
 
@@ -329,7 +329,7 @@ The last thing served to the participant is a button they can use to inform
 Amazon that they have finished the HIT. This submits a form with their
 identifying information to `http://www.mturk.com/mturk/externalSubmit`.
 
-<iframe src="http://puncture.psych.nyu.edu:5001/mturk?workerId=finished&assignmentId=finished&hitId=finished"></iframe>
+<iframe src="http://puncture.psych.nyu.edu:22362/mturk?workerId=finished&assignmentId=finished&hitId=finished"></iframe>
 
 ---
 
