@@ -242,13 +242,13 @@ define [
                     num_counters: @options.config.get("Task Parameters").num_counters)
 
                 # Have content area respond to sidebar link clicks
+                # TODO(Jay): Obvious pattern here. Refactor
                 validator = new Validators
                 saveConfig = _.bind(@save, @)
                 $('#overview').off('click').on 'click', =>
                   $('li').removeClass 'selected'
                   $('#overview').addClass 'selected'
                   @loadOverview()
-                    # @options.chart.refresh())
                 $('#aws-info').on 'click', ->
                   $('#content').html(awsInfo)
                   validator.loadValidators()
@@ -260,11 +260,8 @@ define [
                   $('#content').html(hitConfig)
                   validator.loadValidators()
                   $('#myform').submit(false)
-                  #$(document).on "click", '.save', (event) ->
                   $('.save').on "click", (event) ->
-                    # event.preventDefault()
                     saveConfig(event)
-                    # @save(event)
                 $('#database').on 'click', ->
                   $('#content').html(database)
                   validator.loadValidators()
