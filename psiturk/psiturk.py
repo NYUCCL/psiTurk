@@ -587,10 +587,10 @@ def regularpage(pagename=None):
 ###########################################################
 # let's start
 ###########################################################
+init_db()  
 
 # Initialize database if necessary
 def run_webserver():
-    init_db()  
     app.run(debug=config.getboolean('Server Parameters', 'debug'), host='0.0.0.0', port=config.getint('Server Parameters', 'port'))
 
 if __name__ == '__main__':
