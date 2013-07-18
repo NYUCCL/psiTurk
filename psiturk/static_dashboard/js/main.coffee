@@ -14,7 +14,7 @@ require.config
     dropdown: "libs/bootstrap-dropdown"
     collapse: "libs/bootstrap-collapse"
     nod: "libs/nod"
-    socketio: "libs/socketio"
+    dotimeout: "libs/jquery.dotimeout.min"
 
 
   # Shim sets the configuration for third party scripts that are not AMD compatible
@@ -30,6 +30,7 @@ require.config
     exporting:
       deps: ["highcharts"]
     nod: ["jquery"]
+    dotimeout: ["jquery"]
     backbone:
       deps: ["underscore", "jquery"]
       exports: "Backbone" #attaches "Backbone" to the window object
@@ -46,7 +47,7 @@ require [
   "bootstrap"
   "dropdown"
   "collapse"
-  "socketio",
+  "dotimeout",
   "nod"],
   (
     $
