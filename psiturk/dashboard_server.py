@@ -175,6 +175,13 @@ def participant_status():
     status = database.get_participant_status()
     return status
 
+@app.route("/favicon.ico")
+def favicon():
+    """
+    Serving a favicon
+    """
+    print "got favicon request"
+    return app.send_static_file('favicon.ico')
 
 #----------------------------------------------
 # psiTurk server routes
