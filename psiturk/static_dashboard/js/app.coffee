@@ -194,7 +194,7 @@ define [
               # Fee is currently set to 10%, but it'd be nice if there was a way to dynamically set this according to AMZ's rates
               TURK_FEE_RATE = 0.10
               $('#total').html (inputData["reward"]*inputData["max_assignments"]*(1 + TURK_FEE_RATE)).toFixed(2)
-              $('#fee input').val (inputData["reward"]*inputData["max_assignments"]*TURK_FEE_RATE).toFixed(2)
+              $('#fee').val (inputData["reward"]*inputData["max_assignments"]*TURK_FEE_RATE).toFixed(2)
 
               configData["HIT Configuration"] = inputData
               @config.save configData
@@ -227,7 +227,8 @@ define [
            # $('#server_status').css "color": "yellow"
 
         # Save config & restart server
-        $('.restart').on "click", =>
+        $('.restart').on "click", (event) =>
+          @saveConfig(event)
           @stopPsiTurkServer()
           @launchPsiTurkServer()
           # $('#server_status').css "color": "yellow"

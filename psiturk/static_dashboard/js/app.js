@@ -202,7 +202,7 @@
               });
               TURK_FEE_RATE = 0.10;
               $('#total').html((inputData["reward"] * inputData["max_assignments"] * (1 + TURK_FEE_RATE)).toFixed(2));
-              $('#fee input').val((inputData["reward"] * inputData["max_assignments"] * TURK_FEE_RATE).toFixed(2));
+              $('#fee').val((inputData["reward"] * inputData["max_assignments"] * TURK_FEE_RATE).toFixed(2));
               configData["HIT Configuration"] = inputData;
               return _this.config.save(configData);
             });
@@ -238,7 +238,8 @@
         $("#server_on").on("click", function() {
           return _this.launchPsiTurkServer();
         });
-        return $('.restart').on("click", function() {
+        return $('.restart').on("click", function(event) {
+          _this.saveConfig(event);
           _this.stopPsiTurkServer();
           return _this.launchPsiTurkServer();
         });
