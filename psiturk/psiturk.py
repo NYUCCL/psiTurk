@@ -131,7 +131,7 @@ def favicon():
     """
     Serving a favicon
     """
-    return redirect(config.get('Server Parameters', 'favicon_url'))
+    return app.send_static_file('favicon.ico')
 
 @app.errorhandler(ExperimentError)
 def handleExpError(e):
