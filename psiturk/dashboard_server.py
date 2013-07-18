@@ -138,7 +138,6 @@ def is_port_available_route():
 @app.route("/server_status", methods=["GET"])
 def status():
     server = Dashboard.Server(port=config.getint('Server Parameters', 'port'))
-    print(server.check_port_state())
     return(jsonify(state=server.check_port_state()))
 
 @app.route("/participant_status", methods=["GET"])
@@ -147,6 +146,13 @@ def participant_status():
     status = database.get_participant_status()
     return status
 
+@app.route("/favicon.ico")
+def favicon():
+    """
+    Serving a favicon
+    """
+    print "got favicon request"
+    return app.send_static_file('favicon.ico')
 
 #----------------------------------------------
 # psiTurk server routes
