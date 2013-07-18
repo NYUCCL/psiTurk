@@ -76,8 +76,7 @@
       launchPsiTurkServer: function() {
         return $.ajax({
           url: '/launch',
-          type: "GET",
-          success: $(function() {})
+          type: "GET"
         });
       },
       stopPsiTurkServer: function() {
@@ -117,7 +116,7 @@
         $.ajax({
           url: "/monitor_server"
         });
-        return $.doTimeout('server_poll', 2000, function() {
+        return $.doTimeout('server_poll', 1000, function() {
           $.ajax({
             url: "/server_status",
             success: function(data) {

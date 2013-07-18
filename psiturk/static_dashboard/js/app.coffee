@@ -97,23 +97,7 @@ define [
         $.ajax
           url: '/launch'
           type: "GET"
-          success:  # Get new socket for monitoring
-            $ ->
-              # socket = io.connect '/server_status'
-              # socket.on "connect", ->
-              #   $.ajax
-              #     url: "/monitor_server"
-              # socket.on 'status', (data) ->
-              #   if parseInt(data) is 0
-              #     $('#server_status').css "color": "green"
-              #     $('#server_on')
-              #       .css "color": "grey"
-              #     $('#server_off').css "color": "orange"
-              #   else
-              #     $('#server_status').css({"color": "red"})
-              #     $('#server_off')
-              #       .css "color": "grey"
-              #     $('#server_on').css "color": "orange"
+
 
       stopPsiTurkServer: ->
         $('#server-off-modal').modal('show')
@@ -147,7 +131,7 @@ define [
         UP = 0
         $.ajax
           url: "/monitor_server"
-        $.doTimeout 'server_poll', 2000, ->
+        $.doTimeout 'server_poll', 1000, ->
           $.ajax
             url: "/server_status"
             success: (data) ->
