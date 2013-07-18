@@ -94,18 +94,18 @@ def turk_services():
     if "mturk_request" in request.json:
         if request.json["mturk_request"] == "create_hit":
             services.create_hit()
-            return("hit created")
+            return jsonify(msg="hit created")
         elif request.json["mturk_request"] == "expire_hit":
             hitid = request.json["hitid"]
             services.expire_hit(hitid)
-            return("hit expired")
+            return jsonify(msg="hit expired")
         elif request.json["mturk_request"] == "extend_hit":
            hitid = request.json["hitid"]
            assignments_increment = request.json["assignments_increment"]
            expiration_increment = request.json["expiration_increment"]
            services.extend_hit(hitid, assignments_increment, expiration_increment)
-           return("hit expired")
-    return "psiTurk failed to recognize your request."
+           return jsonify(msg="hit expired")
+    return jsonify(error="psiTurk failed to recognize your request.")
 
 @app.route('/get_hits', methods=['GET'])
 def get_hits():

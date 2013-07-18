@@ -66,6 +66,7 @@ class MTurkServices:
             host = 'mechanicalturk.sandbox.amazonaws.com'
         else:
             host = 'mechanicalturk.amazonaws.com'
+        
         mturkparams = dict(
             aws_access_key_id = self.config.get('AWS Access', 'aws_access_key_id'),
             aws_secret_access_key = self.config.get('AWS Access', 'aws_secret_access_key'),
@@ -111,23 +112,14 @@ class MTurkServices:
                (access_key != 'YourSecreteAccessKey')
 
     def check_balance(self):
-        is_sandbox = self.config.getboolean('HIT Configuration', 'using_sandbox')
-        if is_sandbox:
-            host = 'mechanicalturk.sandbox.amazonaws.com'
-        else:
-            host = 'mechanicalturk.amazonaws.com'
-        
         if self.is_signed_up():
-            mturkparams = dict(
-                aws_access_key_id=self.config.get('AWS Access', 'aws_access_key_id'),
-                aws_secret_access_key=self.config.get('AWS Access', 'aws_secret_access_key'),
-                host=host)
-            self.mtc = MTurkConnection(**mturkparams)
-            
+            self.connect_to_turk()
             return(self.mtc.get_account_balance()[0])
         else:
             return('-')
 
+    # TODO (if valid AWS credentials haven't been provided then connect_to_turk() will
+    # fail, not error checking here and elsewhere)
     def create_hit(self):
         self.connect_to_turk()
         self.configure_hit()

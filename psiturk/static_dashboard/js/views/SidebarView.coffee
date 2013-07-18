@@ -320,11 +320,12 @@ define [
 
             # Bind table buttons
             $(document).on "click", '.expire', ->
+              hitid = $(@).attr('id')
               $('#expire-modal').modal('show')
-              data = JSON.stringify
-                mturk_request: "expire_hit"
-                hitid: $(@).attr('id')
               $('#expire-btn').on 'click', ->
+                data = JSON.stringify
+                  mturk_request: "expire_hit"
+                  hitid: hitid
                 $.ajax
                   contentType: "application/json; charset=utf-8"
                   url: '/mturk_services'
@@ -332,11 +333,11 @@ define [
                   dataType: 'json'
                   data: data
                   complete: ->
+                    $('#expire-modal').modal('hide')
                     updateExperimentStatus()
                     updateOverview()
                   error: (error) ->
                     console.log("failed to expire HIT")
-                $('#expire-modal').modal('hide')
 
             $(document).on "click", '.extend', ->
               hitid = $(@).attr('id')
