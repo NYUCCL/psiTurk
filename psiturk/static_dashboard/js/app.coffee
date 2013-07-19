@@ -59,8 +59,6 @@ define [
         $.each($('#myform').serializeArray(), (i, field) ->
           inputData[field.name] = field.value)
         configData[section] = inputData
-        # @config = new ConfigModel
-        #  @ataglance = new AtAGlanceModel
         @config.save configData
 
         # Load overview and change sidebar link
@@ -299,7 +297,7 @@ define [
             configData["HIT Configuration"] = inputData
             @config.save configData
 
-          $('#run-expt-btn').on "click", ->
+          $('#run-expt-btn').on "click", =>
             $.ajax
               contentType: "application/json; charset=utf-8"
               url: '/mturk_services'
@@ -311,7 +309,7 @@ define [
                 $('#run-expt-modal').modal('hide')
                 hit_view = new HITView collection: new HITs
                 $("#tables").html hit_view.render().el
-                # @pubsub.trigger "getExperimentStatus"
+                @pubsub.trigger "getExperimentStatus"
               error: (error) ->
                 console.log(error)
                 $('#expire-modal').modal('hide')
@@ -397,7 +395,7 @@ define [
         Router.initialize()
 
 
-        # Inter-view communcation
+        # Inter-view communication
         # =======================
         @pubsub = _.extend {}, Backbone.Events  # enables communication between views
         _.bindAll(@, "getExperimentStatus")

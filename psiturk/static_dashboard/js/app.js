@@ -318,7 +318,6 @@
             return _this.config.save(configData);
           });
           return $('#run-expt-btn').on("click", function() {
-            var _this = this;
             return $.ajax({
               contentType: "application/json; charset=utf-8",
               url: '/mturk_services',
@@ -333,7 +332,8 @@
                 hit_view = new HITView({
                   collection: new HITs
                 });
-                return $("#tables").html(hit_view.render().el);
+                $("#tables").html(hit_view.render().el);
+                return _this.pubsub.trigger("getExperimentStatus");
               },
               error: function(error) {
                 console.log(error);
