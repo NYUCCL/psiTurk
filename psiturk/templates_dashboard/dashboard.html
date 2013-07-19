@@ -10,6 +10,14 @@
 </head>
 <body>
 
+<style type="text/css" media="screen">
+  .dropdown-menu li > a:hover, .dropdown-menu li > a:focus, .dropdown-submenu:hover > a:focus {
+    background-color: #E66F37;
+    background-image: none;
+    filter: none;
+  }
+</style>
+
 
 <!-- Navbar
   ================================================== -->
@@ -21,25 +29,33 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </a>
-
       <a class="brand" href="#">psiTurk</a>
       <span class="tagline">It's raining N! <a href="http://gureckislab.org/blog/?p=1297"target="_blank">Read more.</a></span>
-
-      <div class="navbar" id="main-menu">
-        <div class="auth pull-right" style="width:300px; margin-right:-75px">
+      <div class="navbar pull-right" id="main-menu">
+        <div class="auth" style="width:300px; margin-right:-75px">
           <span class="links">
-              <i class="icon-circle" style="color: grey; margin: 0 3px 0 0" id="server_status"></i>
-                Server
-                <span id="server_controls">
-                  [<a href="#" id="server_on" style="color:grey">on</a>|<a href="#" id="server_off" style="color:grey">off</a>]
-                </span>
-              <div class='row' style="margin-left:0px">
-              <i class="icon-circle" style="margin: 0 3px 0 10px; color: grey" id="experiment_status"></i>
-                HITs available on AMT
-              </div>
+            <i class="icon-circle" style="color: grey; margin: 0 3px 0 0" id="server_status"></i>
+              Server
+            <span id="server_controls">
+              [<a href="#" id="server_on" style="color:grey">on</a>|<a href="#" id="server_off" style="color:grey">off</a>]
             </span>
+            <div class='row' style="margin-left:0px">
+              <i class="icon-circle" style="margin: 0 3px 0 10px; color: grey" id="experiment_status"></i>
+              HITs available on AMT
+            </div>
+          </span>
         </div>
       </div>
+      <ul id=tab class="nav pull-right" style="margin-right:20px">
+        <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Export Data<b class="caret"></b></a>
+            <ul class="dropdown-menu">
+              <li><a href="/data/trial_all.csv">trial.csv</a></li>
+              <li><a href="/data/event_all.csv">event.csv</a></li>
+              <li><a href="/data/questionnaire_all.csv">questionnaire.csv</a></li>
+            </ul>
+        </li>
+      </ul>
     </div>
   </div>
 </div>

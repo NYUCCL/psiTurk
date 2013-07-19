@@ -264,6 +264,9 @@ define [
 
 
       captureUIEvents: ->
+        # Load general dropdown actions
+        $('.dropdown-toggle').dropdown()
+
         # Shutdown psiTurk server
         $("#server_off").off("click").on "click", =>
           @stopPsiTurkServer()

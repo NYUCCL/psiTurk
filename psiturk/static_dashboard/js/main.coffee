@@ -42,5 +42,7 @@ require [
   (
     $
     App
+    Bootstrap
+    dropdown
   ) ->
     App.initialize()
