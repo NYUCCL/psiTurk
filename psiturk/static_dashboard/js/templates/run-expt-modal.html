@@ -1,4 +1,4 @@
-<div id="run-expt-modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+<div id="run-expt-modal" class="modal hide in" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
     <h3 id="myModalLabel">Run experiment</h3>
@@ -23,19 +23,19 @@
           <tr>
             <td>Max workers</td>
             <td>
-              <input type="number" class="run-expt" name="max_assignments" id="max_assignments" style="width: 45px; padding: 1px" value="<%- n_assignments %>"> 
+              <input class="run-expt" name="max_assignments" id="max_assignments" style="width: 45px; padding: 1px" value="<%- n_assignments %>"> 
             </td>
             <td>Reward ($)</td>
             <td>
-              <input type="number" id="reward" name="reward" class="run-expt" style="width: 45px; padding: 1px" value="<%- fixedReward %>"> 
+              <input id="reward" name="reward" class="run-expt" style="width: 45px; padding: 1px" value="<%- fixedReward %>"> 
             </td>
             <td>Duration (hrs.)</td>
             <td>
-              <input type="number" id="duration" name="duration" class="run-expt" style="width: 45px; padding: 1px" value="<%- duration %>"> 
+              <input id="duration" name="duration" class="run-expt" style="width: 45px; padding: 1px" value="<%- duration %>"> 
             </td>
             <td>Fee ($)</td>
             <td>
-              <input type="number" class="run-expt" style="width: 45px; padding: 1px" value="<%- fee %>" disabled>
+              <input id="fee" class="run-expt" style="width: 45px; padding: 1px" value="<%- fee %>" disabled>
             </td>
           </tr>
         </table>

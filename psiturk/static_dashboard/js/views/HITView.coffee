@@ -9,7 +9,7 @@ define [
 
         class HITView extends Backbone.TableView
 
-          title: ""
+          title: " "
 
           columns:
             title:
@@ -23,7 +23,7 @@ define [
             expiration:
               header: "Expires"
               draw: (model) ->
-                new Date(model.get "expiration").toLocaleFormat("%I:%M%p %a, %b %e")
+                new Date(model.get "expiration")
             expire:
               header: " "
               draw: (model) ->

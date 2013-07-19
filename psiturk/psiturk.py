@@ -131,7 +131,7 @@ def favicon():
     """
     Serving a favicon
     """
-    return redirect(config.get('Server Parameters', 'favicon_url'))
+    return app.send_static_file('favicon.ico')
 
 @app.errorhandler(ExperimentError)
 def handleExpError(e):
@@ -369,7 +369,7 @@ def start_exp():
             if other_assignment:
                 raise ExperimentError('already_did_exp_hit')
     
-    return render_template('exp.html', uniqueId=part.uniqueid)
+    return render_template('exp.html', uniqueId=part.uniqueid, condition=part.cond, countercond=part.counterbalance)
 
 @app.route('/inexp', methods=['POST'])
 def enterexp():
