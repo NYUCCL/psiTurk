@@ -172,7 +172,7 @@ define [
         contentView.initialize()
 
 
-      loadUIEvents: ->
+      captureUIEvents: ->
         # Have run button listen for clicks and tell server to create HITS
         # Before running expt, get latest config and verify
         # TODO(Jay): Combine and abstract the following functions-DRY principle.
@@ -213,4 +213,4 @@ define [
         # ========
 
         @verifyAWSLogin()
-        @loadUIEvents()
+        @captureUIEvents()  # TODO(Jay): This is redundant w/ identical method in sidebar. refactor
