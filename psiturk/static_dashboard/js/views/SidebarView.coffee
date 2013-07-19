@@ -133,18 +133,7 @@ define [
                 complete: =>
                   $.when @options.config.fetch(), @options.ataglance.fetch()
                     .done(=>
-                      overview = _.template(OverviewTemplate,
-                        input:
-                          balance: @options.ataglance.get("balance")
-                          debug: if @options.config.get("Server Parameters").debug is "True" then "checked" else ""
-                          using_sandbox: if @options.config.get("HIT Configuration").using_sandbox is "True" then "checked" else "")
-                      $('#content').html(overview)
-                      # Load HIT table
-                      hit_view = new HITView collection: new HITs
-                      $("#tables").html hit_view.render().el
-                      saveSandbox = _.bind(@saveUsingSandboxState, @)
-                      $('input#using_sandbox').on "click", ->
-                        saveSandbox())
+                      @loadOverview())
               }, {
                 error: (error) => console.log "error"
               })
@@ -174,9 +163,6 @@ define [
                 else
                   $('#experiment_status').css "color": "grey"
                   $('#run').css({"color": "orange"})
-
-
-
 
           captureUIEvents: =>
             $('#run').on "click", =>
