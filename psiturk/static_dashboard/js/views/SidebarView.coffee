@@ -163,6 +163,7 @@ define [
               @save(event)
               $('#aws-info-modal').modal('hide')
 
+
           getExperimentStatus: ->
             console.log("updating status")
             $.ajax
@@ -234,6 +235,7 @@ define [
                 $('input#debug').on "click",  =>
                   @saveDebugState()
                 recaptureUIEvents())
+
 
           render: =>
             # Highlight sidebar selections on click
