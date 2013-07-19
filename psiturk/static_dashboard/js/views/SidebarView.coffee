@@ -112,5 +112,13 @@ define [
                   $('.save').on "click", (event) =>
                     event.preventDefault()
                     save(event)
-                $('#contribute').on 'click', ->
+                $('#documentation').on 'click', =>
+                  $('li').removeClass 'selected'
+                  $('#overview').addClass 'selected'
+                  @options.pubsub.trigger "loadOverview"
+                  window.open('https://github.com/NYUCCL/psiTurk/wiki')
+                $('#contribute').on 'click', =>
+                  $('li').removeClass 'selected'
+                  $('#overview').addClass 'selected'
+                  @options.pubsub.trigger "loadOverview"
                   window.open('https://github.com/NYUCCL/psiTurk')
