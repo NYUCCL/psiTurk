@@ -870,7 +870,7 @@ class: center, middle
 
 .task[Part 3: Building dynamic web experiments]
 # psiTurk
-### .gray[Our "framework" for doing online experiments]
+### .gray[Our framework for doing online experiments]
 ### [https://github.com/NYUCCL/psiTurk](https://github.com/NYUCCL/psiTurk)
 <img src="images/psiturk_logo_cloud_2l.png" width="300">
 <img src="images/github.png" width="200">
@@ -953,7 +953,6 @@ This may seem overwhelming at first, but after a steep learning curve, blah blah
 
 ---
 
-
 .task[Part 3: Building dynamic web experiments]
 # PsiTurk JS functions
 
@@ -965,9 +964,45 @@ To help you get started to build your experiment we included a small library tha
 - Register if user switches to another tab/window
 - Record and save data
 
-(ANNA: Not sure if this should even go here. Or how we can elaborate on this. It seems good to have it in the section that says what psiturk can do, but it's perhaps a bit strange to do this before we even describe what it is...)
+---
+
+.task[Part 3: Building dynamic web experiments]
+# The Psiturk javascript object
+
+Some of the important Javascript functions we provide:
+
+    .javascript
+    exp = new Psiturk()
+    
+    // Handling experiment info: 
+    exp.taskdata.get("condition") // returns subect's server-assigned condition
+    exp.taskdata.get("counterbalance") // returns subect's server-assigned condition
+
+    // Handling resources:
+    exp.getPage("mypage.html") // Returns HTML from mypage.html, stored in the templates directory
+    
+    // Recording subjects' responses
+    exp.recordTrialData([1, "L", "CORRECT"]) // Records data for the current trial
+    exp.recordUnstructuredData("Age", 28) // Records data for the current trial
+    
+    // Save data to server
+    exp.saveData()
+
+---
+
+.task[Part 3: Building dynamic web experiments]
+# The Psiturk javascript object
+
+    .javascript
+    exp = new Psiturk
+    exp.taskdata.get("condition") // returns subect's server-assigned condition
+    exp.taskdata.get("counterbalance") // returns subect's server-assigned condition
+
+    exp.getPage("mypage.html") // Returns HTML from mypage.html, stored in the templates directory
 
 <!-- ---
+
+(ANNA: Not sure if this should even go here. Or how we can elaborate on this. It seems good to have it in the section that says what psiturk can do, but it's perhaps a bit strange to do this before we even describe what it is...)
 
 
 .task[Part 4: Using psiTurk]
