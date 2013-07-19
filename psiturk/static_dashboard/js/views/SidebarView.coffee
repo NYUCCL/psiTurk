@@ -133,19 +133,7 @@ define [
                 complete: =>
                   $.when @options.config.fetch(), @options.ataglance.fetch()
                     .done(=>
-                      overview = _.template(OverviewTemplate,
-                        input:
-                          balance: @options.ataglance.get("balance")
-                          debug: if @options.config.get("Server Parameters").debug is "True" then "checked" else ""
-                          using_sandbox: if @options.config.get("HIT Configuration").using_sandbox is "True" then "checked" else "")
-                      $('#content').html(overview)
-                      # Load HIT table
-                      hit_view = new HITView collection: new HITs
-                      $("#tables").html hit_view.render().el
-                      saveSandbox = _.bind(@saveUsingSandboxState, @)
-                      $('input#using_sandbox').on "click", ->
-                        saveSandbox()
-                      @captureUIEvents())  # rebind events after ui reload
+                      @loadOverview())
               }, {
                 error: (error) => console.log "error"
               })
@@ -154,7 +142,7 @@ define [
             @render()
             @verifyAWSLogin()
             @captureUIEvents()
-
+            
 
           getCredentials: ->
             $('#aws-info-modal').modal('show')
@@ -176,7 +164,6 @@ define [
                 else
                   $('#experiment_status').css "color": "grey"
                   $('#run').css({"color": "orange"})
-
 
           captureUIEvents: =>
             $('#run').on "click", =>
@@ -340,8 +327,13 @@ define [
             # TODO(): Figure out why backbone.events are not firing when triggered.
             # These are just a temporary hack around the issue.
 
+            # $(document).on "click", '.save', (event) =>
+            #   event.preventDefault()
+            #   @save(event)
+
             saveSandbox = _.bind(@saveUsingSandboxState, @)
             saveConfig = _.bind(@save, @)
+            #$('.save').on "click", (event) ->
             $(document).on "click", '.save', =>
               event.preventDefault()
               saveConfig(event)

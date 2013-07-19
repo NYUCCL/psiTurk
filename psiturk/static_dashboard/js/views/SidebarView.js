@@ -142,24 +142,7 @@
         }, {
           complete: function() {
             return $.when(_this.options.config.fetch(), _this.options.ataglance.fetch().done(function() {
-              var hit_view, overview, saveSandbox;
-              overview = _.template(OverviewTemplate, {
-                input: {
-                  balance: _this.options.ataglance.get("balance"),
-                  debug: _this.options.config.get("Server Parameters").debug === "True" ? "checked" : "",
-                  using_sandbox: _this.options.config.get("HIT Configuration").using_sandbox === "True" ? "checked" : ""
-                }
-              });
-              $('#content').html(overview);
-              hit_view = new HITView({
-                collection: new HITs
-              });
-              $("#tables").html(hit_view.render().el);
-              saveSandbox = _.bind(_this.saveUsingSandboxState, _this);
-              $('input#using_sandbox').on("click", function() {
-                return saveSandbox();
-              });
-              return _this.captureUIEvents();
+              return _this.loadOverview();
             }));
           }
         }, {
