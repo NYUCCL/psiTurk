@@ -422,7 +422,6 @@
               data: data,
               complete: function() {
                 $('#extend-modal').modal('hide');
-                updateExperimentStatus();
                 return reloadOverview();
               },
               error: function(error) {

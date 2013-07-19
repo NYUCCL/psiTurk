@@ -385,7 +385,6 @@ define [
               data: data
               complete: ->
                 $('#extend-modal').modal('hide')
-                updateExperimentStatus()
                 reloadOverview()
               error: (error) ->
                 console.log("failed to extend HIT")
