@@ -1,11 +1,9 @@
 # Import flask
 import os
 import argparse
-from flask import Flask, render_template, request, Response, jsonify
+from flask import Flask, render_template, request, jsonify
 from gevent import monkey
 import dashboard as Dashboard
-import webbrowser
-import socket
 from PsiTurkConfig import PsiTurkConfig
 import signal
 
@@ -17,26 +15,6 @@ server = Dashboard.Server()
 def reconfigure_server():
     server.configure(config.getint("Server Parameters", "port"), hostname=config.get("Server Parameters", "host"))
 reconfigure_server()
-
-def launch_browser(port):
-    launchurl = "http://{host}:{port}/dashboard".format(
-        host=config.get("Server Parameters", "host"), 
-        port=port)
-    webbrowser.open(launchurl, new=1, autoraise=True)
-
-def is_port_available(port):
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    try:
-        s.connect(('127.0.0.1', port))
-        s.shutdown(1)
-        return 0
-    except:
-        return 1
-
-def find_open_port():
-    open_port = next(port for port in range(5000, 10000) if is_port_available(port))
-    return(open_port)
-
 
 app = Flask("Psiturk_Dashboard",
             template_folder=os.path.join(os.path.dirname(__file__), "templates_dashboard"), 
@@ -191,6 +169,7 @@ def shutdown_psiturk():
     server.shutdown()
     return("shutting down PsiTurk server...")
 
+
 def run_dev_server():
     app.debug = True
 
@@ -200,14 +179,13 @@ def launch():
                         help='optional port for dashboard. default is 22361.')
     args = parser.parse_args()
     dashboard_port = args.port
-
-    already_running = False
-    launch_browser(dashboard_port)
-    try:
-        app.run(debug=True, port=dashboard_port, host='0.0.0.0')
-    except socket.error:
+    
+    dashboard_server = Dashboard.Server(dashboard_port, "localhost")
+    dashboard_server.launch_browser_when_online()
+    if not dashboard_server.check_port_state():
         print "Server is already running!"
-
+    else:
+        app.run(debug=True, port=dashboard_port, host='0.0.0.0')
 
 if __name__ == "__main__":
     launch()

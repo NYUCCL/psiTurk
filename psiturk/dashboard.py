@@ -1,5 +1,6 @@
 import os, sys
 import subprocess,signal
+from threading import Thread, Event
 import urllib2
 import datetime
 from boto.mturk.connection import MTurkConnection, MTurkRequestError
@@ -8,9 +9,37 @@ from boto.mturk.qualification import LocaleRequirement, \
     PercentAssignmentsApprovedRequirement, Qualifications
 from flask import jsonify
 import socket
-import threading
+import webbrowser
 
-# TODO(Jay): Generalize port number from launcher
+class Wait_For_State(Thread):
+    """
+    Waits for a state-checking function to return True, then runs a given
+    function. For example, this is used to launch the browser once the server is
+    started up.  
+    
+    Example:
+    t = Wait_For_State(lambda: server.check_port_state(), lambda: print "Server has started!")
+    t.start()
+    t.cancel() # Cancels thread
+    """
+    def __init__(self, state_function, function, pollinterval=1):
+        Thread.__init__(self)
+        self.function = function
+        self.state_function = state_function
+        self.pollinterval = pollinterval
+        self.finished = Event()
+        self.final = lambda: ()
+
+    def cancel(self):
+        self.finished.set()
+    
+    def run(self):
+        while not self.finished.is_set():
+            if self.state_function():
+                self.function()
+                self.finished.set()
+            else:
+                self.finished.wait(self.interval)
 
 class MTurkServices:
     def __init__(self, config):
@@ -154,11 +183,12 @@ class Server:
         self.port = port
         self.ip = ip
         self.hostname = hostname
+        self.monitor_thread = Wait_For_State(lambda: False, lambda: self.check_port_state(), pollinterval=2)
         if self.port:
-            self.state = self.is_port_available(self.port)
+            self.check_port_state()
         else:
-            self.state = None
-
+            self.port_state = None
+    
     def get_ppid(self):
         url = "http://{hostname}:{port}/ppid".format(hostname=self.hostname, port=self.port)
         ppid_request = urllib2.Request(url)
@@ -174,19 +204,18 @@ class Server:
             python_exec = sys.executable,
             server_script = os.path.join(os.path.dirname(__file__), "psiturk_server.py")
         )
-        print(server_command)
+        print("Running server with command:", server_command)
         subprocess.Popen(server_command, shell=True)
         return "psiTurk launching..."
     
+    def launch_browser(self):
+        launchurl = "http://{host}:{port}/dashboard".format(host=self.hostname, port=self.port)
+        webbrowser.open(launchurl, new=1, autoraise=True)
+    
     def check_port_state(self):
-        current_state = self.is_port_available(self.port)
-        return(current_state)
-        # print str(current_state == self.state)
-        # if current_state is not self.state:
-        #     self.state = current_state
-        # else:
-        #     return(-1)
-
+        self.port_state = self.is_port_available(self.port)
+        return(self.port_state)
+    
     def is_port_available(self, port):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
@@ -195,11 +224,17 @@ class Server:
             return 0
         except:
             return 1
-
-    def monitor(self):
-        self.check_port_state()
-        t = threading.Timer(2, self.monitor)
-        t.start()
-
+    
+    def wait_until_online(self, function, **kwargs):
+        """
+        Uses Wait_For_State to wait for the server to come online, then runs the given function.
+        """
+        awaiting_service = Wait_For_State(lambda: self.check_port_state, function, **kwargs)
+        awaiting_service.start()
+        return awaiting_service
+    
+    def launch_browser_when_online(self, **kwargs):
+        browser_launch_thread = self.wait_until_online(lambda: self.launch_browser(), **kwargs)
+    
     def start_monitoring(self):
-        self.monitor()
+        self.monitor_thread.start()
