@@ -9,7 +9,7 @@ define [
 
         class HITView extends Backbone.TableView
 
-          title: ""
+          title: " "
 
           columns:
             title:

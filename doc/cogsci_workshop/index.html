@@ -245,17 +245,17 @@ class: center, middle
 .task[Part 1: What is AMT?]
 # What kinds of tasks?
 
-- Difficult to solve for computer or machine lerning systems, e.g.
+- Difficult for computer (or for use in training machine learning systems)
     - Provide three key words to describe a randomly selected image
     - Does this photograph contain a car?
     - Type the characters in this image (e.g., captcha)
-    - What does this [twitter](https://blog.twitter.com/2013/improving-twitter-search-real-time-human-computation) hashtag refer to?
     
 - Traditional "work"
     - Go to http://mycompany.com and email me some comments on what you think of the design
     - Write a positive review for this product online (pay per paragraph)
     - Translate this text from english to spanish
     
+
 - .green[Help with science!]
     - **Participate in my human cognition/perception/learning experiment!**
 
@@ -273,41 +273,6 @@ class: shortlist, middle
 - .orange[**Requester**] = an entity (e.g., researcher) who posts HITs
 
 - .blue[**Worker**] = a person who performs the task
-
----
-
-
-.task[Part 1: What is AMT?]
-# Who are the workers?
-
-- 46.80% US, 34% India, 19.20% Other
-
-- United States demographic
-    - 55-65% female
-    - Most make betweeh <$60k/year
-    - Median age of 30
-    - Hold bachelor’s and are young
-    - Distribution mostly similar to US internet pop.
-    
-- See Ipeirotis, et al. (2010) or Mason and Siddharth (2011).
-
----
-
-.task[Part 1: What is AMT?]
-# US Distribution
-
-<img src="images/us-turk-distribution.jpg" width="750">
-
-Taken from this [website](http://www-958.ibm.com/software/data/cognos/manyeyes/visualizations/geographic-distribution-of-turkers).
-
----
-
-.task[Part 1: What is AMT?]
-# World Distribution
-
-<img src="images/world-turk-distribution.jpg" width="750">
-
-Tamir (2011)
 
 ---
 
@@ -343,27 +308,11 @@ Mitch Fernandez, 38, a disabled former United States Army linguist, said by e-ma
 
 - Requester can reject work and revoke payment
 
-- And can also **award bonuses**
+- Can also **award bonuses**
 
 - Amazon takes 10% of payments
 
 - Amazon tries to stay out of disputes
-
-
----
-
-
-.task[Part 1: What is AMT?]
-# Requesters outside of the US
-
-- Unfortunately, accessing AMT from outside the US can be a bit tricky
-
-- Requires US billing address  and US debit or credit card
-
-- If you can't get a US credit card, setting up the account with a US American collaborator is an option
-
-- Or consider international/European alternatives to AMT, such as [clickworker](http://www.clickworker.com), [crowdflower](http://crowdflower.com). The latter actually uses AMT workers, but is accessible worldwide 
-(the psiTurk toolbox could in principle be adapted to work with other platforms)
 
 
 ---
@@ -390,36 +339,95 @@ Mitch Fernandez, 38, a disabled former United States Army linguist, said by e-ma
 - **Replicable**
     - Very easy to share your experiment code to let people replicate your work cheaply
 
+---
+
+.task[Part 1: What is AMT?]
+# Common concerns .red[*]
+
+
+- **Selection Bias**: 
+    - What type of people use AMT? Are they maybe weird?
+
+- **Honesty**
+    - Turkers can misrepresent their nationality, or other demographics
+
+- **Data Quality**  
+    - The low rates that often get paid on AMT may leave participants less motivated to complete tasks at a sufficiently high standard
+
+- **Contamination of the subject base**
+    - Turkers might participate in the same experiment multiple times
+    - Turkers might share their responses on forums
+
+- **Non-lab setting**  
+    - The experimenter has no control over distractions.  
+    - People could get up and leave for 1 hour in the middle of your experiment
+
+
+.left.footnote[.red[*]
+These are loosely based on a [recent critical blog post]() of Dan Kahan at Yale University regarding the validity of AMT samples for research in the social sciences.]
+
+
 
 ---
 
 
 .task[Part 1: What is AMT?]
-# Why not?
+# Who are the workers?
 
-- **Selection Bias**:
-    - Are AMT workers qualified enough for cognition experiments, and are they representative of the general population?  
-    ***Workers span a broad range of demographics, arguably the sample is less "special" than your usual undergraduate population***
+- 46.80% US, 34% India, 19.20% Other
 
-- **Contamination of the subject base**  
-    - Turkers might participate in the same experiment multiple times  
-  ***Can be prevented by keeping track of worker's IDs***
+- United States demographic
+    - 55-65% female
+    - Most make <$60k/year
+    - Median age of 30
+    - Hold bachelor’s and are young
+    - Distribution mostly similar to US internet pop.
+    
+- See Ipeirotis, et al. (2010) or Mason and Siddharth (2011).
 
-- **.red[Non-lab setting]**  
-    - No experimental oversight over participants  
-  ***Truly difficult to control, but keeping a record of how often participants switch windows or take breaks can help cleaning data at the end***
+---
 
-- **Data Quality**  
-    - Are workers motivated enough to yield good results?  
-    ***Many findings replicate (see upcoming slides), but it is advisable to check participants' understanding***
+.task[Part 1: What is AMT?]
+# US Distribution
+
+<img src="images/us-turk-distribution.jpg" width="750">
+
+Taken from this [website](http://www-958.ibm.com/software/data/cognos/manyeyes/visualizations/geographic-distribution-of-turkers).
+
+---
+
+.task[Part 1: What is AMT?]
+# World Distribution
+
+<img src="images/world-turk-distribution.jpg" width="750">
+
+Tamir (2011)
+
+---
+
+
+
+.task[Part 1: What is AMT?]
+# Do turkers misrepresent personal details about themselves?
+ Shapiro, Chandler, and Mueller (2013) investigated this by asking participants to state demographic details about themselves twice with a week's gap in between
+
+- As it turns out, only 10 out of 497 participants gave mismatching information
+
+- But a substantial proportion said they were American while using a foreign IP address
+
+- In addition, participants' score on a range of classic psychometric tests (like the BDI) had high internal consistency (alpha>.9, and test-retest reliability (correlation of .87)
+
+.center[
+**Upshot: Reliability even of sensitive data was generally high, but screening for foreign IPs might be useful if US sample is desired**
+]
 
 
 ---
 
 
 class: center, middle
-
 # How does the data compare to that collected in the lab? .red[*]
+
 
 
 .left.footnote[.red[*]Check out our discussion of this at our [Thinking about Thinking](http://gureckislab.org/blog/) blog ]
@@ -442,22 +450,154 @@ name: replicationstudies
 
 
 - Shapiro, D. N., Chandler, J., & Mueller, P. A. (2013). [Using Mechanical Turk to Study Clinical Populations](http://s3.amazonaws.com/academia.edu.documents/30554524/Clinical_Psychological_Science-2013-Shapiro-2167702612469015.pdf?AWSAccessKeyId=AKIAIR6FSIMDFXPEERSA&Expires=1374090987&Signature=%2B4nErhKWOQhoWYY9gpgV0EbvVa0%3D&response-content-disposition=inline). _Clinical Psychological Science_, 1(2), 213-220.
-
 ---
 
 
 .task[Part 1: What is AMT?]
-# Do classic findings replicate?
+# Does it replicate?
 
-- Some members of our lab recently conducted a range of classic psychology experiments (stroop, task-switching, simon, visual cuing, attentional blink, subliminal priming, and category learning)
+- We recently attempted to replicate a classic categorization finding using AMT subjects
+    - Shepard, R.N., Hovland, C.I., & Jenkins H.M. (1961). Learning and memorization of classifications. _Psychological Monographs: General and Applied_, 75(13), 1-41.
 
+- Was a good learning experience for what works (and what doesn't)
+
+- Part of a larger study replicating a number of classic findings (stroop, task-switching, simon, visual cuing, attentional blink, subliminal priming, category learning)
     - **Crump, M. J., McDonnell, J. V., & Gureckis, T. M. (2013). Evaluating Amazon's Mechanical Turk as a tool for experimental behavioral research. PloS one, 8(3).**
 
-- Important outcomes
-    - Most findings replicated with high fidelity
-    - Payment didn't have much effect on performance but did affect signup  and dropout rate
-    - Checking participants' understanding of the task increased data quality considerably
 
+---
+
+.task[Part 1: What is AMT?]
+# SHJ (1961)
+
+- Six different ways of classifying the same 8 items (geometric figures with 3 binary dimensions) into deterministic categories
+
+- Generally Type I is learned faster than Type II which is faster that Types III-V, with Type VI the hardest
+
+.center[
+<img src="images/abstractstructureSHJ.png" width="180"><img src="images/dimstructureSHJ.png" width="200">
+<img src="images/SHJDifficulty.png" width="700">
+]
+
+---
+
+.task[Part 1: What is AMT?]
+# Try 1
+
+.center[
+<img src="images/exp8-nosofsky.png" height="310"><img src="images/exp8-amt.png" height="310">
+]
+
+---
+
+.task[Part 1: What is AMT?]
+# Try 1
+
+.center[
+<img src="images/exp8-block2criterion.png" height="400">
+]
+
+---
+
+class: center, middle
+# Maybe we weren't paying people enough?
+
+---
+
+.task[Part 1: What is AMT?]
+# Try 2
+
+.center[
+<img src="images/exp9-typeII.png" height="400">
+]
+
+---
+
+.task[Part 1: What is AMT?]
+# Try 2
+
+.center[
+<img src="images/exp9-typeIV.png" height="400">
+]
+
+---
+
+class: center, middle
+# Maybe people didn't read or understand the instructions?
+
+---
+
+.task[Part 1: What is AMT?]
+# Try 3
+
+.center[
+<img src="images/exp10-n-vs-amt.png" height="500">
+]
+
+---
+
+.task[Part 1: What is AMT?]
+# Try 3
+
+.center[
+<img src="images/exp10-l-vs-amt.png" height="500">
+]
+
+
+---
+
+.task[Part 1: What is AMT?]
+# Try 3
+
+- 100% of participants in the type I problem reached the learning criterion .red[*]
+
+- 73.1% reached criterion in the type II problem
+
+- 56.4% reach criterion in the type IV problem
+
+- 44.8% reach criterion in the type VI problem. 
+
+.footnote[.red[*] 2 blocks in a row with 100% correct responses  within the 10 training blocks]
+
+---
+
+.task[Part 1: What is AMT?]
+# Lessons
+
+- Data replicated somewphat, but not perfectly
+    - Hard to tell if problems are with AMT data or with previous work (perhaps selection bias with university students?)
+
+- Important outcomes
+    - Payment doesn't have much effect beyond signup rate
+    - Checking people read and comprehend instructions is critical
+    - Cleaning up data may help, but good to decide on criterion ahead of time
+    
+
+- Note, our other studies (e.g., stroop, etc...) replicate with much higher fidelity.  Learning experiments
+may reflect a sort of special case where caution is particularly advised.
+    - See also [this slide](#replicationstudies) for references to other studies reporting success
+
+---
+
+.task[Part 1: What is AMT?]
+# Concerns Revisited
+
+- **Selection Bias**: 
+    - AMT span a broad range of demographics. Arguably the sample is less "weird" than your usual undergraduate population
+
+- **Honesty**
+    - Generally users seem to provide reliable data, although they may falsely pretend to be from the US and checking their IP is one way to prevent that
+
+- **Data Quality**  
+    - Many findings replicate well, but it is advisable to check participants' understanding of your task to make sure they pay attention
+
+- **Contamination of the subject base**  
+    - This can be prevented by keeping track of all  participants and checking new ones against a database (we'll show you how to do this with psiTurk later on)
+
+- **Non-lab setting**  
+    - Truly difficult to control, but by keeping a record of how often participants switch windows or take breaks some distracted participants can be excluded
+
+Ultimately, it's up to you if think you can trust your lab data more!
 
 ---
 
@@ -465,13 +605,13 @@ name: replicationstudies
 .task[Part 1: What is AMT?]
 # A word on Ethics
 
-- How much should you pay?  
-    - As much as the market supports or should it match what you pay in the lab (roughly)? Or minimum wage?
-    - AMT has been criticized for incentivizing companies to outsource labor without adequate compensation (for discussions see for example [here](http://priceonomics.com/who-makes-below-minimum-wage-in-the-mechanical/?utm_source=buffer&utm_campaign=Buffer&utm_content=buffer2d486&utm_medium=twitter), [here](http://economix.blogs.nytimes.com/2013/03/18/the-unregulated-work-of-mechanical-turk/), and [here](http://www.huffingtonpost.com/julian-dobson/mechanical-turk-amazons-underclass_b_2687431.html))
+- How much should you pay?  As much as the market supports or should it match what you pay in the lab (roughly)?
 
 - Can you get IRB approval for your experiment (yes, you MUST run it by the IRB first)
 
-    - Arguably, workers have more freedom of choice than lab participants, they can walk away at any point, without sunk costs of travelling or social pressure from experimenter
+    - Some IRBs are more cautious than they need to be, IMHO
+
+    - Since participants never meet experimenter and are free to close browser and walk away at any moment the IRB issues seem non-existent (should be exempt, but check with your  local IRB)
 
     - Main concern would be if materials/stimuli are controversial and might reflect poorly on the field, sponsors, or university
 
@@ -480,20 +620,24 @@ name: replicationstudies
 
 ---
 
+class: center, middle
+# End of Part 1 
+### .gray[Time for a break!]
+
+---
 
 name: part2
 class: center, middle
  
-.task[Part 1: What is AMT?]
+.task[Part 2: The mechanics]
  
-# What are the mechanics of using the AMT system? 
+# .blue[Part 2:] What are the mechanics of using the AMT system? 
  
 ---
 
 class: middle
 
-.task[Part 1: What is AMT?]
-
+.task[Part 2: The mechanics]
 # Two perspectives:
  
 1. What is it like to use AMT as a [**Worker**](#terminology)?
@@ -502,7 +646,7 @@ class: middle
    
 ---
  
-.task[Part 1: What is AMT?]
+.task[Part 2: The mechanics]
 # Using AMT as a .blue[**Worker**]
  
 1. Sign up on Amazon's site
@@ -513,7 +657,6 @@ class: middle
  
 4. After completing the HIT, the worker signals to Amazon that they have completed the task
  
- 5. Payment will be credited to a worker's account some time after completion
 <hr>
  
 Some important conceptual notes:
@@ -528,16 +671,16 @@ Some important conceptual notes:
  
 ---
  
-.task[Part 1: What is AMT?]
+.task[Part 2: The mechanics]
 # What is a HIT ?
  
 - In our experiments, a HIT is typically an entire experiment (as might be done in the lab)
  
-- However, it is up to the .orange[**Requester**] to determine what constitutes a HIT
+- However, it is up to the .orange[**Requester**] to determine what constitutes a HIT.
  
 - Could be one trial in an experiment, and you just offer the .blue[**Worker**] as many HITs as they care to do
  
-- We will walk through an example soon...
+- Will see some examples in a minute...
  
 ---
 
@@ -550,7 +693,7 @@ class: center, middle
  
 ---
  
-.task[Part 1: What is AMT?]
+.task[Part 2: The mechanics]
 # Using AMT as a .orange[**Requester**]
  
 1. Open a Amazon Web Services (AWS) account: [Subscribe here](http://aws.amazon.com)
@@ -558,88 +701,50 @@ class: center, middle
 1. Get a Mechanical Turk Requester Account: [Subscribe here](http://requester.mturk.com)
    
 1. Create a "dummy" email account which you can use to deal with inevitable issues that come up with Workers
-    - Workers ***will*** contact you when they have issues
+    - Workers will contact you when their computer crashes on the last trial of the task, etc...
     - Need a way to deal with this efficiently and quickly
      
 1. Use the built-in Amazon template or "External Question" approach to design your experiment
  
 1. Test your code on the "sandbox" website before going live
+    - Important... if you cause problems you WILL be contacted by users with complaints.
  
 1. Go live! 
  
  
+ 
 ---
-
-class: center, middle
-
+ 
 .task[Part 2: The mechanics]
-# Demo: Using AMT as a .orange[**Requester**] 
+# Using AMT as a .orange[**Requester**]
+### Two key types of HITs
  
-<iframe src="https://requester.mturk.com/create/projects"></iframe>
+- **Amazon Template**
+    - Hosted directly on Amazon's servers
+    - Mostly restricted to simple HTML
+    - Easy to use (don't need your own server)
+    - Tools for helping you "build" the question
  
----
-
-
- 
-.task[Part 1: What is AMT?]
-# Be a good requester
- 
-A few things to bear in mind...
-
-1. Test your experiment on .blue[different browsers]
-
-1. Use the .blue[sandbox] for testing!
-
-1. Provide users with explicit instructions and .blue[show warnings] about closing the page, going back in the browsers, etc.
-    - For many more "basic" HITs it's ok to close the window and return another time
-    - So workers might complain if they do this and it breaks the experiment
-
-1. Start collecting data in .blue[small batches]
- 
-1. If something goes wrong, provide an .blue[alternative payment method] for workers who did your experiment but were unable to submit the HIT
-    - One way of doing this is to provide a HIT with no content specifically aimed at workers that had problems and pay them using a "bonus"
- 
- 
----
- 
-.task[Part 1: What is AMT?]
-# AMT's built-in question templates
-
-###Why use them?
-- Hosted directly on Amazon's servers
-- Good for simple surveys (multiple choice, text fields, radio buttons)
-- Easy to use (don't need your own server)
-- Tools for helping you "build" the question
-- Basic HTML can be included (to format texts, or load data, images, etc. from a separate datafile, for example)
-- HITs can be individualized with different content for each
-
-
-###But...
-- Dynamic elements cannot be included!
-- For those purposes, you want to use AMTs **external question** type
-
----
-
-class: center, middle
-
-.task[Part 2: The mechanics]
-# Enter Doug, stage left
- 
- 
-
-
-<!--  
 - **External Question**
     - Pushes user off the AMT site to your own website
     - You can leverage full power of the "Interweb" (custom Javascript, Flash, etc...)
     - You need to have a publically accessible webserver
     - Most coding involved
         - Our software is intended to help with this
-  -->
+ 
 ---
 
+class: center, middle
+.task[Part 2: The mechanics]
+# Demo: Using AMT as a .orange[**Requester**]
  
-.task[Part 1: What is AMT?]
+(using Amazon templates) 
+ 
+<iframe src="https://requester.mturk.com/create/projects/new"></iframe>
+ 
+---
+ 
+.task[Part 2: The mechanics]
 # More about external questions...
  
      
@@ -663,7 +768,7 @@ class: center, middle
  
 ---
  
-.task[Part 1: What is AMT?]
+.task[Part 2: The mechanics]
 # Requesting an External Question
  
 - **URL** 
@@ -682,7 +787,7 @@ _Oddly, there is no web interface for this. You need to use scripts. Fortunately
  
 ---
  
-.task[Part 1: What is AMT?]
+.task[Part 2: The mechanics]
  
 # Hosting an Advertisement
 
@@ -722,7 +827,7 @@ identifying information to `http://www.mturk.com/mturk/externalSubmit`.
 ---
 
 class: center, middle
-# End of Part 1
+# End of Part 2
 ### .gray[Time for a break!]
  
 
@@ -766,7 +871,7 @@ class: center, middle
 
 .task[Part 3: Building dynamic web experiments]
 # psiTurk
-### .gray[Our "framework" for doing online experiments]
+### .gray[Our framework for doing online experiments]
 ### [https://github.com/NYUCCL/psiTurk](https://github.com/NYUCCL/psiTurk)
 <img src="images/psiturk_logo_cloud_2l.png" width="300">
 <img src="images/github.png" width="200">
@@ -849,7 +954,6 @@ This may seem overwhelming at first, but after a steep learning curve, blah blah
 
 ---
 
-
 .task[Part 3: Building dynamic web experiments]
 # PsiTurk JS functions
 
@@ -861,9 +965,45 @@ To help you get started to build your experiment we included a small library tha
 - Register if user switches to another tab/window
 - Record and save data
 
-(ANNA: Not sure if this should even go here. Or how we can elaborate on this. It seems good to have it in the section that says what psiturk can do, but it's perhaps a bit strange to do this before we even describe what it is...)
+---
+
+.task[Part 3: Building dynamic web experiments]
+# The Psiturk javascript object
+
+Some of the important Javascript functions we provide:
+
+    .javascript
+    exp = new Psiturk()
+    
+    // Handling experiment info: 
+    exp.taskdata.get("condition") // returns subect's server-assigned condition
+    exp.taskdata.get("counterbalance") // returns subect's server-assigned condition
+
+    // Handling resources:
+    exp.getPage("mypage.html") // Returns HTML from mypage.html, stored in the templates directory
+    
+    // Recording subjects' responses
+    exp.recordTrialData([1, "L", "CORRECT"]) // Records data for the current trial
+    exp.recordUnstructuredData("Age", 28) // Records data for the current trial
+    
+    // Save data to server
+    exp.saveData()
+
+---
+
+.task[Part 3: Building dynamic web experiments]
+# The Psiturk javascript object
+
+    .javascript
+    exp = new Psiturk
+    exp.taskdata.get("condition") // returns subect's server-assigned condition
+    exp.taskdata.get("counterbalance") // returns subect's server-assigned condition
+
+    exp.getPage("mypage.html") // Returns HTML from mypage.html, stored in the templates directory
 
 <!-- ---
+
+(ANNA: Not sure if this should even go here. Or how we can elaborate on this. It seems good to have it in the section that says what psiturk can do, but it's perhaps a bit strange to do this before we even describe what it is...)
 
 
 .task[Part 4: Using psiTurk]

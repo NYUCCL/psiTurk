@@ -13,7 +13,7 @@
         return _ref;
       }
 
-      HITView.prototype.title = "";
+      HITView.prototype.title = " ";
 
       HITView.prototype.columns = {
         title: {

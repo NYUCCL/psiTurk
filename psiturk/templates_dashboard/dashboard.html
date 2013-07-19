@@ -35,10 +35,7 @@
                 </span>
               <div class='row' style="margin-left:0px">
               <i class="icon-circle" style="margin: 0 3px 0 10px; color: grey" id="experiment_status"></i>
-                Experiment
-                <span id="server_controls" style="color:grey">
-                  [<a href="#" id="run" style="color:grey">run</a>]
-                </span>
+                HITs available on AMT
               </div>
             </span>
         </div>
@@ -65,7 +62,7 @@
 
 <!-- Modals
 ================================================== -->
-<div id="server-off-modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+<div id="server-off-modal" class="modal hide" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
     <h3 id="myModalLabel">Warning</h3>
@@ -82,7 +79,7 @@
   </div>
 </div>
 
-<div id="aws-info-modal" class="modal hide fade" data-keyboard="false" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+<div id="aws-info-modal" class="modal hide" data-keyboard="false" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
   <div class="modal-header">
     <h3 id="myModalLabel">Welcome!</h3>
   </div>
@@ -122,7 +119,7 @@
   </div>
 </div>
 
-<div id="expire-modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+<div id="expire-modal" class="modal hide" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
     <h3 id="myModalLabel">Expire experiment</h3>
@@ -138,7 +135,7 @@
   </div>
 </div>
 
-<div id="extend-modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+<div id="extend-modal" class="modal hide" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
     <h3 id="myModalLabel">Extend experiment</h3>
@@ -153,11 +150,11 @@
           <tr>
             <td>Extend time (mins.)</td>
             <td>
-              <input type="number" class="extend-expt" name="extend-time" id="extend-time" style="width: 45px; padding: 1px" value="0"> 
+              <input class="extend-expt" name="extend-time" id="extend-time" style="width: 45px; padding: 1px" value="0"> 
             </td>
             <td>Extend number of workers</td>
             <td>
-              <input type="number" id="extend-workers" name="extend-workers" class="extend-workers" style="width: 45px; padding: 1px" value="0"> 
+              <input id="extend-workers" name="extend-workers" class="extend-workers" style="width: 45px; padding: 1px" value="0"> 
             </td>
           </tr>
         </table>

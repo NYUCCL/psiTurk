@@ -4,7 +4,7 @@
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  define(["backbone", 'text!templates/aws-info.html', 'text!templates/overview.html', 'text!templates/hit-config.html', 'text!templates/database.html', 'text!templates/server-params.html', 'text!templates/expt-info.html', 'views/validators', 'views/HITView', 'models/HITModel', 'collections/HITCollection'], function(Backbone, AWSInfoTemplate, OverviewTemplate, HITConfigTemplate, DatabaseTemplate, ServerParamsTemplate, ExptInfoTemplate, Validators, HITView, HIT, HITs) {
+  define(["backbone", 'text!templates/aws-info.html', 'text!templates/hit-config.html', 'text!templates/database.html', 'text!templates/server-params.html', 'text!templates/expt-info.html', 'views/validators', 'views/RunExptView'], function(Backbone, AWSInfoTemplate, HITConfigTemplate, DatabaseTemplate, ServerParamsTemplate, ExptInfoTemplate, Validators, RunExptView) {
     var SideBarView, _ref;
     return SideBarView = (function(_super) {
       __extends(SideBarView, _super);
@@ -15,240 +15,18 @@
         return _ref;
       }
 
-      SideBarView.prototype.verifyAWSLogin = function() {
-        var _this = this;
-        return $.when(this.options.config.fetch().then(function() {
-          var inputData, key_id, secret_key;
-          key_id = _this.options.config.get("AWS Access").aws_access_key_id;
-          secret_key = _this.options.config.get("AWS Access").aws_secret_access_key;
-          inputData = {};
-          inputData["aws_access_key_id"] = key_id;
-          inputData["aws_secret_access_key"] = secret_key;
-          return $.ajax({
-            url: "/verify_aws_login",
-            type: "POST",
-            dataType: "json",
-            contentType: "application/json; charset=utf-8",
-            data: JSON.stringify(inputData),
-            success: function(response) {
-              if (response.aws_accnt === 0) {
-                _this.getCredentials();
-                return $('#aws-indicator').css("color", "red").attr("class", "icon-lock");
-              } else {
-                return $('#aws-indicator').css("color", "white").attr("class", "icon-unlock");
-              }
-            },
-            error: function() {
-              return console.log("aws verification failed");
-            }
-          });
-        }));
-      };
-
-      SideBarView.prototype.save = function(event) {
-        var configData, inputData, section,
-          _this = this;
-        event.preventDefault();
-        section = $(event.target).data('section');
-        inputData = {};
-        configData = {};
-        $.each($('#myform').serializeArray(), function(i, field) {
-          return inputData[field.name] = field.value;
-        });
-        configData[section] = inputData;
-        this.options.config.save(configData);
-        $('li').removeClass('selected');
-        $('#overview').addClass('selected');
-        $.when(this.options.config.fetch(), this.options.ataglance.fetch().then(function() {
-          var hit_view, overview, saveSandbox;
-          overview = _.template(OverviewTemplate, {
-            input: {
-              balance: _this.options.ataglance.get("balance"),
-              debug: _this.options.config.get("Server Parameters").debug === "True" ? "checked" : "",
-              using_sandbox: _this.options.config.get("HIT Configuration").using_sandbox === "True" ? "checked" : ""
-            }
-          });
-          $('#content').html(overview);
-          hit_view = new HITView({
-            collection: new HITs
-          });
-          $("#tables").html(hit_view.render().el);
-          saveSandbox = _.bind(_this.saveUsingSandboxState, _this);
-          $('input#using_sandbox').on("click", function() {
-            return saveSandbox();
-          });
-          return $('input#debug').on("click", function() {
-            return _this.saveDebugState();
-          });
-        }));
-        $.ajax({
-          url: "/monitor_server"
-        });
+      SideBarView.prototype.initialize = function() {
         return this.render();
       };
 
-      SideBarView.prototype.pushstateClick = function(event) {
-        return event.preventDefault();
-      };
-
-      SideBarView.prototype.events = {
-        'click a': 'pushstateClick',
-        'click .save_data': 'save',
-        'click #aws-info-save': 'save',
-        'click #server-parms-save': 'serverParamsSave',
-        'click input#debug': 'saveDebugState',
-        'click input#using_sandbox': 'saveUsingSandboxState'
-      };
-
-      SideBarView.prototype.serverParamsSave = function() {
-        var configResetPromise;
-        this.save();
-        configResetPromise = this.options.config.fetch();
-        return configResetPromise.done(function() {
-          var domain, url, url_pattern;
-          url = this.options.config.get("HIT Configuration").question_url + '/shutdown';
-          url_pattern = /^https?\:\/\/([^\/:?#]+)(?:[\/:?#]|$)/i;
-          domain = url.match(url_pattern)[0] + this.options.config.get("Server Parameters").port + '/shutdown';
-          return $.ajax({
-            url: domain,
-            type: "GET",
-            data: {
-              hash: this.options.config.get("Server Parameters").hash
-            }
-          });
-        });
-      };
-
-      SideBarView.prototype.saveDebugState = function() {
-        var debug;
-        debug = $("input#debug").is(':checked');
-        return this.options.config.save({
-          "Server Parameters": {
-            debug: debug
-          }
-        });
-      };
-
-      SideBarView.prototype.saveUsingSandboxState = function() {
-        var using_sandbox,
-          _this = this;
-        using_sandbox = $("input#using_sandbox").is(':checked');
-        return this.options.config.save({
-          "HIT Configuration": {
-            using_sandbox: using_sandbox
-          }
-        }, {
-          complete: function() {
-            return $.when(_this.options.config.fetch(), _this.options.ataglance.fetch().done(function() {
-              var hit_view, overview, saveSandbox;
-              overview = _.template(OverviewTemplate, {
-                input: {
-                  balance: _this.options.ataglance.get("balance"),
-                  debug: _this.options.config.get("Server Parameters").debug === "True" ? "checked" : "",
-                  using_sandbox: _this.options.config.get("HIT Configuration").using_sandbox === "True" ? "checked" : ""
-                }
-              });
-              $('#content').html(overview);
-              hit_view = new HITView({
-                collection: new HITs
-              });
-              $("#tables").html(hit_view.render().el);
-              saveSandbox = _.bind(_this.saveUsingSandboxState, _this);
-              return $('input#using_sandbox').on("click", function() {
-                return saveSandbox();
-              });
-            }));
-          }
-        }, {
-          error: function(error) {
-            return console.log("error");
-          }
-        });
-      };
-
-      SideBarView.prototype.initialize = function() {
-        this.render();
-        return this.verifyAWSLogin();
-      };
-
-      SideBarView.prototype.getCredentials = function() {
-        var _this = this;
-        $('#aws-info-modal').modal('show');
-        return $('.save').click(function(event) {
-          event.preventDefault();
-          _this.save(event);
-          return $('#aws-info-modal').modal('hide');
-        });
-      };
-
-      SideBarView.prototype.getExperimentStatus = function() {
-        return $.ajax({
-          url: '/get_hits',
-          type: "GET",
-          success: function(data) {
-            if (data.hits.length > 0) {
-              $('#experiment_status').css({
-                "color": "green"
-              });
-              return $('#run').css({
-                "color": "grey"
-              });
-            } else {
-              $('#experiment_status').css({
-                "color": "grey"
-              });
-              return $('#run').css({
-                "color": "orange"
-              });
-            }
-          }
-        });
-      };
-
-      SideBarView.prototype.loadOverview = function() {
-        var _this = this;
-        return $.when(this.options.config.fetch(), this.options.ataglance.fetch().then(function() {
-          var hit_view, overview, saveSandbox;
-          overview = _.template(OverviewTemplate, {
-            input: {
-              balance: _this.options.ataglance.get("balance"),
-              debug: _this.options.config.get("Server Parameters").debug === "True" ? "checked" : "",
-              using_sandbox: _this.options.config.get("HIT Configuration").using_sandbox === "True" ? "checked" : ""
-            }
-          });
-          $('#content').html(overview);
-          hit_view = new HITView({
-            collection: new HITs
-          });
-          $("#tables").html(hit_view.render().el);
-          saveSandbox = _.bind(_this.saveUsingSandboxState, _this);
-          $('input#using_sandbox').on("click", function() {
-            return saveSandbox();
-          });
-          return $('input#debug').on("click", function() {
-            return _this.saveDebugState();
-          });
-        }));
-      };
-
       SideBarView.prototype.render = function() {
-        var hit_view, saveConfig, saveSandbox, updateExperimentStatus, updateOverview,
-          _this = this;
+        var _this = this;
         $('li').on('click', function() {
           $('li').removeClass('selected');
           return $(this).addClass('selected');
         });
-        $('#shutdown-dashboard').on('click', function() {
-          return $.ajax({
-            url: '/shutdown',
-            type: "GET",
-            complete: function() {
-              return window.location.replace("http://nyuccl.github.io/psiTurk/");
-            }
-          });
-        });
-        $.when(this.options.config.fetch(), this.options.ataglance.fetch().done(function() {
-          var awsInfo, database, exptInfo, hitConfig, saveConfig, serverParams, validator;
+        return $.when(this.options.config.fetch(), this.options.ataglance.fetch().done(function() {
+          var awsInfo, database, exptInfo, hitConfig, save, serverParams, validator;
           awsInfo = _.template(AWSInfoTemplate, {
             input: {
               aws_access_key_id: _this.options.config.get("AWS Access").aws_access_key_id,
@@ -292,36 +70,40 @@
             }
           });
           validator = new Validators;
-          saveConfig = _.bind(_this.save, _this);
+          save = function(event) {
+            return _this.options.pubsub.trigger("save", event);
+          };
           $('#overview').off('click').on('click', function() {
             $('li').removeClass('selected');
             $('#overview').addClass('selected');
-            return _this.loadOverview();
+            return _this.options.pubsub.trigger("loadOverview");
           });
           $('#aws-info').on('click', function() {
+            var _this = this;
             $('#content').html(awsInfo);
             validator.loadValidators();
             $('#myform').submit(false);
             return $('.save').on("click", function(event) {
-              event.preventDefault();
-              return saveConfig(event);
+              return save(event);
             });
           });
           $('#hit-config').on('click', function() {
+            var _this = this;
             $('#content').html(hitConfig);
             validator.loadValidators();
             $('#myform').submit(false);
             return $('.save').on("click", function(event) {
-              return saveConfig(event);
+              return save(event);
             });
           });
           $('#database').on('click', function() {
+            var _this = this;
             $('#content').html(database);
             validator.loadValidators();
             $('#myform').submit(false);
             return $('.save').on("click", function(event) {
               event.preventDefault();
-              return saveConfig(event);
+              return save(event);
             });
           });
           $('#server-params').on('click', function() {
@@ -330,7 +112,7 @@
             $('#myform').submit(false);
             return $('.save').on("click", function(event) {
               event.preventDefault();
-              return saveConfig(event);
+              return save(event);
             });
           });
           $('#expt-info').on('click', function() {
@@ -339,97 +121,13 @@
             $('#myform').submit(false);
             return $('.save').on("click", function(event) {
               event.preventDefault();
-              return saveConfig(event);
+              return save(event);
             });
           });
           return $('#contribute').on('click', function() {
             return window.open('https://github.com/NYUCCL/psiTurk');
           });
         }));
-        hit_view = new HITView({
-          collection: new HITs
-        });
-        $("#tables").html(hit_view.render().el);
-        saveSandbox = _.bind(this.saveUsingSandboxState, this);
-        saveConfig = _.bind(this.save, this);
-        $(document).on("click", '.save', function() {
-          event.preventDefault();
-          saveConfig(event);
-          return $(document).on("click", '.save_data', function(event) {
-            event.preventDefault();
-            return saveConfig(event);
-          });
-        });
-        $('input#using_sandbox').on("click", function() {
-          return saveSandbox();
-        });
-        $('input#debug').on("click", function() {
-          return _this.saveDebugState();
-        });
-        $(document).off("click").on("click", '#aws-info-save', function() {
-          return _this.verifyAWSLogin();
-        });
-        $(document).on("click", '#server-parms-save', function() {
-          return _this.serverParamsSave();
-        });
-        updateExperimentStatus = _.bind(this.getExperimentStatus, this);
-        updateOverview = _.bind(this.loadOverview, this);
-        $(document).on("click", '.expire', function() {
-          var hitid;
-          hitid = $(this).attr('id');
-          $('#expire-modal').modal('show');
-          return $('#expire-btn').on('click', function() {
-            var data;
-            data = JSON.stringify({
-              mturk_request: "expire_hit",
-              hitid: hitid
-            });
-            return $.ajax({
-              contentType: "application/json; charset=utf-8",
-              url: '/mturk_services',
-              type: "POST",
-              dataType: 'json',
-              data: data,
-              complete: function() {
-                $('#expire-modal').modal('hide');
-                updateExperimentStatus();
-                return updateOverview();
-              },
-              error: function(error) {
-                return console.log("failed to expire HIT");
-              }
-            });
-          });
-        });
-        return $(document).on("click", '.extend', function() {
-          var hitid;
-          hitid = $(this).attr('id');
-          $('#extend-modal').modal('show');
-          return $('#extend-btn').on('click', function() {
-            var data;
-            data = JSON.stringify({
-              mturk_request: "extend_hit",
-              hitid: hitid,
-              assignments_increment: $('#extend-workers').val(),
-              expiration_increment: $('#extend-time').val()
-            });
-            return $.ajax({
-              contentType: "application/json; charset=utf-8",
-              url: '/mturk_services',
-              type: "POST",
-              dataType: 'json',
-              data: data,
-              complete: function() {
-                $('#extend-modal').modal('hide');
-                updateExperimentStatus();
-                return updateOverview();
-              },
-              error: function(error) {
-                return console.log("failed to extend HIT");
-              }
-            });
-          });
-        });
       };
 
       return SideBarView;
