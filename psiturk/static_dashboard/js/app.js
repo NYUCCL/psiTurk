@@ -62,14 +62,14 @@
         return event.preventDefault();
       },
       verifyAWSLogin: function() {
-        var config, configPromise,
+        var configPromise,
           _this = this;
-        config = new ConfigModel;
-        configPromise = config.fetch();
+        console.log('hi');
+        configPromise = this.config.fetch();
         return configPromise.done(function() {
           var inputData, key_id, secret_key;
-          key_id = config.get("AWS Access").aws_access_key_id;
-          secret_key = config.get("AWS Access").aws_secret_access_key;
+          key_id = _this.config.get("AWS Access").aws_access_key_id;
+          secret_key = _this.config.get("AWS Access").aws_secret_access_key;
           inputData = {};
           inputData["aws_access_key_id"] = key_id;
           inputData["aws_secret_access_key"] = secret_key;
@@ -245,7 +245,8 @@
               pubsub: _this.pubsub
             });
             _this.loadHITTable();
-            return _this.captureUIEvents();
+            _this.captureUIEvents();
+            return _this.verifyAWSLogin();
           });
         });
         contentView = new ContentView();
@@ -438,8 +439,7 @@
         this.pubsub.bind("save", this.save);
         this.monitorPsiturkServer();
         this.loadAWSData();
-        this.getExperimentStatus();
-        return this.verifyAWSLogin();
+        return this.getExperimentStatus();
       }
     };
   });

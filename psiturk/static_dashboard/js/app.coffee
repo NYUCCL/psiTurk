@@ -92,11 +92,11 @@ define [
 
       # Verify user supplied credentials on via AWS API
       verifyAWSLogin: ->
-        config = new ConfigModel
-        configPromise = config.fetch()
+        console.log('hi')
+        configPromise = @config.fetch()
         configPromise.done(=>
-          key_id = config.get("AWS Access").aws_access_key_id
-          secret_key = config.get("AWS Access").aws_secret_access_key
+          key_id = @config.get("AWS Access").aws_access_key_id
+          secret_key = @config.get("AWS Access").aws_secret_access_key
           inputData = {}
           inputData["aws_access_key_id"] = key_id
           inputData["aws_secret_access_key"] = secret_key
@@ -234,6 +234,7 @@ define [
               pubsub: @pubsub
             @loadHITTable()
             @captureUIEvents()
+            @verifyAWSLogin()
           )
         )
         # Load content view after html; req's html ids to be present
@@ -410,8 +411,3 @@ define [
         @monitorPsiturkServer()
         @loadAWSData()
         @getExperimentStatus()
-
-
-        # UI stuff
-        # ========
-        @verifyAWSLogin()
