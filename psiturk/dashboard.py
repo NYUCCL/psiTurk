@@ -1,7 +1,7 @@
-import ConfigParser
+import os, sys
+import subprocess,signal
+import urllib2
 import datetime
-import os
-import subprocess
 from boto.mturk.connection import MTurkConnection, MTurkRequestError
 from boto.mturk.question import ExternalQuestion
 from boto.mturk.qualification import LocaleRequirement, \
@@ -9,7 +9,6 @@ from boto.mturk.qualification import LocaleRequirement, \
 from flask import jsonify
 import socket
 import threading
-
 
 # TODO(Jay): Generalize port number from launcher
 
@@ -148,11 +147,37 @@ class MTurkServices:
 
 
 class Server:
-    def __init__(self, port, ip='127.0.0.1'):
+    def __init__(self, *args, **kwargs):
+        self.configure(*args, **kwargs)
+    
+    def configure(self, port=None, hostname="localhost", ip='127.0.0.1'):
         self.port = port
         self.ip = ip
-        self.state = self.is_port_available(self.port)
+        self.hostname = hostname
+        if self.port:
+            self.state = self.is_port_available(self.port)
+        else:
+            self.state = None
 
+    def get_ppid(self):
+        url = "http://{hostname}:{port}/ppid".format(hostname=self.hostname, port=self.port)
+        ppid_request = urllib2.Request(url)
+        ppid = urllib2.urlopen(ppid_request).read()
+    
+    def shutdown(self):
+        ppid = self.get_ppid()
+        print("shutting down PsiTurk server at pid %s..." % ppid)
+        os.kill(int(ppid), signal.SIGKILL)
+    
+    def startup(self):
+        server_command = "{python_exec} '{server_script}'".format(
+            python_exec = sys.executable,
+            server_script = os.path.join(os.path.dirname(__file__), "psiturk_server.py")
+        )
+        print(server_command)
+        subprocess.Popen(server_command, shell=True)
+        return "psiTurk launching..."
+    
     def check_port_state(self):
         current_state = self.is_port_available(self.port)
         return(current_state)

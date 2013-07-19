@@ -1,18 +1,22 @@
 # Import flask
-import os, sys
+import os
 import argparse
 from flask import Flask, render_template, request, Response, jsonify
-import werkzeug.serving
-import subprocess
+from gevent import monkey
 import dashboard as Dashboard
 import webbrowser
 import socket
 from PsiTurkConfig import PsiTurkConfig
 import signal
-import urllib2
+
+monkey.patch_all()
 
 config = PsiTurkConfig()
 
+server = Dashboard.Server()
+def reconfigure_server():
+    server.configure(config.getint("Server Parameters", "port"), hostname=config.get("Server Parameters", "host"))
+reconfigure_server()
 
 def launch_browser(port):
     launchurl = "http://{host}:{port}/dashboard".format(
@@ -56,8 +60,14 @@ def dashbaord_model():
 
     if request.method == 'POST':
         config_model = request.json
-        config.set_serialized(config_model)
-
+        reset_server = config.set_serialized(config_model)
+    
+    if reset_server:
+        if server.state == 0:
+            server.shutdown()
+            reconfigure_server()
+            server.startup()
+    
     return render_template('dashboard.html')
 
 @app.route('/at_a_glance_model', methods=['GET'])
@@ -125,7 +135,6 @@ def get_hits():
 
 @app.route('/monitor_server', methods=['GET'])
 def monitor_server():
-    server = Dashboard.Server(port=config.getint('Server Parameters', 'port'))
     server.start_monitoring()
     return "Monitoring..."
 
@@ -139,7 +148,6 @@ def is_port_available_route():
         if test_port == config.getint('Server Parameters', 'port'):
             is_available = 1
         else:
-            server = Dashboard.Server(port=test_port)
             is_available = server.is_port_available(test_port)
         return jsonify(is_available=is_available)
     return "port check"
@@ -168,12 +176,7 @@ def favicon():
 #----------------------------------------------
 @app.route("/launch", methods=["GET"])
 def launch_psiturk():
-    server_command = "{python_exec} '{server_script}'".format(
-        python_exec = sys.executable,
-        server_script = os.path.join(os.path.dirname(__file__), "psiturk_server.py")
-    )
-    print(server_command)
-    subprocess.Popen(server_command, shell=True)
+    server.startup()
     return "psiTurk launching..."
 
 @app.route("/shutdown_dashboard", methods=["GET"])
@@ -185,14 +188,8 @@ def shutdown():
 
 @app.route("/shutdown_psiturk", methods=["GET"])
 def shutdown_psiturk():
-    psiturk_server_url = "http://{host}:{port}/ppid".format(
-        host=config.get("Server Parameters", "host"),
-        port=config.getint("Server Parameters", "port"))
-    ppid_request = urllib2.Request(psiturk_server_url)
-    ppid = urllib2.urlopen(ppid_request).read()
-    print("shutting down PsiTurk server at pid %s..." % ppid)
-    os.kill(int(ppid), signal.SIGKILL)
-    return "shutting down dashboard..."
+    server.shutdown()
+    return("shutting down PsiTurk server...")
 
 def run_dev_server():
     app.debug = True
