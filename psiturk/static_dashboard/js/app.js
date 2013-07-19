@@ -149,8 +149,9 @@
         });
       },
       loadAWSData: function() {
-        var atAGlancePromise, contentView,
+        var atAGlancePromise, contentView, vent,
           _this = this;
+        vent = _.extend({}, Backbone.Events);
         this.ataglance = new AtAGlanceModel;
         atAGlancePromise = this.ataglance.fetch();
         atAGlancePromise.done(function() {
@@ -171,7 +172,8 @@
             $('#sidebar').html(sideBarHTML);
             return sidebarView = new SidebarView({
               config: _this.config,
-              ataglance: _this.ataglance
+              ataglance: _this.ataglance,
+              pubsub: vent
             });
           });
         });

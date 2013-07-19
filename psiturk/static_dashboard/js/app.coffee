@@ -149,6 +149,7 @@ define [
           return true
 
       loadAWSData: ->
+        vent = _.extend {}, Backbone.Events
         # Load at-a-glance model and data
         @ataglance = new AtAGlanceModel
         atAGlancePromise = @ataglance.fetch()
@@ -166,7 +167,8 @@ define [
             $('#sidebar').html(sideBarHTML)
             sidebarView = new SidebarView
               config: @config
-              ataglance: @ataglance)
+              ataglance: @ataglance
+              pubsub: vent)
         # Load content view after html; req's html ids to be present
         contentView = new ContentView()
         contentView.initialize()
