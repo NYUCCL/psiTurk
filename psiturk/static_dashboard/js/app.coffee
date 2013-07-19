@@ -162,10 +162,8 @@ define [
           success: (data) ->
             if data.hits.length > 0
               $('#experiment_status').css "color": "green"
-              $('#run').css({"color": "grey"})
             else
               $('#experiment_status').css "color": "grey"
-              $('#run').css({"color": "orange"})
 
 
       launchPsiTurkServer: ->

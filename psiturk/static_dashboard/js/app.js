@@ -146,18 +146,12 @@
           type: "GET",
           success: function(data) {
             if (data.hits.length > 0) {
-              $('#experiment_status').css({
+              return $('#experiment_status').css({
                 "color": "green"
               });
-              return $('#run').css({
-                "color": "grey"
-              });
             } else {
-              $('#experiment_status').css({
+              return $('#experiment_status').css({
                 "color": "grey"
-              });
-              return $('#run').css({
-                "color": "orange"
               });
             }
           }
