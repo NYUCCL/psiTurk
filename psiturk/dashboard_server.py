@@ -1,11 +1,13 @@
 # Import flask
 import os
 import argparse
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, Response, render_template, request, jsonify
 from gevent import monkey
 import dashboard as Dashboard
 from PsiTurkConfig import PsiTurkConfig
 import signal
+from models import Participant
+import json
 
 monkey.patch_all()
 
@@ -148,6 +150,26 @@ def favicon():
     """
     print "got favicon request"
     return app.send_static_file('favicon.ico')
+
+@app.route("/data/<filename>", methods=["GET"])
+def download_datafile(filename):
+    if filename[-4:] != ".csv":
+        raise Exception("/data received Invalid filename: %s" % filename)
+    content, scope = filename[:-4].split("_")
+    if scope == "all":
+        query = Participant.query.all()
+    else:
+        raise Exception("Not implemented: data file scope %s" % scope)
+    subjresults = []
+    if content == "trialdata":
+        for participant in query:
+            if len(participant.datastring)>4:
+                subjresults.append(json.loads(participant.datastring)["data"])
+        ret = ''.join(subjresults)
+    else:
+        raise Exception("Not implemented: data type %s" % content)
+    response = Response(ret, content_type="text/csv", headers={'Content-Disposition': 'attachment;filename=%s' % filename})
+    return response
 
 #----------------------------------------------
 # psiTurk server routes

@@ -10,7 +10,7 @@ except ImportError:
     from counter import Counter
 
 # Importing flask
-from flask import Flask, render_template, request, Response, make_response, redirect, jsonify
+from flask import Flask, render_template, request, Response, make_response, jsonify
 
 # Database setup
 from db import db_session, init_db
@@ -410,7 +410,7 @@ def update(id=None):
         print "DB error: Unique user not found."
     
     if hasattr(request, 'json'):
-        user.datastring = str(request.json)
+        user.datastring = request.data
         db_session.add(user)
         db_session.commit()
     
