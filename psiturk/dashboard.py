@@ -191,8 +191,10 @@ class Server:
     
     def get_ppid(self):
         url = "http://{hostname}:{port}/ppid".format(hostname=self.hostname, port=self.port)
+        print url
         ppid_request = urllib2.Request(url)
-        ppid = urllib2.urlopen(ppid_request).read()
+        ppid =  urllib2.urlopen(ppid_request).read()
+        return ppid
     
     def shutdown(self):
         ppid = self.get_ppid()
