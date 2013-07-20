@@ -2,12 +2,9 @@
 import os
 import argparse
 from flask import Flask, Response, render_template, request, jsonify
-from gevent import monkey
 import dashboard as Dashboard
 from PsiTurkConfig import PsiTurkConfig
 from models import Participant
-
-monkey.patch_all()
 
 config = PsiTurkConfig()
 
