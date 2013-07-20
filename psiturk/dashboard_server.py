@@ -207,7 +207,7 @@ def launch():
     already_running = False
     launch_browser(dashboard_port)
     try:
-        app.run(debug=True, port=dashboard_port, host='0.0.0.0')
+        app.run(debug=True, use_reloader=False, port=dashboard_port, host='0.0.0.0')
     except socket.error:
         print "Server is already running!"
 
