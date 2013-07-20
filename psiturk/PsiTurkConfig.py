@@ -16,8 +16,16 @@ class PsiTurkConfig(SafeConfigParser):
             self.parent.write(self, fp)
 
     def set(self, section, field, value,  *args, **kwargs):
+        """
+        Set the given field in the given section to the given value. 
+        Return True if the server needs to be rebooted.
+        """
         self.parent.set(self, section, field, str(value), *args, **kwargs)
         self.write()
+        if section in ["Server Parameters","Task Parameters"]:
+            return True
+        else:
+            return False
 
     #def read(self):
     #    super(ConfigParser, self).read(self.filename)
@@ -27,9 +35,12 @@ class PsiTurkConfig(SafeConfigParser):
         return self._sections
 
     def set_serialized(self, config_model):
+        restart_server = False
         for section, fields in config_model.iteritems():
             for field in fields:
-                self.set(section, field, config_model[section][field])
+                if self.set(section, field, config_model[section][field]):
+                    restart_server = True
+        return restart_server
 
 
     def write_default_config(self):
