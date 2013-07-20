@@ -191,8 +191,6 @@ define [
       # Use long poll to sync dashboard w/ server.
       # Socket.io is a much better choice, but requires gevent, and thus gcc.
         UP = 0
-        $.ajax
-          url: "/monitor_server"
         $.doTimeout 'server_poll', 1000, ->
           $.ajax
             url: "/server_status"

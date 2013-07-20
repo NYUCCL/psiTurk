@@ -113,11 +113,6 @@ def get_hits():
     services = Dashboard.MTurkServices(config)
     return jsonify(hits=services.get_active_hits())
 
-@app.route('/monitor_server', methods=['GET'])
-def monitor_server():
-    server.start_monitoring()
-    return "Monitoring..."
-
 @app.route('/is_port_available', methods=['POST'])
 def is_port_available_route():
     """

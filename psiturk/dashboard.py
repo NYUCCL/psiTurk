@@ -34,6 +34,7 @@ class Wait_For_State(Thread):
         self.finished.set()
     
     def run(self):
+        print "Waiting for a thread"
         while not self.finished.is_set():
             if self.state_function():
                 self.function()
@@ -183,7 +184,6 @@ class Server:
         self.port = port
         self.ip = ip
         self.hostname = hostname
-        self.monitor_thread = Wait_For_State(lambda: False, lambda: self.check_port_state(), pollinterval=2)
         if self.port:
             self.check_port_state()
         else:
@@ -215,6 +215,7 @@ class Server:
         webbrowser.open(launchurl, new=1, autoraise=True)
     
     def check_port_state(self):
+        print "Checking port state"
         self.port_state = self.is_port_available(self.port)
         return(self.port_state)
     
@@ -237,6 +238,3 @@ class Server:
     
     def launch_browser_when_online(self, **kwargs):
         browser_launch_thread = self.wait_until_online(lambda: self.launch_browser(), **kwargs)
-    
-    def start_monitoring(self):
-        self.monitor_thread.start()

@@ -193,9 +193,6 @@
         var UP;
 
         UP = 0;
-        $.ajax({
-          url: "/monitor_server"
-        });
         return $.doTimeout('server_poll', 1000, function() {
           $.ajax({
             url: "/server_status",
