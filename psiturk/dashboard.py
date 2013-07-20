@@ -34,7 +34,6 @@ class Wait_For_State(Thread):
         self.finished.set()
     
     def run(self):
-        print "Waiting for a thread"
         while not self.finished.is_set():
             if self.state_function():
                 self.function()
@@ -176,48 +175,54 @@ class MTurkServices:
           return(False)
 
 
+class ServerException(Exception):
+    def __init__(self, value):
+        self.value = value
+    def __str__(self):
+        return repr(self.value)
+
 class Server:
-    def __init__(self, *args, **kwargs):
-        self.configure(*args, **kwargs)
-    
-    def configure(self, port=None, hostname="localhost", ip='127.0.0.1'):
+    def __init__(self, port=None, hostname="localhost", ip='127.0.0.1'):
         self.port = port
         self.ip = ip
         self.hostname = hostname
-        if self.port:
-            self.check_port_state()
-        else:
-            self.port_state = None
     
     def get_ppid(self):
-        url = "http://{hostname}:{port}/ppid".format(hostname=self.hostname, port=self.port)
-        print url
-        ppid_request = urllib2.Request(url)
-        ppid =  urllib2.urlopen(ppid_request).read()
-        return ppid
+        if not self.check_port_state():
+            url = "http://{hostname}:{port}/ppid".format(hostname=self.hostname, port=self.port)
+            ppid_request = urllib2.Request(url)
+            ppid =  urllib2.urlopen(ppid_request).read()
+            return ppid
+        else:
+            raise ServerException("Cannot shut down, server not online")
     
-    def shutdown(self):
-        ppid = self.get_ppid()
+    def shutdown(self, ppid=None):
+        if not ppid:
+            ppid = self.get_ppid()
         print("shutting down PsiTurk server at pid %s..." % ppid)
-        os.kill(int(ppid), signal.SIGKILL)
+        try:
+            os.kill(int(ppid), signal.SIGKILL)
+        except ServerException:
+            print ServerException
     
     def startup(self):
         server_command = "{python_exec} '{server_script}'".format(
             python_exec = sys.executable,
             server_script = os.path.join(os.path.dirname(__file__), "psiturk_server.py")
         )
-        print("Running server with command:", server_command)
-        subprocess.Popen(server_command, shell=True)
-        return "psiTurk launching..."
+        if self.check_port_state():
+            print("Running server with command:", server_command)
+            subprocess.Popen(server_command, shell=True)
+            return("psiTurk launching...")
+        else:
+            return("psiturk is already running...")
     
     def launch_browser(self):
         launchurl = "http://{host}:{port}/dashboard".format(host=self.hostname, port=self.port)
         webbrowser.open(launchurl, new=1, autoraise=True)
     
     def check_port_state(self):
-        print "Checking port state"
-        self.port_state = self.is_port_available(self.port)
-        return(self.port_state)
+        return(self.is_port_available(self.port))
     
     def is_port_available(self, port):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

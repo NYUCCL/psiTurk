@@ -5,18 +5,14 @@ from flask import Flask, Response, render_template, request, jsonify
 from gevent import monkey
 import dashboard as Dashboard
 from PsiTurkConfig import PsiTurkConfig
-import signal
 from models import Participant
-import json
 
 monkey.patch_all()
 
 config = PsiTurkConfig()
 
-server = Dashboard.Server()
-def reconfigure_server():
-    server.configure(config.getint("Server Parameters", "port"), hostname=config.get("Server Parameters", "host"))
-reconfigure_server()
+server = Dashboard.Server(config.getint("Server Parameters", "port"), hostname=config.get("Server Parameters", "host"))
+dashboard_server = Dashboard.Server()
 
 app = Flask("Psiturk_Dashboard",
             template_folder=os.path.join(os.path.dirname(__file__), "templates_dashboard"), 
@@ -43,9 +39,8 @@ def dashbaord_model():
         reset_server = config.set_serialized(config_model)
     
     if reset_server:
-        if server.state == 0:
+        if server.check_port_state() == 0:
             server.shutdown()
-            reconfigure_server()
             server.startup()
     
     return render_template('dashboard.html')
@@ -178,10 +173,9 @@ def launch_psiturk():
 
 @app.route("/shutdown_dashboard", methods=["GET"])
 def shutdown():
+    print("Attempting to shut down.")
     pid = os.getpid()
-    print("shutting down dashboard at pid %s..." % pid)
-    os.kill(pid, signal.SIGKILL)
-    return "shutting down dashboard..."
+    dashboard_server.shutdown(pid)
 
 @app.route("/shutdown_psiturk", methods=["GET"])
 def shutdown_psiturk():
@@ -198,8 +192,8 @@ def launch():
                         help='optional port for dashboard. default is 22361.')
     args = parser.parse_args()
     dashboard_port = args.port
+    dashboard_server.port = dashboard_port
     
-    dashboard_server = Dashboard.Server(dashboard_port, "localhost")
     dashboard_server.launch_browser_when_online()
     if not dashboard_server.check_port_state():
         print "Server is already running!"

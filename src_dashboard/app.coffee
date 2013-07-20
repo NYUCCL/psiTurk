@@ -315,11 +315,12 @@ define [
 
 
         $('#shutdown-dashboard').off("click").on 'click', =>
+          console.log "SHutting down dashboard by calling shutdown_dashboard"
           $.ajax
-            url: '/shutdown'
+            url: '/shutdown_dashboard'
             type: "GET"
             complete: ->
-              window.location.replace "http://nyuccl.github.io/psiTurk/"
+              window.location = "http://nyuccl.github.io/psiTurk/"
 
         saveSandbox = _.bind(@saveUsingSandboxState, @)
         save = _.bind(@save, @)
