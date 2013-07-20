@@ -92,7 +92,6 @@ define [
 
       # Verify user supplied credentials on via AWS API
       verifyAWSLogin: ->
-        console.log('hi')
         configPromise = @config.fetch()
         configPromise.done(=>
           key_id = @config.get("AWS Access").aws_access_key_id
