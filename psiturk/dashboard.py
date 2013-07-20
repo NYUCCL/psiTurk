@@ -39,7 +39,7 @@ class Wait_For_State(Thread):
                 self.function()
                 self.finished.set()
             else:
-                self.finished.wait(self.interval)
+                self.finished.wait(self.pollinterval)
 
 class MTurkServices:
     def __init__(self, config):
