@@ -162,12 +162,14 @@ def download_datafile(filename):
         raise Exception("Not implemented: data file scope %s" % scope)
     subjresults = []
     if content == "trialdata":
-        for participant in query:
-            if len(participant.datastring)>4:
-                subjresults.append(json.loads(participant.datastring)["data"])
-        ret = ''.join(subjresults)
+        datafun = lambda p: p.get_trial_data()
+    elif content == "eventdata":
+        datafun = lambda p: p.get_event_data()
+    elif content == "questiondata":
+        datafun = lambda p: p.get_question_data()
     else:
         raise Exception("Not implemented: data type %s" % content)
+    ret = ''.join([datafun(participant) for participant in query])
     response = Response(ret, content_type="text/csv", headers={'Content-Disposition': 'attachment;filename=%s' % filename})
     return response
 
