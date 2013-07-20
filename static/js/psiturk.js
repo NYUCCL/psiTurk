@@ -164,7 +164,7 @@ var TaskData = Backbone.Model.extend({
 	},
 
 	addTrialData: function(trialdata) {
-		trialdata = [this.get("id"), this.get("currenttrial"), (new Date().getTime())].concat(trialdata);
+		trialdata = [this.id, this.get("currenttrial"), (new Date().getTime())].concat(trialdata);
 		this.set({"data": this.get("data").concat(trialdata, "\n")});
 		this.set({"currenttrial": this.get("currenttrial")+1});
 	},
