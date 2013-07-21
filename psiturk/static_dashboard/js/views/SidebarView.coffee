@@ -100,7 +100,7 @@ define [
                   @options.pubsub.trigger "loadOverview"
                 @saveAndRender('#aws-info', awsInfo)
                 @saveAndRender('#hit-config', hitConfig)
-                @saveAndRender('#datebase', database)
+                @saveAndRender('#database', database)
                 @saveAndRender('#server-params', serverParams)
                 @saveAndRender('#expt-info', exptInfo)
                 @redirect('#documentation', 'https://github.com/NYUCCL/psiTurk/wiki')
