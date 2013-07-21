@@ -323,13 +323,10 @@ define([ "jquery", "underscore", "backbone", "router", "models/ConfigModel", "mo
         });
       });
       $("#shutdown-dashboard").off("click").on("click", function() {
-        console.log("SHutting down dashboard by calling shutdown_dashboard");
+        $("#dashboard-off-modal").modal("show");
         return $.ajax({
           url: "/shutdown_dashboard",
-          type: "GET",
-          complete: function() {
-            return window.location = "http://nyuccl.github.io/psiTurk/";
-          }
+          type: "GET"
         });
       });
       save = _.bind(this.save, this);

@@ -318,16 +318,14 @@ define [
                 @pubsub.trigger "getExperimentStatus"
               error: (error) ->
                 console.log(error)
-                $('#expire-modal').modal('hide')
+                $('#expire-modal').modal 'hide'
 
 
         $('#shutdown-dashboard').off("click").on 'click', =>
-          console.log "SHutting down dashboard by calling shutdown_dashboard"
+          $('#dashboard-off-modal').modal 'show'
           $.ajax
             url: '/shutdown_dashboard'
             type: "GET"
-            complete: ->
-              window.location = "http://nyuccl.github.io/psiTurk/"
 
         save = _.bind(@save, @)
         $(document).off("click").on "click", '.save', =>
@@ -353,8 +351,8 @@ define [
 
         # Expire HIT UI event
         $(document).on "click", '.expire', ->
-          hitid = $(@).attr('id')
-          $('#expire-modal').modal('show')
+          hitid = $(@).attr 'id'
+          $('#expire-modal').modal 'show'
           $('#expire-btn').on 'click', ->
             data = JSON.stringify
               mturk_request: "expire_hit"

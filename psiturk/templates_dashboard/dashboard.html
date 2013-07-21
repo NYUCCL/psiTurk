@@ -95,7 +95,7 @@
 <div id="server-off-modal" class="modal hide" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-    <h3 id="myModalLabel">Warning</h3>
+    <h3 id="myModalLabel"><i class="icon-warning-sign"></i> Warning</h3>
   </div>
   <div class="modal-body">
     <p><strong>You are about to shutdown the psiTurk server</strong>.
@@ -108,6 +108,9 @@
     <button id="shutdownServerBtn" class="btn btn-danger">Shutdown</button>
   </div>
 </div>
+
+
+
 
 <div id="aws-info-modal" class="modal hide" data-keyboard="false" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
   <div class="modal-header">
@@ -200,8 +203,20 @@
   </div>
 </div>
 
+<div id="dashboard-off-modal" class="modal hide" tabindex="-1" role="dialog" data-backdrop="static" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <h3 id="myModalLabel"><i class="icon-power-off"></i> psiTurk dashboard off</h3>
+  </div>
+  <div class="modal-body">
+    <p>
+      To restart, please launch psiturk from the terminal.
+    </p>
+  </div>
+</div>
+
 <div id="run-expt-body">
 </div>
 
 </body>
 </html>
+
