@@ -75,9 +75,6 @@ define [
             # Load HIT table
             hit_view = new HITView collection: new HITs
             $("#tables").html hit_view.render().el
-            saveSandbox = _.bind(@saveUsingSandboxState, @)
-            $('input#using_sandbox').on "click", ->
-              saveSandbox()
             $('input#debug').on "click",  =>
               @saveDebugState()
             $('li').removeClass 'selected'
@@ -139,16 +136,13 @@ define [
             debug: debug
 
 
-      saveUsingSandboxState: ->
-        using_sandbox = $("input#using_sandbox").is(':checked')
+      saveSandboxState: (state) ->
         @config.save(
           "HIT Configuration":
-            using_sandbox: using_sandbox,
+            using_sandbox: state,
           {
             complete: =>
-              $.when @config.fetch(), @ataglance.fetch()
-                .done(=>
-                  @loadOverview())
+              @loadOverview()
           }, {
             error: (error) => console.log "error"
           })
@@ -219,12 +213,6 @@ define [
           @config = new ConfigModel
           configPromise = @config.fetch()
           configPromise.done(=>
-            overview = _.template(OverviewTemplate,
-              input:
-                balance: @ataglance.get("balance")
-                debug: if @config.get("Server Parameters").debug is "True" then "checked" else ""
-                using_sandbox: if @config.get("HIT Configuration").using_sandbox is "True" then "checked" else "")
-            $('#content').html(overview)
             sideBarHTML = _.template(SideBarTemplate)
             $('#sidebar').html(sideBarHTML)
             sidebarView = new SidebarView
@@ -234,6 +222,7 @@ define [
             @loadHITTable()
             @captureUIEvents()
             @verifyAWSLogin()
+            @loadOverview()
           )
         )
         # Load content view after html; req's html ids to be present
@@ -245,7 +234,6 @@ define [
         config = new ConfigModel
         ataglance = new AtAGlanceModel
         recaptureUIEvents = => @pubsub.trigger "captureUIEvents"
-        saveSandbox = _.bind(@saveUsingSandboxState, @)
         saveDebugState = _.bind(@saveDebugState, @)
         $.when config.fetch(), ataglance.fetch()
           .then(=>
@@ -253,18 +241,31 @@ define [
               input:
                 balance: ataglance.get("balance")
                 debug: if config.get("Server Parameters").debug is "True" then "checked" else ""
-                using_sandbox: if config.get("HIT Configuration").using_sandbox is "True" then "checked" else "")
+            )
             $('#content').html(overview)
             # Refresh HIT table
             hit_view = new HITView collection: new HITs
             $("#tables").html hit_view.render().el
             recaptureUIEvents()
+            # Sandbox tabs
+            if config.get("HIT Configuration").using_sandbox is "True"
+              $('#sandbox-on').addClass('active')
+              $('#sandbox-off').removeClass('active')
+            else
+              $('#sandbox-on').removeClass('active')
+              $('#sandbox-off').addClass('active')
           )
 
 
       captureUIEvents: ->
         # Load general dropdown actions
         $('.dropdown-toggle').dropdown()
+
+        # Capture sandbox tab clicks
+        $('#sandbox-on').off('click').on 'click', =>
+          @saveSandboxState(true)
+        $('#sandbox-off').off('click').on 'click', =>
+          @saveSandboxState(false)
 
         # Launch test window
         $('#test').off('click').on 'click', =>
@@ -328,7 +329,6 @@ define [
             complete: ->
               window.location = "http://nyuccl.github.io/psiTurk/"
 
-        saveSandbox = _.bind(@saveUsingSandboxState, @)
         save = _.bind(@save, @)
         $(document).off("click").on "click", '.save', =>
           event.preventDefault()
@@ -336,8 +336,6 @@ define [
           $(document).off("click").on "click", '.save_data', (event) =>
             event.preventDefault()
             @options.pubsub.trigger "save", event
-        $('input#using_sandbox').on "click", ->
-          saveSandbox()
         $('input#debug').on "click",  =>
           @saveDebugState()
         $(document).off("click").on "click", '#aws-info-save', =>

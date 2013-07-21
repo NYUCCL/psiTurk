@@ -11,6 +11,7 @@ require.config
     bootstrap: "libs/bootstrap"
     dropdown: "libs/bootstrap-dropdown"
     collapse: "libs/bootstrap-collapse"
+    tab: "libs/bootstrap-tab"
     nod: "libs/nod"
     dotimeout: "libs/jquery.dotimeout.min"
 
@@ -21,6 +22,7 @@ require.config
     bootstrap: ["jquery"]
     dropdown: ["bootstrap"]
     collapse: ["bootstrap"]
+    tab: ["bootstrap"]
     nod: ["jquery"]
     dotimeout: ["jquery"]
     backbone:
@@ -37,6 +39,7 @@ require [
   "bootstrap"
   "dropdown"
   "collapse"
+  "tab"
   "dotimeout",
   "nod"],
   (
@@ -44,5 +47,6 @@ require [
     App
     Bootstrap
     dropdown
+    tab
   ) ->
     App.initialize()

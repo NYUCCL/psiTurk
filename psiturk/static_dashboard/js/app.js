@@ -32,7 +32,7 @@ define(['jquery', 'underscore', 'backbone', 'router', 'models/ConfigModel', 'mod
       $('li').removeClass('selected');
       $('#overview').addClass('selected');
       return $.when(this.config.fetch(), this.ataglance.fetch().then(function() {
-        var hit_view, overview, saveSandbox;
+        var hit_view, overview;
         overview = _.template(OverviewTemplate, {
           input: {
             balance: _this.ataglance.get("balance"),
@@ -45,10 +45,6 @@ define(['jquery', 'underscore', 'backbone', 'router', 'models/ConfigModel', 'mod
           collection: new HITs
         });
         $("#tables").html(hit_view.render().el);
-        saveSandbox = _.bind(_this.saveUsingSandboxState, _this);
-        $('input#using_sandbox').on("click", function() {
-          return saveSandbox();
-        });
         $('input#debug').on("click", function() {
           return _this.saveDebugState();
         });
@@ -118,19 +114,15 @@ define(['jquery', 'underscore', 'backbone', 'router', 'models/ConfigModel', 'mod
         }
       });
     },
-    saveUsingSandboxState: function() {
-      var using_sandbox,
-        _this = this;
-      using_sandbox = $("input#using_sandbox").is(':checked');
+    saveSandboxState: function(state) {
+      var _this = this;
       return this.config.save({
         "HIT Configuration": {
-          using_sandbox: using_sandbox
+          using_sandbox: state
         }
       }, {
         complete: function() {
-          return $.when(_this.config.fetch(), _this.ataglance.fetch().done(function() {
-            return _this.loadOverview();
-          }));
+          return _this.loadOverview();
         }
       }, {
         error: function(error) {
@@ -225,15 +217,7 @@ define(['jquery', 'underscore', 'backbone', 'router', 'models/ConfigModel', 'mod
         _this.config = new ConfigModel;
         configPromise = _this.config.fetch();
         return configPromise.done(function() {
-          var overview, sideBarHTML, sidebarView;
-          overview = _.template(OverviewTemplate, {
-            input: {
-              balance: _this.ataglance.get("balance"),
-              debug: _this.config.get("Server Parameters").debug === "True" ? "checked" : "",
-              using_sandbox: _this.config.get("HIT Configuration").using_sandbox === "True" ? "checked" : ""
-            }
-          });
-          $('#content').html(overview);
+          var sideBarHTML, sidebarView;
           sideBarHTML = _.template(SideBarTemplate);
           $('#sidebar').html(sideBarHTML);
           sidebarView = new SidebarView({
@@ -243,29 +227,28 @@ define(['jquery', 'underscore', 'backbone', 'router', 'models/ConfigModel', 'mod
           });
           _this.loadHITTable();
           _this.captureUIEvents();
-          return _this.verifyAWSLogin();
+          _this.verifyAWSLogin();
+          return _this.loadOverview();
         });
       });
       contentView = new ContentView();
       return contentView.initialize();
     },
     loadOverview: function() {
-      var ataglance, config, recaptureUIEvents, saveDebugState, saveSandbox,
+      var ataglance, config, recaptureUIEvents, saveDebugState,
         _this = this;
       config = new ConfigModel;
       ataglance = new AtAGlanceModel;
       recaptureUIEvents = function() {
         return _this.pubsub.trigger("captureUIEvents");
       };
-      saveSandbox = _.bind(this.saveUsingSandboxState, this);
       saveDebugState = _.bind(this.saveDebugState, this);
       return $.when(config.fetch(), ataglance.fetch().then(function() {
         var hit_view, overview;
         overview = _.template(OverviewTemplate, {
           input: {
             balance: ataglance.get("balance"),
-            debug: config.get("Server Parameters").debug === "True" ? "checked" : "",
-            using_sandbox: config.get("HIT Configuration").using_sandbox === "True" ? "checked" : ""
+            debug: config.get("Server Parameters").debug === "True" ? "checked" : ""
           }
         });
         $('#content').html(overview);
@@ -273,13 +256,26 @@ define(['jquery', 'underscore', 'backbone', 'router', 'models/ConfigModel', 'mod
           collection: new HITs
         });
         $("#tables").html(hit_view.render().el);
-        return recaptureUIEvents();
+        recaptureUIEvents();
+        if (config.get("HIT Configuration").using_sandbox === "True") {
+          $('#sandbox-on').addClass('active');
+          return $('#sandbox-off').removeClass('active');
+        } else {
+          $('#sandbox-on').removeClass('active');
+          return $('#sandbox-off').addClass('active');
+        }
       }));
     },
     captureUIEvents: function() {
-      var reloadOverview, save, saveSandbox, updateExperimentStatus,
+      var reloadOverview, save, updateExperimentStatus,
         _this = this;
       $('.dropdown-toggle').dropdown();
+      $('#sandbox-on').off('click').on('click', function() {
+        return _this.saveSandboxState(true);
+      });
+      $('#sandbox-off').off('click').on('click', function() {
+        return _this.saveSandboxState(false);
+      });
       $('#test').off('click').on('click', function() {
         return window.open(_this.config.get("HIT Configuration").question_url);
       });
@@ -348,7 +344,6 @@ define(['jquery', 'underscore', 'backbone', 'router', 'models/ConfigModel', 'mod
           }
         });
       });
-      saveSandbox = _.bind(this.saveUsingSandboxState, this);
       save = _.bind(this.save, this);
       $(document).off("click").on("click", '.save', function() {
         event.preventDefault();
@@ -357,9 +352,6 @@ define(['jquery', 'underscore', 'backbone', 'router', 'models/ConfigModel', 'mod
           event.preventDefault();
           return _this.options.pubsub.trigger("save", event);
         });
-      });
-      $('input#using_sandbox').on("click", function() {
-        return saveSandbox();
       });
       $('input#debug').on("click", function() {
         return _this.saveDebugState();
