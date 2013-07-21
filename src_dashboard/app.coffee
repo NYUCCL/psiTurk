@@ -269,7 +269,7 @@ define [
 
         # Launch test window
         $('#test').off('click').on 'click', =>
-          window.open @config.get("HIT Configuration").question_url
+          window.open @config.get("HIT Configuration").question_url + "?assignmentId=debug&hitId=debug&workerId=debug"
 
         # Shutdown psiTurk server
         $("#server_off").off("click").on "click", =>
