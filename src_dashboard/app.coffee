@@ -201,11 +201,13 @@ define [
                $('#server_on')
                  .css "color": "grey"
                $('#server_off').css "color": "orange"
+               $('#test').show()
              else
                $('#server_status').css({"color": "red"})
                $('#server_off')
                  .css "color": "grey"
                $('#server_on').css "color": "orange"
+               $('#test').hide()
           return true
 
 
@@ -263,6 +265,10 @@ define [
       captureUIEvents: ->
         # Load general dropdown actions
         $('.dropdown-toggle').dropdown()
+
+        # Launch test window
+        $('#test').off('click').on 'click', =>
+          window.open @config.get("HIT Configuration").question_url
 
         # Shutdown psiTurk server
         $("#server_off").off("click").on "click", =>
