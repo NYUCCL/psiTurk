@@ -19,7 +19,9 @@ define [
             max_assignments:
               header: "Progress"
               draw: (model) ->
-                return(model.get("number_assignments_completed").toString() + '/' + model.get("number_assignments_available").toString())
+                #return(model.get("number_assignments_completed").toString() + '/' + model.get("number_assignments_available").toString())
+                completed = model.get("number_assignments_completed")/model.get("number_assignments_available")
+                return("<div class='progress progress-mini progress-striped'> <div class='bar' style='width: #{completed}%'></div> </div>")
             expiration:
               header: "Expires"
               draw: (model) ->
