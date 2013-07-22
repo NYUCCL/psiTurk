@@ -3,6 +3,7 @@ import os
 import argparse
 from flask import Flask, Response, render_template, request, jsonify
 import dashboard as Dashboard
+import urllib2
 from PsiTurkConfig import PsiTurkConfig
 from models import Participant
 
@@ -118,6 +119,15 @@ def is_port_available_route():
             is_available = server.is_port_available(test_port)
         return jsonify(is_available=is_available)
     return "port check"
+
+
+@app.route('/is_internet_available', methods=['GET'])
+def is_internet_on():
+    try:
+        response=urllib2.urlopen('http://www.google.com', timeout=1)
+        return "true"
+    except urllib2.URLError as err: pass
+    return "false"
 
 @app.route("/server_status", methods=["GET"])
 def status():

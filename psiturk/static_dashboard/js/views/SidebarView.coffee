@@ -52,7 +52,7 @@ define [
               $(@).addClass 'selected'
 
             # Generate dynamic content from AMT data
-            $.when @options.config.fetch(), @options.ataglance.fetch()
+            $.when @options.config.fetch()# , @options.ataglance.fetch()
               .done =>
                 # Load and add config content pages via dynamic templates
                 awsInfo = =>

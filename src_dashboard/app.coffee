@@ -157,6 +157,24 @@ define [
               $('#experiment_status').css "color": "green"
             else
               $('#experiment_status').css "color": "grey"
+          error:
+            console.log "network failure"
+
+
+      isInternetAvailable: ->
+        $.ajax
+          url: '/is_internet_available'
+          type: "GET"
+          success: (data) ->
+            console.log(data)
+            console.log data == "false"
+            if data == "true"
+              return(1)
+            else 
+              return(0)
+          error:
+            console.log "network failure"
+
 
 
       launchPsiTurkServer: ->
@@ -205,42 +223,73 @@ define [
           return true
 
 
-      # TODO(Jay): Move to it's own view
+      # TODO(Jay): Move to it's own view and refactor
       loadContent: ->
         @config = new ConfigModel
         @ataglance = new AtAGlanceModel
         recaptureUIEvents = => @pubsub.trigger "captureUIEvents"
         saveDebugState = _.bind(@saveDebugState, @)
-        $.when @config.fetch(), @ataglance.fetch()
-          .then(=>
-            console.log("made it")
-            # Load overview
-            overview = _.template(OverviewTemplate,
-              input:
-                balance: @ataglance.get("balance")
-                debug: if @config.get("Server Parameters").debug is "True" then "checked" else ""
-            )
-            $('#content').html(overview)
-            # Load sidebar
-            sidebarView = new SidebarView
-              config: @config
-              ataglance: @ataglance
-              pubsub: @pubsub
-            sideBarHTML = _.template(SideBarTemplate)
-            $('#sidebar').html(sideBarHTML)
-            # Sandbox tabs
-            if @config.get("HIT Configuration").using_sandbox is "True"
-              $('#sandbox-on').addClass('active')
-              $('#sandbox-off').removeClass('active')
-            else
-              $('#sandbox-on').removeClass('active')
-              $('#sandbox-off').addClass('active')
-            # Refresh HIT table
-            @loadHITTable()
-            @captureUIEvents()
-            @verifyAWSLogin()
-            recaptureUIEvents()
+        launchWithNoConnection = =>
+          # Load overview
+          overview = _.template(OverviewTemplate,
+            input:
+              balance: "-"
+              debug: if @config.get("Server Parameters").debug is "True" then "checked" else ""
           )
+          $('#content').html(overview)
+          # Load sidebar
+          sidebarView = new SidebarView
+            config: @config
+            pubsub: @pubsub
+          sideBarHTML = _.template(SideBarTemplate)
+          $('#sidebar').html(sideBarHTML)
+          sidebarView.initialize()
+          # Sandbox tabs
+          if @config.get("HIT Configuration").using_sandbox is "True"
+            $('#sandbox-on').addClass('active')
+            $('#sandbox-off').removeClass('active')
+          else
+            $('#sandbox-on').removeClass('active')
+            $('#sandbox-off').addClass('active')
+          # Refresh HIT table
+          @captureUIEvents()
+          @monitorPsiturkServer()
+        $.ajax
+          url: '/is_internet_available'
+          type: "GET"
+          success: (data) =>
+            if data == "true"
+              @ataglance.fetch().pipe => @config.fetch().done =>
+                # Load overview
+                overview = _.template(OverviewTemplate,
+                  input:
+                    balance: @ataglance.get("balance")
+                    debug: if @config.get("Server Parameters").debug is "True" then "checked" else ""
+                )
+                $('#content').html(overview)
+                # Load sidebar
+                sidebarView = new SidebarView
+                  config: @config
+                  ataglance: @ataglance
+                  pubsub: @pubsub
+                sideBarHTML = _.template(SideBarTemplate)
+                $('#sidebar').html(sideBarHTML)
+                sidebarView.initialize()
+                # Sandbox tabs
+                if @config.get("HIT Configuration").using_sandbox is "True"
+                  $('#sandbox-on').addClass('active')
+                  $('#sandbox-off').removeClass('active')
+                else
+                  $('#sandbox-on').removeClass('active')
+                  $('#sandbox-off').addClass('active')
+                # Refresh HIT table
+                @loadHITTable()
+                @captureUIEvents()
+                @verifyAWSLogin()
+                @monitorPsiturkServer()
+            else
+              launchWithNoConnection()
+
         # Load content view after html; req's html ids to be present
         contentView = new ContentView()
         contentView.initialize()
@@ -336,7 +385,6 @@ define [
         # ------------------
 
         # Bind functions to current namespace before "this" gets lost in callbacks
-        updateExperimentStatus = @pubsub.trigger "getExperimentStatus"
         reloadContent = @loadContent
 
         # Expire HIT UI event
@@ -385,7 +433,7 @@ define [
 
         Router.initialize()
 
-        $.ajaxSetup timeout: 20000  # Time out on network failure
+        # $.ajaxSetup timeout: 20000  # Time out on network failure
 
 
         # Inter-view communication
@@ -403,6 +451,5 @@ define [
 
         # Server & content
         # ================
-        @monitorPsiturkServer()
-        @getExperimentStatus()
+        # @getExperimentStatus()
         @loadContent()

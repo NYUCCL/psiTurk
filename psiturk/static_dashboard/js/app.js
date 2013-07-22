@@ -144,7 +144,24 @@ define(['jquery', 'underscore', 'backbone', 'router', 'models/ConfigModel', 'mod
               "color": "grey"
             });
           }
-        }
+        },
+        error: console.log("network failure")
+      });
+    },
+    isInternetAvailable: function() {
+      return $.ajax({
+        url: '/is_internet_available',
+        type: "GET",
+        success: function(data) {
+          console.log(data);
+          console.log(data === "false");
+          if (data === "true") {
+            return 1.;
+          } else {
+            return 0.;
+          }
+        },
+        error: console.log("network failure")
       });
     },
     launchPsiTurkServer: function() {
@@ -208,7 +225,7 @@ define(['jquery', 'underscore', 'backbone', 'router', 'models/ConfigModel', 'mod
       });
     },
     loadContent: function() {
-      var contentView, recaptureUIEvents, saveDebugState,
+      var contentView, launchWithNoConnection, recaptureUIEvents, saveDebugState,
         _this = this;
       this.config = new ConfigModel;
       this.ataglance = new AtAGlanceModel;
@@ -216,23 +233,22 @@ define(['jquery', 'underscore', 'backbone', 'router', 'models/ConfigModel', 'mod
         return _this.pubsub.trigger("captureUIEvents");
       };
       saveDebugState = _.bind(this.saveDebugState, this);
-      $.when(this.config.fetch(), this.ataglance.fetch().then(function() {
+      launchWithNoConnection = function() {
         var overview, sideBarHTML, sidebarView;
-        console.log("made it");
         overview = _.template(OverviewTemplate, {
           input: {
-            balance: _this.ataglance.get("balance"),
+            balance: "-",
             debug: _this.config.get("Server Parameters").debug === "True" ? "checked" : ""
           }
         });
         $('#content').html(overview);
         sidebarView = new SidebarView({
           config: _this.config,
-          ataglance: _this.ataglance,
           pubsub: _this.pubsub
         });
         sideBarHTML = _.template(SideBarTemplate);
         $('#sidebar').html(sideBarHTML);
+        sidebarView.initialize();
         if (_this.config.get("HIT Configuration").using_sandbox === "True") {
           $('#sandbox-on').addClass('active');
           $('#sandbox-off').removeClass('active');
@@ -240,16 +256,55 @@ define(['jquery', 'underscore', 'backbone', 'router', 'models/ConfigModel', 'mod
           $('#sandbox-on').removeClass('active');
           $('#sandbox-off').addClass('active');
         }
-        _this.loadHITTable();
         _this.captureUIEvents();
-        _this.verifyAWSLogin();
-        return recaptureUIEvents();
-      }));
+        return _this.monitorPsiturkServer();
+      };
+      $.ajax({
+        url: '/is_internet_available',
+        type: "GET",
+        success: function(data) {
+          if (data === "true") {
+            return _this.ataglance.fetch().pipe(function() {
+              return _this.config.fetch().done(function() {
+                var overview, sideBarHTML, sidebarView;
+                overview = _.template(OverviewTemplate, {
+                  input: {
+                    balance: _this.ataglance.get("balance"),
+                    debug: _this.config.get("Server Parameters").debug === "True" ? "checked" : ""
+                  }
+                });
+                $('#content').html(overview);
+                sidebarView = new SidebarView({
+                  config: _this.config,
+                  ataglance: _this.ataglance,
+                  pubsub: _this.pubsub
+                });
+                sideBarHTML = _.template(SideBarTemplate);
+                $('#sidebar').html(sideBarHTML);
+                sidebarView.initialize();
+                if (_this.config.get("HIT Configuration").using_sandbox === "True") {
+                  $('#sandbox-on').addClass('active');
+                  $('#sandbox-off').removeClass('active');
+                } else {
+                  $('#sandbox-on').removeClass('active');
+                  $('#sandbox-off').addClass('active');
+                }
+                _this.loadHITTable();
+                _this.captureUIEvents();
+                _this.verifyAWSLogin();
+                return _this.monitorPsiturkServer();
+              });
+            });
+          } else {
+            return launchWithNoConnection();
+          }
+        }
+      });
       contentView = new ContentView();
       return contentView.initialize();
     },
     captureUIEvents: function() {
-      var reloadContent, save, updateExperimentStatus,
+      var reloadContent, save,
         _this = this;
       $('.dropdown-toggle').dropdown();
       $('#sandbox-on').off('click').on('click', function() {
@@ -341,7 +396,6 @@ define(['jquery', 'underscore', 'backbone', 'router', 'models/ConfigModel', 'mod
       $(document).on("click", '#server-parms-save', function() {
         return _this.serverParamsSave();
       });
-      updateExperimentStatus = this.pubsub.trigger("getExperimentStatus");
       reloadContent = this.loadContent;
       $(document).on("click", '.expire', function() {
         var hitid;
@@ -401,9 +455,6 @@ define(['jquery', 'underscore', 'backbone', 'router', 'models/ConfigModel', 'mod
     },
     initialize: function() {
       Router.initialize();
-      $.ajaxSetup({
-        timeout: 20000
-      });
       this.pubsub = _.extend({}, Backbone.Events);
       _.bindAll(this, "getExperimentStatus");
       _.bindAll(this, "captureUIEvents");
@@ -413,8 +464,6 @@ define(['jquery', 'underscore', 'backbone', 'router', 'models/ConfigModel', 'mod
       this.pubsub.bind("captureUIEvents", this.captureUIEvents);
       this.pubsub.bind("loadContent", this.loadContent);
       this.pubsub.bind("save", this.save);
-      this.monitorPsiturkServer();
-      this.getExperimentStatus();
       return this.loadContent();
     }
   };

@@ -50,7 +50,7 @@ define(["backbone", 'text!templates/aws-info.html', 'text!templates/hit-config.h
         $('li').removeClass('selected');
         return $(this).addClass('selected');
       });
-      return $.when(this.options.config.fetch(), this.options.ataglance.fetch().done(function() {
+      return $.when(this.options.config.fetch().done(function() {
         var awsInfo, database, exptInfo, hitConfig, serverParams;
         awsInfo = function() {
           return _.template(AWSInfoTemplate, {
