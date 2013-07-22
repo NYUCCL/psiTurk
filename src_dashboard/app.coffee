@@ -287,6 +287,7 @@ define [
                 @captureUIEvents()
                 @verifyAWSLogin()
                 @monitorPsiturkServer()
+                @getExperimentStatus()
             else
               launchWithNoConnection()
 
@@ -452,5 +453,4 @@ define [
 
         # Server & content
         # ================
-        # @getExperimentStatus()
         @loadContent()

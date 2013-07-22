@@ -292,7 +292,8 @@ define(['jquery', 'underscore', 'backbone', 'router', 'models/ConfigModel', 'mod
                 _this.loadHITTable();
                 _this.captureUIEvents();
                 _this.verifyAWSLogin();
-                return _this.monitorPsiturkServer();
+                _this.monitorPsiturkServer();
+                return _this.getExperimentStatus();
               });
             });
           } else {
@@ -314,7 +315,9 @@ define(['jquery', 'underscore', 'backbone', 'router', 'models/ConfigModel', 'mod
         return _this.saveSandboxState(false);
       });
       $('#test').off('click').on('click', function() {
-        return window.open(_this.config.get("HIT Configuration").question_url + "?assignmentId=debug&hitId=debug&workerId=debug");
+        var uniqueId;
+        uniqueId = new Date().getTime();
+        return window.open(_this.config.get("HIT Configuration").question_url + "?assignmentId=debug" + uniqueId + "&hitId=debug" + uniqueId + "&workerId=debug" + uniqueId);
       });
       $("#server_off").off("click").on("click", function() {
         return _this.stopPsiTurkServer();
