@@ -15,7 +15,7 @@ setup(
         ]
     },
     setup_requires = [],
-    install_requires = ["Flask", "SQLAlchemy", "gunicorn", "boto>=2.9"],
+    install_requires = ["argparse", "Flask", "SQLAlchemy", "gunicorn", "boto>=2.9"],
     author = "NYU Computation and Cognition Lab",
     author_email = "http://nyuccl.org",
     description = "A web framework for dynamic behavioral experiments",
