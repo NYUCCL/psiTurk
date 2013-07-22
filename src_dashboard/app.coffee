@@ -142,7 +142,7 @@ define [
             using_sandbox: state,
           {
             complete: =>
-              @loadOverview()
+              @loadContent()
           }, {
             error: (error) => console.log "error"
           })
@@ -205,58 +205,48 @@ define [
           return true
 
 
-      loadAWSData: ->
-        # Load at-a-glance model and data
+      # TODO(Jay): Move to it's own view
+      loadContent: ->
+        @config = new ConfigModel
         @ataglance = new AtAGlanceModel
-        atAGlancePromise = @ataglance.fetch()
-        atAGlancePromise.done(=>
-          @config = new ConfigModel
-          configPromise = @config.fetch()
-          configPromise.done(=>
-            sideBarHTML = _.template(SideBarTemplate)
-            $('#sidebar').html(sideBarHTML)
+        recaptureUIEvents = => @pubsub.trigger "captureUIEvents"
+        saveDebugState = _.bind(@saveDebugState, @)
+        $.when @config.fetch(), @ataglance.fetch()
+          .then(=>
+            console.log("made it")
+            # Load overview
+            overview = _.template(OverviewTemplate,
+              input:
+                balance: @ataglance.get("balance")
+                debug: if @config.get("Server Parameters").debug is "True" then "checked" else ""
+            )
+            $('#content').html(overview)
+            # Load sidebar
             sidebarView = new SidebarView
               config: @config
               ataglance: @ataglance
               pubsub: @pubsub
-            @loadHITTable()
-            @captureUIEvents()
-            @verifyAWSLogin()
-            @loadOverview()
-          )
-        )
-        # Load content view after html; req's html ids to be present
-        contentView = new ContentView()
-        contentView.initialize()
-
-
-      loadOverview: ->
-        config = new ConfigModel
-        ataglance = new AtAGlanceModel
-        recaptureUIEvents = => @pubsub.trigger "captureUIEvents"
-        saveDebugState = _.bind(@saveDebugState, @)
-        $.when config.fetch(), ataglance.fetch()
-          .then(=>
-            overview = _.template(OverviewTemplate,
-              input:
-                balance: ataglance.get("balance")
-                debug: if config.get("Server Parameters").debug is "True" then "checked" else ""
-            )
-            $('#content').html(overview)
-            # Refresh HIT table
-            hit_view = new HITView collection: new HITs
-            $("#tables").html hit_view.render().el
-            recaptureUIEvents()
+            sideBarHTML = _.template(SideBarTemplate)
+            $('#sidebar').html(sideBarHTML)
             # Sandbox tabs
-            if config.get("HIT Configuration").using_sandbox is "True"
+            if @config.get("HIT Configuration").using_sandbox is "True"
               $('#sandbox-on').addClass('active')
               $('#sandbox-off').removeClass('active')
             else
               $('#sandbox-on').removeClass('active')
               $('#sandbox-off').addClass('active')
+            # Refresh HIT table
+            @loadHITTable()
+            @captureUIEvents()
+            @verifyAWSLogin()
+            recaptureUIEvents()
           )
+        # Load content view after html; req's html ids to be present
+        contentView = new ContentView()
+        contentView.initialize()
 
 
+      # TODO(Jay): To follow a proper MVC setup, many of these functions should be moved to their respective views
       captureUIEvents: ->
         # Load general dropdown actions
         $('.dropdown-toggle').dropdown()
@@ -347,7 +337,7 @@ define [
 
         # Bind functions to current namespace before "this" gets lost in callbacks
         updateExperimentStatus = @pubsub.trigger "getExperimentStatus"
-        reloadOverview = @loadOverview
+        reloadContent = @loadContent
 
         # Expire HIT UI event
         $(document).on "click", '.expire', ->
@@ -365,7 +355,7 @@ define [
               data: data
               complete: =>
                 $('#expire-modal').modal('hide')
-                reloadOverview()
+                reloadContent()
               error: (error) ->
                 console.log("failed to expire HIT")
 
@@ -387,7 +377,7 @@ define [
               data: data
               complete: ->
                 $('#extend-modal').modal('hide')
-                reloadOverview()
+                reloadContent()
               error: (error) ->
                 console.log("failed to extend HIT")
 
@@ -395,22 +385,24 @@ define [
 
         Router.initialize()
 
+        $.ajaxSetup timeout: 20000  # Time out on network failure
+
 
         # Inter-view communication
         # =======================
         @pubsub = _.extend {}, Backbone.Events  # enables communication between views
         _.bindAll(@, "getExperimentStatus")
         _.bindAll(@, "captureUIEvents")
-        _.bindAll(@, "loadOverview")
+        _.bindAll(@, "loadContent")
         _.bindAll(@, "save")
         @pubsub.bind "getExperimentStatus", @getExperimentStatus  # Subscribe to getExperimentStatus events
         @pubsub.bind "captureUIEvents", @captureUIEvents  # Subscribe to captureUIEvents
-        @pubsub.bind "loadOverview", @loadOverview  # Subscribe to loadOverview
+        @pubsub.bind "loadContent", @loadContent  # Subscribe to loadContent
         @pubsub.bind "save", @save  # Subscribe to save
 
 
-        # Server & API stuff
-        # ==================
+        # Server & content
+        # ================
         @monitorPsiturkServer()
-        @loadAWSData()
         @getExperimentStatus()
+        @loadContent()

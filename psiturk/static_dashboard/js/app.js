@@ -122,7 +122,7 @@ define(['jquery', 'underscore', 'backbone', 'router', 'models/ConfigModel', 'mod
         }
       }, {
         complete: function() {
-          return _this.loadOverview();
+          return _this.loadContent();
         }
       }, {
         error: function(error) {
@@ -207,67 +207,49 @@ define(['jquery', 'underscore', 'backbone', 'router', 'models/ConfigModel', 'mod
         return true;
       });
     },
-    loadAWSData: function() {
-      var atAGlancePromise, contentView,
+    loadContent: function() {
+      var contentView, recaptureUIEvents, saveDebugState,
         _this = this;
+      this.config = new ConfigModel;
       this.ataglance = new AtAGlanceModel;
-      atAGlancePromise = this.ataglance.fetch();
-      atAGlancePromise.done(function() {
-        var configPromise;
-        _this.config = new ConfigModel;
-        configPromise = _this.config.fetch();
-        return configPromise.done(function() {
-          var sideBarHTML, sidebarView;
-          sideBarHTML = _.template(SideBarTemplate);
-          $('#sidebar').html(sideBarHTML);
-          sidebarView = new SidebarView({
-            config: _this.config,
-            ataglance: _this.ataglance,
-            pubsub: _this.pubsub
-          });
-          _this.loadHITTable();
-          _this.captureUIEvents();
-          _this.verifyAWSLogin();
-          return _this.loadOverview();
-        });
-      });
-      contentView = new ContentView();
-      return contentView.initialize();
-    },
-    loadOverview: function() {
-      var ataglance, config, recaptureUIEvents, saveDebugState,
-        _this = this;
-      config = new ConfigModel;
-      ataglance = new AtAGlanceModel;
       recaptureUIEvents = function() {
         return _this.pubsub.trigger("captureUIEvents");
       };
       saveDebugState = _.bind(this.saveDebugState, this);
-      return $.when(config.fetch(), ataglance.fetch().then(function() {
-        var hit_view, overview;
+      $.when(this.config.fetch(), this.ataglance.fetch().then(function() {
+        var overview, sideBarHTML, sidebarView;
+        console.log("made it");
         overview = _.template(OverviewTemplate, {
           input: {
-            balance: ataglance.get("balance"),
-            debug: config.get("Server Parameters").debug === "True" ? "checked" : ""
+            balance: _this.ataglance.get("balance"),
+            debug: _this.config.get("Server Parameters").debug === "True" ? "checked" : ""
           }
         });
         $('#content').html(overview);
-        hit_view = new HITView({
-          collection: new HITs
+        sidebarView = new SidebarView({
+          config: _this.config,
+          ataglance: _this.ataglance,
+          pubsub: _this.pubsub
         });
-        $("#tables").html(hit_view.render().el);
-        recaptureUIEvents();
-        if (config.get("HIT Configuration").using_sandbox === "True") {
+        sideBarHTML = _.template(SideBarTemplate);
+        $('#sidebar').html(sideBarHTML);
+        if (_this.config.get("HIT Configuration").using_sandbox === "True") {
           $('#sandbox-on').addClass('active');
-          return $('#sandbox-off').removeClass('active');
+          $('#sandbox-off').removeClass('active');
         } else {
           $('#sandbox-on').removeClass('active');
-          return $('#sandbox-off').addClass('active');
+          $('#sandbox-off').addClass('active');
         }
+        _this.loadHITTable();
+        _this.captureUIEvents();
+        _this.verifyAWSLogin();
+        return recaptureUIEvents();
       }));
+      contentView = new ContentView();
+      return contentView.initialize();
     },
     captureUIEvents: function() {
-      var reloadOverview, save, updateExperimentStatus,
+      var reloadContent, save, updateExperimentStatus,
         _this = this;
       $('.dropdown-toggle').dropdown();
       $('#sandbox-on').off('click').on('click', function() {
@@ -277,7 +259,7 @@ define(['jquery', 'underscore', 'backbone', 'router', 'models/ConfigModel', 'mod
         return _this.saveSandboxState(false);
       });
       $('#test').off('click').on('click', function() {
-        return window.open(_this.config.get("HIT Configuration").question_url);
+        return window.open(_this.config.get("HIT Configuration").question_url + "?assignmentId=debug&hitId=debug&workerId=debug");
       });
       $("#server_off").off("click").on("click", function() {
         return _this.stopPsiTurkServer();
@@ -360,7 +342,7 @@ define(['jquery', 'underscore', 'backbone', 'router', 'models/ConfigModel', 'mod
         return _this.serverParamsSave();
       });
       updateExperimentStatus = this.pubsub.trigger("getExperimentStatus");
-      reloadOverview = this.loadOverview;
+      reloadContent = this.loadContent;
       $(document).on("click", '.expire', function() {
         var hitid;
         hitid = $(this).attr('id');
@@ -380,7 +362,7 @@ define(['jquery', 'underscore', 'backbone', 'router', 'models/ConfigModel', 'mod
             data: data,
             complete: function() {
               $('#expire-modal').modal('hide');
-              return reloadOverview();
+              return reloadContent();
             },
             error: function(error) {
               return console.log("failed to expire HIT");
@@ -408,7 +390,7 @@ define(['jquery', 'underscore', 'backbone', 'router', 'models/ConfigModel', 'mod
             data: data,
             complete: function() {
               $('#extend-modal').modal('hide');
-              return reloadOverview();
+              return reloadContent();
             },
             error: function(error) {
               return console.log("failed to extend HIT");
@@ -419,18 +401,21 @@ define(['jquery', 'underscore', 'backbone', 'router', 'models/ConfigModel', 'mod
     },
     initialize: function() {
       Router.initialize();
+      $.ajaxSetup({
+        timeout: 20000
+      });
       this.pubsub = _.extend({}, Backbone.Events);
       _.bindAll(this, "getExperimentStatus");
       _.bindAll(this, "captureUIEvents");
-      _.bindAll(this, "loadOverview");
+      _.bindAll(this, "loadContent");
       _.bindAll(this, "save");
       this.pubsub.bind("getExperimentStatus", this.getExperimentStatus);
       this.pubsub.bind("captureUIEvents", this.captureUIEvents);
-      this.pubsub.bind("loadOverview", this.loadOverview);
+      this.pubsub.bind("loadContent", this.loadContent);
       this.pubsub.bind("save", this.save);
       this.monitorPsiturkServer();
-      this.loadAWSData();
-      return this.getExperimentStatus();
+      this.getExperimentStatus();
+      return this.loadContent();
     }
   };
 });

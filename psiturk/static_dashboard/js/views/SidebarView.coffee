@@ -41,7 +41,7 @@ define [
             $(id).on 'click', =>
               $('li').removeClass 'selected'
               $('#overview').addClass 'selected'
-              @options.pubsub.trigger "loadOverview"
+              @options.pubsub.trigger "loadContent"
               window.open(url)
 
 
@@ -97,7 +97,7 @@ define [
                 $('#overview').off('click').on 'click', =>
                   $('li').removeClass 'selected'
                   $('#overview').addClass 'selected'
-                  @options.pubsub.trigger "loadOverview"
+                  @options.pubsub.trigger "loadContent"
                 @saveAndRender('#aws-info', awsInfo)
                 @saveAndRender('#hit-config', hitConfig)
                 @saveAndRender('#database', database)
