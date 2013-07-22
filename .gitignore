@@ -1,6 +1,7 @@
 # Documents for running the app:
 config.txt
 participants.db
+server.log
 
 *.py[cod]
 

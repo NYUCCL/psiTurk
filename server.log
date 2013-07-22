@@ -1,9 +1,0 @@
-2013-07-22 10:01:05,228 Exception on /quitter [POST]
-Traceback (most recent call last):
-  File "/Users/jaymartin/Envs/psiturk/lib/python2.7/site-packages/Flask-0.10.1-py2.7.egg/flask/app.py", line 1817, in wsgi_app
-    response = self.full_dispatch_request()
-  File "/Users/jaymartin/Envs/psiturk/lib/python2.7/site-packages/Flask-0.10.1-py2.7.egg/flask/app.py", line 1478, in full_dispatch_request
-    response = self.make_response(rv)
-  File "/Users/jaymartin/Envs/psiturk/lib/python2.7/site-packages/Flask-0.10.1-py2.7.egg/flask/app.py", line 1566, in make_response
-    raise ValueError('View function did not return a response')
-ValueError: View function did not return a response
