@@ -158,15 +158,17 @@ def download_datafile(filename):
     else:
         raise Exception("Not implemented: data file scope %s" % scope)
     subjresults = []
+    header = "" # By default, no header.
     if content == "trialdata":
         datafun = lambda p: p.get_trial_data()
     elif content == "eventdata":
+        header = "uniqueid,event_type,interval,value,timestamp\n"
         datafun = lambda p: p.get_event_data()
     elif content == "questiondata":
         datafun = lambda p: p.get_question_data()
     else:
         raise Exception("Not implemented: data type %s" % content)
-    ret = ''.join([datafun(participant) for participant in query])
+    ret = header + "".join([datafun(participant) for participant in query])
     response = Response(ret, content_type="text/csv", headers={'Content-Disposition': 'attachment;filename=%s' % filename})
     return response
 
