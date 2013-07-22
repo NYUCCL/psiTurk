@@ -591,7 +591,10 @@ init_db()
 
 # Initialize database if necessary
 def run_webserver():
-    app.run(debug=config.getboolean('Server Parameters', 'debug'), host='0.0.0.0', port=config.getint('Server Parameters', 'port'))
+    host = "0.0.0.0"
+    port = config.getint('Server Parameters', 'port')
+    print "Serving on ", "http://" +  host + ":" + str(port)
+    app.run(debug=config.getboolean('Server Parameters', 'debug'), host=host, port=port)
 
 if __name__ == '__main__':
     run_webserver()

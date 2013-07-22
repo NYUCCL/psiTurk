@@ -30,13 +30,11 @@ Once PsiTurk is installed, you'll need to set up your environment.
    [here](https://requester.mturk.com/).
 3. In a terminal, install psiturk by typing `pip install
    git+git://github.com/NYUCCL/psiTurk.git@dev`.
-3. To use our example experiment, check out the repository by typing `git clone -b dev
-   git://github.com/NYUCCL/psiTurk.git` or download it [as a zip
-   file](https://github.com/NYUCCL/psiTurk/archive/master.zip).  You can modify
-   this experiment to create your own.
-4. Move into the repository with `cd psiturk`.
+3. To use our example experiment, make a new directory and issue the command
+   `psiturk-setup-example`.
 5. Start the dashboard by typing `psiturk`. The dashboard should pop up in a browser window.
-6. Enter your AWS account information under the "AWS Info" tag.
+6. To launch the experiment server, click the "on" button next to the word
+   "server" in the upper-right-hand corner.
 
 *Note*: If you are just testing the server without posting your HIT to Amazon,
 you can see the experiment at the following link:
@@ -48,15 +46,15 @@ Experiment design
 
 We have provided an example stroop experiment that could form the basis of your
 own experiment. The task logic is programmed in Javascript, which will run in
-your participant's browser. Most of the code can be found in `static/task.js`.
-It works by dynamically changing the html document served to participants in
-`templates/exp.html` and communicating with the server code which can be found
-in `psiturk/psiturk.py`. PsiTurk assigns a condition and counterbalance to each
-participant. These are fed into JavaScript by plugging them into
-`templates/exp.html`. PsiTurk actively manages the condition and counterbalance
-subjects are assigned to, helping you fill them in evenly. To tell PsiTurk how
-many conditions and counterbalance identities are possible in your experiment,
-adust `num_conds` and `num_counters` in `config.txt`.
+your participant's browser. Most of the code can be found in
+`static/js/task.js`.  It works by dynamically changing the html document served
+to participants in `templates/exp.html` and communicating with the server code
+which can be found in `psiturk/psiturk.py`. PsiTurk assigns a condition and
+counterbalance to each participant. PsiTurk actively manages the condition and
+counterbalance subjects are assigned to, helping you fill them in evenly. These
+are fed into JavaScript via code in `static/js/psiturk.js`. You can tell
+PsiTurk how many conditions and counterbalance identities there are in the
+dashboard's "Expt Info" tab.
 
 Deployment
 ==========

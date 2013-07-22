@@ -22,6 +22,7 @@ class PsiTurkServer(Application):
         self.options = self.user_options
         self.prog = None
         self.do_load_config()
+        print "Now serving on", "http://" + self.options["bind"]
 
     def init(self, *args):
         '''init method

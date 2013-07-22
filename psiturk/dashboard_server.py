@@ -198,6 +198,7 @@ def launch():
     parser.add_argument('-p', '--port', default=22361,
                         help='optional port for dashboard. default is 22361.')
     args = parser.parse_args()
+    dashboard_host = "0.0.0.0"
     dashboard_port = args.port
     dashboard_server.port = dashboard_port
     
@@ -205,7 +206,9 @@ def launch():
     if not dashboard_server.check_port_state():
         print "Server is already running!"
     else:
-        app.run(debug=True, use_reloader=False, port=dashboard_port, host='0.0.0.0')
+        port = config.getint('Server Parameters', 'port')
+        print "Serving on ", "http://" +  dashboard_host + ":" + str(dashboard_port)
+        app.run(debug=True, use_reloader=False, port=dashboard_port, host=dashboard_host)
 
 if __name__ == "__main__":
     launch()
