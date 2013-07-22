@@ -30,7 +30,7 @@ Once PsiTurk is installed, you'll need to set up your environment.
    [here](https://requester.mturk.com/).
 3. In a terminal, install psiturk by typing `pip install
    git+git://github.com/NYUCCL/psiTurk.git@dev`.
-3. To use our example experiment, check out the repository by typing `git clone
+3. To use our example experiment, check out the repository by typing `git clone -b dev
    git://github.com/NYUCCL/psiTurk.git` or download it [as a zip
    file](https://github.com/NYUCCL/psiTurk/archive/master.zip).  You can modify
    this experiment to create your own.
