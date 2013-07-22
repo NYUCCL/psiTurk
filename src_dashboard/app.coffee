@@ -308,7 +308,8 @@ define [
 
         # Launch test window
         $('#test').off('click').on 'click', =>
-          window.open @config.get("HIT Configuration").question_url + "?assignmentId=debug&hitId=debug&workerId=debug"
+          uniqueId = new Date().getTime()
+          window.open @config.get("HIT Configuration").question_url + "?assignmentId=debug" + uniqueId + "&hitId=debug" + uniqueId + "&workerId=debug" + uniqueId
 
         # Shutdown psiTurk server
         $("#server_off").off("click").on "click", =>
