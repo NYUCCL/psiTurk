@@ -121,13 +121,13 @@ class MTurkServices:
         self.paramdict = dict(
             hit_type = None,
             question = mturkQuestion,
-            lifetime = datetime.timedelta(hours=self.config.getint('HIT Configuration', 'HIT_lifetime')),
-            max_assignments = self.config.get('HIT Configuration', 'max_assignments'),
+            lifetime = datetime.timedelta(hours=self.config.getfloat('HIT Configuration', 'HIT_lifetime')),
+            max_assignments = self.config.getint('HIT Configuration', 'max_assignments'),
             title = self.config.get('HIT Configuration', 'title'),
             description = self.config.get('HIT Configuration', 'description'),
             keywords = self.config.get('HIT Configuration', 'keywords'),
-            reward = self.config.get('HIT Configuration', 'reward'),
-            duration = datetime.timedelta(hours=self.config.getint('HIT Configuration', 'duration')),
+            reward = self.config.getfloat('HIT Configuration', 'reward'),
+            duration = datetime.timedelta(hours=self.config.getfloat('HIT Configuration', 'duration')),
             approval_delay = None,
             questions = None,
             qualifications = quals
