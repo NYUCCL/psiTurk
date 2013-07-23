@@ -1,5 +1,5 @@
 # Import flask
-import os
+import os, sys
 import argparse
 from flask import Flask, Response, render_template, request, jsonify
 import dashboard as Dashboard
@@ -183,8 +183,7 @@ def launch_psiturk():
 @app.route("/shutdown_dashboard", methods=["GET"])
 def shutdown():
     print("Attempting to shut down.")
-    pid = os.getpid()
-    dashboard_server.shutdown(pid)
+    sys.exit()
 
 @app.route("/shutdown_psiturk", methods=["GET"])
 def shutdown_psiturk():
