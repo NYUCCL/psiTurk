@@ -21,7 +21,6 @@ var startTask = function () {
 	
 	$.ajax("inexp", {
 			type: "POST",
-			async: true,
 			data: {uniqueId: uniqueId}
 	});
 	
@@ -31,7 +30,6 @@ var startTask = function () {
 		
 		$.ajax("quitter", {
 				type: "POST",
-				async: false,
 				data: {uniqueId: uniqueId}
 		});
 		alert(msg);
@@ -65,70 +63,12 @@ $(window).resize(function(){
 
 
 
-/****************
- * HTML PAGES   *
+/******************
+ * VIEW FUNCTIONS *
  ***************/
 
-var Page = Backbone.Model.extend({
-	defaults: {
-		name: "",
-		html: ""
-	}
-});
-
-var PageCollection = Backbone.Collection.extend({
-	model: Page,
-	url: '/pages',
-	
-	// need this because Flask won't return JSON with
-	// array at the top level
-	parse: function(response) {
-		return response.collection;
-	},
-	
-	getHTML: function(pagename, callback) {
-		matches = this.where({name: pagename});
-		if (matches.length > 0) callback(matches[0].get('html'));
-		else console.log("Page not found: ", pagename);
-	}
-});
-
-
-/****************
- * IMAGES       *
- ***************/
-
-var ExpImage = Backbone.Model.extend({
-	defaults: {
-		name: "",
-		loc: "",
-		el: null
-	},
-	initialize: function() {
-		var img = new Image();
-		img.src = this.get('loc');
-		this.set('el', img);
-	}
-});
-
-var ImageCollection = Backbone.Collection.extend({
-	
-	model: ExpImage,
-	url: '/images',
-
-	parse: function(response) {
-		return response.collection;
-	},
-
-	getImage: function(imagename, callback) {
-		matches = this.where({name: imagename});
-		if (matches.length > 0) {
-			callback(matches[0].get('el'));
-		} else {
-			console.log('Image not found: ', imagename);
-		}
-	}
-});
+// To be fleshed out with backbone views in the future.
+var replaceBody = function(x) { $('body').html(x); };
 
 
 /****************
@@ -197,31 +137,39 @@ var TaskData = Backbone.Model.extend({
  * API *
  ******/
 var PsiTurk = function() {
+	that = this;
+	
 	var taskdata = new TaskData();
 	taskdata.fetch({async: false});
 	
-	// Load pages and images:
-	var pages = new PageCollection();
-	pages.fetch({async: false});
-	
-	var images = new ImageCollection();
-	images.fetch({async: false});
-	
 	/*  DATA: */
-	this.pages = pages;
-	this.images = images;
+	this.pages = {};
 	this.taskdata = taskdata;
 	
 	/*  METHODS: */
-	// Get HTML file from collection and pass on to a callback
-	this.getPage = function(pagename, callback) {
-		pages.getHTML(pagename, callback);
+	this.preloadImages = function(imagenames) {
+		$(imagenames).each(function() {
+			image = new Image();
+			image.src = this;
+		});
 	};
 	
-	// Get a single image element and pass to callback
-	this.getImage = function(imagename, callback) {
-		images.getImage(imagename, callback);
+	this.preloadPages = function(pagenames) {
+		// Synchronously preload pages.
+		$(pagenames).each(function() {
+			$.ajax({
+				url: this,
+				success: function(page_html) { that.pages[this.url] = page_html;},
+				dataType: "html",
+				async: false
+			});
+		});
 	};
+	// Get HTML file from collection and pass on to a callback
+	this.getPage = function(pagename) {
+		return that.pages[pagename];
+	};
+	
 	
 	// Add a line of data with any number of columns
 	this.recordTrialData = function(trialdata) {
@@ -247,6 +195,7 @@ var PsiTurk = function() {
 	this.teardownTask = function(optmessage) {
 		Backbone.Notifications.trigger('_psiturk_finishedtask', optmessage);
 	};
+	this.showPage = _.compose(replaceBody, this.getPage);
 	return this;
 };
 

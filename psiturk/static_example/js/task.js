@@ -7,11 +7,16 @@
 // Initalize psiturk object
 var psiTurk = PsiTurk();
 
-// List of HTML files for the instructions
-var instruction_pages = [
+// All pages to be loaded
+var pages = [
 	"instruct.html",
-	"instruct2.html"
+	"test.html",
+	"postquestionnaire.html"
 ];
+
+psiTurk.preloadPages(pages);
+
+
 
 // Stimuli for a basic Stroop experiment
 var stims = [
@@ -40,25 +45,19 @@ var currentview;
 * insert them into the document.
 *
 ********************/
-var replacebody = function(pagehtml) {
-	$('body').html(pagehtml);
-};
-
-var showpage = function(pagename) {
-	psiTurk.getPage(pagename, replacebody);
-};
 
 
 /*************************
 * INSTRUCTIONS         
 *************************/
 
-var Instructions = function() {
+var Instructions = function(pages) {
 	var currentscreen = 0,
 	    timestamp;
+	    instruction_pages = pages; 
 	
 	var next = function() {
-		showpage(instruction_pages[currentscreen]);
+		psiTurk.showPage(instruction_pages[currentscreen]);
 		$('.continue').click(function() {
 			buttonPress();
 		});
@@ -87,7 +86,7 @@ var Instructions = function() {
 		// Record that the user has finished the instructions and 
 		// moved on to the experiment. This changes their status code
 		// in the database.
-		psiTurk.finishInstructions();
+		//psiTurk.finishInstructions();
 
 		// Move on to the experiment 
 		currentview = new TestPhase();
@@ -163,7 +162,7 @@ var TestPhase = function() {
 	
 	
 	// Load the test.html snippet into the body of the page
-	showpage('test.html');
+	psiTurk.showPage('test.html');
 	
 	// This uses the Raphael library to create the stimulus. Note that when
 	// this is created the first argument is the id of an element in the
@@ -213,12 +212,12 @@ var Questionnaire = function() {
 	};
 	
 	prompt_resubmit = function() {
-		replacebody(error_message);
+		replaceBody(error_message);
 		$("#resubmit").click(resubmit);
 	};
 
 	resubmit = function() {
-		replacebody("<h1>Trying to resubmit...</h1>");
+		replaceBody("<h1>Trying to resubmit...</h1>");
 		reprompt = setTimeout(prompt_resubmit, 10000);
 		
 		psiTurk.saveData({
@@ -231,7 +230,7 @@ var Questionnaire = function() {
 	};
 
 	// Load the questionnaire snippet 
-	showpage('postquestionnaire.html');
+	psiTurk.showPage('postquestionnaire.html');
 	psiTurk.recordTrialData(['postquestionnaire', 'begin']);
 	
 	$("#continue").click(function () {
@@ -250,7 +249,9 @@ var debriefing = function() { window.location="/debrief?uniqueId=" + psiTurk.tas
  * Run Task
  ******************/
 $(window).load( function(){
-    currentview = new Instructions();
+    currentview = new Instructions([
+		"instruct.html"
+	]);
 });
 
 // vi: noexpandtab tabstop=4 shiftwidth=4
