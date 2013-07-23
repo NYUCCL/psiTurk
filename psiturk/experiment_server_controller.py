@@ -98,7 +98,7 @@ class ExperimentServerController:
     def shutdown(self, ppid=None):
         if not ppid:
             ppid = self.get_ppid()
-        print("shutting down experiment server at pid %s..." % ppid)
+        print("Shutting down experiment server at pid %s..." % ppid)
         try:
             os.kill(int(ppid), signal.SIGKILL)
         except ExperimentServerControllerException:
@@ -115,6 +115,6 @@ class ExperimentServerController:
         if self.is_port_available():
             print("Running experiment server with command:", server_command)
             subprocess.Popen(server_command, shell=True)
-            return("experiment server launching...")
+            return("Experiment server launching...")
         else:
-            return("experiment server is already running...")
+            return("Experiment server is already running...")

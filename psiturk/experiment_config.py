@@ -1,7 +1,7 @@
 import os
 from ConfigParser import SafeConfigParser
 
-class PsiTurkConfig(SafeConfigParser):
+class ExperimentConfig(SafeConfigParser):
     def __init__(self, filename="config.txt", **kwargs):
         self.parent = SafeConfigParser
         self.parent.__init__(self, **kwargs)

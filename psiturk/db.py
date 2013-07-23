@@ -3,9 +3,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.ext.declarative import declarative_base
 
-from psiturk_config import PsiTurkConfig
+from experiment_config import ExperimentConfig
 
-config = PsiTurkConfig()
+config = ExperimentConfig()
 
 DATABASE = config.get('Database Parameters', 'database_url')
 

@@ -10,7 +10,7 @@ setup(
         'console_scripts': [
             'psiturk = psiturk.dashboard_server:launch',
             'psiturk-dashboard = psiturk.dashboard_server:launch',
-            'psiturk-server = psiturk.psiturk_server:launch',
+            'psiturk-server = psiturk.experiment_server:launch',
             'psiturk-setup-example = psiturk.setup_example:setup_example'
         ]
     },

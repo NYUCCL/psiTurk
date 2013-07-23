@@ -2,14 +2,14 @@
 from gunicorn.app.base import Application
 from gunicorn import util
 import multiprocessing
-from psiturk_config import PsiTurkConfig
+from experiment_config import ExperimentConfig
 
-config = PsiTurkConfig()
+config = ExperimentConfig()
 
 
-class PsiTurkServer(Application):
+class ExperimentServer(Application):
     '''
-    Custom Gunicorn Server Application
+    Custom Gunicorn Server Application that serves up the Experiment application
     '''
 
     def __init__(self):
@@ -51,7 +51,7 @@ class PsiTurkServer(Application):
         }
 
 def launch():
-    PsiTurkServer().run()
+    ExperimentServer().run()
 
 if __name__ == "__main__":
     launch()
