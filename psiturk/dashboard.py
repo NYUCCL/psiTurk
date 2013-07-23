@@ -199,7 +199,7 @@ class Server:
     def shutdown(self, ppid=None):
         if not ppid:
             ppid = self.get_ppid()
-        print("shutting down server at pid %s..." % ppid)
+        print("shutting down PsiTurk server at pid %s..." % ppid)
         try:
             os.kill(int(ppid), signal.SIGKILL)
         except ServerException:
