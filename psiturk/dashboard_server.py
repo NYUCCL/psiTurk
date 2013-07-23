@@ -2,21 +2,47 @@
 import os
 import argparse
 from flask import Flask, Response, render_template, request, jsonify
-import dashboard as Dashboard
+import amt_services 
 import urllib2
+import webbrowser
 from psiturk_config import PsiTurkConfig
 from models import Participant
+from experiment_server_controller import *
+from amt_services import MTurkServices
 
 config = PsiTurkConfig()
 
-server = Dashboard.Server(config.getint("Server Parameters", "port"), hostname=config.get("Server Parameters", "host"))
-dashboard_server = Dashboard.Server()
+server_controller = ExperimentServerController(config.getint("Server Parameters", "port"), hostname=config.get("Server Parameters", "host"))
 
 app = Flask("Psiturk_Dashboard",
             template_folder=os.path.join(os.path.dirname(__file__), "templates_dashboard"), 
             static_folder=os.path.join(os.path.dirname(__file__), "static_dashboard"))
 
-# Routes for handling dashboard activity
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# Some supporting classes needed by the dashboard_server
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+#----------------------------------------------
+# vanilla exception handler
+#----------------------------------------------
+class DashboardServerException(Exception):
+    def __init__(self, value):
+        self.value = value
+    def __str__(self):
+        return repr(self.value)
+
+   
+
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# Dashboard Server Routes
+#    two subsections
+#       - routes for handling dashboard interactivity
+#       - routes for interacting with experiment server
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+#----------------------------------------------
+# Routes for handling dashboard interactivity
+#----------------------------------------------
 @app.route('/dashboard', methods=['GET'])
 def dashboard():
     """
@@ -37,9 +63,9 @@ def dashboard_model():
         reset_server = config.set_serialized(config_model)
     
     if reset_server:
-        if server.check_port_state() == 0:
-            server.shutdown()
-            server.startup()
+        if server_controller.is_port_available() == 0: 
+            server_controller.shutdown()
+            sserver_controller.startup()
     
     return render_template('dashboard.html')
 
@@ -48,7 +74,7 @@ def at_a_glance_model():
     """
     Sync for dashboard at-a-glance pane.
     """
-    services = Dashboard.MTurkServices(config)
+    services = MTurkServices(config)
 
     if request.method == 'GET':
         summary = services.get_summary()
@@ -60,8 +86,9 @@ def at_a_glance_model():
 @app.route('/verify_aws_login', methods=['POST'])
 def verify_aws():
     """
+    Verifies current aws login keys are valid
     """
-    services = Dashboard.MTurkServices(config)
+    services = MTurkServices(config)
     key_id = request.json['aws_access_key_id']
     secret_key = request.json['aws_secret_access_key']
     is_valid = services.verify_aws_login(key_id, secret_key)
@@ -72,7 +99,7 @@ def verify_aws():
 def turk_services():
     """
     """
-    services = Dashboard.MTurkServices(config)
+    services = MTurkServices(config)
     mturk_request = request.json
     if "mturk_request" in request.json:
         if request.json["mturk_request"] == "create_hit":
@@ -103,7 +130,7 @@ def get_log():
 def get_hits():
     """
     """
-    services = Dashboard.MTurkServices(config)
+    services = MTurkServices(config)
     return jsonify(hits=services.get_active_hits())
 
 @app.route('/is_port_available', methods=['POST'])
@@ -116,7 +143,7 @@ def is_port_available_route():
         if test_port == config.getint('Server Parameters', 'port'):
             is_available = 1
         else:
-            is_available = server.is_port_available(test_port)
+            is_available = is_port_available(host='127.0.0.1', port=test_port)  #?
         return jsonify(is_available=is_available)
     return "port check"
 
@@ -131,14 +158,14 @@ def is_internet_on():
 
 @app.route("/server_status", methods=["GET"])
 def status():
-    server = Dashboard.Server(port=config.getint('Server Parameters', 'port'))
-    return(jsonify(state=server.check_port_state()))
+    return(jsonify(state=server_controller.is_port_available()))
 
-@app.route("/participant_status", methods=["GET"])
-def participant_status():
-    database = Dashboard.Database()
-    status = database.get_participant_status()
-    return status
+# this function appears unimplemented in the dashboard currently
+# @app.route("/participant_status", methods=["GET"])
+# def participant_status():
+#     database = Dashboard.Database()
+#     status = database.get_participant_status()
+#     return status
 
 @app.route("/favicon.ico")
 def favicon():
@@ -173,45 +200,63 @@ def download_datafile(filename):
     return response
 
 #----------------------------------------------
-# psiTurk server routes
+# routes for interfacing with ExperimentServerController
 #----------------------------------------------
 @app.route("/launch", methods=["GET"])
 def launch_psiturk():
-    server.startup()
+    server_controller.startup()
     return "psiTurk launching..."
 
 @app.route("/shutdown_dashboard", methods=["GET"])
 def shutdown():
     print("Attempting to shut down.")
-    server.shutdown()  # Must do this; otherwise zombie server remains on dashboard port; not sure why
+    #server_controller.shutdown()  # Must do this; otherwise zombie server remains on dashboard port; not sure why
     request.environ.get('werkzeug.server.shutdown')()
     return("shutting down dashboard server...")
 
 @app.route("/shutdown_psiturk", methods=["GET"])
 def shutdown_psiturk():
-    server.shutdown()
+    server_controller.shutdown()
     return("shutting down PsiTurk server...")
 
 
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# Supporting functions
+#   general purpose helper functions used by the dashboard server
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+def launch_browser(hostname, port):
+    launchurl = "http://{host}:{port}/dashboard".format(host=hostname, port=port)
+    webbrowser.open(launchurl, new=1, autoraise=True)
+
+def launch_browser_when_online(**kwargs):
+    kwargs_keys = kwargs.keys()
+    if 'ip' in kwargs_keys and 'port' in kwargs_keys:
+        ip = kwargs['ip']
+        port = kwargs['port']
+        browser_launch_thread = wait_until_online(lambda: launch_browser(ip, port), **kwargs)
+    else:
+        raise DashboardServerException("launch_browser_when_online needs keyword/values for 'host' and 'port'")
+    
 def run_dev_server():
     app.debug = True
 
+#  this is the entry point to the script when running 'psiturk' from the command line
 def launch():
     parser = argparse.ArgumentParser(description='Launch psiTurk dashboard.')
     parser.add_argument('-p', '--port', default=22361,
                         help='optional port for dashboard. default is 22361.')
     args = parser.parse_args()
-    dashboard_host = "0.0.0.0"
+    dashboard_ip = "0.0.0.0"
     dashboard_port = args.port
-    dashboard_server.port = dashboard_port
     
-    dashboard_server.launch_browser_when_online()
-    if not dashboard_server.check_port_state():
-        print "Server is already running!"
+    launch_browser_when_online(ip=dashboard_ip, port=dashboard_port)
+    if not is_port_available(ip=dashboard_ip, port=dashboard_port):
+        print "Server is already running on http://localhost:%s/dashboard!" % dashboard_port
     else:
         port = config.getint('Server Parameters', 'port')
-        print "Serving on ", "http://" +  dashboard_host + ":" + str(dashboard_port)
-        app.run(debug=True, use_reloader=False, port=dashboard_port, host=dashboard_host)
-
+        print "Serving on ", "http://" +  dashboard_ip + ":" + str(dashboard_port)
+        app.run(debug=True, use_reloader=False, port=dashboard_port, host=dashboard_ip)
+ 
 if __name__ == "__main__":
     launch()
