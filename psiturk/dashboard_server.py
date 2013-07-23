@@ -183,8 +183,9 @@ def launch_psiturk():
 @app.route("/shutdown_dashboard", methods=["GET"])
 def shutdown():
     print("Attempting to shut down.")
-    pid = os.getpid()
-    dashboard_server.shutdown(pid)
+    server.shutdown()  # Must do this; otherwise zombie server remains on dashboard port; not sure why
+    request.environ.get('werkzeug.server.shutdown')()
+    return("shutting down dashboard server...")
 
 @app.route("/shutdown_psiturk", methods=["GET"])
 def shutdown_psiturk():
