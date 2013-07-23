@@ -1,2 +1,4 @@
 recursive-include psiturk/templates_dashboard *
 recursive-include psiturk/static_dashboard *
+recursive-include psiturk/templates_example *
+recursive-include psiturk/static_example *
