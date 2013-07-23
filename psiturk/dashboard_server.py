@@ -25,7 +25,7 @@ def dashboard():
     return render_template('dashboard.html')
 
 @app.route('/dashboard_model', methods=['GET', 'POST'])
-def dashbaord_model():
+def dashboard_model():
     """
     Sync for dashboard model.
     """
