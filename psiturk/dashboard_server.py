@@ -4,7 +4,7 @@ import argparse
 from flask import Flask, Response, render_template, request, jsonify
 import dashboard as Dashboard
 import urllib2
-from PsiTurkConfig import PsiTurkConfig
+from psiturk_config import PsiTurkConfig
 from models import Participant
 
 config = PsiTurkConfig()

@@ -2,7 +2,7 @@
 from gunicorn.app.base import Application
 from gunicorn import util
 import multiprocessing
-from PsiTurkConfig import PsiTurkConfig
+from psiturk_config import PsiTurkConfig
 
 config = PsiTurkConfig()
 

@@ -4,7 +4,7 @@ import io, csv, json
 from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text
 
 from db import Base
-from PsiTurkConfig import PsiTurkConfig
+from psiturk_config import PsiTurkConfig
 
 config = PsiTurkConfig()
 

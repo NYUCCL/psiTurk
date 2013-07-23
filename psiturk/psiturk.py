@@ -17,8 +17,7 @@ from db import db_session, init_db
 from models import Participant
 from sqlalchemy import or_
 
-
-from PsiTurkConfig import PsiTurkConfig
+from psiturk_config import PsiTurkConfig
 
 config = PsiTurkConfig()
 
