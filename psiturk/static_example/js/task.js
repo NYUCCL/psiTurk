@@ -113,7 +113,7 @@ var TestPhase = function() {
 			finish();
 		}
 		else {
-			stim = stims.pop();
+			stim = stims.shift();
 			show_word( stim[0], stim[1] );
 			wordon = new Date().getTime();
 			listening = true;
