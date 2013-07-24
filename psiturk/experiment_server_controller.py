@@ -114,7 +114,7 @@ class ExperimentServerController:
         )
         if self.is_port_available():
             print("Running experiment server with command:", server_command)
-            subprocess.Popen(server_command, shell=True)
+            subprocess.Popen(server_command, shell=True, close_fds=True)
             return("Experiment server launching...")
         else:
             return("Experiment server is already running...")
