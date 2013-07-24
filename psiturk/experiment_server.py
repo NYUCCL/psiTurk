@@ -39,7 +39,7 @@ class ExperimentServer(Application):
         '''load method
         Imports our application and returns it to be run.
         '''
-        return util.import_app("psiturk:app")
+        return util.import_app("experiment:app")
 
     def load_user_config(self):
         self.loglevels = ["debug", "info", "warning", "error", "critical"]

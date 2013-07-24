@@ -3,7 +3,6 @@ import subprocess
 import signal
 from threading import Thread, Event
 import urllib2
-import datetime
 import socket
 
 
@@ -110,7 +109,7 @@ class ExperimentServerController:
     def startup(self):
         server_command = "{python_exec} '{server_script}'".format(
             python_exec = sys.executable,
-            server_script = os.path.join(os.path.dirname(__file__), "psiturk_server.py")
+            server_script = os.path.join(os.path.dirname(__file__), "experiment_server.py")
         )
         if self.is_port_available():
             print("Running experiment server with command:", server_command)
