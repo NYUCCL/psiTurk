@@ -3,7 +3,7 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-define(["backbone", 'text!templates/aws-info.html', 'text!templates/hit-config.html', 'text!templates/database.html', 'text!templates/server-params.html', 'text!templates/expt-info.html', 'views/validators', 'views/RunExptView'], function(Backbone, AWSInfoTemplate, HITConfigTemplate, DatabaseTemplate, ServerParamsTemplate, ExptInfoTemplate, Validators, RunExptView) {
+define(["backbone", 'text!templates/aws-info.html', 'text!templates/hit-config.html', 'text!templates/database.html', 'text!templates/server-params.html', 'text!templates/expt-info.html', 'text!templates/server-log.html', 'views/validators', 'views/RunExptView'], function(Backbone, AWSInfoTemplate, HITConfigTemplate, DatabaseTemplate, ServerParamsTemplate, ExptInfoTemplate, ServerLogTemplate, Validators, RunExptView) {
   var SideBarView, _ref;
   return SideBarView = (function(_super) {
     __extends(SideBarView, _super);
@@ -51,7 +51,7 @@ define(["backbone", 'text!templates/aws-info.html', 'text!templates/hit-config.h
         return $(this).addClass('selected');
       });
       return $.when(this.options.config.fetch().done(function() {
-        var awsInfo, database, exptInfo, hitConfig, serverParams;
+        var awsInfo, database, exptInfo, hitConfig, serverLog, serverParams;
         awsInfo = function() {
           return _.template(AWSInfoTemplate, {
             input: {
@@ -85,6 +85,16 @@ define(["backbone", 'text!templates/aws-info.html', 'text!templates/hit-config.h
             }
           });
         };
+        serverLog = function() {
+          return _.template(ServerLogTemplate, {
+            input: {
+              host: _this.options.config.get("Server Parameters").host,
+              port: _this.options.config.get("Server Parameters").port,
+              cutoff_time: _this.options.config.get("Server Parameters").cutoff_time,
+              support_ie: _this.options.config.get("Server Parameters").support_ie
+            }
+          });
+        };
         serverParams = function() {
           return _.template(ServerParamsTemplate, {
             input: {
@@ -113,6 +123,7 @@ define(["backbone", 'text!templates/aws-info.html', 'text!templates/hit-config.h
         _this.saveAndRender('#hit-config', hitConfig);
         _this.saveAndRender('#database', database);
         _this.saveAndRender('#server-params', serverParams);
+        _this.saveAndRender('#server-log', serverLog);
         _this.saveAndRender('#expt-info', exptInfo);
         _this.redirect('#documentation', 'https://github.com/NYUCCL/psiTurk/wiki');
         return _this.redirect('#contribute', 'https://github.com/NYUCCL/psiTurk');
