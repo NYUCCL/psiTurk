@@ -63,9 +63,9 @@ def dashboard_model():
         reset_server = config.set_serialized(config_model)
     
     if reset_server:
-        if server_controller.is_port_available() == 0: 
+        if server_controller.is_port_available() == 0:
             server_controller.shutdown()
-            sserver_controller.startup()
+            server_controller.startup()
     
     return render_template('dashboard.html')
 
@@ -143,7 +143,7 @@ def is_port_available_route():
         if test_port == config.getint('Server Parameters', 'port'):
             is_available = 1
         else:
-            is_available = is_port_available(host='127.0.0.1', port=test_port)  #?
+            is_available = is_port_available(ip='127.0.0.1', port=test_port)
         return jsonify(is_available=is_available)
     return "port check"
 
