@@ -176,8 +176,8 @@ define [
             console.log "network failure"
 
 
-
       launchPsiTurkServer: ->
+        $('#server_status').css "color": "yellow"
         $.ajax
           url: '/launch'
           type: "GET"
@@ -186,11 +186,11 @@ define [
       stopPsiTurkServer: ->
         $('#server-off-modal').modal('show')
         $('#shutdownServerBtn').on "click", ->
-          # $('#server_status').css "color": "yellow"
+          $('#server_status').css "color": "yellow"
           $.ajax
             url: '/shutdown_psiturk'
             type: "GET"
-            success: $('#server-off-modal').modal('hide')
+            success: $('#server-off-modal').modal 'hide'
 
 
       loadHITTable: ->
@@ -199,98 +199,120 @@ define [
         $("#tables").html hit_view.render().el
 
 
-      monitorPsiturkServer: ->
+      pollPsiturkServerStatus: ->
       # Use long poll to sync dashboard w/ server.
       # Socket.io is a much better choice, but requires gevent, and thus gcc.
         UP = 0
-        $.doTimeout 'server_poll', 1000, ->
+        $.doTimeout 'server_poll'  # Stop any previous server polling
+        $.doTimeout 'server_poll', 1000, =>
           $.ajax
             url: "/server_status"
-            success: (data) ->
-             server = parseInt(data.state)
-             if server is UP
-               $('#server_status').css "color": "green"
-               $('#server_on')
-                 .css "color": "grey"
-               $('#server_off').css "color": "orange"
-               $('#test').show()
-             else
-               $('#server_status').css({"color": "red"})
-               $('#server_off')
-                 .css "color": "grey"
-               $('#server_on').css "color": "orange"
-               $('#test').hide()
+            success: (data) =>
+              server = parseInt data.state
+              statusChanged = not(@server_status == server)
+              if server is UP and statusChanged
+                @server_status = server
+                $('#server_status').css "color": "green"
+                $('#server_on')
+                  .css "color": "grey"
+                $('#server_off').css "color": "orange"
+                $('#test').show()
+              else if statusChanged
+                @server_status = server
+                $('#server_status').css "color": "red"
+                $('#server_off').css "color": "grey"
+                $('#server_on').css "color": "orange"
+                $('#test').hide()
           return true
 
 
-      # TODO(Jay): Move to it's own view and refactor
+      monitorPsiturkServer: ->
+        UP = 0
+        $.ajax
+          url: "/server_status"
+          success: (data) =>
+            # initialize
+            @server_status = parseInt data.state
+            if @server_status is UP
+              $('#server_status').css "color": "green"
+              $('#server_on')
+                .css "color": "grey"
+              $('#server_off').css "color": "orange"
+              $('#test').show()
+            else
+              $('#server_status').css "color": "red"
+              $('#server_off').css "color": "grey"
+              $('#server_on').css "color": "orange"
+              $('#test').hide()
+            @pollPsiturkServerStatus()
+
+
+      # TODO(Jay): Move to it's own view and do a big refactor
       loadContent: ->
         @config = new ConfigModel
         @ataglance = new AtAGlanceModel
         recaptureUIEvents = => @pubsub.trigger "captureUIEvents"
-        saveDebugState = _.bind(@saveDebugState, @)
-        launchWithNoConnection = =>
+        saveDebugState = _.bind @saveDebugState, @
+        launchWithoutInternet = =>
           # Load overview
-          overview = _.template(OverviewTemplate,
+          overview = _.template OverviewTemplate,
             input:
               balance: "-"
               debug: if @config.get("Server Parameters").debug is "True" then "checked" else ""
-          )
-          $('#content').html(overview)
+          $('#content').html overview
           # Load sidebar
           sidebarView = new SidebarView
             config: @config
             pubsub: @pubsub
-          sideBarHTML = _.template(SideBarTemplate)
-          $('#sidebar').html(sideBarHTML)
+          sideBarHTML = _.template SideBarTemplate
+          $('#sidebar').html sideBarHTML
           sidebarView.initialize()
           # Sandbox tabs
           if @config.get("HIT Configuration").using_sandbox is "True"
-            $('#sandbox-on').addClass('active')
-            $('#sandbox-off').removeClass('active')
+            $('#sandbox-on').addClass 'active'
+            $('#sandbox-off').removeClass 'active'
           else
-            $('#sandbox-on').removeClass('active')
-            $('#sandbox-off').addClass('active')
+            $('#sandbox-on').removeClass 'active'
+            $('#sandbox-off').addClass 'active'
           # Refresh HIT table
           @captureUIEvents()
-          @monitorPsiturkServer()
+        launchWithInternet = =>
+          @ataglance.fetch().pipe => @config.fetch().done =>
+            # Load overview
+            overview = _.template OverviewTemplate,
+              input:
+                balance: @ataglance.get "balance"
+                debug: if @config.get("Server Parameters").debug is "True" then "checked" else ""
+            $('#content').html overview
+            # Load sidebar
+            sidebarView = new SidebarView
+              config: @config
+              ataglance: @ataglance
+              pubsub: @pubsub
+            sideBarHTML = _.template SideBarTemplate
+            $('#sidebar').html sideBarHTML
+            sidebarView.initialize()
+            # Sandbox tabs
+            if @config.get("HIT Configuration").using_sandbox is "True"
+              $('#sandbox-on').addClass 'active'
+              $('#sandbox-off').removeClass 'active'
+            else
+              $('#sandbox-on').removeClass 'active'
+              $('#sandbox-off').addClass 'active'
+            # Refresh HIT table
+            @loadHITTable()
+            @captureUIEvents()
+            @verifyAWSLogin()
+            @getExperimentStatus()
         $.ajax
           url: '/is_internet_available'
           type: "GET"
           success: (data) =>
-            if data == "true"
-              @ataglance.fetch().pipe => @config.fetch().done =>
-                # Load overview
-                overview = _.template(OverviewTemplate,
-                  input:
-                    balance: @ataglance.get("balance")
-                    debug: if @config.get("Server Parameters").debug is "True" then "checked" else ""
-                )
-                $('#content').html(overview)
-                # Load sidebar
-                sidebarView = new SidebarView
-                  config: @config
-                  ataglance: @ataglance
-                  pubsub: @pubsub
-                sideBarHTML = _.template(SideBarTemplate)
-                $('#sidebar').html(sideBarHTML)
-                sidebarView.initialize()
-                # Sandbox tabs
-                if @config.get("HIT Configuration").using_sandbox is "True"
-                  $('#sandbox-on').addClass('active')
-                  $('#sandbox-off').removeClass('active')
-                else
-                  $('#sandbox-on').removeClass('active')
-                  $('#sandbox-off').addClass('active')
-                # Refresh HIT table
-                @loadHITTable()
-                @captureUIEvents()
-                @verifyAWSLogin()
-                @monitorPsiturkServer()
-                @getExperimentStatus()
+            internetIsOn = data == "true"
+            if internetIsOn
+              launchWithInternet()
             else
-              launchWithNoConnection()
-
+              launchWithoutInternet()
         # Load content view after html; req's html ids to be present
         contentView = new ContentView()
         contentView.initialize()
@@ -298,6 +320,8 @@ define [
 
       # TODO(Jay): To follow a proper MVC setup, many of these functions should be moved to their respective views
       captureUIEvents: ->
+
+        $.doTimeout 'logging'  # Stop any previous log polling
         # Load general dropdown actions
         $('.dropdown-toggle').dropdown()
 
@@ -313,7 +337,7 @@ define [
           window.open @config.get("HIT Configuration").question_url + "?assignmentId=debug" + uniqueId + "&hitId=debug" + uniqueId + "&workerId=debug" + uniqueId
 
         # Shutdown psiTurk server
-        $("#server_off").off("click").on "click", =>
+        $("#server_off").off('click').on "click", =>
           @stopPsiTurkServer()
 
         # Launch psiTurk server
@@ -325,6 +349,23 @@ define [
           @save(event)
           @stopPsiTurkServer()
           @launchPsiTurkServer()
+
+        $(".log-level").on "click", ->
+          level = $(@).attr("id").charAt(@.length - 1)
+
+          $.doTimeout 'logging'  # Stop any previous log polling
+          $.doTimeout 'logging', 2000, ->
+            $.ajax
+              contentType: "application/json; charset=utf-8"
+              url: '/get_log'
+              type: "POST"
+              dataType: 'json'
+              data: JSON.stringify log_level : level
+              success : (log_data) =>
+                $('#server-log-display').html log_data.log
+              error: (error) ->
+                console.log(error)
+            return true
 
         $('#run').off("click").on "click", =>
           runExptView = new RunExptView config: @config
@@ -344,7 +385,7 @@ define [
             configData["HIT Configuration"] = inputData
             @config.save configData
 
-          $('#run-expt-btn').on "click", =>
+          $('#run-expt-btn').off('click').on "click", =>
             $.ajax
               contentType: "application/json; charset=utf-8"
               url: '/mturk_services'
@@ -361,26 +402,30 @@ define [
                 console.log(error)
                 $('#expire-modal').modal 'hide'
 
-
         $('#shutdown-dashboard').off("click").on 'click', =>
           $('#dashboard-off-modal').modal 'show'
+          $.doTimeout 'server_poll'  # Stop server polling
           $.ajax
             url: '/shutdown_dashboard'
             type: "GET"
+            success: ->
 
-        save = _.bind(@save, @)
         $(document).off("click").on "click", '.save', =>
           event.preventDefault()
           @options.pubsub.trigger "save", event
           $(document).off("click").on "click", '.save_data', (event) =>
             event.preventDefault()
             @options.pubsub.trigger "save", event
-        $('input#debug').on "click",  =>
+
+        $('input#debug').off('click').on "click",  =>
           @saveDebugState()
+
         $(document).off("click").on "click", '#aws-info-save', =>
           @verifyAWSLogin()
-        $(document).on "click", '#server-parms-save', =>
+
+        $(document).off('click').on "click", '#server-parms-save', =>
           @serverParamsSave()
+
 
 
         # Bind table buttons
@@ -390,7 +435,7 @@ define [
         reloadContent = @loadContent
 
         # Expire HIT UI event
-        $(document).on "click", '.expire', ->
+        $(document).off('click').on "click", '.expire', ->
           hitid = $(@).attr 'id'
           $('#expire-modal').modal 'show'
           $('#expire-btn').on 'click', ->
@@ -435,8 +480,6 @@ define [
 
         Router.initialize()
 
-        # $.ajaxSetup timeout: 20000  # Time out on network failure
-
 
         # Inter-view communication
         # =======================
@@ -454,3 +497,4 @@ define [
         # Server & content
         # ================
         @loadContent()
+        @monitorPsiturkServer()
