@@ -1,4 +1,4 @@
-#  Filename: SidebarView.coffee
+# Filename: SidebarView.coffee
 define [
         "backbone"
         'text!templates/aws-info.html'
@@ -9,6 +9,7 @@ define [
         'text!templates/server-log.html'
         'views/validators'
         'views/RunExptView'
+        'dropdown'
       ],
       (
         Backbone
@@ -20,6 +21,7 @@ define [
         ServerLogTemplate
         Validators
         RunExptView
+        dropdown
       ) ->
 
         class SideBarView extends Backbone.View
@@ -29,18 +31,23 @@ define [
             @render()
 
 
-          saveAndRender: (id, generateTemplate) =>
-            validator = new Validators  # Validates form fields
-            $(id).on 'click', =>
+          saveAndRender: (id, generateTemplate, validate=true) =>
+            $(id).off('click').on 'click', =>
               $('#content').html generateTemplate()
-              validator.loadValidators()
-              $('#myform').submit(false)
+              if validate
+                validator = new Validators  # Validates form fields
+                validator.loadValidators()
+              $('#myform').submit false
               $('.save').on "click", (event) =>
                 @options.pubsub.trigger "save", event
 
+              @options.pubsub.trigger "captureUIEvents"  # Publish to captureUIEvents
+              $('.dropdown-toggle').dropdown()  # initialize log dropdown boxes
+              # Highlight sidebar selections on click
+
 
           redirect: (id, url) =>
-            $(id).on 'click', =>
+            $(id).off('click').on 'click', =>
               $('li').removeClass 'selected'
               $('#overview').addClass 'selected'
               @options.pubsub.trigger "loadContent"
@@ -48,22 +55,19 @@ define [
 
 
           render: =>
-            # Highlight sidebar selections on click
-            $('li').on 'click', ->
-              $('li').removeClass 'selected'
-              $(@).addClass 'selected'
+
 
             # Generate dynamic content from AMT data
-            $.when @options.config.fetch()# , @options.ataglance.fetch()
+            $.when @options.config.fetch()
               .done =>
                 # Load and add config content pages via dynamic templates
                 awsInfo = =>
-                  _.template(AWSInfoTemplate,
+                  _.template AWSInfoTemplate,
                     input:
                       aws_access_key_id: @options.config.get("AWS Access").aws_access_key_id
-                      aws_secret_access_key: @options.config.get("AWS Access").aws_secret_access_key)
+                      aws_secret_access_key: @options.config.get("AWS Access").aws_secret_access_key
                 hitConfig = =>
-                  _.template(HITConfigTemplate,
+                  _.template HITConfigTemplate,
                     input:
                       title: @options.config.get("HIT Configuration").title
                       description: @options.config.get("HIT Configuration").description
@@ -75,34 +79,30 @@ define [
                       duration: @options.config.get("HIT Configuration").duration
                       us_only: @options.config.get("HIT Configuration").us_only
                       approve_requirement: @options.config.get("HIT Configuration").approve_requirement
-                      using_sandbox: @options.config.get("HIT Configuration").using_sandbox)
+                      using_sandbox: @options.config.get("HIT Configuration").using_sandbox
                 database = =>
-                  _.template(DatabaseTemplate,
+                  _.template DatabaseTemplate,
                     input:
                       database_url: @options.config.get("Database Parameters").database_url
-                      table_name: @options.config.get("Database Parameters").table_name)
+                      table_name: @options.config.get("Database Parameters").table_name
                 serverLog = =>
-                  _.template(ServerLogTemplate,
-                    input:
-                      host: @options.config.get("Server Parameters").host
-                      port: @options.config.get("Server Parameters").port
-                      cutoff_time: @options.config.get("Server Parameters").cutoff_time
-                      support_ie: @options.config.get("Server Parameters").support_ie)
+                  _.template ServerLogTemplate
                 serverParams = =>
-                  _.template(ServerParamsTemplate,
+                  _.template ServerParamsTemplate,
                     input:
                       host: @options.config.get("Server Parameters").host
                       port: @options.config.get("Server Parameters").port
                       cutoff_time: @options.config.get("Server Parameters").cutoff_time
-                      support_ie: @options.config.get("Server Parameters").support_ie)
+                      support_ie: @options.config.get("Server Parameters").support_ie
                 exptInfo = =>
-                  _.template(ExptInfoTemplate,
+                  _.template ExptInfoTemplate,
                     input:
                       code_version: @options.config.get("Task Parameters").code_version,
                       num_conds: @options.config.get("Task Parameters").num_conds,
-                      num_counters: @options.config.get("Task Parameters").num_counters)
+                      num_counters: @options.config.get("Task Parameters").num_counters
 
-                # Have content area respond to sidebar clicks
+
+                # Sidebar user events
                 $('#overview').off('click').on 'click', =>
                   $('li').removeClass 'selected'
                   $('#overview').addClass 'selected'
@@ -111,7 +111,14 @@ define [
                 @saveAndRender('#hit-config', hitConfig)
                 @saveAndRender('#database', database)
                 @saveAndRender('#server-params', serverParams)
-                @saveAndRender('#server-log', serverLog)
+                @saveAndRender('#server-log', serverLog, validate=false)
                 @saveAndRender('#expt-info', exptInfo)
                 @redirect('#documentation', 'https://github.com/NYUCCL/psiTurk/wiki')
                 @redirect('#contribute', 'https://github.com/NYUCCL/psiTurk')
+
+                $('li').on 'click', ->
+                  $('li').removeClass 'selected'
+                  $(@).addClass 'selected'
+
+
+

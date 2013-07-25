@@ -3,7 +3,7 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-define(["backbone", 'text!templates/aws-info.html', 'text!templates/hit-config.html', 'text!templates/database.html', 'text!templates/server-params.html', 'text!templates/expt-info.html', 'text!templates/server-log.html', 'views/validators', 'views/RunExptView'], function(Backbone, AWSInfoTemplate, HITConfigTemplate, DatabaseTemplate, ServerParamsTemplate, ExptInfoTemplate, ServerLogTemplate, Validators, RunExptView) {
+define(["backbone", 'text!templates/aws-info.html', 'text!templates/hit-config.html', 'text!templates/database.html', 'text!templates/server-params.html', 'text!templates/expt-info.html', 'text!templates/server-log.html', 'views/validators', 'views/RunExptView', 'dropdown'], function(Backbone, AWSInfoTemplate, HITConfigTemplate, DatabaseTemplate, ServerParamsTemplate, ExptInfoTemplate, ServerLogTemplate, Validators, RunExptView, dropdown) {
   var SideBarView, _ref;
   return SideBarView = (function(_super) {
     __extends(SideBarView, _super);
@@ -20,23 +20,30 @@ define(["backbone", 'text!templates/aws-info.html', 'text!templates/hit-config.h
       return this.render();
     };
 
-    SideBarView.prototype.saveAndRender = function(id, generateTemplate) {
-      var validator,
-        _this = this;
-      validator = new Validators;
-      return $(id).on('click', function() {
+    SideBarView.prototype.saveAndRender = function(id, generateTemplate, validate) {
+      var _this = this;
+      if (validate == null) {
+        validate = true;
+      }
+      return $(id).off('click').on('click', function() {
+        var validator;
         $('#content').html(generateTemplate());
-        validator.loadValidators();
+        if (validate) {
+          validator = new Validators;
+          validator.loadValidators();
+        }
         $('#myform').submit(false);
-        return $('.save').on("click", function(event) {
+        $('.save').on("click", function(event) {
           return _this.options.pubsub.trigger("save", event);
         });
+        _this.options.pubsub.trigger("captureUIEvents");
+        return $('.dropdown-toggle').dropdown();
       });
     };
 
     SideBarView.prototype.redirect = function(id, url) {
       var _this = this;
-      return $(id).on('click', function() {
+      return $(id).off('click').on('click', function() {
         $('li').removeClass('selected');
         $('#overview').addClass('selected');
         _this.options.pubsub.trigger("loadContent");
@@ -46,12 +53,8 @@ define(["backbone", 'text!templates/aws-info.html', 'text!templates/hit-config.h
 
     SideBarView.prototype.render = function() {
       var _this = this;
-      $('li').on('click', function() {
-        $('li').removeClass('selected');
-        return $(this).addClass('selected');
-      });
       return $.when(this.options.config.fetch().done(function() {
-        var awsInfo, database, exptInfo, hitConfig, serverLog, serverParams;
+        var awsInfo, database, exptInfo, hitConfig, serverLog, serverParams, validate;
         awsInfo = function() {
           return _.template(AWSInfoTemplate, {
             input: {
@@ -86,14 +89,7 @@ define(["backbone", 'text!templates/aws-info.html', 'text!templates/hit-config.h
           });
         };
         serverLog = function() {
-          return _.template(ServerLogTemplate, {
-            input: {
-              host: _this.options.config.get("Server Parameters").host,
-              port: _this.options.config.get("Server Parameters").port,
-              cutoff_time: _this.options.config.get("Server Parameters").cutoff_time,
-              support_ie: _this.options.config.get("Server Parameters").support_ie
-            }
-          });
+          return _.template(ServerLogTemplate);
         };
         serverParams = function() {
           return _.template(ServerParamsTemplate, {
@@ -123,10 +119,14 @@ define(["backbone", 'text!templates/aws-info.html', 'text!templates/hit-config.h
         _this.saveAndRender('#hit-config', hitConfig);
         _this.saveAndRender('#database', database);
         _this.saveAndRender('#server-params', serverParams);
-        _this.saveAndRender('#server-log', serverLog);
+        _this.saveAndRender('#server-log', serverLog, validate = false);
         _this.saveAndRender('#expt-info', exptInfo);
         _this.redirect('#documentation', 'https://github.com/NYUCCL/psiTurk/wiki');
-        return _this.redirect('#contribute', 'https://github.com/NYUCCL/psiTurk');
+        _this.redirect('#contribute', 'https://github.com/NYUCCL/psiTurk');
+        return $('li').on('click', function() {
+          $('li').removeClass('selected');
+          return $(this).addClass('selected');
+        });
       }));
     };
 
