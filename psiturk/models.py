@@ -4,9 +4,9 @@ import io, csv, json
 from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text
 
 from db import Base
-from psiturk_config import PsiTurkConfig
+from experiment_config import ExperimentConfig
 
-config = PsiTurkConfig()
+config = ExperimentConfig()
 
 TABLENAME = config.get('Database Parameters', 'table_name')
 CODE_VERSION = config.get('Task Parameters', 'code_version')

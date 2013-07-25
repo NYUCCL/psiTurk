@@ -3,7 +3,6 @@ import subprocess
 import signal
 from threading import Thread, Event
 import urllib2
-import datetime
 import socket
 
 
@@ -98,7 +97,7 @@ class ExperimentServerController:
     def shutdown(self, ppid=None):
         if not ppid:
             ppid = self.get_ppid()
-        print("shutting down experiment server at pid %s..." % ppid)
+        print("Shutting down experiment server at pid %s..." % ppid)
         try:
             os.kill(int(ppid), signal.SIGKILL)
         except ExperimentServerControllerException:
@@ -110,11 +109,11 @@ class ExperimentServerController:
     def startup(self):
         server_command = "{python_exec} '{server_script}'".format(
             python_exec = sys.executable,
-            server_script = os.path.join(os.path.dirname(__file__), "psiturk_server.py")
+            server_script = os.path.join(os.path.dirname(__file__), "experiment_server.py")
         )
         if self.is_port_available():
             print("Running experiment server with command:", server_command)
-            subprocess.Popen(server_command, shell=True)
-            return("experiment server launching...")
+            subprocess.Popen(server_command, shell=True, close_fds=True)
+            return("Experiment server launching...")
         else:
-            return("experiment server is already running...")
+            return("Experiment server is already running...")

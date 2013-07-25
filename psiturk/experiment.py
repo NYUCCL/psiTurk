@@ -17,9 +17,9 @@ from db import db_session, init_db
 from models import Participant
 from sqlalchemy import or_
 
-from psiturk_config import PsiTurkConfig
+from experiment_config import ExperimentConfig
 
-config = PsiTurkConfig()
+config = ExperimentConfig()
 
 # Set up logging
 logfilepath = os.path.join(os.getcwd(),
@@ -48,7 +48,7 @@ CREDITED = 5
 QUITEARLY = 6
 
 
-app = Flask("Psiturk_Server")
+app = Flask("Experiment_Server")
 
 #----------------------------------------------
 # function for authentication

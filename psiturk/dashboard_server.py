@@ -5,12 +5,12 @@ from flask import Flask, Response, render_template, request, jsonify
 import amt_services 
 import urllib2
 import webbrowser
-from psiturk_config import PsiTurkConfig
+from experiment_config import ExperimentConfig
 from models import Participant
 from experiment_server_controller import *
 from amt_services import MTurkServices
 
-config = PsiTurkConfig()
+config = ExperimentConfig()
 
 server_controller = ExperimentServerController(config.getint("Server Parameters", "port"), hostname=config.get("Server Parameters", "host"))
 
@@ -203,21 +203,21 @@ def download_datafile(filename):
 # routes for interfacing with ExperimentServerController
 #----------------------------------------------
 @app.route("/launch", methods=["GET"])
-def launch_psiturk():
+def launch_experiment_server():
     server_controller.startup()
-    return "psiTurk launching..."
+    return "Experiment Server launching..."
 
 @app.route("/shutdown_dashboard", methods=["GET"])
-def shutdown():
+def shutdown_dashboard():
     print("Attempting to shut down.")
     #server_controller.shutdown()  # Must do this; otherwise zombie server remains on dashboard port; not sure why
     request.environ.get('werkzeug.server.shutdown')()
     return("shutting down dashboard server...")
 
-@app.route("/shutdown_psiturk", methods=["GET"])
-def shutdown_psiturk():
+@app.route("/shutdown_psiturk", methods=["GET"])  ## TODO: Kill psiturk reference
+def shutdown_experiment_server():
     server_controller.shutdown()
-    return("shutting down PsiTurk server...")
+    return("shutting down Experiment Server...")
 
 
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
