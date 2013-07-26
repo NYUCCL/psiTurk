@@ -3,7 +3,7 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-define(["backbone", 'text!templates/aws-info.html', 'text!templates/hit-config.html', 'text!templates/database.html', 'text!templates/server-params.html', 'text!templates/expt-info.html', 'text!templates/server-log.html', 'views/validators', 'views/RunExptView', 'dropdown'], function(Backbone, AWSInfoTemplate, HITConfigTemplate, DatabaseTemplate, ServerParamsTemplate, ExptInfoTemplate, ServerLogTemplate, Validators, RunExptView, dropdown) {
+define(["backbone", 'text!templates/aws-info.html', 'text!templates/hit-config.html', 'text!templates/database.html', 'text!templates/server-params.html', 'text!templates/expt-info.html', 'text!templates/server-log.html', 'text!templates/pay-and-bonus.html', 'views/validators', 'views/PayAndBonusView', 'collections/WorkerCollection', 'dropdown'], function(Backbone, AWSInfoTemplate, HITConfigTemplate, DatabaseTemplate, ServerParamsTemplate, ExptInfoTemplate, ServerLogTemplate, PayAndBonusTemplate, Validators, PayAndBonusView, Workers, dropdown) {
   var SideBarView, _ref;
   return SideBarView = (function(_super) {
     __extends(SideBarView, _super);
@@ -36,8 +36,9 @@ define(["backbone", 'text!templates/aws-info.html', 'text!templates/hit-config.h
         $('.save').on("click", function(event) {
           return _this.options.pubsub.trigger("save", event);
         });
-        _this.options.pubsub.trigger("captureUIEvents");
-        return $('.dropdown-toggle').dropdown();
+        $('.dropdown-toggle').dropdown();
+        _this.options.pubsub.trigger("loadPayView");
+        return _this.options.pubsub.trigger("captureUIEvents");
       });
     };
 
@@ -54,7 +55,7 @@ define(["backbone", 'text!templates/aws-info.html', 'text!templates/hit-config.h
     SideBarView.prototype.render = function() {
       var _this = this;
       return $.when(this.options.config.fetch().done(function() {
-        var awsInfo, database, exptInfo, hitConfig, serverLog, serverParams, validate;
+        var awsInfo, database, exptInfo, hitConfig, payAndBonus, serverLog, serverParams, validate;
         awsInfo = function() {
           return _.template(AWSInfoTemplate, {
             input: {
@@ -110,6 +111,9 @@ define(["backbone", 'text!templates/aws-info.html', 'text!templates/hit-config.h
             }
           });
         };
+        payAndBonus = function() {
+          return _.template(PayAndBonusTemplate);
+        };
         $('#overview').off('click').on('click', function() {
           $('li').removeClass('selected');
           $('#overview').addClass('selected');
@@ -121,6 +125,7 @@ define(["backbone", 'text!templates/aws-info.html', 'text!templates/hit-config.h
         _this.saveAndRender('#server-params', serverParams);
         _this.saveAndRender('#server-log', serverLog, validate = false);
         _this.saveAndRender('#expt-info', exptInfo);
+        _this.saveAndRender('#pay_and_bonus', payAndBonus, validate = false);
         _this.redirect('#documentation', 'https://github.com/NYUCCL/psiTurk/wiki');
         _this.redirect('#contribute', 'https://github.com/NYUCCL/psiTurk');
         return $('li').on('click', function() {

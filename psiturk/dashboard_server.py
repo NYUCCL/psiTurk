@@ -2,13 +2,15 @@
 import os
 import argparse
 from flask import Flask, Response, render_template, request, jsonify
-import amt_services 
+import amt_services
 import urllib2
 import webbrowser
 from experiment_config import ExperimentConfig
 from models import Participant
 from experiment_server_controller import *
 from amt_services import MTurkServices
+from db import db_session
+from models import Participant
 
 config = ExperimentConfig()
 
@@ -31,7 +33,6 @@ class DashboardServerException(Exception):
     def __str__(self):
         return repr(self.value)
 
-   
 
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # Dashboard Server Routes
@@ -94,7 +95,6 @@ def verify_aws():
     is_valid = services.verify_aws_login(key_id, secret_key)
     return jsonify(aws_accnt=is_valid)
 
-
 @app.route('/mturk_services', methods=['POST'])
 def turk_services():
     """
@@ -129,9 +129,44 @@ def get_log():
 @app.route('/get_hits', methods=['GET'])
 def get_hits():
     """
+    provides an jsonified collection of active hits
     """
     services = MTurkServices(config)
     return jsonify(hits=services.get_active_hits())
+
+@app.route('/get_workers', methods=['GET'])
+def get_workers():
+    """
+    provides an jsonified collection of workers pending review
+    """
+    services = MTurkServices(config)
+    return jsonify(workers=services.get_workers())
+
+@app.route('/reject_worker', methods=['POST'])
+def reject_worker():
+      if "assignmentId" in request.json:
+          services = MTurkServices(config)
+          services.reject_worker(request.json["assignmentId"])
+          return("Worker rejected")
+      return("Error: Missing assignment id")
+
+@app.route('/approve_worker', methods=['POST'])
+def approve_worker():
+      CREDITED = 5
+      if "assignmentId" in request.json:
+          assignment_id = request.json["assignmentId"]
+          services = MTurkServices(config)
+          services.reject_worker(assignment_id)
+          try:
+              part = Participant.query.\
+                        filter(Participant.assignmentid == assignment_id).one()
+              part.status = CREDITED
+              db_session.add(part)
+              db_session.commit()
+          except:
+              print "Error: Database failed to credit participant"
+          return("Worker approved")
+      return("Error: Missing assignment id")
 
 @app.route('/is_port_available', methods=['POST'])
 def is_port_available_route():
@@ -146,7 +181,6 @@ def is_port_available_route():
             is_available = is_port_available(ip='127.0.0.1', port=test_port)
         return jsonify(is_available=is_available)
     return "port check"
-
 
 @app.route('/is_internet_available', methods=['GET'])
 def is_internet_on():

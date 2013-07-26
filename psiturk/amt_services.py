@@ -32,10 +32,46 @@ class MTurkServices:
                       'number_assignments_available': hit.NumberOfAssignmentsAvailable,
                       'creation_time': hit.CreationTime,
                       'expiration': hit.Expiration,
-                      'btn': '<button class="btn btn-large">Test</button>'
-                      }
-                    for hit in active_hits]
+                      } for hit in active_hits]
         return(hits_data)
+
+    def get_workers(self):
+        self.connect_to_turk()
+        try:
+            hits = self.mtc.search_hits(sort_direction='Descending', page_size=20)
+            hit_ids = [hit.HITId for hit in hits]
+            workers_nested = [self.mtc.get_assignments(
+                                hit_id,
+                                status="Submitted",
+                                sort_by='SubmitTime',
+                                page_size=100
+                              ) for hit_id in hit_ids]
+
+            workers = [val for subl in workers_nested for val in subl]  # Flatten nested lists
+        except MTurkRequestError:
+            return(False)
+        completed_workers = [worker for worker in workers if worker.AssignmentStatus == "Submitted"]
+        worker_data = [{'hitId': worker.HITId,
+                        'assignmentId': worker.AssignmentId,
+                        'workerId': worker.WorkerId,
+                        'submit_time': worker.SubmitTime,
+                        'accept_time': worker.AcceptTime
+                       } for worker in completed_workers]
+        return(worker_data)
+
+    def approve_worker(self, assignment_id):
+        self.connect_to_turk()
+        try:
+            self.mtc.approve_assignment(assignment_id, feedback=None)
+        except MTurkRequestError:
+            return(False)
+
+    def reject_worker(self, assignment_id):
+        self.connect_to_turk()
+        try:
+            self.mtc.reject_assignment(assignment_id, feedback=None)
+        except MTurkRequestError:
+            return(False)
 
     def verify_aws_login(self, key_id, secret_key):
         is_sandbox = self.config.getboolean('HIT Configuration', 'using_sandbox')

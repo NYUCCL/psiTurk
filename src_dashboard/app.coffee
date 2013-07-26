@@ -1,4 +1,4 @@
-#  Filename: app.coffee
+#wy  Filename: app.coffee
 define [
       'jquery'
       'underscore'
@@ -14,6 +14,8 @@ define [
       'text!templates/overview.html'
       'text!templates/sidebar.html'
       'views/RunExptView'
+      'views/PayAndBonusView'
+      'collections/WorkerCollection'
     ],
     (
       $
@@ -30,12 +32,14 @@ define [
       OverviewTemplate
       SideBarTemplate
       RunExptView
+      PayAndBonusView
+      Workers
     ) ->
 
       # Prevent links from reloading the page (single page app)
       events:
-        'click a' : 'pushstateClick'
-        'click li' : 'pushstateClick'
+        'click a': 'pushstateClick'
+        'click li': 'pushstateClick'
 
 
       pushstateClick: (event) ->
@@ -136,13 +140,19 @@ define [
             debug: debug
 
 
-      saveSandboxState: (state) ->
+      saveSandboxState: ->
+        isCallback = false
+        state = arguments[0]
+        if arguments.length > 0
+          callback = arguments[1]
+          isCallback = true
         @config.save(
           "HIT Configuration":
             using_sandbox: state,
           {
             complete: =>
-              @loadContent()
+              if isCallback
+                callback()
           }, {
             error: (error) => console.log "error"
           })
@@ -224,6 +234,52 @@ define [
                 $('#server_on').css "color": "orange"
                 $('#test').hide()
           return true
+
+
+      loadPayView: ->
+
+        reloadPayView = _.bind @loadPayView, @
+        config = new ConfigModel
+        configPromise = config.fetch()
+        configPromise.done ->
+          # Load overview
+          # Load sidebar
+          if config.get("HIT Configuration").using_sandbox is "True"
+            $('#pay-sandbox-on').addClass 'active'
+            $('#pay-sandbox-off').removeClass 'active'
+          else
+            $('#pay-sandbox-on').removeClass 'active'
+            $('#pay-sandbox-off').addClass 'active'
+          pay_and_bonus_view = new PayAndBonusView collection: new Workers
+          $("#pay-table").html pay_and_bonus_view.render().el
+
+          # Listen for approve/reject assignment clicks
+          $(document).on "click", '.approve', ->
+            assignmentId = $(@).attr "id"
+            $.ajax
+              contentType: "application/json; charset=utf-8"
+              url: '/approve_worker'
+              type: "POST"
+              dataType: 'json'
+              data: JSON.stringify assignmentId: assignmentId
+              complete: =>
+                reloadPayView()
+              error: (error) ->
+                console.log(error)
+
+          # Listen for approve/reject assignment clicks
+          $(document).on "click", '.reject', ->
+            assignmentId = $(@).attr "id"
+            $.ajax
+              contentType: "application/json; charset=utf-8"
+              url: '/reject_worker'
+              type: "POST"
+              dataType: 'json'
+              data: JSON.stringify assignmentId: assignmentId
+              complete: =>
+                reloadPayView()
+              error: (error) ->
+                console.log(error)
 
 
       monitorPsiturkServer: ->
@@ -318,6 +374,14 @@ define [
         contentView.initialize()
 
 
+      loadPayTable: ->
+        pay_and_bonus_view = new PayAndBonusView collection: new Workers
+        $("#pay-table").html pay_and_bonus_view.render().el
+
+
+
+
+
       # TODO(Jay): To follow a proper MVC setup, many of these functions should be moved to their respective views
       captureUIEvents: ->
 
@@ -327,9 +391,15 @@ define [
 
         # Capture sandbox tab clicks
         $('#sandbox-on').off('click').on 'click', =>
-          @saveSandboxState(true)
+          @saveSandboxState true, @loadContent
         $('#sandbox-off').off('click').on 'click', =>
-          @saveSandboxState(false)
+          @saveSandboxState false, @loadContent
+        # Capture sandbox tab clicks
+        $('#pay-sandbox-on').off('click').on 'click', =>
+          @saveSandboxState true, @loadPayView
+        $('#pay-sandbox-off').off('click').on 'click', =>
+          @saveSandboxState false, @loadPayView
+
 
         # Launch test window
         $('#test').off('click').on 'click', =>
@@ -367,7 +437,7 @@ define [
                 console.log(error)
             return true
 
-        $('#run').off("click").on "click", =>
+        $('#run').on "click", =>
           runExptView = new RunExptView config: @config
           $('#run-expt-modal').modal('show')
 
@@ -426,11 +496,6 @@ define [
         $(document).off('click').on "click", '#server-parms-save', =>
           @serverParamsSave()
 
-
-
-        # Bind table buttons
-        # ------------------
-
         # Bind functions to current namespace before "this" gets lost in callbacks
         reloadContent = @loadContent
 
@@ -480,17 +545,19 @@ define [
 
         Router.initialize()
 
-
         # Inter-view communication
-        # =======================
+        # ========================
         @pubsub = _.extend {}, Backbone.Events  # enables communication between views
         _.bindAll(@, "getExperimentStatus")
         _.bindAll(@, "captureUIEvents")
         _.bindAll(@, "loadContent")
         _.bindAll(@, "save")
+        _.bindAll(@, "loadPayView")
         @pubsub.bind "getExperimentStatus", @getExperimentStatus  # Subscribe to getExperimentStatus events
         @pubsub.bind "captureUIEvents", @captureUIEvents  # Subscribe to captureUIEvents
         @pubsub.bind "loadContent", @loadContent  # Subscribe to loadContent
+        @pubsub.bind "loadPayTable", @loadPayTable # Subscribe to loadPayTable
+        @pubsub.bind "loadPayView", @loadPayView # Subscribe to loadPayTable
         @pubsub.bind "save", @save  # Subscribe to save
 
 
