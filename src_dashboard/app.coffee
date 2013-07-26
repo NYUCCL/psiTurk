@@ -237,14 +237,12 @@ define [
 
 
       loadPayView: ->
-
         reloadPayView = _.bind @loadPayView, @
-        config = new ConfigModel
-        configPromise = config.fetch()
-        configPromise.done ->
+        configPromise = @config.fetch()
+        configPromise.done =>
           # Load overview
           # Load sidebar
-          if config.get("HIT Configuration").using_sandbox is "True"
+          if @config.get("HIT Configuration").using_sandbox is "True"
             $('#pay-sandbox-on').addClass 'active'
             $('#pay-sandbox-off').removeClass 'active'
           else
@@ -360,6 +358,7 @@ define [
             @captureUIEvents()
             @verifyAWSLogin()
             @getExperimentStatus()
+            @monitorPsiturkServer()
         $.ajax
           url: '/is_internet_available'
           type: "GET"
@@ -384,7 +383,6 @@ define [
 
       # TODO(Jay): To follow a proper MVC setup, many of these functions should be moved to their respective views
       captureUIEvents: ->
-
         $.doTimeout 'logging'  # Stop any previous log polling
         # Load general dropdown actions
         $('.dropdown-toggle').dropdown()
@@ -400,11 +398,12 @@ define [
         $('#pay-sandbox-off').off('click').on 'click', =>
           @saveSandboxState false, @loadPayView
 
-
         # Launch test window
         $('#test').off('click').on 'click', =>
           uniqueId = new Date().getTime()
-          window.open @config.get("HIT Configuration").question_url + "?assignmentId=debug" + uniqueId + "&hitId=debug" + uniqueId + "&workerId=debug" + uniqueId
+          window.open @config.get("HIT Configuration").question_url +
+            "?assignmentId=debug" + uniqueId + "&hitId=debug" + 
+            uniqueId + "&workerId=debug" + uniqueId
 
         # Shutdown psiTurk server
         $("#server_off").off('click').on "click", =>
@@ -544,6 +543,8 @@ define [
       initialize: ->
 
         Router.initialize()
+
+        $.ajaxSetup timeout: 4000
 
         # Inter-view communication
         # ========================

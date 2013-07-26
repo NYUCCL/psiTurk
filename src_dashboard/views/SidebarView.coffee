@@ -44,7 +44,6 @@ define [
               $('#myform').submit false
               $('.save').on "click", (event) =>
                 @options.pubsub.trigger "save", event
-
               $('.dropdown-toggle').dropdown()  # initialize log dropdown boxes
               @options.pubsub.trigger "loadPayView"  # Publish to loadPayView
               @options.pubsub.trigger "captureUIEvents"  # Publish to captureUIEvents
