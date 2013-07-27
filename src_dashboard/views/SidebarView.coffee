@@ -6,7 +6,7 @@ define [
         'text!templates/database.html'
         'text!templates/server-params.html'
         'text!templates/expt-info.html'
-        'text!templates/server-log.html'
+        #'text!templates/server-log.html'
         'views/validators'
         'views/RunExptView'
         'dropdown'
@@ -18,7 +18,7 @@ define [
         DatabaseTemplate
         ServerParamsTemplate
         ExptInfoTemplate
-        ServerLogTemplate
+        #ServerLogTemplate
         Validators
         RunExptView
         dropdown
@@ -85,8 +85,8 @@ define [
                     input:
                       database_url: @options.config.get("Database Parameters").database_url
                       table_name: @options.config.get("Database Parameters").table_name
-                serverLog = =>
-                  _.template ServerLogTemplate
+                #serverLog = =>
+                #  _.template ServerLogTemplate
                 serverParams = =>
                   _.template ServerParamsTemplate,
                     input:
@@ -111,7 +111,7 @@ define [
                 @saveAndRender('#hit-config', hitConfig)
                 @saveAndRender('#database', database)
                 @saveAndRender('#server-params', serverParams)
-                @saveAndRender('#server-log', serverLog, validate=false)
+                #@saveAndRender('#server-log', serverLog, validate=false)
                 @saveAndRender('#expt-info', exptInfo)
                 @redirect('#documentation', 'https://github.com/NYUCCL/psiTurk/wiki')
                 @redirect('#contribute', 'https://github.com/NYUCCL/psiTurk')
