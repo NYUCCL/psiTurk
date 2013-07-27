@@ -1,7 +1,6 @@
 import os
 import datetime
 import logging
-import fnmatch
 from functools import wraps
 from random import choice
 try:
@@ -10,7 +9,7 @@ except ImportError:
     from counter import Counter
 
 # Importing flask
-from flask import Flask, render_template, request, Response, make_response, jsonify
+from flask import Flask, render_template, request, Response, jsonify
 
 # Database setup
 from db import db_session, init_db
@@ -46,7 +45,6 @@ COMPLETED = 3
 DEBRIEFED = 4
 CREDITED = 5
 QUITEARLY = 6
-
 
 app = Flask("Experiment_Server")
 
@@ -143,28 +141,6 @@ def handleExpError(e):
 @app.teardown_request
 def shutdown_session(exception=None):
     db_session.remove()
-
-#----------------------------------------------
-# general utilities
-#----------------------------------------------
-def get_people(people):
-    if not people:
-        return []
-    for record in people:
-        person = {}
-        for field in ['ipaddress', 'hitid', 'assignmentid',
-                      'workerid', 'cond', 'counterbalance',
-                      'beginhit','beginexp', 'endhit', 'status', 'datastring']:
-            if field=='datastring':
-                if record[field] == None:
-                    person[field] = "Nothing yet"
-                else:
-                    person[field] = record[field][:10]
-            else:
-                person[field] = record[field]
-        people.append( person )
-    return people
-
 
 #----------------------------------------------
 # Experiment counterbalancing code.
@@ -420,34 +396,6 @@ def update(id=None):
             "hitId": user.hitid}
     
     return jsonify(**resp)
-
-# Consider deprecating: 
-# Hard to support file lookup on external hosts
-@app.route('/pages', methods=['GET'])
-def pages():
-    """
-    Load HTML resources found in templates folder
-    """
-    print "accessing the /pages route"
-    files = fnmatch.filter(os.listdir('./templates'), '*.html')
-    pages = [{'name':file, 'html':render_template(file)} for file in files]
-    return jsonify(collection=pages)
-
-# Consider deprecating: 
-# Hard to support file lookup on external hosts
-@app.route('/images', methods=['GET'])
-def images():
-    """
-    Return URLs for images
-    """
-    print "accessing the /images route"
-    imgpath = 'static/images/'
-    extensions = ['*.jpg', '*.jpeg', '*.png', '*.tif', '*.tiff']
-    imgfiles = []
-    for ext in extensions:
-        for f in fnmatch.filter(os.listdir(imgpath), ext):
-            imgfiles.append({'name':f, 'loc':imgpath + f})
-    return jsonify(collection=imgfiles)
 
 @app.route('/quitter', methods=['POST'])
 def quitter():
