@@ -514,57 +514,6 @@ def completed():
     db_session.commit()
     return render_template('closepopup.html')
 
-#------------------------------------------------------
-# routes for displaying the database/editing it in html
-#------------------------------------------------------
-@app.route('/list')
-@requires_auth
-def viewdata():
-    """
-    Gives a page providing a readout of the database. Requires password
-    authentication.
-    """
-    people = Participant.query.\
-              order_by(Participant.assignmentid).\
-              all()
-    print people
-    people = get_people(people)
-    return render_template('simplelist.html', records=people)
-
-@app.route('/updatestatus', methods=['POST'])
-@app.route('/updatestatus/', methods=['POST'])
-def updatestatus():
-    """
-    Allows subject status to be updated from the web interface.
-    """
-    if request.method == 'POST':
-        field = request.form['id']
-        value = request.form['value']
-        print field, value
-        [tmp, field, assignmentId] = field.split('_')
-        
-        user = Participant.query.\
-                filter(Participant.assignmentid == assignmentId).\
-                one()
-        if field=='status':
-            user.status = value
-        db_session.add(user)
-        db_session.commit()
-        
-        return value
-
-@app.route('/dumpdata')
-@requires_auth
-def dumpdata():
-    """
-    Dumps all the data strings concatenated. Requires password authentication.
-    """
-    ret = '\n'.join([subj.datastring for subj in Participant.query.all()])
-    response = make_response( ret )
-    response.headers['Content-Disposition'] = 'attachment;filename=data.csv'
-    response.headers['Content-Type'] = 'text/csv'
-    return response
-
 # Is this a security risk?
 @app.route("/ppid")
 def ppid():
