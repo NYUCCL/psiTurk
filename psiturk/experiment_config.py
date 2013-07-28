@@ -82,3 +82,4 @@ class ExperimentConfig(SafeConfigParser):
         self.set('Task Parameters', 'code_version', '1.0')
         self.set('Task Parameters', 'num_conds', '1')
         self.set('Task Parameters', 'num_counters', '1')
+        self.set('Task Parameters', 'use_debriefing', 'true')

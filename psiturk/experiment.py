@@ -420,6 +420,8 @@ def savedata():
     User has finished the experiment and is posting their data in the form of a
     (long) string. They will receive a debreifing back.
     """
+    if config.getboolean('Task Parameters', 'use_debriefing'):
+        return(completed())
     print request.args.keys()
     if not request.args.has_key('uniqueId'):
         raise ExperimentError('improper_inputs')
