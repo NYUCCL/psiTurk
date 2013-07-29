@@ -199,6 +199,17 @@ def download_datafile(filename):
     response = Response(ret, content_type="text/csv", headers={'Content-Disposition': 'attachment;filename=%s' % filename})
     return response
 
+@app.route("/launch_log", methods=["GET"])
+def launch_log():
+    logfilename = config.get('Server Parameters', 'logfile')
+    if sys.platform == "darwin":
+        args = ["open", "-a", "Console.app", logfilename]
+    else:
+        # assume linux
+        args = ["xterm", "-e", "'tail -f %s'" % logfilename]
+    subprocess.Popen(args, close_fds=True)
+    return("Log program launching...")
+
 #----------------------------------------------
 # routes for interfacing with ExperimentServerController
 #----------------------------------------------
