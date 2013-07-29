@@ -1,8 +1,14 @@
 from setuptools import setup
 
+try:
+    with open("README.md") as readmefile:
+        long_description = readmefile.read()
+except IOError:
+    long_description = ""
+
 setup(
     name = "PsiTurk",
-    version = "1.0a1",
+    version = "1.0a3",
     packages = ["psiturk"],
     include_package_data = True,
     zip_safe = False,
@@ -19,6 +25,7 @@ setup(
     author = "NYU Computation and Cognition Lab",
     author_email = "http://nyuccl.org",
     description = "A web framework for dynamic behavioral experiments",
+    long_description = long_description,
     url = "http://github.com/NYUCCL/psiturk"
 )
 

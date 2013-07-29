@@ -29,7 +29,7 @@ can install it by typing the folloiwng in a terminal:
 
 Once `pip` is installed, type into a terminal:
 
-    pip install git+git://github.com/NYUCCL/psiTurk.git@dev
+    pip install psiturk # If this doesn't work, try sudo pip install psiturk
 
 
 Quick Start
