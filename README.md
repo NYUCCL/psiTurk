@@ -15,7 +15,19 @@ You can direct questions to our [Q&A Google group](https://groups.google.com/d/f
 Install
 =======
 
-The easiest way to install pip . At a terminal simply type:
+**Mac-specific instructions** Mac users will need to install a C compiler via
+XCode; to do so, install XCode from the App store. Once you have downloaded it,
+install the command line tools from the preferences as instructed
+[here](http://stackoverflow.com/a/9353468/62179).
+
+The easiest way to install PsiTurk is via `pip`. If you don't already have `pip`, you
+can install it by typing the folloiwng in a terminal:
+
+    cd /tmp  # Just to put us in a directory that will be cleaned up periodically
+    curl -O https://raw.github.com/pypa/pip/master/contrib/get-pip.py
+    python get-pip.py  # If you get a permissions error, try typing sudo python get-pip.py
+
+Once `pip` is installed, type into a terminal:
 
     pip install git+git://github.com/NYUCCL/psiTurk.git@dev
 
