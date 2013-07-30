@@ -47,15 +47,16 @@ define [
 
 
       # Ask user for AWS login
-      asked_for_credentials = false
+      asked_for_credentials: false
+
       getCredentials: ->
         if not asked_for_credentials
-            $('#aws-info-modal').modal('show')
-            asked_for_credentials = true
-            $('.save').click (event) =>
-              event.preventDefault()
-              @save(event)
-              $('#aws-info-modal').modal('hide')
+          $('#aws-info-modal').modal('show')
+          @asked_for_credentials = true
+          $('.save').click (event) =>
+            event.preventDefault()
+            @save(event)
+            $('#aws-info-modal').modal('hide')
 
       save: (event) ->
         # Prevent clicks from reloading page
