@@ -6,9 +6,11 @@ define [
         'text!templates/database.html'
         'text!templates/server-params.html'
         'text!templates/expt-info.html'
-        #'text!templates/server-log.html'
+        'text!templates/server-log.html'
+        'text!templates/pay-and-bonus.html'
         'views/validators'
-        'views/RunExptView'
+        'views/PayAndBonusView'
+        'collections/WorkerCollection'
         'dropdown'
       ],
       (
@@ -18,9 +20,11 @@ define [
         DatabaseTemplate
         ServerParamsTemplate
         ExptInfoTemplate
-        #ServerLogTemplate
+        ServerLogTemplate
+        PayAndBonusTemplate
         Validators
-        RunExptView
+        PayAndBonusView
+        Workers
         dropdown
       ) ->
 
@@ -40,10 +44,9 @@ define [
               $('#myform').submit false
               $('.save').on "click", (event) =>
                 @options.pubsub.trigger "save", event
-
-              @options.pubsub.trigger "captureUIEvents"  # Publish to captureUIEvents
               $('.dropdown-toggle').dropdown()  # initialize log dropdown boxes
-              # Highlight sidebar selections on click
+              @options.pubsub.trigger "loadPayView"  # Publish to loadPayView
+              @options.pubsub.trigger "captureUIEvents"  # Publish to captureUIEvents
 
 
           redirect: (id, url) =>
@@ -55,8 +58,6 @@ define [
 
 
           render: =>
-
-
             # Generate dynamic content from AMT data
             $.when @options.config.fetch()
               .done =>
@@ -100,7 +101,8 @@ define [
                       code_version: @options.config.get("Task Parameters").code_version,
                       num_conds: @options.config.get("Task Parameters").num_conds,
                       num_counters: @options.config.get("Task Parameters").num_counters
-
+                payAndBonus = =>
+                  _.template PayAndBonusTemplate
 
                 # Sidebar user events
                 $('#overview').off('click').on 'click', =>
@@ -113,12 +115,10 @@ define [
                 @saveAndRender('#server-params', serverParams)
                 #@saveAndRender('#server-log', serverLog, validate=false)
                 @saveAndRender('#expt-info', exptInfo)
+                @saveAndRender('#pay_and_bonus', payAndBonus, validate=false)
                 @redirect('#documentation', 'https://github.com/NYUCCL/psiTurk/wiki')
                 @redirect('#contribute', 'https://github.com/NYUCCL/psiTurk')
 
                 $('li').on 'click', ->
                   $('li').removeClass 'selected'
                   $(@).addClass 'selected'
-
-
-
