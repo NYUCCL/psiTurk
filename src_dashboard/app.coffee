@@ -547,8 +547,6 @@ define [
 
         Router.initialize()
 
-        $.ajaxSetup timeout: 4000
-
         # Inter-view communication
         # ========================
         @pubsub = _.extend {}, Backbone.Events  # enables communication between views
