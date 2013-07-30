@@ -1,4 +1,4 @@
-<!-- HIT Config
+<!-- Expt info
 ================================== -->
 <section id="hit_config">
   <div class="sub-header">
@@ -28,11 +28,17 @@
             <p class="help-block">Number of counterbalance alternatives.</p>
           </div>
         </div>
+      <div class="control-group">
+      <label class="control-label" for="use_debriefing">Use debriefing</label>
+        <label class="checkbox inline">
+          <input type='hidden' value='0' id="use_debriefing" name="use_debriefing">
+          <input type="checkbox" id="use_debriefing" name="use_debriefing" value="1" <%= input.use_debriefing %>>Use debriefing
+        </label>
+      </div>
       <div class="offset2 span2">
-        <button id="expt-info-save" type="submit" class="btn btn-primary save save_data restart" data-section="Task Parameters">Save &amp; Restart</button>
+        <button id="expt-info-save" type="submit" class="btn btn-primary save save_data restart" data-section="Task Parameters">Save</button>
       </div>
     </form>
   </div>
 </div>
-
 </section>

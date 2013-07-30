@@ -419,8 +419,8 @@ define [
         # Save config & restart server
         $('.restart').off("click").on "click", (event) =>
           @save(event)
-          @stopPsiTurkServer()
-          @launchPsiTurkServer()
+          # @stopPsiTurkServer()
+          # @launchPsiTurkServer()
 
         $(".log-level").on "click", ->
           level = $(@).attr("id").charAt(@.length - 1)

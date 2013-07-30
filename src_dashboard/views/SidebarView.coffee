@@ -9,6 +9,7 @@ define [
         'text!templates/server-log.html'
         'text!templates/pay-and-bonus.html'
         'views/validators'
+        'views/RunExptView'
         'views/PayAndBonusView'
         'collections/WorkerCollection'
         'dropdown'
@@ -23,6 +24,7 @@ define [
         ServerLogTemplate
         PayAndBonusTemplate
         Validators
+        RunExptView
         PayAndBonusView
         Workers
         dropdown
@@ -78,7 +80,7 @@ define [
                       hit_lifetime: @options.config.get("HIT Configuration").hit_lifetime
                       reward: @options.config.get("HIT Configuration").reward
                       duration: @options.config.get("HIT Configuration").duration
-                      us_only: @options.config.get("HIT Configuration").us_only
+                      us_only: if @options.config.get("HIT Configuration").us_only is "1" then "checked='checked'" else ""
                       approve_requirement: @options.config.get("HIT Configuration").approve_requirement
                       using_sandbox: @options.config.get("HIT Configuration").using_sandbox
                 database = =>
@@ -94,12 +96,14 @@ define [
                       host: @options.config.get("Server Parameters").host
                       port: @options.config.get("Server Parameters").port
                       cutoff_time: @options.config.get("Server Parameters").cutoff_time
-                      support_ie: @options.config.get("Server Parameters").support_ie
+                      support_ie: if @options.config.get("Server Parameters").support_ie is "1" then "checked='checked'" else ""
                 exptInfo = =>
                   _.template ExptInfoTemplate,
                     input:
                       code_version: @options.config.get("Task Parameters").code_version,
                       num_conds: @options.config.get("Task Parameters").num_conds,
+                      num_counters: @options.config.get("Task Parameters").num_counters,
+                      use_debriefing: if @options.config.get("Task Parameters").use_debriefing is "1" then "checked='checked'" else ""
                       num_counters: @options.config.get("Task Parameters").num_counters
                 payAndBonus = =>
                   _.template PayAndBonusTemplate
@@ -113,13 +117,11 @@ define [
                 @saveAndRender('#hit-config', hitConfig)
                 @saveAndRender('#database', database)
                 @saveAndRender('#server-params', serverParams)
-                #@saveAndRender('#server-log', serverLog, validate=false)
                 @saveAndRender('#expt-info', exptInfo)
                 @saveAndRender('#pay_and_bonus', payAndBonus, validate=false)
                 @redirect('#documentation', 'https://github.com/NYUCCL/psiTurk/wiki')
                 @redirect('#contribute', 'https://github.com/NYUCCL/psiTurk')
 
-                # Launch console.app
                 $("#server-log").off('click').on 'click', =>
                   $.ajax
                     url: "/launch_log"
