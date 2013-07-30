@@ -119,6 +119,15 @@ define [
                 @redirect('#documentation', 'https://github.com/NYUCCL/psiTurk/wiki')
                 @redirect('#contribute', 'https://github.com/NYUCCL/psiTurk')
 
+                # Launch console.app
+                $("#server-log").off('click').on 'click', =>
+                  $.ajax
+                    url: "/launch_log"
+                    success: =>
+                      $('li').removeClass 'selected'
+                      $('#overview').addClass 'selected'
+                      @options.pubsub.trigger "loadContent"
+
                 $('li').on 'click', ->
                   $('li').removeClass 'selected'
                   $(@).addClass 'selected'
