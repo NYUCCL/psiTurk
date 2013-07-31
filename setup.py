@@ -8,7 +8,7 @@ except IOError:
 
 setup(
     name = "PsiTurk",
-    version = "1.0",
+    version = "1.0.1",
     packages = ["psiturk"],
     include_package_data = True,
     zip_safe = False,
