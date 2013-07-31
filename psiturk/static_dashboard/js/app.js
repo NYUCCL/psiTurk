@@ -166,7 +166,6 @@ define(['jquery', 'underscore', 'backbone', 'router', 'models/ConfigModel', 'mod
         url: '/is_internet_available',
         type: "GET",
         success: function(data) {
-          console.log(data);
           console.log(data === "false");
           if (data === "true") {
             return 1.;
@@ -181,6 +180,7 @@ define(['jquery', 'underscore', 'backbone', 'router', 'models/ConfigModel', 'mod
       $('#server_status').css({
         "color": "yellow"
       });
+      $('#server_controls').html("[<a href='#'>updating...</a>]");
       return $.ajax({
         url: '/launch',
         type: "GET"
@@ -192,6 +192,7 @@ define(['jquery', 'underscore', 'backbone', 'router', 'models/ConfigModel', 'mod
         $('#server_status').css({
           "color": "yellow"
         });
+        $('#server_controls').html("[<a href='#'>updating...</a>]");
         return $.ajax({
           url: '/shutdown_psiturk',
           type: "GET",
@@ -211,7 +212,7 @@ define(['jquery', 'underscore', 'backbone', 'router', 'models/ConfigModel', 'mod
         _this = this;
       UP = 0;
       $.doTimeout('server_poll');
-      return $.doTimeout('server_poll', 1000, function() {
+      return $.doTimeout('server_poll', 2000, function() {
         $.ajax({
           url: "/server_status",
           success: function(data) {
@@ -223,25 +224,17 @@ define(['jquery', 'underscore', 'backbone', 'router', 'models/ConfigModel', 'mod
               $('#server_status').css({
                 "color": "green"
               });
-              $('#server_on').css({
-                "color": "grey"
-              });
-              $('#server_off').css({
-                "color": "orange"
-              });
-              return $('#test').show();
+              $('#server_controls').html("[<a href='#' id='server_off'>turn off?</a>]");
+              $('#test').show();
+              return _this.captureUIEvents();
             } else if (statusChanged) {
               _this.server_status = server;
               $('#server_status').css({
                 "color": "red"
               });
-              $('#server_off').css({
-                "color": "grey"
-              });
-              $('#server_on').css({
-                "color": "orange"
-              });
-              return $('#test').hide();
+              $('#server_controls').html("[<a href='#' id='server_on'>turn on?</a>]");
+              $('#test').hide();
+              return _this.captureUIEvents();
             }
           }
         });
@@ -320,26 +313,17 @@ define(['jquery', 'underscore', 'backbone', 'router', 'models/ConfigModel', 'mod
             $('#server_status').css({
               "color": "green"
             });
-            $('#server_on').css({
-              "color": "grey"
-            });
-            $('#server_off').css({
-              "color": "orange"
-            });
             $('#test').show();
+            $('#server_controls').html("[<a href='#' id='server_off'>turn off?</a>]");
+            return _this.pollPsiturkServerStatus();
           } else {
             $('#server_status').css({
               "color": "red"
             });
-            $('#server_off').css({
-              "color": "grey"
-            });
-            $('#server_on').css({
-              "color": "orange"
-            });
+            $('#server_controls').html("[<a href='#' id='server_on'>turn on?</a>]");
             $('#test').hide();
+            return _this.pollPsiturkServerStatus();
           }
-          return _this.pollPsiturkServerStatus();
         }
       });
     },

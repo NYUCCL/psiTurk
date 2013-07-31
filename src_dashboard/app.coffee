@@ -180,7 +180,6 @@ define [
           url: '/is_internet_available'
           type: "GET"
           success: (data) ->
-            console.log(data)
             console.log data == "false"
             if data == "true"
               return(1)
@@ -192,6 +191,7 @@ define [
 
       launchPsiTurkServer: ->
         $('#server_status').css "color": "yellow"
+        $('#server_controls').html "[<a href='#'>updating...</a>]"
         $.ajax
           url: '/launch'
           type: "GET"
@@ -201,6 +201,7 @@ define [
         $('#server-off-modal').modal('show')
         $('#shutdownServerBtn').on "click", ->
           $('#server_status').css "color": "yellow"
+          $('#server_controls').html "[<a href='#'>updating...</a>]"
           $.ajax
             url: '/shutdown_psiturk'
             type: "GET"
@@ -218,7 +219,7 @@ define [
       # Socket.io is a much better choice, but requires gevent, and thus gcc.
         UP = 0
         $.doTimeout 'server_poll'  # Stop any previous server polling
-        $.doTimeout 'server_poll', 1000, =>
+        $.doTimeout 'server_poll', 2000, =>
           $.ajax
             url: "/server_status"
             success: (data) =>
@@ -227,16 +228,15 @@ define [
               if server is UP and statusChanged
                 @server_status = server
                 $('#server_status').css "color": "green"
-                $('#server_on')
-                  .css "color": "grey"
-                $('#server_off').css "color": "orange"
+                $('#server_controls').html "[<a href='#' id='server_off'>turn off?</a>]"
                 $('#test').show()
+                @captureUIEvents()
               else if statusChanged
                 @server_status = server
                 $('#server_status').css "color": "red"
-                $('#server_off').css "color": "grey"
-                $('#server_on').css "color": "orange"
+                $('#server_controls').html "[<a href='#' id='server_on'>turn on?</a>]"
                 $('#test').hide()
+                @captureUIEvents()
           return true
 
 
@@ -293,16 +293,14 @@ define [
             @server_status = parseInt data.state
             if @server_status is UP
               $('#server_status').css "color": "green"
-              $('#server_on')
-                .css "color": "grey"
-              $('#server_off').css "color": "orange"
               $('#test').show()
+              $('#server_controls').html "[<a href='#' id='server_off'>turn off?</a>]"
+              @pollPsiturkServerStatus()
             else
               $('#server_status').css "color": "red"
-              $('#server_off').css "color": "grey"
-              $('#server_on').css "color": "orange"
+              $('#server_controls').html "[<a href='#' id='server_on'>turn on?</a>]"
               $('#test').hide()
-            @pollPsiturkServerStatus()
+              @pollPsiturkServerStatus()
 
 
       # TODO(Jay): Move to it's own view and do a big refactor
