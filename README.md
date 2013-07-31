@@ -73,14 +73,13 @@ Deployment
 
 Configuration
 ------------
-To make your experiment available on the internet, you will need to make the
-following changes to the configuration file:
+To make your experiment available on the internet, make the following changes:
 
-    host: 0.0.0.0
-    question_url: http://yoururl:yourport/mturk
-
-replacing `yoururl` with the url to your surver, and `yourport` with the port
-you have configured in `config.txt` (by default, 22362).
+ - Under the `Server` tab change `Host` to `0.0.0.0`. 
+ - Under the `HIT Config` tab change `Ad URL` to
+   `http://yoururl:yourport/mturk`, replacing `yoururl` with the url to your
+   surver, and `yourport` with the port you have configured in `config.txt` (by
+   default, 22362).
 
 Database
 --------
