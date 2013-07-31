@@ -50,7 +50,7 @@ define [
       asked_for_credentials: false
 
       getCredentials: ->
-        if not asked_for_credentials
+        if not @asked_for_credentials
           $('#aws-info-modal').modal('show')
           @asked_for_credentials = true
           $('.save').click (event) =>

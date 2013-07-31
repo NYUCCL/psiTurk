@@ -11,7 +11,7 @@ define(['jquery', 'underscore', 'backbone', 'router', 'models/ConfigModel', 'mod
     asked_for_credentials: false,
     getCredentials: function() {
       var _this = this;
-      if (!asked_for_credentials) {
+      if (!this.asked_for_credentials) {
         $('#aws-info-modal').modal('show');
         this.asked_for_credentials = true;
         return $('.save').click(function(event) {
