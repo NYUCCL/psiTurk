@@ -272,14 +272,8 @@ def launch_browser(hostname, port):
     launchurl = "http://{host}:{port}/dashboard".format(host=hostname, port=port)
     webbrowser.open(launchurl, new=1, autoraise=True)
 
-def launch_browser_when_online(**kwargs):
-    kwargs_keys = kwargs.keys()
-    if 'ip' in kwargs_keys and 'port' in kwargs_keys:
-        ip = kwargs['ip']
-        port = kwargs['port']
-        browser_launch_thread = control.wait_until_online(lambda: launch_browser(ip, port), **kwargs)
-    else:
-        raise DashboardServerException("launch_browser_when_online needs keyword/values for 'host' and 'port'")
+def launch_browser_when_online(ip, port):
+    return control.wait_until_online(lambda: launch_browser(ip, port), ip, port)
     
 def run_dev_server():
     app.debug = True
@@ -293,7 +287,7 @@ def launch():
     dashboard_ip = "0.0.0.0"
     dashboard_port = args.port
     
-    launch_browser_when_online(ip=dashboard_ip, port=dashboard_port)
+    browser_launch_thread = launch_browser_when_online(dashboard_ip, dashboard_port)
     if not control.is_port_available(ip=dashboard_ip, port=dashboard_port):
         print "Server is already running on http://localhost:%s/dashboard!" % dashboard_port
     else:

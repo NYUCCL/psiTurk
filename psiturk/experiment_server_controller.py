@@ -19,14 +19,10 @@ def is_port_available(ip, port):
     except:
         return 1
 
-def wait_until_online(function, **kwargs):
+def wait_until_online(function, ip, port):
     """
     Uses Wait_For_State to wait for the server to come online, then runs the given function.
     """
-    kword_keys = kwargs.keys()
-    if 'ip' in kword_keys and 'port' in kword_keys:
-        ip = kwargs['ip']
-        port = kwargs['port']
     awaiting_service = Wait_For_State(lambda: is_port_available(ip, port), function)
     awaiting_service.start()
     return awaiting_service
