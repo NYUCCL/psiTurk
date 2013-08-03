@@ -51,8 +51,8 @@ class PsiturkConfig(SafeConfigParser):
         self.set('AWS Access', 'aws_access_key_id', 'YourAccessKeyId')
         self.set('AWS Access', 'aws_secret_access_key', 'YourSecreteAccessKey')
         # HIT Configuration
-        self.set('HIT Configuration', 'title', 'Perceptual Reaction Time')
-        self.set('HIT Configuration', 'description', 'Make a series of perceptual judgments.')
+        self.set('HIT Configuration', 'title', 'Stroop task')
+        self.set('HIT Configuration', 'description', 'Judge the color of a series of words.')
         self.set('HIT Configuration', 'keywords', 'Perception, Psychology')
         self.set('HIT Configuration', 'question_url', 'http://localhost:22362/mturk')
         self.set('HIT Configuration', 'max_assignments', '10')
