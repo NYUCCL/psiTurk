@@ -284,7 +284,7 @@ def launch():
     parser.add_argument('-p', '--port', default=22361,
                         help='optional port for dashboard. default is 22361.')
     args = parser.parse_args()
-    dashboard_ip = "0.0.0.0"
+    dashboard_ip = "localhost"
     dashboard_port = args.port
     
     browser_launch_thread = launch_browser_when_online(dashboard_ip, dashboard_port)
