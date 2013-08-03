@@ -4,9 +4,9 @@ import io, csv, json
 from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text
 
 from db import Base
-from experiment_config import ExperimentConfig
+from psiturk_config import PsiturkConfig
 
-config = ExperimentConfig()
+config = PsiturkConfig()
 
 TABLENAME = config.get('Database Parameters', 'table_name')
 CODE_VERSION = config.get('Task Parameters', 'code_version')
@@ -16,7 +16,7 @@ class Participant(Base):
     Object representation of a participant in the database.
     """
     __tablename__ = TABLENAME
-    
+   
     uniqueid =Column(String(128), primary_key=True)
     assignmentid =Column(String(128), nullable=False)
     workerid = Column(String(128), nullable=False)

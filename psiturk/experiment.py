@@ -16,9 +16,9 @@ from db import db_session, init_db
 from models import Participant
 from sqlalchemy import or_
 
-from experiment_config import ExperimentConfig
+from psiturk_config import PsiturkConfig
 
-config = ExperimentConfig()
+config = PsiturkConfig()
 
 # Set up logging
 logfilepath = os.path.join(os.getcwd(),

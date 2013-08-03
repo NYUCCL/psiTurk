@@ -2,9 +2,9 @@
 from gunicorn.app.base import Application
 from gunicorn import util
 import multiprocessing
-from experiment_config import ExperimentConfig
+from psiturk_config import PsiturkConfig
 
-config = ExperimentConfig()
+config = PsiturkConfig()
 
 
 class ExperimentServer(Application):

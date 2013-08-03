@@ -1,20 +1,18 @@
 # Import flask
-import os
+import os, sys, subprocess
 import argparse
 from flask import Flask, Response, render_template, request, jsonify
-import amt_services
 import urllib2
 import webbrowser
-from experiment_config import ExperimentConfig
+from psiturk_config import PsiturkConfig
 from models import Participant
-from experiment_server_controller import *
+import experiment_server_controller as control
 from amt_services import MTurkServices
 from db import db_session
-from models import Participant
 
-config = ExperimentConfig()
+config = PsiturkConfig()
 
-server_controller = ExperimentServerController(config.getint("Server Parameters", "port"), hostname=config.get("Server Parameters", "host"))
+server_controller = control.ExperimentServerController(config.getint("Server Parameters", "port"), hostname=config.get("Server Parameters", "host"))
 
 app = Flask("Psiturk_Dashboard",
             template_folder=os.path.join(os.path.dirname(__file__), "templates_dashboard"), 
@@ -178,7 +176,7 @@ def is_port_available_route():
         if test_port == config.getint('Server Parameters', 'port'):
             is_available = 1
         else:
-            is_available = is_port_available(ip='127.0.0.1', port=test_port)
+            is_available = control.is_port_available(ip='127.0.0.1', port=test_port)
         return jsonify(is_available=is_available)
     return "port check"
 
@@ -279,7 +277,7 @@ def launch_browser_when_online(**kwargs):
     if 'ip' in kwargs_keys and 'port' in kwargs_keys:
         ip = kwargs['ip']
         port = kwargs['port']
-        browser_launch_thread = wait_until_online(lambda: launch_browser(ip, port), **kwargs)
+        browser_launch_thread = control.wait_until_online(lambda: launch_browser(ip, port), **kwargs)
     else:
         raise DashboardServerException("launch_browser_when_online needs keyword/values for 'host' and 'port'")
     
@@ -296,7 +294,7 @@ def launch():
     dashboard_port = args.port
     
     launch_browser_when_online(ip=dashboard_ip, port=dashboard_port)
-    if not is_port_available(ip=dashboard_ip, port=dashboard_port):
+    if not control.is_port_available(ip=dashboard_ip, port=dashboard_port):
         print "Server is already running on http://localhost:%s/dashboard!" % dashboard_port
     else:
         port = config.getint('Server Parameters', 'port')
