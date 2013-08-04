@@ -1,6 +1,7 @@
 import os, sys
 import subprocess
 import signal
+import webbrowser
 from threading import Thread, Event
 import urllib2
 import socket
@@ -11,6 +12,7 @@ import socket
 #   general purpose helper functions used by the dashboard server and controller
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 def is_port_available(ip, port):
+    print "Polling for port availability"
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         s.connect((ip, int(port)))
@@ -23,9 +25,16 @@ def wait_until_online(function, ip, port):
     """
     Uses Wait_For_State to wait for the server to come online, then runs the given function.
     """
-    awaiting_service = Wait_For_State(lambda: is_port_available(ip, port), function)
+    awaiting_service = Wait_For_State(lambda: not is_port_available(ip, port), function)
     awaiting_service.start()
     return awaiting_service
+
+def launch_browser(host, port, route):
+    launchurl = "http://{host}:{port}/{route}".format(host=host, port=port, route=route)
+    webbrowser.open(launchurl, new=1, autoraise=True)
+
+def launch_browser_when_online(ip, port, route):
+    return wait_until_online(lambda: launch_browser(ip, port, route), ip, port)
 
 
 #----------------------------------------------------------------

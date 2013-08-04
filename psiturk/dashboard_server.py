@@ -3,7 +3,6 @@ import os, sys, subprocess
 import argparse
 from flask import Flask, Response, render_template, request, jsonify
 import urllib2
-import webbrowser
 from psiturk_config import PsiturkConfig
 from models import Participant
 import experiment_server_controller as control
@@ -268,13 +267,6 @@ def shutdown_experiment_server():
 #   general purpose helper functions used by the dashboard server
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-def launch_browser(hostname, port):
-    launchurl = "http://{host}:{port}/dashboard".format(host=hostname, port=port)
-    webbrowser.open(launchurl, new=1, autoraise=True)
-
-def launch_browser_when_online(ip, port):
-    return control.wait_until_online(lambda: launch_browser(ip, port), ip, port)
-    
 def run_dev_server():
     app.debug = True
 
@@ -288,10 +280,11 @@ def launch():
     args = parser.parse_args()
     dashboard_ip = args.ip
     dashboard_port = args.port
+    dashboard_route = 'dashboard'
     
-    browser_launch_thread = launch_browser_when_online(dashboard_ip, dashboard_port)
+    browser_launch_thread = control.launch_browser_when_online(dashboard_ip, dashboard_port, dashboard_route)
     if not control.is_port_available(ip=dashboard_ip, port=dashboard_port):
-        print "Server is already running on http://localhost:%s/dashboard!" % dashboard_port
+        print "Server is already running on http://{host}:{port}/{route}".format(host=dashboard_ip, port=dashboard_port, route=dashboard_route)
     else:
         port = config.getint('Server Parameters', 'port')
         print "Serving on ", "http://" +  dashboard_ip + ":" + str(dashboard_port)
