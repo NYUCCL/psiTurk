@@ -11,7 +11,7 @@ require.config({
     collapse: "libs/bootstrap-collapse",
     tab: "libs/bootstrap-tab",
     nod: "libs/nod",
-    dotimeout: "libs/jquery.dotimeout.min"
+    bacon: "libs/Bacon"
   },
   shim: {
     bootstrap: ["jquery"],
@@ -19,7 +19,6 @@ require.config({
     collapse: ["bootstrap"],
     tab: ["bootstrap"],
     nod: ["jquery"],
-    dotimeout: ["jquery"],
     backbone: {
       deps: ["underscore", "jquery"],
       exports: "Backbone"
@@ -30,6 +29,6 @@ require.config({
   }
 });
 
-require(["jquery", "app", "bootstrap", "dropdown", "collapse", "tab", "dotimeout", "nod"], function($, App, Bootstrap, dropdown, tab) {
+require(["jquery", "app", "bootstrap", "dropdown", "collapse", "tab", "nod", "bacon"], function($, App, Bootstrap, dropdown, tab) {
   return App.initialize();
 });
