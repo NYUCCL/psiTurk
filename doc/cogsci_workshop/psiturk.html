@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Using Mechanical Turk for Cognition Experiments - John McDonnell and Todd Gureckis</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <script src="remark-min.js" type="text/javascript">
+    </script>
+    <style type="text/css" media="screen">
+    /* Slideshow styles */
+      @import url(http://fonts.googleapis.com/css?family=Lobster);
+      @import url(http://fonts.googleapis.com/css?family=Open+Sans);
+      @import url(http://fonts.googleapis.com/css?family=Vast+Shadow);
+      @import url(http://fonts.googleapis.com/css?family=Marmelad);
+      @import url(http://fonts.googleapis.com/css?family=Bitter);
+      
+      body { 
+        font-family: 'Open Sans', sans-serif;
+        font-size: 18px;
+      }
+      h1 {
+          font-family: 'Lobster', cursive;
+          color: #444;
+      }
+      h1 {
+        font-weight: normal;
+        font-size: 55px;
+      }
+      h2 {
+          font-family: 'Bitter';
+      }
+      a {
+        color: #eaab0c;
+        text-decoration: 1px dotted #ccc;
+      }
+      .slide {
+          
+      }
+      .center {
+        margin: 0 auto;
+      }
+      .footnote {
+        position: absolute;
+        bottom: 3em;
+      }
+      .red    { color: #FF4943; }
+      .gray   { color: #787878; }
+      .green  { color: #92d12d; }
+      .blue   { color: #41C8F0; }
+      .yellow { color: #dbcb14; }
+      .orange { color: #eaab0c; }
+
+      
+      .people {
+          border-top: 1px solid #f1f1f1;
+      }
+      
+
+      .task {
+        /* float: right; */
+        position: absolute;
+        top: 25px;
+        right: 50px;
+        font-size: 18px;
+        padding-top: 0.6em;
+        color: #d3d3d3;
+      }
+      .task a {
+        color: #080;
+        text-decoration: none;
+      }      
+
+      .footnote {
+        position: absolute;
+        bottom: 3em;
+      }
+      
+      .shortlist {
+          font-size: 27px;
+      }
+     
+      
+      .rotatetitle {
+          transform:rotate(-12deg);
+          -ms-transform:rotate(12deg);
+          -moz-transform:rotate(12deg);
+          -webkit-transform:rotate(-12deg);
+          -o-transform:rotate(-12deg);
+
+          -ms-transform-origin:150% -170%;
+          -moz-transform-origin:150% -170%;
+          -webkit-transform-origin:150% -170%;
+          -o-transform-origin:150% -170%;
+
+          font-size: 15px;
+      }
+      
+      .smallquote {
+          font-size: 14px;
+      }
+      
+      .position {
+          color: #ccc;
+          font-size: 12px;
+      }
+      
+      pre code {
+        -webkit-border-radius: 6px;
+        -moz-border-radius: 6px;
+        border-radius: 6px;
+       
+        font-size: 11px;
+      }
+      
+      #slideshow .slide .content code { font-size: 11px;
+	      
+      }
+   </style>
+  </head>
+  <body>
+    <textarea id="source">
+
+class: center, middle
+
+.task[Part 3: Using psiTurk]
+<div class="rotatetitle">
+# .blue[Part 3]: Building dynamic web experiments
+</div>
+
+---
+
+class: center, middle
+
+.task[Part 3: Using psiTurk]
+# psiTurk
+### .gray[Our "framework" for doing online experiments]
+### [https://github.com/NYUCCL/psiTurk](https://github.com/NYUCCL/psiTurk)
+<img src="images/github.png" width="200">
+
+
+---
+
+.task[Part 3: Using psiTurk]
+# What DOES it do for you?
+
+- Handle the most common sequence of interactions a subject in an experiment will need to do
+    1. View ad for .red[**HIT**]
+    1. Present debriefing form
+    1. Verify the workerId hasn't participated in your experiment before
+    1. Launch experiment as external hit
+    1. (Present instructions)
+    1. (Display Experiment)
+    1. Communicate back to AMT when job is done
+    1. (Store data in a local database)
+    1. (Store data INCREMENTALLY in a local database)
+    1. Record how long the user took to do the task
+    1. Handles and records drop-outs
+    1. etc...
+    
+- Helps to automatically submit hits, check your current Amazon funds balance, and assign credit
+
+- The code provides an example of a dynamic Javascript experiment that does a Stroop-like task which you can extend however you like.
+
+---
+
+.task[Part 3: Using psiTurk]
+# What is it actually?
+
+- A small webserver that you run in Python that makes it very easy to customize
+
+- You launch the webserver by just running the Python script
+
+- It runs on a designated port on your computer
+
+- You point the .blue[**Workers**] at this url
+
+- Everything should run smoothly
+
+Based on three key open-source packages:
+
+<img src="http://flask.pocoo.org/static/logo/flask.png" width="250">  
+<img src="http://www.sqlalchemy.org/img/sqla-logo6.gif" width="250">  
+[boto](https://github.com/boto/boto)
+
+---
+
+.task[Part 3: Using psiTurk]
+# Software dependencies
+
+**Python**  
+If you've never used Python before, we recommend you use the [Enthought Python distribution](http://www.enthought.com/repo/.epd_academic_installers), 
+because it comes with easy_install, a tool for easily installing Python packages.
+
+Once you've installed Enthought, you should be able to open a terminal window and install **Flask** (the web server library we'll be using) and **SQLAlchemy** 
+(the database manipulation package we'll be using) with the following command:
+
+    .bash
+    easy_install Flask-SQLAlchemy
+
+If you get a permissions error, try:
+
+    .bash
+    sudo easy_install Flask-SQLAlchemy
+
+(which will prompt you for your password)
+
+---
+
+.task[Part 3: Using psiTurk]
+# Software dependencies
+
+You will also find it useful to install **boto**, a Python library which enables interaction with Amazon's Mechanical Turk servers 
+to help assign credit to participants.  To install:
+
+    .bash
+    easy_install boto
+
+Finally, you can try getting things up and running by cloning our repository using the following command:
+
+    .bash
+    git clone git://github.com/NYUCCL/psiTurk.git
+
+(Further instructions are provided here: [http://github.com/NYUCCL/psiTurk](http://github.com/NYUCCL/psiTurk))
+
+---
+
+.task[Part 3: Using psiTurk]
+# Model, View, Controller (MVC) 
+
+A common software development pattern.  If you are _not_ a scientist and do
+end-user programming (e.g., Android, iOS, webapps), this is probably how you 
+are designing things.
+<img src="images/MVC.png" align="right" width="350">
+
+- **Model** is basically your data.  
+    - A common situation is for the model to contains the abstract logic of your
+    application
+    - What kind of data is being stored, how it is formatted, is there computation that the app is supposed to do?
+
+- **Controller** is the "glue" which binds the model to the view
+    
+- **View** is the UI elements presented to a user of the software
+    - Independent of the model 
+    - Idea is object-oriented encapsulation...  the graphics people can design the interface
+    while the engineers build the model
+
+
+
+---
+
+.task[Part 3: Using psiTurk]
+# Scary?
+
+No.  Basically we just are giving you a pre-structured website which
+you can fill in with the info for you study.  In addition, our code
+handles some of the logic a AMT experiment might need like counterbalancing, etc...
+
+<center>
+## It's not scary, it's going to be fun!
+</center>
+
+
+
+---
+
+.task[Part 3: Using psiTurk]
+# File listing
+
+- **models.py** defines the **Model**
+
+- **app.py** is the **Controller**
+
+- The various HTML files inside the templates/, static/ folders are the **View**
+
+<img src="images/psiturk-filelist.png" width="600" align="center">
+
+---
+
+.task[Part 3: Using psiTurk]
+# Model (i.e., database) structure
+
+Defined in **models.py**:
+
+    .python
+    class Participant(Base):
+    	"""
+    	Object representation of a participant in the database.
+    	"""
+    	__tablename__ = TABLENAME
+    
+    	assignmentid =Column(String(128), primary_key=True)
+    	hitid = Column(String(128))
+    	workerid = Column(String(128))
+    	ipaddress = Column(String(128))
+    	cond = Column(Integer)
+    	counterbalance = Column(Integer)
+    	codeversion = Column(String(128))
+    	beginhit = Column(DateTime, nullable=True)
+    	beginexp = Column(DateTime, nullable=True)
+    	endhit = Column(DateTime, nullable=True)
+    	status = Column(Integer, default = 1)
+    	debriefed = Column(Boolean)
+    	datastring = Column(Text, nullable=True)
+
+has fields for tracking the assignmentId, hitId, workerId, ipaddress of worker,
+condition, the data file, etc...
+ 	
+---
+
+.task[Part 3: Using psiTurk]
+# Status codes
+
+Possible status codes are defined at the top of the file
+
+    .python
+	# Status codes
+	ALLOCATED = 1
+	STARTED = 2
+	COMPLETED = 3
+	DEBRIEFED = 4
+	CREDITED = 5
+	QUITEARLY = 6
+
+---
+ 
+.task[Part 3: Using psiTurk]
+# Model (i.e., database) structure
+
+The model is written/updated by the controller in response to commands given by the user (or their browser)
+
+<center>
+<img src="images/MVC.png" align="center" width="350">
+</center>
+ 	
+---
+
+.task[Part 3: Using psiTurk]
+# Controller: The most important idea
+
+- **app.py** runs a webserver which is basically listening for requests (i.e., requests are attempts to access a particular URL)
+
+- These requests are handled using .red['routes'] which are simple functions in **app.py** that run in response to a URL request.
+
+- Normal web server:
+    - You request http://gureckslab.org/coolpage.html
+    - The server sends the content of coolpage.html in a format your browser can read and display
+    
+- **app.py** server:
+    - You request http://gureckislab.org/mturk
+    - The server runs a python function associated with the 'mturk' .red['route']
+    - This function may, or may not also send to the user's browser some HTML can it can read and display
+    - However, since it is a Python function, can do lots of other stuff like add data to a database, etc...
+
+---
+
+
+
+.task[Part 3: Using psiTurk]
+# An example
+
+If you request .orange[http://myip.edu:PORT/consent], this function will run
+
+    .python
+    @app.route('/consent', methods=['GET'])
+    def give_consent():
+    	"""
+    	Serves up the consent in the popup window.
+    	"""
+    	if not (request.args.has_key('hitId') and \
+    		   request.args.has_key('assignmentId') and \
+    		   request.args.has_key('workerId')):
+    		raise ExperimentError('hit_assign_worker_id_not_set_in_consent')
+    	hitId=request.args ['hitId']
+    	assignmentId = request.args ['assignmentId']
+    	workerId = request.args ['workerId']
+    	print hitId, assignmentId, workerId
+    	
+    	return render_template('consent.html', hitid = hitId, assignmentid=assignmentId, workerid=workerId)
+
+which checks to see if the workerid is set correctly and basically prints out the 'consent.html' template (last line)
+into the users browser window.
+
+**So a layer of computation/logic is inserted into any web requests!! **
+
+
+---
+
+.task[Part 3: Using psiTurk]
+# A more complex example
+
+If you request .orange[http://myip.edu:PORT/debrief], this function will run
+
+	.python
+	@app.route('/debrief', methods=['POST', 'GET'])
+	def savedata():
+	    """
+	    User has finished the experiment and is posting their data in the form of a
+	    (long) string. They will receive a debreifing back.
+	    """
+	    print request.form.keys()
+	    if not (request.form.has_key('assignmentid') and request.form.has_key('data')):
+	        raise ExperimentError('improper_inputs')
+	    assignmentId = request.form ['assignmentid']
+	    datastring = request.form ['data']
+	    print assignmentId, datastring
+	    
+	    user = Participant.query.\
+	            filter(Participant.assignmentid == assignmentId).\
+	            one()
+	    user.status = COMPLETED
+	    user.datastring = datastring
+	    user.endhit = datetime.datetime.now()
+	    db_session.add(user)
+	    db_session.commit()
+	    
+	    return render_template('debriefing.html', assignmentId=assignmentId)
+
+which updates the database so that we know the user finished the task, and then
+prints out the debriefing form to the user's browser window.
+
+---
+
+.task[Part 3: Using psiTurk]
+# An example which doesn't display anything in the browser
+If you request .orange[http://myip.edu:PORT/debrief], this function will run
+
+	.python
+	@app.route('/inexp', methods=['POST'])
+	def enterexp():
+	    """
+	    AJAX listener that listens for a signal from the user's script when they
+	    leave the instructions and enter the real experiment. After the server
+	    receives this signal, it will no longer allow them to re-access the
+	    experiment applet (meaning they can't do part of the experiment and
+	    referesh to start over).
+	    """
+	    print "/inexp"
+	    if not request.form.has_key('assignmentid'):
+	        raise ExperimentError('improper_inputs')
+	    assignmentId = request.form ['assignmentid']
+	    user = Participant.query.\
+	            filter(Participant.assignmentid == assignmentId).\
+	            one()
+	    user.status = STARTED
+	    user.beginexp = datetime.datetime.now()
+	    db_session.add(user)
+	    db_session.commit()
+	    return "Success"
+
+updates the model (i.e., database) so that the user.status is 'STARTED' and the starttime is
+recorded
+
+
+---
+
+.task[Part 3: Using psiTurk]
+# Persistence
+
+The .orange[**Worker**]'s browser is simply making web requests at various
+times as they go through the experiment.  These call up particular '.red[routes]' in 
+the **app.py** code.  
+
+What about multiple people doing the experiment at once?  How do we know
+who they are?
+
+Remember that on the first request, Amazon sends three variables to your route:
+
+- http://.yellow[yoururl]?.red[**assignmentId**=XX]&.blue[**hitId**=XX]&.green[**workerId**=XX]
+
+We just continue to pass these variables to all new routes we add.  These keys let us
+look up the correct user in the databased (based on the workerId and/or assignmentId)
+and then update the right person.
+
+---
+
+.task[Part 3: Using psiTurk]
+# Templates
+
+- Rather than just plain HTML, the system uses HTML templates which help you programmatically
+generate HTML
+
+- **render_template()** function
+		return render_template('debriefing.html', assignmentId=assignmentId)
+
+- Makes a variable called 'assignmentId' available inside the template.
+
+		<form id="accept" action="complete" method="post">
+			<input type="hidden" name="assignmentid" value="{{ assignmentId }}" />
+			<input type="hidden" name="agree" value="true" />
+		</form>
+
+---
+
+.task[Part 3: Using psiTurk]
+# Important routes
+
+- .blue[/mturk]
+	- The initial place people go.  If they haven't accepted the .red[HIT] this displays the ad.  Otherwise a launch button.
+- .blue[/consent]
+	- This displays the consent form (consent.html is the relevant template)
+- .blue[/exp]
+	- This serves up the actual experiment code (Javascript or whatever).  The relevant template is exp.html/
+- .blue[/inexp]
+	- This is just a path you can hit that verifies the person is "in the experiment" (done with instructions)
+- .blue[/inexpsave]
+	- This saves the current data to the database (can be accessed at end of every trial or every block)
+- .blue[/quitter]
+	- If the person closes the browser window we want to know... This updates the database to indicate this person withdrew.
+- .blue[/debrief]
+	- This serve up the debriefing form
+- .blue[/complete]
+	- When the person finishes (but not done with debrief) this is accessed.
+
+
+---
+
+.task[Part 3: Using psiTurk]
+# Configuration
+
+- Most of the configutation stuff is accessed through **config.txt**
+
+- John will step through this, but it is heavily commented
+
+- Configures the location of your server, the database, your Amazon account information, etc...
+
+	
+
+    </textarea>
+    <script type="text/javascript">
+    	var remark = this.remark;
+    	remark.config({"highlightStyle": "sunburst"});
+    </script>
+    <div id="slideshow"></div>
+  </body>
+</html>

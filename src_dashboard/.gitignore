@@ -1,7 +1,6 @@
 # Documents for running the app:
 config.txt
 participants.db
-server.log
 
 *.py[cod]
 
@@ -53,5 +52,3 @@ nosetests.xml
 .pydevproject
 static/dashboard/js/templates/screen_off.r
 static/dashboard/js/templates/explain_way.py
-
-/server.log
