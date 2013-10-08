@@ -1,4 +1,3 @@
-
 What is this?
 ============
 
@@ -11,6 +10,8 @@ collect data using any website. As long as you can turn your experiment into a
 website, you can run it with PsiTurk!
 
 You can direct questions to our [Q&A Google group](https://groups.google.com/d/forum/psiturk).
+Slides from our CogSci2013 workshop in Berlin are posted [here]([here](http://gureckislab.org/cogsci_workshop/)
+(use arrow keys to navigate).
 
 Install
 =======
