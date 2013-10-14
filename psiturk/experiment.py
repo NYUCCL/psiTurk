@@ -420,24 +420,32 @@ def savedata():
     User has finished the experiment and is posting their data in the form of a
     (long) string. They will receive a debreifing back.
     """
-    if config.getboolean('Task Parameters', 'use_debriefing'):
-        return(completed())
     print request.args.keys()
     if not request.args.has_key('uniqueId'):
         raise ExperimentError('improper_inputs')
     else:
         uniqueId = request.args['uniqueId']
     print "/debrief called with", uniqueId
-    
+
     user = Participant.query.\
-            filter(Participant.uniqueid == uniqueId).\
-            one()
-    user.status = COMPLETED
-    user.endhit = datetime.datetime.now()
-    db_session.add(user)
-    db_session.commit()
+           filter(Participant.uniqueid == uniqueId).\
+           one()
+
+    if config.getboolean('Task Parameters', 'use_debriefing'):
+        user.status = COMPLETED
+        user.endhit = datetime.datetime.now()
+        db_session.add(user)
+        db_session.commit()
     
-    return render_template('debriefing.html', workerId=user.workerid, assignmentId=user.assignmentid)
+        return render_template('debriefing.html', workerId=user.workerid, assignmentId=user.assignmentid)
+
+    else:
+        user.status = DEBRIEFED
+        user.endhit = datetime.datetime.now()
+        db_session.add(user)
+        db_session.commit()
+
+        return render_template('closepopup.html')
 
 @app.route('/complete', methods=['POST'])
 def completed():

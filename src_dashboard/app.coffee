@@ -171,8 +171,6 @@ define [
               $('#experiment_status').css "color": "green"
             else
               $('#experiment_status').css "color": "grey"
-          error:
-            console.log "network failure"
 
 
       isInternetAvailable: ->
@@ -212,32 +210,6 @@ define [
         # Load and initialize HIT table
         hit_view = new HITView collection: new HITs
         $("#tables").html hit_view.render().el
-
-
-      pollPsiturkServerStatus: ->
-      # Use long poll to sync dashboard w/ server.
-      # Socket.io is a much better choice, but requires gevent, and thus gcc.
-        UP = 0
-        $.doTimeout 'server_poll'  # Stop any previous server polling
-        $.doTimeout 'server_poll', 2000, =>
-          $.ajax
-            url: "/server_status"
-            success: (data) =>
-              server = parseInt data.state
-              statusChanged = not(@server_status == server)
-              if server is UP and statusChanged
-                @server_status = server
-                $('#server_status').css "color": "green"
-                $('#server_controls').html "[<a href='#' id='server_off'>turn off?</a>]"
-                $('#test').show()
-                @captureUIEvents()
-              else if statusChanged
-                @server_status = server
-                $('#server_status').css "color": "red"
-                $('#server_controls').html "[<a href='#' id='server_on'>turn on?</a>]"
-                $('#test').hide()
-                @captureUIEvents()
-          return true
 
 
       loadPayView: ->
@@ -285,22 +257,27 @@ define [
 
 
       monitorPsiturkServer: ->
-        UP = 0
-        $.ajax
-          url: "/server_status"
-          success: (data) =>
-            # initialize
-            @server_status = parseInt data.state
-            if @server_status is UP
-              $('#server_status').css "color": "green"
-              $('#test').show()
-              $('#server_controls').html "[<a href='#' id='server_off'>turn off?</a>]"
-              @pollPsiturkServerStatus()
-            else
-              $('#server_status').css "color": "red"
-              $('#server_controls').html "[<a href='#' id='server_on'>turn on?</a>]"
-              $('#test').hide()
-              @pollPsiturkServerStatus()
+        pollStream = $('body').asEventStream 'check_status'  # Bind stream to body
+        pollResults = pollStream.flatMap ->  # Aggregate server polls and flatten
+          Bacon.fromPromise $.ajax "/server_status"
+        pollResults.onValue (data) =>
+          UP = 0
+          server = parseInt data.state
+          statusChanged = not(@server_status == server)
+          if server is UP and statusChanged
+            @server_status = server
+            $('#server_status').css "color": "green"
+            $('#server_controls').html "[<a href='#' id='server_off'>turn off?</a>]"
+            @captureUIEvents()
+          else if statusChanged
+            @server_status = server
+            $('#server_status').css "color": "red"
+            $('#server_controls').html "[<a href='#' id='server_on'>turn on?</a>]"
+            @captureUIEvents()
+        pollingServer = =>
+          return Bacon.fromPoll 1500, ->
+            $('body').trigger 'check_status'
+        pollingServer().onValue()  # monitor server
 
 
       # TODO(Jay): Move to it's own view and do a big refactor
@@ -355,12 +332,10 @@ define [
             else
               $('#sandbox-on').removeClass 'active'
               $('#sandbox-off').addClass 'active'
-            # Refresh HIT table
             @loadHITTable()
             @captureUIEvents()
             @verifyAWSLogin()
             @getExperimentStatus()
-            @monitorPsiturkServer()
         $.ajax
           url: '/is_internet_available'
           type: "GET"
@@ -380,12 +355,8 @@ define [
         $("#pay-table").html pay_and_bonus_view.render().el
 
 
-
-
-
       # TODO(Jay): To follow a proper MVC setup, many of these functions should be moved to their respective views
       captureUIEvents: ->
-        $.doTimeout 'logging'  # Stop any previous log polling
         # Load general dropdown actions
         $('.dropdown-toggle').dropdown()
 
@@ -420,23 +391,6 @@ define [
           @save(event)
           # @stopPsiTurkServer()
           # @launchPsiTurkServer()
-
-        $(".log-level").on "click", ->
-          level = $(@).attr("id").charAt(@.length - 1)
-
-          $.doTimeout 'logging'  # Stop any previous log polling
-          $.doTimeout 'logging', 2000, ->
-            $.ajax
-              contentType: "application/json; charset=utf-8"
-              url: '/get_log'
-              type: "POST"
-              dataType: 'json'
-              data: JSON.stringify log_level : level
-              success : (log_data) =>
-                $('#server-log-display').html log_data.log
-              error: (error) ->
-                console.log(error)
-            return true
 
         $('#run').on "click", =>
           runExptView = new RunExptView config: @config
@@ -475,7 +429,6 @@ define [
 
         $('#shutdown-dashboard').off("click").on 'click', =>
           $('#dashboard-off-modal').modal 'show'
-          $.doTimeout 'server_poll'  # Stop server polling
           $.ajax
             url: '/shutdown_dashboard'
             type: "GET"
@@ -542,6 +495,18 @@ define [
               error: (error) ->
                 console.log("failed to extend HIT")
 
+        do renderTestBtn = ->
+          UP = 0
+          $.ajax
+            url: "/server_status"
+            success: (data) ->
+              server = parseInt data.state
+              if server is UP
+                $('#test').show()
+              else
+                $('#test').hide()
+
+
       initialize: ->
 
         Router.initialize()
@@ -549,11 +514,11 @@ define [
         # Inter-view communication
         # ========================
         @pubsub = _.extend {}, Backbone.Events  # enables communication between views
-        _.bindAll(@, "getExperimentStatus")
-        _.bindAll(@, "captureUIEvents")
-        _.bindAll(@, "loadContent")
-        _.bindAll(@, "save")
-        _.bindAll(@, "loadPayView")
+        _.bindAll @, "getExperimentStatus"
+        _.bindAll @, "captureUIEvents"
+        _.bindAll @, "loadContent"
+        _.bindAll @, "save"
+        _.bindAll @, "loadPayView"
         @pubsub.bind "getExperimentStatus", @getExperimentStatus  # Subscribe to getExperimentStatus events
         @pubsub.bind "captureUIEvents", @captureUIEvents  # Subscribe to captureUIEvents
         @pubsub.bind "loadContent", @loadContent  # Subscribe to loadContent
