@@ -13,8 +13,7 @@ require.config
     collapse: "libs/bootstrap-collapse"
     tab: "libs/bootstrap-tab"
     nod: "libs/nod"
-    dotimeout: "libs/jquery.dotimeout.min"
-
+    bacon: "libs/Bacon"
 
   # Shim sets the configuration for third party scripts that are not AMD compatible
   shim:
@@ -24,11 +23,9 @@ require.config
     collapse: ["bootstrap"]
     tab: ["bootstrap"]
     nod: ["jquery"]
-    dotimeout: ["jquery"]
     backbone:
       deps: ["underscore", "jquery"]
       exports: "Backbone" #attaches "Backbone" to the window object
-
     underscore:
       exports: "_"
 
@@ -40,8 +37,9 @@ require [
   "dropdown"
   "collapse"
   "tab"
-  "dotimeout",
-  "nod"],
+  "nod"
+  "bacon"
+  ],
   (
     $
     App
