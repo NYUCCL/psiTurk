@@ -22,7 +22,7 @@ install the command line tools from the preferences as instructed
 [here](http://stackoverflow.com/a/9353468/62179).
 
 The easiest way to install PsiTurk is via `pip`. If you don't already have `pip`, you
-can install it by typing the folloiwng in a terminal:
+can install it by typing the following in a terminal:
 
     cd /tmp  # Just to put us in a directory that will be cleaned up periodically
     curl -O https://raw.github.com/pypa/pip/master/contrib/get-pip.py
