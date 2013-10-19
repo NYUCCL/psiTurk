@@ -1,7 +1,7 @@
 What is this?
 ============
 
-PsiTurk is an open platform for conducting custom behvioral experiments on
+PsiTurk is an open platform for conducting custom behavioral experiments on
 Amazon's Mechanical Turk. 
 
 It is intended to provide most of the backend machinery necessary to run your
@@ -11,7 +11,9 @@ website, you can run it with PsiTurk!
 
 You can direct questions to our [Q&A Google group](https://groups.google.com/d/forum/psiturk).
 Slides from our CogSci2013 workshop in Berlin are posted [here](http://gureckislab.org/cogsci_workshop/)
-(use arrow keys to navigate).
+(use arrow keys to navigate).  
+
+Additional documentation available on the [wiki](https://github.com/NYUCCL/psiTurk/wiki/).
 
 Install
 =======
