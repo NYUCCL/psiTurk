@@ -181,6 +181,11 @@ var PsiTurk = function() {
 	this.recordUnstructuredData = function(field, value) {
 		taskdata.addUnstructuredData(field, value);
 	};
+
+	// Add bonus to task data
+	this.recordBonus = function(bonus) {
+		taskdata.set('bonus', bonus);
+	}
 	
 	// Save data to server
 	this.saveData = function(callbacks) {
