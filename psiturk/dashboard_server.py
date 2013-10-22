@@ -8,6 +8,7 @@ from models import Participant
 import experiment_server_controller as control
 from amt_services import MTurkServices
 from db import db_session
+from functools import wraps
 
 config = PsiturkConfig()
 
@@ -16,6 +17,45 @@ server_controller = control.ExperimentServerController(config.getint("Server Par
 app = Flask("Psiturk_Dashboard",
             template_folder=os.path.join(os.path.dirname(__file__), "templates_dashboard"), 
             static_folder=os.path.join(os.path.dirname(__file__), "static_dashboard"))
+
+
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# Authentication functions
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+def check_auth(username, password):
+    """This function is called to check if a username /
+    password combination is valid.
+    """
+    true_user = config.get('Dashboard Parameters', 'login_username')
+    true_pass = config.get('Dashboard Parameters', 'login_pw')
+    return username == true_user and password == true_pass
+
+
+def authenticate():
+    """Sends a 401 response that enables basic auth"""
+    return Response(
+        'Could not verify your access level for that URL.\n'
+        'You have to login with proper credentials', 401,
+        {'WWW-Authenticate': 'Basic realm="Login Required"'})
+
+
+def requires_auth(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        auth = request.authorization
+        if not auth or not check_auth(auth.username, auth.password):
+            return authenticate()
+        return f(*args, **kwargs)
+
+    # don't require authorization if there is no username or password
+    # defined
+    true_user = config.get('Dashboard Parameters', 'login_username')
+    true_pass = config.get('Dashboard Parameters', 'login_pw')
+    if true_user == '' or true_pass == '':
+        return f
+    else:
+        return decorated
 
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # Some supporting classes needed by the dashboard_server
@@ -42,6 +82,7 @@ class DashboardServerException(Exception):
 # Routes for handling dashboard interactivity
 #----------------------------------------------
 @app.route('/dashboard', methods=['GET'])
+@requires_auth
 def dashboard():
     """
     Serves dashboard.
@@ -49,6 +90,7 @@ def dashboard():
     return render_template('dashboard.html')
 
 @app.route('/dashboard_model', methods=['GET', 'POST'])
+@requires_auth
 def dashboard_model():
     """
     Sync for dashboard model.
@@ -68,6 +110,7 @@ def dashboard_model():
     return render_template('dashboard.html')
 
 @app.route('/at_a_glance_model', methods=['GET'])
+@requires_auth
 def at_a_glance_model():
     """
     Sync for dashboard at-a-glance pane.
@@ -82,6 +125,7 @@ def at_a_glance_model():
             return jsonify(error="unable to access aws")
 
 @app.route('/verify_aws_login', methods=['POST'])
+@requires_auth
 def verify_aws():
     """
     Verifies current aws login keys are valid
@@ -93,6 +137,7 @@ def verify_aws():
     return jsonify(aws_accnt=is_valid)
 
 @app.route('/mturk_services', methods=['POST'])
+@requires_auth
 def turk_services():
     """
     """
@@ -115,6 +160,7 @@ def turk_services():
     return jsonify(error="psiTurk failed to recognize your request.")
 
 @app.route('/get_log', methods=['POST'])
+@requires_auth
 def get_log():
     """
     provides an jsonified interface to the log file in the dashbaord
@@ -124,6 +170,7 @@ def get_log():
     return jsonify(error="did not specify the log level correctly")
 
 @app.route('/get_hits', methods=['GET'])
+@requires_auth
 def get_hits():
     """
     provides an jsonified collection of active hits
@@ -132,6 +179,7 @@ def get_hits():
     return jsonify(hits=services.get_active_hits())
 
 @app.route('/get_workers', methods=['GET'])
+@requires_auth
 def get_workers():
     """
     provides an jsonified collection of workers pending review
@@ -140,6 +188,7 @@ def get_workers():
     return jsonify(workers=services.get_workers())
 
 @app.route('/reject_worker', methods=['POST'])
+@requires_auth
 def reject_worker():
       if "assignmentId" in request.json:
           services = MTurkServices(config)
@@ -148,6 +197,7 @@ def reject_worker():
       return("Error: Missing assignment id")
 
 @app.route('/approve_worker', methods=['POST'])
+@requires_auth
 def approve_worker():
       CREDITED = 5
       if "assignmentId" in request.json:
@@ -166,6 +216,7 @@ def approve_worker():
       return("Error: Missing assignment id")
 
 @app.route('/is_port_available', methods=['POST'])
+@requires_auth
 def is_port_available_route():
     """
     Check if port is available on localhost
@@ -180,6 +231,7 @@ def is_port_available_route():
     return "port check"
 
 @app.route('/is_internet_available', methods=['GET'])
+@requires_auth
 def is_internet_on():
     try:
         response=urllib2.urlopen('http://www.google.com', timeout=1)
@@ -188,17 +240,20 @@ def is_internet_on():
     return "false"
 
 @app.route("/server_status", methods=["GET"])
+@requires_auth
 def status():
     return(jsonify(state=server_controller.is_port_available()))
 
 # this function appears unimplemented in the dashboard currently
 # @app.route("/participant_status", methods=["GET"])
+# @requires_auth
 # def participant_status():
 #     database = Dashboard.Database()
 #     status = database.get_participant_status()
 #     return status
 
 @app.route("/favicon.ico")
+@requires_auth
 def favicon():
     """
     Serving a favicon
@@ -207,6 +262,7 @@ def favicon():
     return app.send_static_file('favicon.ico')
 
 @app.route("/data/<filename>", methods=["GET"])
+@requires_auth
 def download_datafile(filename):
     if filename[-4:] != ".csv":
         raise Exception("/data received Invalid filename: %s" % filename)
@@ -231,6 +287,7 @@ def download_datafile(filename):
     return response
 
 @app.route("/launch_log", methods=["GET"])
+@requires_auth
 def launch_log():
     logfilename = config.get('Server Parameters', 'logfile')
     if sys.platform == "darwin":
@@ -245,11 +302,13 @@ def launch_log():
 # routes for interfacing with ExperimentServerController
 #----------------------------------------------
 @app.route("/launch", methods=["GET"])
+@requires_auth
 def launch_experiment_server():
     server_controller.startup()
     return "Experiment Server launching..."
 
 @app.route("/shutdown_dashboard", methods=["GET"])
+@requires_auth
 def shutdown_dashboard():
     print("Attempting to shut down.")
     #server_controller.shutdown()  # Must do this; otherwise zombie server remains on dashboard port; not sure why
@@ -257,6 +316,7 @@ def shutdown_dashboard():
     return("shutting down dashboard server...")
 
 @app.route("/shutdown_psiturk", methods=["GET"])  ## TODO: Kill psiturk reference
+@requires_auth
 def shutdown_experiment_server():
     server_controller.shutdown()
     return("shutting down Experiment Server...")
@@ -289,6 +349,6 @@ def launch():
         port = config.getint('Server Parameters', 'port')
         print "Serving on ", "http://" +  dashboard_ip + ":" + str(dashboard_port)
         app.run(debug=True, use_reloader=False, port=dashboard_port, host=dashboard_ip)
- 
+
 if __name__ == "__main__":
     launch()
