@@ -34,7 +34,7 @@ Explore **psiTurk** with eight easy steps:
 
   1. Sign up for an AWS account, available [here](http://aws.amazon.com/).
   2. Sign up for a Mechanical Turk requester account, available [here](https://requester.mturk.com/).
-  3. In a terminal, install **psiTurk** by typing `sudo pip install psiturk` (see [installation instructions](Getting-psiTurk-installed-on-your-computer) for details).
+  3. In a terminal, install **psiTurk** by typing `sudo pip install psiturk` (see [installation instructions](https://github.com/NYUCCL/psiTurk/wiki/Getting-psiTurk-installed-on-your-computer) for details).
   4. To use our demo, create a directory, open it e.g., `mkdir psiTurkDemo; cd psiTurkDemo`, and then issue the command `psiturk-setup-example`.
   5. Start the dashboard by typing `psiturk` on the commandline. The **psiTurk** dashboard will pop up in a new browser window. 
   6. Provide the dashboard with your AWS credentials. Skip this step if you just want to test an experiment locally by pressing "proceed without login". 
