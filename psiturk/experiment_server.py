@@ -42,10 +42,14 @@ class ExperimentServer(Application):
         return util.import_app("experiment:app")
 
     def load_user_config(self):
+        workers = config.get("Server Parameters", "num_workers")
+        if workers == "-1":
+            workers = str(multiprocessing.cpu_count() * 2 + 1)
+
         self.loglevels = ["debug", "info", "warning", "error", "critical"]
         self.user_options = {
             'bind': config.get("Server Parameters", "host") + ":" + config.get("Server Parameters", "port"),
-            'workers': str(multiprocessing.cpu_count() * 2 + 1),
+            'workers': workers,
             'loglevels': self.loglevels,
             'loglevel': self.loglevels[config.getint("Server Parameters", "loglevel")]
         }
