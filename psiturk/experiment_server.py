@@ -39,7 +39,7 @@ class ExperimentServer(Application):
         '''load method
         Imports our application and returns it to be run.
         '''
-        return util.import_app("experiment:app")
+        return util.import_app("psiturk.experiment:app")
 
     def load_user_config(self):
         workers = config.get("Server Parameters", "num_workers")
