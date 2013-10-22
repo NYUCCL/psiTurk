@@ -9,30 +9,22 @@ experiment. It uses AMT's _External Question_ HIT type, meaning that you can
 collect data using any website. As long as you can turn your experiment into a
 website, you can run it with **psiTurk**!
 
-You can direct questions to our [Q&A Google group](https://groups.google.com/d/forum/psiturk).
-Slides from our CogSci2013 workshop in Berlin are posted [here](http://gureckislab.org/cogsci_workshop/)
-(use arrow keys to navigate).  
-
-Additional documentation available on the [wiki](https://github.com/NYUCCL/psiTurk/wiki/).
-
 Install
 =======
 
-**Mac-specific instructions** Mac users will need to install a C compiler via
-XCode; to do so, install XCode from the App store. Once you have downloaded it,
-install the command line tools from the preferences as instructed
-[here](http://stackoverflow.com/a/9353468/62179).
+The easiest way to install **psiTurk** is via `pip`.
+Simply type into a terminal:
 
-The easiest way to install **psiTurk** is via `pip`. If you don't already have `pip`, you
-can install it by typing the following in a terminal:
+    pip install psiturk 
 
-    cd /tmp  # Just to put us in a directory that will be cleaned up periodically
-    curl -O https://raw.github.com/pypa/pip/master/contrib/get-pip.py
-    python get-pip.py  # If you get a permissions error, try typing sudo python get-pip.py
+If this doesn't work, you might try `sudo pip install psiturk`.  Directions
+on how to install `pip` if you don't have it on your system are available in 
+our [documentation](https://github.com/NYUCCL/psiTurk/wiki/Getting-psiTurk-installed-on-your-computer#installation-steps).
 
-Once `pip` is installed, type into a terminal:
+Mac users will need to install a C compiler via XCode first (available from the Mac App Store).
+Once it is installed, the command line compiler tools are made available from the preferences 
+menu as described [here](http://stackoverflow.com/a/9353468/62179).
 
-    pip install psiturk # If this doesn't work, try sudo pip install psiturk
 
 
 Quick Start
@@ -47,9 +39,17 @@ Explore **psiTurk** with eight easy steps:
   5. Start the dashboard by typing `psiturk` on the commandline. The **psiTurk** dashboard will pop up in a new browser window. 
   6. Provide the dashboard with your AWS credentials. Skip this step if you just want to test an experiment locally by pressing "proceed without login". 
   7. To launch the experiment server, click the "turn on?" button in the upper right-hand corner. Once the experiment server is running, a green light will appear. 
-  8. Click the "test" button to launch the **psiTurk** demo experiment in a new browser window. 
+  8. Click the "test" button to launch the **psiTurk** demo experiment in a new browser window.  
 
-Note, tests run on localhost. Alternatively, you can directly navigate to http://localhost:22362/mturk?assignmentId=debug&hitId=debug&workerId=debug in your browser once the Experiment server is running.
+
+Getting Help
+============
+
+Extensive documentation is made available on the [wiki](https://github.com/NYUCCL/psiTurk/wiki/).
+
+You can also direct questions to our [Q&A Google group](https://groups.google.com/d/forum/psiturk).
+Slides from our CogSci2013 workshop in Berlin are posted [here](http://gureckislab.org/cogsci_workshop/)
+(use arrow keys to navigate).  
 
 
 Experiment design
@@ -77,7 +77,7 @@ To make your experiment available on the internet, make the following changes:
  - Under the `Server` tab change `Host` to `0.0.0.0`. 
  - Under the `HIT Config` tab change `Ad URL` to
    `http://yoururl:yourport/mturk`, replacing `yoururl` with the url to your
-   surver, and `yourport` with the port you have configured in `config.txt` (by
+   server, and `yourport` with the port you have configured in `config.txt` (by
    default, 22362).
 
 Database
