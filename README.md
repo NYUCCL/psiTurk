@@ -1,13 +1,13 @@
 What is this?
 ============
 
-PsiTurk is an open platform for conducting custom behavioral experiments on
+**psiTurk** is an open platform for conducting custom behavioral experiments on
 Amazon's Mechanical Turk. 
 
 It is intended to provide most of the backend machinery necessary to run your
 experiment. It uses AMT's _External Question_ HIT type, meaning that you can
 collect data using any website. As long as you can turn your experiment into a
-website, you can run it with PsiTurk!
+website, you can run it with **psiTurk**!
 
 You can direct questions to our [Q&A Google group](https://groups.google.com/d/forum/psiturk).
 Slides from our CogSci2013 workshop in Berlin are posted [here](http://gureckislab.org/cogsci_workshop/)
@@ -23,7 +23,7 @@ XCode; to do so, install XCode from the App store. Once you have downloaded it,
 install the command line tools from the preferences as instructed
 [here](http://stackoverflow.com/a/9353468/62179).
 
-The easiest way to install PsiTurk is via `pip`. If you don't already have `pip`, you
+The easiest way to install **psiTurk** is via `pip`. If you don't already have `pip`, you
 can install it by typing the following in a terminal:
 
     cd /tmp  # Just to put us in a directory that will be cleaned up periodically
@@ -38,22 +38,18 @@ Once `pip` is installed, type into a terminal:
 Quick Start
 ===========
 
-Once PsiTurk is installed, you'll need to set up your environment.
+Explore **psiTurk** with eight easy steps:
 
-1. Sign up for an AWS account, available [here](http://aws.amazon.com/).
-2. Sign up for a Mechanical Turk requester account, available
-   [here](https://requester.mturk.com/).
-3. In a terminal, install psiturk by typing `pip install
-   git+git://github.com/NYUCCL/psiTurk.git@dev`.
-3. To use our example experiment, make a new directory and issue the command
-   `psiturk-setup-example`.
-5. Start the dashboard by typing `psiturk`. The dashboard should pop up in a browser window.
-6. To launch the experiment server, click the "on" button next to the word
-   "server" in the upper-right-hand corner.
+  1. Sign up for an AWS account, available [here](http://aws.amazon.com/).
+  2. Sign up for a Mechanical Turk requester account, available [here](https://requester.mturk.com/).
+  3. In a terminal, install **psiTurk** by typing `sudo pip install psiturk` (see [installation instructions](Getting-psiTurk-installed-on-your-computer) for details).
+  4. To use our demo, create a directory, open it e.g., `mkdir psiTurkDemo; cd psiTurkDemo`, and then issue the command `psiturk-setup-example`.
+  5. Start the dashboard by typing `psiturk` on the commandline. The **psiTurk** dashboard will pop up in a new browser window. 
+  6. Provide the dashboard with your AWS credentials. Skip this step if you just want to test an experiment locally by pressing "proceed without login". 
+  7. To launch the experiment server, click the "turn on?" button in the upper right-hand corner. Once the experiment server is running, a green light will appear. 
+  8. Click the "test" button to launch the **psiTurk** demo experiment in a new browser window. 
 
-*Note*: If you are just testing the server without posting your HIT to Amazon,
-you can see the experiment at the following link:
-http://localhost:22362/mturk?assignmentId=debug&hitId=debug&workerId=debug
+Note, tests run on localhost. Alternatively, you can directly navigate to http://localhost:22362/mturk?assignmentId=debug&hitId=debug&workerId=debug in your browser once the Experiment server is running.
 
 
 Experiment design
@@ -64,11 +60,11 @@ own experiment. The task logic is programmed in Javascript, which will run in
 your participant's browser. Most of the code can be found in
 `static/js/task.js`.  It works by dynamically changing the html document served
 to participants in `templates/exp.html` and communicating with the server code
-which can be found in `psiturk/psiturk.py`. PsiTurk assigns a condition and
+which can be found in `psiturk/psiturk.py`. **psiTurk** assigns a condition and
 counterbalance to each participant. PsiTurk actively manages the condition and
 counterbalance subjects are assigned to, helping you fill them in evenly. These
-are fed into JavaScript via code in `static/js/psiturk.js`. You can tell
-PsiTurk how many conditions and counterbalance identities there are in the
+are fed into Javascript via code in `static/js/psiturk.js`. You can tell
+**psiTurk** how many conditions and counterbalance identities there are in the
 dashboard's "Expt Info" tab.
 
 Deployment
