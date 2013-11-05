@@ -110,5 +110,11 @@ Copyright
 You are welcome to use this code for personal or academic uses. If you fork,
 please cite the authors (Todd Gureckis and John McDonnell).
 
+If you use this in an academic paper please cite as follows:
+
+McDonnell, J.V., Martin, J.B., Markant, D.B., Coenen, A., and Gureckis, T.M. 
+(2012). psiTurk (Version 1.02) [Software]. New York, NY: New York University. 
+Available from https://github.com/NYUCCL/psiTurk
+
 
 
