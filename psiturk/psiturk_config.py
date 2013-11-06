@@ -7,8 +7,8 @@ class PsiturkConfig(SafeConfigParser):
         self.parent.__init__(self, **kwargs)
         self.filename = filename
         if not os.path.exists(self.filename):
-            print("Creating config file...")
-            self.write_default_config()
+            print "ERROR - no config.txt file in the current directory. \n\nAre you use this directory is a valid psiTurk experiment?  If you are starting a new project run 'psiturk-setup-example' in an empty directory."
+            exit()
         self.read(self.filename)
 
     def write(self):

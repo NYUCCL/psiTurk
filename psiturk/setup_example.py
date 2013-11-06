@@ -13,7 +13,7 @@ def setup_example():
     dir_util.copy_tree(static_dir, static_target)
     print "Copying", templates_dir, "to", templates_target
     dir_util.copy_tree(templates_dir, templates_target)
-    print "Creating default configuration file"
+    print "Creating default configuration file (config.txt)"
     config = PsiturkConfig()
 
 
