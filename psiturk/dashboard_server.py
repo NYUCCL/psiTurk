@@ -331,15 +331,9 @@ def run_dev_server():
     app.debug = True
 
 #  this is the entry point to the script when running 'psiturk' from the command line
-def launch():
-    parser = argparse.ArgumentParser(description='Launch psiTurk dashboard.')
-    parser.add_argument('-i', '--ip', default='localhost',
-                        help='IP to run dashboard on. default is `localhost`.')
-    parser.add_argument('-p', '--port', default=22361,
-                        help='Port to run dashboard on. default is 22361.')
-    args = parser.parse_args()
-    dashboard_ip = args.ip
-    dashboard_port = args.port
+def launch(ip='localhost', port=22361):
+    dashboard_ip = ip
+    dashboard_port = port
     dashboard_route = 'dashboard'
     
     browser_launch_thread = control.launch_browser_when_online(dashboard_ip, dashboard_port, dashboard_route)
