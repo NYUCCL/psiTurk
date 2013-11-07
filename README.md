@@ -108,7 +108,7 @@ FAQ
 Copyright
 =========
 You are welcome to use this code for personal or academic uses. If you fork,
-please cite the authors (Todd Gureckis and John McDonnell).
+please cite us.
 
 If you use this in an academic paper please cite as follows:
 
