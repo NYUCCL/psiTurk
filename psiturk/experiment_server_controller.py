@@ -7,6 +7,7 @@ import urllib2
 import socket
 
 
+
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # Supporting functions
 #   general purpose helper functions used by the dashboard server and controller
@@ -85,20 +86,23 @@ class ExperimentServerControllerException(Exception):
 # starting/stopping of experiment server
 #----------------------------------------------
 class ExperimentServerController:
-    def __init__(self, port=None, hostname="localhost", ip='127.0.0.1'):
-        self.port = port
-        self.ip = ip
-        self.hostname = hostname
-    
+    def __init__(self, config):
+        self.config = config
+        self.server_running = False
+
     def get_ppid(self):
         if not self.is_port_available():
-            url = "http://{hostname}:{port}/ppid".format(hostname=self.hostname, port=self.port)
+            url = "http://{hostname}:{port}/ppid".format(hostname=self.config.get("Server Parameters", "host"), port=self.config.getint("Server Parameters", "port"))
             ppid_request = urllib2.Request(url)
             ppid =  urllib2.urlopen(ppid_request).read()
             return ppid
         else:
             raise ExperimentServerControllerException("Cannot shut down experiment server, server not online")
     
+    def restart(self):
+        self.shutdown()
+        self.startup()
+
     def shutdown(self, ppid=None):
         if not ppid:
             ppid = self.get_ppid()
@@ -107,9 +111,13 @@ class ExperimentServerController:
             os.kill(int(ppid), signal.SIGKILL)
         except ExperimentServerControllerException:
             print ExperimentServerControllerException
+        else: self.server_running = False
     
+    def is_server_running(self):
+        return self.server_running
+
     def is_port_available(self):
-        return is_port_available(self.ip, self.port)
+        return is_port_available(self.config.get("Server Parameters", "host"), self.config.getint("Server Parameters", "port"))
 
     def startup(self):
         server_command = "{python_exec} '{server_script}'".format(
@@ -119,6 +127,8 @@ class ExperimentServerController:
         if self.is_port_available():
             print("Running experiment server with command:", server_command)
             subprocess.Popen(server_command, shell=True, close_fds=True)
+            self.server_running = True
             return("Experiment server launching...")
         else:
-            return("Experiment server is already running...")
+            self.server_running = True
+            return("Experiment server may be already running...")

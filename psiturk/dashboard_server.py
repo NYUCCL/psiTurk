@@ -12,7 +12,7 @@ from functools import wraps
 
 config = PsiturkConfig()
 
-server_controller = control.ExperimentServerController(config.getint("Server Parameters", "port"), hostname=config.get("Server Parameters", "host"))
+server_controller = control.ExperimentServerController(config)
 
 app = Flask("Psiturk_Dashboard",
             template_folder=os.path.join(os.path.dirname(__file__), "templates_dashboard"), 
@@ -101,11 +101,8 @@ def dashboard_model():
     if request.method == 'POST':
         config_model = request.json
         reset_server = config.set_serialized(config_model)
-    
-    if reset_server:
-        if server_controller.is_port_available() == 0:
-            server_controller.shutdown()
-            server_controller.startup()
+        if reset_server and server_controller.is_server_running():  # if port is currently occupied restart server
+            server_controller.restart()
     
     return render_template('dashboard.html')
 
@@ -215,26 +212,11 @@ def approve_worker():
           return("Worker approved")
       return("Error: Missing assignment id")
 
-@app.route('/is_port_available', methods=['POST'])
-@requires_auth
-def is_port_available_route():
-    """
-    Check if port is available on localhost
-    """
-    if request.method == 'POST':
-        test_port = request.json['port']
-        if test_port == config.getint('Server Parameters', 'port'):
-            is_available = 1
-        else:
-            is_available = control.is_port_available(ip='127.0.0.1', port=test_port)
-        return jsonify(is_available=is_available)
-    return "port check"
-
 @app.route('/is_internet_available', methods=['GET'])
 @requires_auth
 def is_internet_on():
     try:
-        response=urllib2.urlopen('http://www.google.com', timeout=1)
+        response=urllib2.urlopen('http://www.amazon.com', timeout=1)
         return "true"
     except urllib2.URLError as err: pass
     return "false"
@@ -242,7 +224,8 @@ def is_internet_on():
 @app.route("/server_status", methods=["GET"])
 @requires_auth
 def status():
-    return(jsonify(state=server_controller.is_port_available()))
+    return(jsonify(state=server_controller.is_port_available()))  
+    # we don't need to know if port is available, we want to know if server is available
 
 # this function appears unimplemented in the dashboard currently
 # @app.route("/participant_status", methods=["GET"])
