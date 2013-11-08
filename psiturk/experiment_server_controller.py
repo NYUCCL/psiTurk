@@ -14,7 +14,6 @@ import ssl
 #   general purpose helper functions used by the dashboard server and controller
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 def is_port_available(ip, port):
-    print "Polling for port availability"
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         s.connect((ip, int(port)))
@@ -24,7 +23,6 @@ def is_port_available(ip, port):
         return 1
 
 def is_port_available_ssl(ip, port):
-    print "Polling for port availability"
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     ssl_sock = ssl.wrap_socket(s, server_side=False)
     try:
