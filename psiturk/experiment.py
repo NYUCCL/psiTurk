@@ -193,10 +193,11 @@ def get_random_condcount():
 # routes
 #----------------------------------------------
 
-@app.route('/mturk', methods=['GET'])
-def mturkroute():
+@app.route('/ad', methods=['GET'])
+def advertisement():
     """
-    This is the url we give for our 'external question'.
+    This is the url we give for the ad for our 'external question'.
+    The ad has to display two different things:
     This page will be called from within mechanical turk, with url arguments
     hitId, assignmentId, and workerId. 
     If the worker has not yet accepted the hit:
@@ -263,7 +264,7 @@ def mturkroute():
     elif status == ALLOCATED or not status:
         # Participant has not yet agreed to the consent. They might not
         # even have accepted the HIT. 
-        return render_template('mturkindex.html', 
+        return render_template('ad.html', 
                                hitid = hitId, 
                                assignmentid = assignmentId, 
                                workerid = workerId)

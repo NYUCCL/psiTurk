@@ -57,7 +57,7 @@ class PsiturkConfig(SafeConfigParser):
         self.set('HIT Configuration', 'title', 'Stroop task')
         self.set('HIT Configuration', 'description', 'Judge the color of a series of words.')
         self.set('HIT Configuration', 'keywords', 'Perception, Psychology')
-        self.set('HIT Configuration', 'question_url', 'https://localhost:22362/mturk')
+        self.set('HIT Configuration', 'question_url', 'https://localhost:22362/ad')
         self.set('HIT Configuration', 'max_assignments', '10')
         self.set('HIT Configuration', 'HIT_lifetime', '24')
         self.set('HIT Configuration', 'reward', '1')
