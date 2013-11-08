@@ -27,7 +27,8 @@ if __name__ == "__main__":
                 'psiturk = psiturk.command_line:process',
                 'psiturk-dashboard = psiturk.command_line:process',
                 'psiturk-server = psiturk.command_line:process',
-                'psiturk-setup-example = psiturk.command_line:process'
+                'psiturk-setup-example = psiturk.command_line:process',
+                'psiturk-create-ssl = psiturk.command_line:process'
             ]
         },
         setup_requires = [],
