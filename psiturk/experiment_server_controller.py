@@ -5,6 +5,7 @@ import webbrowser
 from threading import Thread, Event
 import urllib2
 import socket
+import ssl
 
 
 
@@ -18,6 +19,17 @@ def is_port_available(ip, port):
     try:
         s.connect((ip, int(port)))
         s.shutdown(2)
+        return 0
+    except:
+        return 1
+
+def is_port_available_ssl(ip, port):
+    print "Polling for port availability"
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    ssl_sock = ssl.wrap_socket(s, server_side=False)
+    try:
+        ssl_sock.connect((ip, int(port)))
+        ssl_sock.shutdown(2)
         return 0
     except:
         return 1
@@ -117,7 +129,7 @@ class ExperimentServerController:
         return self.server_running
 
     def is_port_available(self):
-        return is_port_available(self.config.get("Server Parameters", "host"), self.config.getint("Server Parameters", "port"))
+        return is_port_available_ssl(self.config.get("Server Parameters", "host"), self.config.getint("Server Parameters", "port"))
 
     def startup(self):
         server_command = "{python_exec} '{server_script}'".format(

@@ -47,7 +47,11 @@ DEBRIEFED = 4
 CREDITED = 5
 QUITEARLY = 6
 
+###########################################################
+# let's start
+###########################################################
 app = Flask("Experiment_Server")
+init_db()  
 
 #----------------------------------------------
 # function for authentication
@@ -491,17 +495,20 @@ def regularpage(pagename=None):
         raise ExperimentError('page_not_found')
     return render_template(pagename)
 
-###########################################################
-# let's start
-###########################################################
-init_db()  
 
-# Initialize database if necessary
+
+# # Initialize database if necessary
 def run_webserver():
+
+    from OpenSSL import SSL
+    context = SSL.Context(SSL.SSLv23_METHOD)
+    context.use_privatekey_file('ssl.key')
+    context.use_certificate_file('ssl.cert')
+
     host = "0.0.0.0"
     port = config.getint('Server Parameters', 'port')
     print "Serving on ", "http://" +  host + ":" + str(port)
-    app.run(debug=config.getboolean('Server Parameters', 'debug'), host=host, port=port)
+    app.run(debug=True, host=host, port=port, ssl_context=context)
 
 if __name__ == '__main__':
     run_webserver()
