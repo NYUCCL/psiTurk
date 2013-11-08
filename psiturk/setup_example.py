@@ -15,6 +15,9 @@ def setup_example():
     dir_util.copy_tree(templates_dir, templates_target)
     print "Creating default configuration file (config.txt)"
     config = PsiturkConfig()
+    config.write_default_config()
+    print "Needs to create SSL keys here"
+    # to do
 
 
 if __name__=="__main__":

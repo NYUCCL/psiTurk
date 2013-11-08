@@ -11,6 +11,7 @@ from db import db_session
 from functools import wraps
 
 config = PsiturkConfig()
+config.load_config()
 
 server_controller = control.ExperimentServerController(config)
 

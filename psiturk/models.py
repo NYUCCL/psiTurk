@@ -7,6 +7,7 @@ from db import Base
 from psiturk_config import PsiturkConfig
 
 config = PsiturkConfig()
+config.load_config()
 
 TABLENAME = config.get('Database Parameters', 'table_name')
 CODE_VERSION = config.get('Task Parameters', 'code_version')

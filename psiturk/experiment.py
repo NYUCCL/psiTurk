@@ -19,6 +19,7 @@ from sqlalchemy import or_
 from psiturk_config import PsiturkConfig
 
 config = PsiturkConfig()
+config.load_config()
 
 # Set up logging
 logfilepath = os.path.join(os.getcwd(),

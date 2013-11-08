@@ -5,7 +5,7 @@ import multiprocessing
 from psiturk_config import PsiturkConfig
 
 config = PsiturkConfig()
-
+config.load_config()
 
 class ExperimentServer(Application):
     '''
