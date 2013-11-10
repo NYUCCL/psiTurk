@@ -209,14 +209,13 @@ def advertisement():
     """
     if not SUPPORT_IE:
         # Handler for IE users if IE is not supported.
-        if request.user_agent.browser == "msie":
+        if request.user_agent.browser == 'msie':
             return render_template( 'ie.html' )
     if not (request.args.has_key('hitId') and request.args.has_key('assignmentId')):
         raise ExperimentError('hit_assign_worker_id_not_set_in_mturk')
     # Person has accepted the HIT, entering them into the database.
     hitId = request.args['hitId']
-    #  Turn assignmentId into unique combination of assignment and worker Id 
-    assignmentId = request.args['assignmentId']
+    assignmentId = request.args['assignmentId']  #  Turn assignmentId into unique combination of assignment and worker Id 
     already_in_db = False
     if request.args.has_key('workerId'):
         workerId = request.args['workerId']
@@ -269,7 +268,7 @@ def advertisement():
                                assignmentid = assignmentId, 
                                workerid = workerId)
     else:
-        raise ExperimentError( "STATUS_INCORRECTLY_SET" )
+        raise ExperimentError('STATUS_INCORRECTLY_SET')
 
 @app.route('/consent', methods=['GET'])
 def give_consent():
@@ -281,7 +280,6 @@ def give_consent():
     hitId = request.args['hitId']
     assignmentId = request.args['assignmentId']
     workerId = request.args['workerId']
-    print "Accessing /consent: ", hitId, assignmentId, workerId
     return render_template('consent.html', hitid = hitId, assignmentid=assignmentId, workerid=workerId)
 
 @app.route('/exp', methods=['GET'])
@@ -443,7 +441,7 @@ def savedata():
         db_session.add(user)
         db_session.commit()
     
-        return render_template('debriefing.html', workerId=user.workerid, assignmentId=user.assignmentid)
+        return render_template('debriefing.html', uniqueId=user.uniqueid)
 
     else:
         user.status = DEBRIEFED
@@ -461,16 +459,14 @@ def completed():
     adequately debriefed, and that response is logged in the database.
     """
     print "accessing the /complete route"
-    if not (request.form.has_key('assignmentid') and request.form.has_key('agree')):
+    if not (request.args.has_key('uniqueId') and request.form.has_key('agree')):
         raise ExperimentError('improper_inputs')
-    assignmentId = request.form['assignmentid']
-    workerId = request.form['workerid']
+    uniqueId = request.form['uniqueId']
     agreed = request.form['agree']
-    print workerId, assignmentId, agreed
+    print uniqueId, agreed
     
     user = Participant.query.\
-            filter(Participant.assignmentid == assignmentId).\
-            filter(Participant.workerid == workerId).\
+            filter(Participant.uniqueid == uniqueId).\
             one()
     user.status = DEBRIEFED
     user.debriefed = agreed == 'true'
