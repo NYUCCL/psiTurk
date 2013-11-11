@@ -192,6 +192,9 @@ def get_random_condcount():
 #----------------------------------------------
 # routes
 #----------------------------------------------
+@app.route('/')
+def index():
+    return render_template('default.html')
 
 @app.route('/ad', methods=['GET'])
 def advertisement():
