@@ -23,7 +23,8 @@ our [documentation](https://github.com/NYUCCL/psiTurk/wiki/Getting-psiTurk-insta
 
 Mac users will need to install a C compiler via XCode first (available from the Mac App Store).
 Once it is installed, the command line compiler tools are made available from the preferences 
-menu as described [here](http://stackoverflow.com/a/9353468/62179).
+menu as described [here](http://stackoverflow.com/a/9353468/62179).  On OS X Mavericks the
+command line tools are installed in a [new way](http://stackoverflow.com/questions/18216865/how-to-install-command-line-tools-on-osx-mavericks).
 
 
 
