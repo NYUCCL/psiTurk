@@ -15,27 +15,6 @@ def process():
 		launch_dashboard()
 	elif (invoked_as == "psiturk-setup-example"):
 		setup_example()
-	elif (invoked_as == "psiturk-create-ssl"):
-		create_ssl_keys()
-
-    
-    
-def create_ssl_keys():
-	# add commands for testing, etc..
-	parser = argparse.ArgumentParser(description='Launch psiTurk dashboard.')
-
-	# optional flags
-	parser.add_argument('-H', '--host', default='localhost', 
-						help='Hostname for the SSL keys (i.e., location of server). default is `localhost`.')
-	parser.add_argument('-v', '--version', help='Print version number.', action="store_true")
-	args = parser.parse_args()
-
-	# if requested version just print and quite
-	if args.version:
-		print version_number
-	else:
-		from werkzeug.serving import make_ssl_devcert
-		make_ssl_devcert('ssl', host=args.host)
 
 def setup_example():
 	# add commands for testing, etc..

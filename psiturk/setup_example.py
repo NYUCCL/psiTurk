@@ -16,10 +16,6 @@ def setup_example():
     print "Creating default configuration file (config.txt)"
     config = PsiturkConfig()
     config.write_default_config()
-    print "\n\n"
-    print "Great job.  Remember to create SSL keys next!"
-    print "\tpsiturk-create-ssl --host <hostname>"
-
 
 if __name__=="__main__":
     setup_example()

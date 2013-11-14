@@ -22,7 +22,7 @@ class ExperimentServer(Application):
         self.options = self.user_options
         self.prog = None
         self.do_load_config()
-        print "Now serving on", "https://" + self.options["bind"]
+        print "Now serving on", "http://" + self.options["bind"]
 
     def init(self, *args):
         '''init method
@@ -52,9 +52,7 @@ class ExperimentServer(Application):
             'bind': config.get("Server Parameters", "host") + ":" + config.get("Server Parameters", "port"),
             'workers': workers,
             'loglevels': self.loglevels,
-            'loglevel': self.loglevels[config.getint("Server Parameters", "loglevel")],
-            'certfile': config.get("Server Parameters", "ssl_certfile"),
-            'keyfile': config.get("Server Parameters", "ssl_keyfile")
+            'loglevel': self.loglevels[config.getint("Server Parameters", "loglevel")]
         }
 
 def launch():
