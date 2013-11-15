@@ -113,7 +113,7 @@ please cite us.
 
 If you use this in an academic paper please cite as follows:
 
-McDonnell, J.V., Martin, J.B., Markant, D.B., Coenen, A., Rich, A., and Gureckis, T.M. 
+McDonnell, J.V., Martin, J.B., Markant, D.B., Coenen, A., Rich, A.S., and Gureckis, T.M. 
 (2012). psiTurk (Version 1.02) [Software]. New York, NY: New York University. 
 Available from https://github.com/NYUCCL/psiTurk
 
