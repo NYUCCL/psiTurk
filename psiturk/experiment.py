@@ -391,43 +391,7 @@ def update(id=None):
         print "DB error: Unique user not found."
     
     if hasattr(request, 'json'):
-        # see if there is existing saved data
-        try:
-            olddata = json.loads(user.datastring)
-        # TypeError means no, because nothing has been saved yet
-        except TypeError:
-            olddata = ""
-        # ValueError means it's invalid JSON
-        except ValueError:
-            olddata = ""
-
-        # handle unicode characcters
-        d = request.data.decode('utf-8')
-        a = d.encode('ascii', 'xmlcharrefreplace')
-
-        # try to load the given json
-        try:
-            newdata = json.loads(a)
-        except ValueError:
-            newdata = ""
-
-        # nothing has been saved yet, and nothing has been given to be
-        # saved
-        if olddata == "" and newdata == "":
-            user.datastring = ""
-        # nothing has been saved yet, so just save the new stuff
-        elif olddata == "":
-            user.datastring = a
-        # nothing new to be saved
-        elif newdata == "":
-            pass
-        # concatenate the old data with the new data
-        else:
-            olddata["questiondata"].update(newdata["questiondata"])
-            olddata["eventdata"].extend(newdata["eventdata"])
-            olddata["data"] += newdata["data"]
-            user.datastring = json.dumps(olddata)
-
+        user.add_data(request.data)
         db_session.add(user)
         db_session.commit()
     

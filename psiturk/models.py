@@ -100,3 +100,39 @@ class Participant(Base):
             print("Error reading record:", self)
             return("")
 
+    def add_data(self, data):
+        # see if there is existing saved data
+        try:
+            olddata = json.loads(self.datastring)
+        # TypeError means no, because nothing has been saved yet
+        except TypeError:
+            olddata = ""
+        # ValueError means it's invalid JSON
+        except ValueError:
+            olddata = ""
+
+        # handle unicode characcters
+        d = data.decode('utf-8').encode('ascii', 'xmlcharrefreplace')
+
+        # try to load the given json
+        try:
+            newdata = json.loads(d)
+        except ValueError:
+            newdata = ""
+
+        # nothing has been saved yet, and nothing has been given to be
+        # saved
+        if olddata == "" and newdata == "":
+            self.datastring = ""
+        # nothing has been saved yet, so just save the new stuff
+        elif olddata == "":
+            self.datastring = d
+        # nothing new to be saved
+        elif newdata == "":
+            pass
+        # concatenate the old data with the new data
+        else:
+            olddata["questiondata"].update(newdata["questiondata"])
+            olddata["eventdata"].extend(newdata["eventdata"])
+            olddata["data"] += newdata["data"]
+            self.datastring = json.dumps(olddata)
