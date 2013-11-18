@@ -16,6 +16,18 @@
     	</h2>        
     	    <p>Because this is a Psychology experiment, you can only complete this hit once.</p>
     	    <p>Please release the hit so someone else can perform the experiment.</p>
+    {% elif errornum == 1014 %}
+        <h2>
+            <p>Sorry, you are using and unsupported browser: Internet Explorer</p>
+        </h2>
+            <p>
+            Hi there! It looks like you're using Internet Explorer. Unfortunately
+            we're unable to support Microsoft Internet Explorer right now. If you want
+            to participate in the experiment, you can join in by using a
+            standards-compliant browser such as 
+            <a href="http://www.mozilla.org/firefox">Firefox</a> or 
+            <a href="http://google.com/chrome">Google Chrome</a>.
+            </p>    
     {% else %}
     	<h2> 
     	    <p>Sorry, there was an unexpected error in our processing of your hit.<p> 

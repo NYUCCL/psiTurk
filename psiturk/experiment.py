@@ -99,6 +99,7 @@ experiment_errors = dict(
     tried_to_quit= 1011,
     intermediate_save = 1012,
     improper_inputs = 1013,
+    ie_not_allowed = 1014,
     page_not_found = 404,
     in_debug = 2005,
     unknown_error = 9999
@@ -201,10 +202,9 @@ def mturkroute():
       These arguments will have appropriate values and we should enter the person
       in the database and provide a link to the experiment popup.
     """
-    if not SUPPORT_IE:
+    if not SUPPORT_IE and request.user_agent.browser == "msie":
         # Handler for IE users if IE is not supported.
-        if request.user_agent.browser == "msie":
-            return render_template( 'ie.html' )
+        raise ExperimentError('ie_not_allowed')
     if not (request.args.has_key('hitId') and request.args.has_key('assignmentId')):
         raise ExperimentError('hit_assign_worker_id_not_set_in_mturk')
     # Person has accepted the HIT, entering them into the database.
