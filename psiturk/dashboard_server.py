@@ -203,7 +203,7 @@ def approve_worker():
       if "assignmentId" in request.json:
           assignment_id = request.json["assignmentId"]
           services = MTurkServices(config)
-          services.reject_worker(assignment_id)
+          services.approve_worker(assignment_id)
           try:
               part = Participant.query.\
                         filter(Participant.assignmentid == assignment_id).one()
