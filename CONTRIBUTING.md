@@ -4,7 +4,7 @@ Note: This guide is copied more or less from the [contributors guidelines](https
 of the [gunicorn](https://github.com/benoitc/gunicorn) project. Alternations
 were made for the nature of this particular project.
 
-Want to contributed to psiTurk? Awesome! Here are instructions to get you
+Want to contributed to **psiTurk**? Awesome! Here are instructions to get you
 started. We want to improve these as we go, so please provide feedback.
 
 ## Contribution guidelines
@@ -19,10 +19,10 @@ If your pull request is not accepted on the first try, don't be
 discouraged! If there's a problem with the implementation, hopefully you
 received feedback on what to improve.
 
-We're trying very hard to keep psiTurk lean, focused, and useable. We don't want it
+We're trying very hard to keep **psiTurk** lean, focused, and useable. We don't want it
 to do everything for everybody. This means that we might decide against
 incorporating a new feature. However, there might be a way to implement
-that feature *on top of* psiturk.
+that feature *on top of* **psiTurk**.
 
 ### Discuss your design on the mailing list
 
@@ -53,7 +53,7 @@ Fork the repo and make changes on your fork in a new feature branch:
 - If it's a bugfix branch, name it XXX-something where XXX is the number
   of the issue
 - If it's a feature branch, create an enhancement issue to announce your
-  intentions, and name it XXX-something where XXX is the number of the
+  intentions, and name it `XXX-something` where XXX is the number of the
 issue.
 
 Make sure you include relevant updates or additions to documentation
@@ -81,7 +81,7 @@ your name and email address match your git configuration.
 
 ### How are decisions made?
 
-In general, all decisions affecting psiTurk, big and small, follow the same 3 steps:
+In general, all decisions affecting **psiTurk**, big and small, follow the same 3 steps:
 
 * Step 1: Open a pull request. Anyone can do this.
 
@@ -107,7 +107,7 @@ and/or [Todd Gureckis](https://github.com/gureckis) will intervene to decide.
 The little dictators are not required to create pull requests when
 proposing changes to the project.
 
-### Is it possible to become a little dictator if I'm not in the gureckis lab?
+### Is it possible to become a little dictator if I'm not in the Gureckis lab?
 
 Yes, we will accept new dictators from people esp. engaged and helpful in 
 improving the project.
