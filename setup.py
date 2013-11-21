@@ -24,6 +24,7 @@ if __name__ == "__main__":
         zip_safe = False,
         entry_points = {
             'console_scripts': [
+                'psiturk-shell = psiturk.psiturk_shell:run',
                 'psiturk = psiturk.command_line:process',
                 'psiturk-dashboard = psiturk.command_line:process',
                 'psiturk-server = psiturk.command_line:process',
@@ -31,7 +32,7 @@ if __name__ == "__main__":
             ]
         },
         setup_requires = [],
-        install_requires = ["argparse", "Flask", "SQLAlchemy", "gunicorn", "boto>=2.9"],
+        install_requires = ["argparse", "Flask", "SQLAlchemy", "gunicorn", "boto>=2.9","cmd2","docopt","readline"],
         author = "NYU Computation and Cognition Lab",
         author_email = "authors@psiturk.org",
         description = "An open platform for science on Amazon Mechanical Turk",
