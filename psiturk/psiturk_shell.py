@@ -6,6 +6,7 @@ Usage:
 
 """
 import sys
+import subprocess
 import re
 import time
 import json
@@ -319,17 +320,24 @@ class PsiturkShell(Cmd):
         while self.server.is_server_running() != 'yes':
             time.sleep(0.5)
 
-
     def do_stop_server(self, arg):
         self.server.shutdown()
         print 'Please wait. This could take a few seconds.'
         while self.server.is_server_running() != 'no':
             time.sleep(0.5)
 
-    # this doesn't work with the server's slow shutdown right now
     def do_restart_server(self, arg):
         self.do_stop_server('')
         self.do_start_server('')
+
+    def do_open_server_log(self, arg):
+        logfilename = self.config.get('Server Parameters', 'logfile')
+        if sys.platform == "darwin":
+            args = ["open", "-a", "Console.app", logfilename]
+        else:
+            args = ["xterm", "-e", "'tail -f %s'" % logfilename]
+        subprocess.Popen(args, close_fds=True)
+        print "Log program launching..."
 
     def do_list_workers(self, arg):
         workers = self.services.get_workers()
