@@ -2,8 +2,6 @@
 Usage:
     psiturk_shell
     psiturk_shell setup_example
-    psiturk_shell dashboard
-
 """
 import sys
 import subprocess
@@ -21,7 +19,7 @@ from psiturk_org_services import PsiturkOrgServices
 from version import version_number
 from psiturk_config import PsiturkConfig
 import experiment_server_controller as control
-import dashboard_server as dbs
+from models import Participant
 
 #Escape sequences for display
 def colorize(target, color):
@@ -157,21 +155,6 @@ class PsiturkShell(Cmd):
             self.config.set('HIT Configuration', 'using_sandbox', True)
             self.tally_hits()
             print 'Entered ' + colorize('sandbox', 'bold') + ' mode'
-
-
-    @docopt_cmd
-    def do_dashboard(self, arg):
-        """
-        Usage: dashboard [options]
-
-        -i <address>, --ip <address>    IP to run dashboard on. [default: localhost].
-        -p <num>, --port <num>          Port to run dashboard on. [default: 22361].
-        """
-        arg['--port'] = int(arg['--port'])
-        dbs.launch(ip=arg['--ip'], port=arg['--port'])
-
-    def do_version(self, arg):
-        print 'psiTurk version ' + version_number
 
     def do_print_config(self, arg):
         f = open('config.txt', 'r')
@@ -394,6 +377,17 @@ class PsiturkShell(Cmd):
             print '*** no active hits retrieved'
         else:
             print json.dumps(hits_data, indent=4, separators=(',', ': '))
+
+    def do_download_datafiles(self, arg):
+        contents = {"trialdata": lambda p: p.get_trial_data(), "eventdata": lambda p: p.get_event_data(), "questiondata": lambda p: p.get_question_data()}
+        query = Participant.query.all()
+        for k in contents:
+            ret = "".join([contents[k](p) for p in query])
+            f = open(k + '.csv', 'w')
+            f.write(ret)
+            f.close()
+        
+
 
     @docopt_cmd
     def do_extend_hit(self, arg):
