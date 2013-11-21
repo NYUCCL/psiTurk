@@ -15,7 +15,7 @@ class PsiturkOrgServices:
     """
     def __init__(self, config):
         self.config = config
-        self.webserver = "https://psiturk.org" # by default for now
+        self.adServer = "https://psiturk.org" # by default for now
 
     def connect(self, server):
         """
@@ -24,7 +24,7 @@ class PsiturkOrgServices:
             basic API, just allows overriding of which Ad server
             you are talking to
         """
-        self.webserver = server
+        self.adServer = server
     
     def get_my_ip(self):
         """

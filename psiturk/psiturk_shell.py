@@ -9,6 +9,7 @@ import sys
 import re
 import time
 import json
+import os
 
 from cmd2 import Cmd
 from docopt import docopt, DocoptExit
@@ -97,6 +98,7 @@ class PsiturkShell(Cmd):
                      '\nType "help" for more information.', 'green')
         #prevents running of commands by abbreviation
         self.abbrev = False
+        self.debug = True
 
     def color_prompt(self):
         prompt =  '[' + colorize( 'psiTurk', 'bold')
