@@ -52,7 +52,9 @@ class ExperimentServer(Application):
             'bind': config.get("Server Parameters", "host") + ":" + config.get("Server Parameters", "port"),
             'workers': workers,
             'loglevels': self.loglevels,
-            'loglevel': self.loglevels[config.getint("Server Parameters", "loglevel")]
+            'loglevel': self.loglevels[config.getint("Server Parameters", "loglevel")],
+            'accesslog': config.get("Server Parameters", "logfile"),
+            'errorlog': config.get("Server Parameters", "logfile")
         }
 
 def launch():

@@ -1,4 +1,5 @@
 import os
+import sys
 import datetime
 import logging
 from functools import wraps
@@ -150,7 +151,7 @@ def get_random_condcount():
     chosen = choice(minima)
     #conds += [ 0 for _ in range(1000) ]
     #conds += [ 1 for _ in range(1000) ]
-    print "given ", counts, " chose ", chosen
+    app.logger.info( "given %(a)s chose %(b)s" % {'a': counts, 'b': chosen})
     
     return chosen
 
@@ -199,6 +200,7 @@ def advertisement():
       These arguments will have appropriate values and we should enter the person
       in the database and provide a link to the experiment popup.
     """
+    app.logger.info("testing 123")
     if (not SUPPORT_IE) and request.user_agent.browser == 'msie':
         # Handler for IE users if IE is not supported.
         raise ExperimentError('ie_not_allowed')
@@ -282,7 +284,7 @@ def start_exp():
     hitId = request.args['hitId']
     assignmentId = request.args['assignmentId']
     workerId = request.args['workerId']
-    print "Accessing /exp: ", hitId, assignmentId, workerId
+    app.logger.info( "Accessing /exp: %(h)s %(a)s %(w)s " % {"h" : hitId, "a": assignmentId, "w": workerId})
     
     # check first to see if this hitId or assignmentId exists.  if so check to see if inExp is set
     matches = Participant.query.\
@@ -333,7 +335,7 @@ def start_exp():
                 raise ExperimentError('already_started_exp')
         else:
             if nrecords > 1:
-                print "Error, hit/assignment appears in database more than once (serious problem)"
+                app.logger.error( "Error, hit/assignment appears in database more than once (serious problem)")
                 raise ExperimentError('hit_assign_appears_in_database_more_than_once')
             if other_assignment:
                 raise ExperimentError('already_did_exp_hit')
@@ -349,7 +351,7 @@ def enterexp():
     experiment applet (meaning they can't do part of the experiment and
     referesh to start over).
     """
-    print "Accessing /inexp"
+    app.logger.info( "Accessing /inexp")
     if not request.form.has_key('uniqueId'):
         raise ExperimentError('improper_inputs')
     uniqueId = request.form['uniqueId']
@@ -369,14 +371,14 @@ def update(id=None):
     Save experiment data, which should be a JSON object and will be stored
     after converting to string.
     """
-    print "accessing the /sync route with id:", id
+    app.logger.info("accessing the /sync route with id: %s" % id)
     
     try:
         user = Participant.query.\
                 filter(Participant.uniqueid == id).\
                 one()
     except:
-        print "DB error: Unique user not found."
+        app.logger.error( "DB error: Unique user not found.")
     
     if hasattr(request, 'json'):
         user.datastring = request.data
@@ -398,7 +400,7 @@ def quitter():
     """
     try:
         uniqueId = request.form['uniqueId']
-        print "Marking quitter", uniqueId
+        app.logger.info( "Marking quitter %s" % uniqueId)
         user = Participant.query.\
                 filter(Participant.uniqueid == uniqueId).\
                 one()
@@ -414,12 +416,12 @@ def savedata():
     User has finished the experiment and is posting their data in the form of a
     (long) string. They will receive a debreifing back.
     """
-    print request.args.keys()
+    app.logger.info( request.args.keys())
     if not request.args.has_key('uniqueId'):
         raise ExperimentError('improper_inputs')
     else:
         uniqueId = request.args['uniqueId']
-    print "/debrief called with", uniqueId
+    app.logger.info( "/debrief called with %s" % uniqueId)
 
     user = Participant.query.\
            filter(Participant.uniqueid == uniqueId).\
@@ -448,12 +450,12 @@ def completed():
     participant can accept the debriefing or declare that they were not
     adequately debriefed, and that response is logged in the database.
     """
-    print "accessing the /complete route"
+    app.logger.info( "accessing the /complete route")
     if not (request.args.has_key('uniqueId') and request.form.has_key('agree')):
         raise ExperimentError('improper_inputs')
     uniqueId = request.form['uniqueId']
     agreed = request.form['agree']
-    print uniqueId, agreed
+    app.logger.info( uniqueId +  agreed)
     
     user = Participant.query.\
             filter(Participant.uniqueid == uniqueId).\
