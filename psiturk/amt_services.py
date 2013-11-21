@@ -106,11 +106,11 @@ class MTurkServices:
             aws_secret_access_key = self.config.get('AWS Access', 'aws_secret_access_key'),
             host=host)
         self.mtc = MTurkConnection(**mturkparams)
-        
-    def configure_hit(self):
 
-        # Configure portal
-        experimentPortalURL = self.config.get('HIT Configuration', 'question_url')
+    def configure_hit(self, ad_location):
+
+        # 3. configure question_url based on the id
+        experimentPortalURL = ad_location 
         frameheight = 600
         mturkQuestion = ExternalQuestion(experimentPortalURL, frameheight)
 
@@ -154,12 +154,17 @@ class MTurkServices:
 
     # TODO (if valid AWS credentials haven't been provided then connect_to_turk() will
     # fail, not error checking here and elsewhere)
-    def create_hit(self):
-        self.connect_to_turk()
-        self.configure_hit()
-        myhit = self.mtc.create_hit(**self.paramdict)[0]
-        self.hitid = myhit.HITId
-
+    def create_hit(self, ad_url):
+        try:
+            self.connect_to_turk()
+            self.configure_hit(ad_url)
+            myhit = self.mtc.create_hit(**self.paramdict)[0]
+            self.hitid = myhit.HITId
+        except:
+            return False
+        else:
+            return self.hitid
+ 
     # TODO(Jay): Have a wrapper around functions that serializes them. 
     # Default output should not be serialized.
     def expire_hit(self, hitid):

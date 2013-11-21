@@ -15,6 +15,7 @@ from docopt import docopt, DocoptExit
 import readline
 
 from amt_services import MTurkServices
+from psiturk_org_services import PsiturkOrgServices
 from version import version_number
 from psiturk_config import PsiturkConfig
 import experiment_server_controller as control
@@ -77,14 +78,15 @@ def docopt_cmd(func):
 #  -  if a command takes any arguments, use @docopt_cmd decorator 
 #     and describe command usage in docstring
 #---------------------------------
-class Psiturk_Shell(Cmd):
+class PsiturkShell(Cmd):
 
 
-    def __init__(self, config, services, server):
+    def __init__(self, config, services, webservices, server):
         Cmd.__init__(self)
         self.config = config
         self.server = server
         self.services = services
+        self.webservices = webservices
         self.sandbox = self.config.getboolean('HIT Configuration', 
                                               'using_sandbox')
         self.sandboxHITs = 0
@@ -235,28 +237,76 @@ class Psiturk_Shell(Cmd):
                         arg['<numWorkers>'])
         self.config.set('HIT Configuration', 'reward', arg['<reward>'])
         self.config.set('HIT Configuration', 'duration', arg['<duration>'])
-        self.services.create_hit()
-        if self.sandbox:
-            self.sandboxHITs += 1
+
+        # register with the ad server (psiturk.org/ad/register) using POST
+        server = self.webservices.get_my_ip()  # use a remote site to determing "public facing ip"
+        port = self.config.get('Server Parameters', 'port') # assumes port mapping is veridical from router to server
+        support_ie = self.config.get('HIT Configuration', 'support_ie') # should we support ie?  
+        hours = self.config.getfloat('HIT Configuration', 'HIT_lifetime')
+        if os.path.exists('templates/ad.html') and os.path.exists('templates/error.html'):
+            ad_html = open('templates/ad.html').read()
+            error_html = open('templates/error.html').read()
         else:
-            self.liveHITs += 1
-        #print results
-        total = float(arg['<numWorkers>']) * float(arg['<reward>'])
-        fee = total / 10
-        total = total + fee
-        location = ''
-        if self.sandbox:
-            location = 'sandbox'
+            print '*****************************'
+            print '  Sorry there was an error registering ad.'
+            print "  Both ad.html and error.html are required to be in the templates/ folder of your project so that these Ad can be served!"
+            return
+
+        # what all do we need to send to server?
+        # 1. server
+        # 2. port 
+        # 3. support_ie?
+        # 4. ad.html template
+        # 5. error.html template
+        # 6. lifetime for the ad
+        
+        ad_content = {
+            "server": str(server),
+            "port": str(port),
+            "support_ie": str(support_ie),
+            "ad.html": ad_html,
+            "error.html": error_html,
+            "lifetime": str(hours)
+        }
+
+        create_failed = False
+        ad_id = self.webservices.create_ad(ad_content)
+        if ad_id != False:
+            ad_url = self.webservices.get_ad_url(ad_id)
+            hit_id = self.services.create_hit(ad_url)
+            if hit_id != False:
+                if not self.webservices.set_ad_hitid(ad_id, hit_id):
+                    create_failed = True
+            else:
+                create_failed = True
         else:
-            location = 'live'
-        print '*****************************'
-        print '  Creating %s HIT' % colorize(location, 'bold')
-        print '    Max workers: ' + arg['<numWorkers>']
-        print '    Reward: $' + arg['<reward>']
-        print '    Duration: ' + arg['<duration>'] + ' hours'
-        print '    Fee: $%.2f' % fee
-        print '    ________________________'
-        print '    Total: $%.2f' % total
+            create_failed = True
+
+        if create_failed:
+            print '*****************************'
+            print '  Sorry there was an error creating hit and registering ad.'
+        else:
+            if self.sandbox:
+                self.sandboxHITs += 1
+            else:
+                self.liveHITs += 1
+            #print results
+            total = float(arg['<numWorkers>']) * float(arg['<reward>'])
+            fee = total / 10
+            total = total + fee
+            location = ''
+            if self.sandbox:
+                location = 'sandbox'
+            else:
+                location = 'live'
+            print '*****************************'
+            print '  Creating %s HIT' % colorize(location, 'bold')
+            print '    Max workers: ' + arg['<numWorkers>']
+            print '    Reward: $' + arg['<reward>']
+            print '    Duration: ' + arg['<duration>'] + ' hours'
+            print '    Fee: $%.2f' % fee
+            print '    ________________________'
+            print '    Total: $%.2f' % total
 
     def do_setup_example(self, arg):
         import setup_example as se
@@ -358,6 +408,7 @@ class Psiturk_Shell(Cmd):
             arg['<HITid>'] = [hit['hitid'] for hit in hits_data]
         for hit in arg['<HITid>']:
             self.services.expire_hit(hit)
+            self.webservices.expire_ad(hit)  # also expire the ad
             if self.sandbox:
                 print "expiring sandbox HIT", hit
                 self.sandboxHITs -= 1
@@ -383,6 +434,7 @@ def run():
     config = PsiturkConfig()
     config.load_config()
     services = MTurkServices(config)
+    webservices = PsiturkOrgServices(config)
     server = control.ExperimentServerController(config)
-    shell = Psiturk_Shell(config, services, server)
+    shell = PsiturkShell(config, services, webservices, server)
     shell.cmdloop()
