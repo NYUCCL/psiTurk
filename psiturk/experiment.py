@@ -17,6 +17,7 @@ from models import Participant
 from sqlalchemy import or_
 
 from psiturk_config import PsiturkConfig
+from experiment_errors import ExperimentError
 
 config = PsiturkConfig()
 config.load_config()
@@ -37,9 +38,10 @@ CODE_VERSION = config.get('Task Parameters', 'code_version')
 
 # Database configuration and constants
 TABLENAME = config.get('Database Parameters', 'table_name')
-SUPPORT_IE = config.getboolean('Server Parameters', 'support_IE')
+SUPPORT_IE = config.getboolean('HIT Configuration', 'support_ie')
 
 # Status codes
+NOT_ACCEPTED = 0
 ALLOCATED = 1
 STARTED = 2
 COMPLETED = 3
@@ -87,43 +89,6 @@ def requires_auth(f):
             return authenticate()
         return f(*args, **kwargs)
     return decorated
-
-#----------------------------------------------
-# ExperimentError Exception, for db errors, etc.
-#----------------------------------------------
-# Possible ExperimentError values.
-experiment_errors = dict(
-    status_incorrectly_set = 1000,
-    hit_assign_worker_id_not_set_in_mturk = 1001,
-    hit_assign_worker_id_not_set_in_consent = 1002,
-    hit_assign_worker_id_not_set_in_exp = 1003,
-    hit_assign_appears_in_database_more_than_once = 1004,
-    already_started_exp = 1008,
-    already_started_exp_mturk = 1009,
-    already_did_exp_hit = 1010,
-    tried_to_quit= 1011,
-    intermediate_save = 1012,
-    improper_inputs = 1013,
-    page_not_found = 404,
-    in_debug = 2005,
-    unknown_error = 9999
-)
-
-class ExperimentError(Exception):
-    """
-    Error class for experimental errors, such as subject not being found in
-    the database.
-    """
-    def __init__(self, value):
-        self.value = value
-        self.errornum = experiment_errors[self.value]
-        self.template = "error.html"
-    def __str__(self):
-        return repr(self.value)
-    def error_page(self, request):
-        return render_template(self.template, 
-                               errornum=self.errornum, 
-                               **request.args)
 
 #----------------------------------------------
 # favicon
@@ -196,6 +161,30 @@ def get_random_condcount():
 def index():
     return render_template('default.html')
 
+@app.route('/check_worker_status', methods=['GET'])
+def check_worker_status():
+    if not (request.args.has_key('hitId') and \
+            request.args.has_key('assignmentId') and \
+            request.args.has_key('workerId')):
+        resp = {"status": "bad request"}
+        return jsonify(**resp)
+    else:
+        workerId = request.args['workerId']
+        assignmentId = request.args['assignmentId']
+        hitId = request.args['hitId']
+        try:
+            part = Participant.query.\
+                   filter(Participant.hitid == hitId).\
+                   filter(Participant.assignmentid == assignmentId).\
+                   filter(Participant.workerid == workerId).\
+                   one()
+            status = part.status
+        except:
+            status = NOT_ACCEPTED
+        resp = {"status" : status}
+        return jsonify(**resp)
+
+
 @app.route('/ad', methods=['GET'])
 def advertisement():
     """
@@ -212,7 +201,7 @@ def advertisement():
     """
     if (not SUPPORT_IE) and request.user_agent.browser == 'msie':
         # Handler for IE users if IE is not supported.
-        return render_template( 'ie.html' )
+        raise ExperimentError('ie_not_allowed')
     if not (request.args.has_key('hitId') and request.args.has_key('assignmentId')):
         raise ExperimentError('hit_assign_worker_id_not_set_in_mturk')
     hitId = request.args['hitId']
