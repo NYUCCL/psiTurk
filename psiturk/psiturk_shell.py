@@ -11,10 +11,14 @@ import re
 import time
 import json
 import os
+import string
+import random
 
 from cmd2 import Cmd
 from docopt import docopt, DocoptExit
 import readline
+
+import webbrowser
 
 from amt_services import MTurkServices
 from psiturk_org_services import PsiturkOrgServices
@@ -169,6 +173,31 @@ class PsiturkShell(Cmd):
         """
         arg['--port'] = int(arg['--port'])
         dbs.launch(ip=arg['--ip'], port=arg['--port'])
+
+    def random_id_generator(self, size = 6, chars = string.ascii_uppercase + string.digits):
+        return ''.join(random.choice(chars) for x in range(size))
+
+    @docopt_cmd
+    def do_debug(self, arg):
+        """
+        Usage: debug [options]
+
+        -p, --print-only         just provides the URL, doesn't attempt to launch browser
+        """
+        if self.server.is_server_running() == 'no' or self.server.is_server_running()=='maybe':
+            print "Error: Sorry, you need to have the server running to debug your experiment.  Try 'start_server' first."
+            return
+
+        base_url = "http://" + self.config.get('Server Parameters', 'host') + ":" + self.config.get('Server Parameters', 'port') + "/ad"
+        launchurl = base_url + "?assignmentId=debug" + str(self.random_id_generator()) \
+                    + "&hitId=debug" + str(self.random_id_generator()) \
+                    + "&workerId=debug" + str(self.random_id_generator())
+
+        if arg['--print-only']:
+            print "Here's your randomized debug link, feel free to request another:\n\t", launchurl
+        else:
+            print "Launching browser pointed at your randomized debug link, feel free to request another.\n\t", launchurl
+            webbrowser.open(launchurl, new=1, autoraise=True)
 
     def do_version(self, arg):
         print 'psiTurk version ' + version_number
