@@ -333,12 +333,15 @@ class PsiturkShell(Cmd):
                 location = 'live'
             print '*****************************'
             print '  Creating %s HIT' % colorize(location, 'bold')
+            print '    HITid: ', str(hit_id)
             print '    Max workers: ' + arg['<numWorkers>']
             print '    Reward: $' + arg['<reward>']
             print '    Duration: ' + arg['<duration>'] + ' hours'
             print '    Fee: $%.2f' % fee
             print '    ________________________'
             print '    Total: $%.2f' % total
+            print '  Ad for this HIT now hosted at: http://psiturk.org/ad/' + str(ad_id) + "?assignmentId=debug" + str(self.random_id_generator()) \
+                        + "&hitId=debug" + str(self.random_id_generator())
 
     def do_setup_example(self, arg):
         import setup_example as se
