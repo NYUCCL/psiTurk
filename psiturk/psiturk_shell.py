@@ -157,9 +157,16 @@ class PsiturkShell(Cmd):
             print 'Entered ' + colorize('sandbox', 'bold') + ' mode'
 
     def do_print_config(self, arg):
-        f = open('config.txt', 'r')
-        for line in f:
-            sys.stdout.write(line)
+        for section in self.config.sections():
+            print '[%s]' % section
+            items = dict(self.config.items(section))
+            for k in items:
+                print "%(a)s=%(b)s" % {'a': k, 'b': items[k]}
+            print ''
+            
+
+    def do_reload_config(self, arg):
+        self.config.load_config()
 
     def do_status(self, arg):
         server_status = self.server.is_server_running()
