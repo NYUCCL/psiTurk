@@ -47,12 +47,12 @@ class PsiturkConfig(SafeConfigParser):
 
     def write_default_config(self):
         sections = ['AWS Access', 'HIT Configuration', 'Database Parameters',
-                    'Server Parameters', 'Task Parameters',
-                    'Dashboard Parameters']
+                    'Server Parameters', 'Task Parameters']
         map(self.add_section, sections)
         # AWS Access Section
         self.set('AWS Access', 'aws_access_key_id', 'YourAccessKeyId')
         self.set('AWS Access', 'aws_secret_access_key', 'YourSecreteAccessKey')
+        
         # HIT Configuration
         self.set('HIT Configuration', 'title', 'Stroop task')
         self.set('HIT Configuration', 'description', 'Judge the color of a series of words.')
@@ -88,6 +88,3 @@ class PsiturkConfig(SafeConfigParser):
         self.set('Task Parameters', 'num_counters', '1')
         self.set('Task Parameters', 'use_debriefing', 'true')
 
-        # Dashboard Parameters
-        self.set('Dashboard Parameters', 'login_username', '')
-        self.set('Dashboard Parameters', 'login_pw', '')
