@@ -150,7 +150,8 @@ class Psiturk_Shell(Cmd):
             self.tally_hits()
             print 'Entered ' + colorize('sandbox', 'bold') + ' mode'
 
-    @docopt_cmd
+
+    #@docopt_cmd
     # def do_dashboard(self, arg):
     #     """
     #     Usage: dashboard [options]
