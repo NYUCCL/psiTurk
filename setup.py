@@ -26,7 +26,6 @@ if __name__ == "__main__":
             'console_scripts': [
                 'psiturk-shell = psiturk.psiturk_shell:run',
                 'psiturk = psiturk.command_line:process',
-                'psiturk-dashboard = psiturk.command_line:process',
                 'psiturk-server = psiturk.command_line:process',
                 'psiturk-setup-example = psiturk.command_line:process'
             ]

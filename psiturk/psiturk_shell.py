@@ -152,7 +152,7 @@ class Psiturk_Shell(Cmd):
             print 'Entered ' + colorize('sandbox', 'bold') + ' mode'
 
 
-    @docopt_cmd
+    #@docopt_cmd
     # def do_dashboard(self, arg):
     #     """
     #     Usage: dashboard [options]
