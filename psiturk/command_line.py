@@ -8,11 +8,11 @@ def process():
 	invoked_as = os.path.basename(sys.argv[0])
 
 	if (invoked_as == "psiturk"):
-		launch_dashboard()
+		launch_shell()
 	elif (invoked_as == "psiturk-server"):
 		launch_server()
-	elif (invoked_as == "psiturk-dashboard"):
-		launch_dashboard()
+	elif (invoked_as == "psiturk-shell"):
+		launch_shell()
 	elif (invoked_as == "psiturk-setup-example"):
 		setup_example()
 
@@ -46,16 +46,11 @@ def launch_server():
 		import experiment_server as es
 		es.launch()
 
-
-def launch_dashboard():
+def launch_shell():
 	# add commands for testing, etc..
-	parser = argparse.ArgumentParser(description='Launch psiTurk dashboard.')
+	parser = argparse.ArgumentParser(description='Launch the psiTurk interactive shell.')
 
 	# optional flags
-	parser.add_argument('-i', '--ip', default='localhost', 
-						help='IP to run dashboard on. default is `localhost`.')
-	parser.add_argument('-p', '--port', default=22361, 
-    	help='Port to run dashboard on. default is 22361.')
 	parser.add_argument('-v', '--version', help='Print version number.', action="store_true")
 	args = parser.parse_args()
 
@@ -63,5 +58,5 @@ def launch_dashboard():
 	if args.version:
 		print version_number
 	else:
-		import dashboard_server as dbs
-		dbs.launch(ip=args.ip, port=args.port)
+		import psiturk_shell as ps
+		ps.run()

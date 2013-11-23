@@ -79,7 +79,7 @@ def docopt_cmd(func):
 #---------------------------------
 # psiturk shell class
 #  -  all commands contained in methods titled do_XXXXX(self, arg)
-#  -  if a command takes any arguments, use @docopt_cmd decorator 
+#  -  if a command takes any arguments, use @docopt_cmd decorator
 #     and describe command usage in docstring
 #---------------------------------
 class PsiturkShell(Cmd):
@@ -369,7 +369,7 @@ class PsiturkShell(Cmd):
         if not workers:
             print colorize('failed to get workers', 'red')
         else:
-            print json.dumps(self.services.get_workers(), indent=4, 
+            print json.dumps(self.services.get_workers(), indent=4,
                              separators=(',', ': '))
 
     @docopt_cmd
@@ -439,7 +439,7 @@ class PsiturkShell(Cmd):
         -a <number>, --assignments <number>    Increase number of assignments on HIT
         -e <time>, --expiration <time>         Increase expiration time on HIT (hours)
         """
-        self.services.extend_hit(self, arg['<HITid>'], arg['--assignments'], 
+        self.services.extend_hit(self, arg['<HITid>'], arg['--assignments'],
                             arg['--expiration'])
 
     @docopt_cmd
