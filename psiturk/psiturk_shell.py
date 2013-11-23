@@ -18,7 +18,8 @@ from psiturk_config import PsiturkConfig
 import experiment_server_controller as control
 # import dashboard_server as dbs
 
-#Escape sequences for display
+
+# Escape sequences for display.
 def colorize(target, color):
     colored = ''
     if color == 'purple':
@@ -43,7 +44,8 @@ def colorize(target, color):
         colored = '\001\033[4m\002' + target
     return colored + '\001\033[0m\002'
 
-# decorator function borrowed from docopt
+
+# Decorator function borrowed from docopt.
 def docopt_cmd(func):
     """
     This decorator is used to simplify the try/except block and pass the result
@@ -76,8 +78,6 @@ def docopt_cmd(func):
 #     and describe command usage in docstring
 #---------------------------------
 class Psiturk_Shell(Cmd):
-
-
     def __init__(self, config, services, server):
         Cmd.__init__(self)
         self.config = config
@@ -89,19 +89,19 @@ class Psiturk_Shell(Cmd):
         self.liveHITs = 0
         self.tally_hits()
         self.color_prompt()
-        self.intro = colorize('psiTurk version ' + version_number + \
-                     '\nType "help" for more information.', 'green')
-        #prevents running of commands by abbreviation
+        self.intro = colorize('psiTurk version ' + version_number +
+                              '\nType "help" for more information.', 'green')
+        # Prevents running of commands by abbreviation
         self.abbrev = False
 
     def color_prompt(self):
-        prompt =  '[' + colorize( 'psiTurk', 'bold')
-        serverSring = ''
+        prompt = '[' + colorize('psiTurk', 'bold')
+        serverString = ''
         server_status = self.server.is_server_running()
         if server_status == 'yes':
             serverString = colorize('on', 'green')
         elif server_status == 'no':
-            serverString =  colorize('off', 'red')
+            serverString = colorize('off', 'red')
         elif server_status == 'maybe':
             serverString = colorize('wait', 'yellow')
         prompt += ' server:' + serverString
@@ -114,13 +114,12 @@ class Psiturk_Shell(Cmd):
         else:
             prompt += ' #HITs:' + str(self.liveHITs)
         prompt += ']$ '
-        self.prompt =  prompt
+        self.prompt = prompt
 
     def onecmd_plus_hooks(self, line):
         if not line:
             return self.emptyline()
         return Cmd.onecmd_plus_hooks(self, line)
-
 
     def postcmd(self, stop, line):
         self.color_prompt()
@@ -140,7 +139,7 @@ class Psiturk_Shell(Cmd):
                 arg['<which>'] = 'live'
             else:
                 arg['<which>'] = 'sandbox'
-        if arg['<which>']=='live':
+        if arg['<which>'] == 'live':
             self.sandbox = False
             self.config.set('HIT Configuration', 'using_sandbox', False)
             self.tally_hits()
@@ -151,18 +150,16 @@ class Psiturk_Shell(Cmd):
             self.tally_hits()
             print 'Entered ' + colorize('sandbox', 'bold') + ' mode'
 
-
     @docopt_cmd
     # def do_dashboard(self, arg):
     #     """
     #     Usage: dashboard [options]
-
+    #
     #     -i <address>, --ip <address>    IP to run dashboard on. [default: localhost].
     #     -p <num>, --port <num>          Port to run dashboard on. [default: 22361].
     #     """
     #     arg['--port'] = int(arg['--port'])
     #     dbs.launch(ip=arg['--ip'], port=arg['--port'])
-
     def do_version(self, arg):
         print 'psiTurk version ' + version_number
 
@@ -181,7 +178,7 @@ class Psiturk_Shell(Cmd):
             print 'Server: ' + colorize('please wait', 'yellow')
         self.tally_hits()
         if self.sandbox:
-            print 'AMT worker site - ' + colorize('sandbox', 'bold') +  ': ' + str(self.sandboxHITs) + ' HITs available'
+            print 'AMT worker site - ' + colorize('sandbox', 'bold') + ': ' + str(self.sandboxHITs) + ' HITs available'
         else:
             print 'AMT worker site - ' + colorize('live', 'bold') + ': ' + str(self.liveHITs) + ' HITs available'
 
@@ -238,7 +235,7 @@ class Psiturk_Shell(Cmd):
             self.sandboxHITs += 1
         else:
             self.liveHITs += 1
-        #print results
+        # print results
         total = float(arg['<numWorkers>']) * float(arg['<reward>'])
         fee = total / 10
         total = total + fee
@@ -265,14 +262,13 @@ class Psiturk_Shell(Cmd):
         while self.server.is_server_running() != 'yes':
             time.sleep(0.5)
 
-
     def do_stop_server(self, arg):
         self.server.shutdown()
         print 'Please wait. This could take a few seconds.'
         while self.server.is_server_running() != 'no':
             time.sleep(0.5)
 
-    # this doesn't work with the server's slow shutdown right now
+    # This doesn't work with the server's slow shutdown right now.
     def do_restart_server(self, arg):
         self.do_stop_server('')
         self.do_start_server('')
@@ -303,7 +299,6 @@ class Psiturk_Shell(Cmd):
             else:
                 print '*** failed to approve', assignmentID
 
-
     @docopt_cmd
     def do_reject_worker(self, arg):
         """
@@ -319,12 +314,10 @@ class Psiturk_Shell(Cmd):
             if success:
                 print 'rejected', assignmentID
             else:
-                print  '*** failed to reject', assignmentID
-
+                print '*** failed to reject', assignmentID
 
     def do_check_balance(self, arg):
         print self.services.check_balance()
-
 
     def do_list_active_hits(self, arg):
         hits_data = self.services.get_active_hits()
@@ -342,7 +335,7 @@ class Psiturk_Shell(Cmd):
         -e <time>, --expiration <time>         Increase expiration time on HIT (hours)
         """
         self.services.extend_hit(self, arg['<HITid>'], arg['--assignments'],
-                            arg['--expiration'])
+                                 arg['--expiration'])
 
     @docopt_cmd
     def do_expire_hit(self, arg):
@@ -370,11 +363,12 @@ class Psiturk_Shell(Cmd):
     def do_quit(self, arg):
         if self.server.is_server_running() == 'yes' or self.server.is_server_running() == 'maybe':
             r = raw_input("Quitting shell will shut down experiment server. Really quit? y or n: ")
-            if r=='y':
+            if r == 'y':
                 self.do_stop_server('')
             else:
                 return
         return True
+
 
 def run():
     opt = docopt(__doc__, sys.argv[1:])
