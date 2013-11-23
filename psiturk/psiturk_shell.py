@@ -2,8 +2,6 @@
 Usage:
     psiturk_shell
     psiturk_shell setup_example
-    psiturk_shell dashboard
-
 """
 import sys
 import re
@@ -18,7 +16,7 @@ from amt_services import MTurkServices
 from version import version_number
 from psiturk_config import PsiturkConfig
 import experiment_server_controller as control
-import dashboard_server as dbs
+# import dashboard_server as dbs
 
 #Escape sequences for display
 def colorize(target, color):
@@ -74,7 +72,7 @@ def docopt_cmd(func):
 #---------------------------------
 # psiturk shell class
 #  -  all commands contained in methods titled do_XXXXX(self, arg)
-#  -  if a command takes any arguments, use @docopt_cmd decorator 
+#  -  if a command takes any arguments, use @docopt_cmd decorator
 #     and describe command usage in docstring
 #---------------------------------
 class Psiturk_Shell(Cmd):
@@ -85,7 +83,7 @@ class Psiturk_Shell(Cmd):
         self.config = config
         self.server = server
         self.services = services
-        self.sandbox = self.config.getboolean('HIT Configuration', 
+        self.sandbox = self.config.getboolean('HIT Configuration',
                                               'using_sandbox')
         self.sandboxHITs = 0
         self.liveHITs = 0
@@ -155,15 +153,15 @@ class Psiturk_Shell(Cmd):
 
 
     @docopt_cmd
-    def do_dashboard(self, arg):
-        """
-        Usage: dashboard [options]
+    # def do_dashboard(self, arg):
+    #     """
+    #     Usage: dashboard [options]
 
-        -i <address>, --ip <address>    IP to run dashboard on. [default: localhost].
-        -p <num>, --port <num>          Port to run dashboard on. [default: 22361].
-        """
-        arg['--port'] = int(arg['--port'])
-        dbs.launch(ip=arg['--ip'], port=arg['--port'])
+    #     -i <address>, --ip <address>    IP to run dashboard on. [default: localhost].
+    #     -p <num>, --port <num>          Port to run dashboard on. [default: 22361].
+    #     """
+    #     arg['--port'] = int(arg['--port'])
+    #     dbs.launch(ip=arg['--ip'], port=arg['--port'])
 
     def do_version(self, arg):
         print 'psiTurk version ' + version_number
@@ -284,7 +282,7 @@ class Psiturk_Shell(Cmd):
         if not workers:
             print colorize('failed to get workers', 'red')
         else:
-            print json.dumps(self.services.get_workers(), indent=4, 
+            print json.dumps(self.services.get_workers(), indent=4,
                              separators=(',', ': '))
 
     @docopt_cmd
@@ -343,7 +341,7 @@ class Psiturk_Shell(Cmd):
         -a <number>, --assignments <number>    Increase number of assignments on HIT
         -e <time>, --expiration <time>         Increase expiration time on HIT (hours)
         """
-        self.services.extend_hit(self, arg['<HITid>'], arg['--assignments'], 
+        self.services.extend_hit(self, arg['<HITid>'], arg['--assignments'],
                             arg['--expiration'])
 
     @docopt_cmd
