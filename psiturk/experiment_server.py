@@ -42,7 +42,7 @@ class ExperimentServer(Application):
         return util.import_app("psiturk.experiment:app")
 
     def load_user_config(self):
-        workers = config.get("Server Parameters", "num_workers")
+        workers = config.get("Server Parameters", "threads")  # config calls these threads to avoid confusing with workers
         if workers == "-1":
             workers = str(multiprocessing.cpu_count() * 2 + 1)
 
