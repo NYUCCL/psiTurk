@@ -43,7 +43,7 @@ class ExperimentServer(Application):
 
     def load_user_config(self):
         workers = config.get("Server Parameters", "threads")  # config calls these threads to avoid confusing with workers
-        if workers == "-1":
+        if workers == "auto":
             workers = str(multiprocessing.cpu_count() * 2 + 1)
 
         self.loglevels = ["debug", "info", "warning", "error", "critical"]
