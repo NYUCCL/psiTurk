@@ -266,7 +266,7 @@ class PsiturkShell(Cmd):
         # register with the ad server (psiturk.org/ad/register) using POST
         server = self.webservices.get_my_ip()  # use a remote site to determing "public facing ip"
         port = self.config.get('Server Parameters', 'port') # assumes port mapping is veridical from router to server
-        support_ie = self.config.get('HIT Configuration', 'support_ie') # should we support ie?  
+        support_ie = self.config.get('Task Parameters', 'support_ie') # should we support ie?  
         hours = self.config.getfloat('HIT Configuration', 'HIT_lifetime')
         if os.path.exists('templates/ad.html') and os.path.exists('templates/error.html'):
             ad_html = open('templates/ad.html').read()

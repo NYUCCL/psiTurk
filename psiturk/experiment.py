@@ -36,7 +36,6 @@ USING_SANDBOX = config.getboolean('HIT Configuration', 'using_sandbox')
 
 # Database configuration and constants
 TABLENAME = config.get('Database Parameters', 'table_name')
-SUPPORT_IE = config.getboolean('HIT Configuration', 'support_ie')
 
 # Status codes
 NOT_ACCEPTED = 0
@@ -197,8 +196,7 @@ def advertisement():
       These arguments will have appropriate values and we should enter the person
       in the database and provide a link to the experiment popup.
     """
-    app.logger.info("testing 123")
-    if (not SUPPORT_IE) and request.user_agent.browser == 'msie':
+    if (not config.getboolean('Task Parameters', 'support_ie')) and request.user_agent.browser == 'msie':
         # Handler for IE users if IE is not supported.
         raise ExperimentError('ie_not_allowed')
     if not (request.args.has_key('hitId') and request.args.has_key('assignmentId')):

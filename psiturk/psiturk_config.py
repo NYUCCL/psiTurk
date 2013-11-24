@@ -77,7 +77,6 @@ class PsiturkConfig(SafeConfigParser):
         self.set('Server Parameters', 'host', 'localhost')
         self.set('Server Parameters', 'port', '22362')
         self.set('Server Parameters', 'cutoff_time', '30')
-        self.set('Server Parameters', 'support_IE', 'true')
         self.set('Server Parameters', 'logfile', 'server.log')
         self.set('Server Parameters', 'loglevel', '2')
         self.set('Server Parameters', 'debug', 'true')
@@ -90,4 +89,6 @@ class PsiturkConfig(SafeConfigParser):
         self.set('Task Parameters', 'num_conds', '1')
         self.set('Task Parameters', 'num_counters', '1')
         self.set('Task Parameters', 'use_debriefing', 'true')
+        self.set('Task Parameters', 'support_ie', 'true')
+
 
