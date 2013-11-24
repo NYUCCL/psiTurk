@@ -31,11 +31,6 @@ loglevels = [logging.DEBUG, logging.INFO, logging.WARNING, logging.ERROR, loggin
 loglevel = loglevels[config.getint('Server Parameters', 'loglevel')]
 logging.basicConfig( filename=logfilepath, format='%(asctime)s %(message)s', level=loglevel )
 
-# constants
-USING_SANDBOX = config.getboolean('HIT Configuration', 'using_sandbox')
-
-# Database configuration and constants
-TABLENAME = config.get('Database Parameters', 'table_name')
 
 # Status codes
 NOT_ACCEPTED = 0
@@ -131,7 +126,7 @@ def get_random_condcount():
     numcounts = config.getint('Task Parameters', 'num_counters')
     
     participants = Participant.query.\
-                   filter(Participant.codeversion == CODE_VERSION).\
+                   filter(Participant.codeversion == config.get('Task Parameters', 'experiment_code_version')).\
                    filter(or_(Participant.status == 4, 
                               Participant.status == 5, 
                               Participant.beginhit > starttime)).\
@@ -241,7 +236,7 @@ def advertisement():
         # They've done the debriefing but perhaps haven't submitted the HIT yet..
         # Turn asignmentId into original assignment id before sending it back to AMT
         return render_template('thanks.html', 
-                               using_sandbox=USING_SANDBOX, 
+                               using_sandbox=config.getboolean('HIT Configuration', 'using_sandbox'), 
                                hitid = hitId, 
                                assignmentid = assignmentId, 
                                workerid = workerId)
