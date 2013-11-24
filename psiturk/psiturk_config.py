@@ -46,18 +46,21 @@ class PsiturkConfig(SafeConfigParser):
 
 
     def write_default_config(self):
-        sections = ['AWS Access', 'HIT Configuration', 'Database Parameters',
+        sections = ['AWS Access', 'Secure Ad Server', 'HIT Configuration', 'Database Parameters',
                     'Server Parameters', 'Task Parameters']
         map(self.add_section, sections)
+
         # AWS Access Section
         self.set('AWS Access', 'aws_access_key_id', 'YourAccessKeyId')
-        self.set('AWS Access', 'aws_secret_access_key', 'YourSecreteAccessKey')
-        
+        self.set('AWS Access', 'aws_secret_access_key', 'YourSecretAccessKey')
+
+        # Secure Ad Server
+        self.set('Secure Ad Server', 'location', 'https://psiturk.org')
+
         # HIT Configuration
         self.set('HIT Configuration', 'title', 'Stroop task')
         self.set('HIT Configuration', 'description', 'Judge the color of a series of words.')
         self.set('HIT Configuration', 'keywords', 'Perception, Psychology')
-        self.set('HIT Configuration', 'question_url', 'http://localhost:22362/ad')
         self.set('HIT Configuration', 'max_assignments', '10')
         self.set('HIT Configuration', 'HIT_lifetime', '24')
         self.set('HIT Configuration', 'reward', '1')

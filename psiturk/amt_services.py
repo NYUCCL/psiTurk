@@ -12,8 +12,19 @@ import socket
 import webbrowser
 
 class MTurkServices:
-    def __init__(self, config):
-        self.config = config
+    def __init__(self, aws_access_key_id, aws_secret_access_key, is_sandbox):
+        self.update_credentials(aws_access_key_id, aws_secret_access_key)
+        self.set_sandbox(is_sandbox)
+        if not self.verify_aws_login():
+            print('Sorry, AWS Credentials invalid.  Please check the AWS Access section of config.txt.')
+            exit()
+
+    def update_credentials(self, aws_access_key_id, aws_secret_access_key):
+        self.aws_access_key_id = aws_access_key_id
+        self.aws_secret_access_key = aws_secret_access_key
+
+    def set_sandbox(self, is_sandbox):
+        self.is_sandbox = is_sandbox
 
     def get_active_hits(self):
         self.connect_to_turk()

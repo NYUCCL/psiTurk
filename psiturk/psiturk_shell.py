@@ -480,6 +480,7 @@ def run():
     config.load_config()
     services = MTurkServices(config)
     webservices = PsiturkOrgServices(config)
+    webservices = PsiturkOrgServices(config.get('Secure Ad Server','location'))
     server = control.ExperimentServerController(config)
     shell = PsiturkShell(config, services, webservices, server)
     shell.cmdloop()
