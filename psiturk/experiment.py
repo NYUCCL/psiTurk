@@ -31,11 +31,8 @@ loglevels = [logging.DEBUG, logging.INFO, logging.WARNING, logging.ERROR, loggin
 loglevel = loglevels[config.getint('Server Parameters', 'loglevel')]
 logging.basicConfig( filename=logfilepath, format='%(asctime)s %(message)s', level=loglevel )
 
-# config.get( 'Mechanical Turk Info', 'aws_secret_access_key' )
-
 # constants
 USING_SANDBOX = config.getboolean('HIT Configuration', 'using_sandbox')
-CODE_VERSION = config.get('Task Parameters', 'code_version')
 
 # Database configuration and constants
 TABLENAME = config.get('Database Parameters', 'table_name')

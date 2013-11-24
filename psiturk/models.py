@@ -10,7 +10,7 @@ config = PsiturkConfig()
 config.load_config()
 
 TABLENAME = config.get('Database Parameters', 'table_name')
-CODE_VERSION = config.get('Task Parameters', 'code_version')
+CODE_VERSION = config.get('Task Parameters', 'experiment_code_version')
 
 class Participant(Base):
     """
