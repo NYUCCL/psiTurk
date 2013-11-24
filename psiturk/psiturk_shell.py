@@ -11,6 +11,7 @@ import json
 import os
 import string
 import random
+import datetime
 
 from cmd2 import Cmd
 from docopt import docopt, DocoptExit
@@ -264,10 +265,6 @@ class PsiturkShell(Cmd):
         self.config.set('HIT Configuration', 'duration', arg['<duration>'])
 
         # register with the ad server (psiturk.org/ad/register) using POST
-        server = self.webservices.get_my_ip()  # use a remote site to determing "public facing ip"
-        port = self.config.get('Server Parameters', 'port') # assumes port mapping is veridical from router to server
-        support_ie = self.config.get('Task Parameters', 'support_ie') # should we support ie?  
-        hours = self.config.getfloat('HIT Configuration', 'HIT_lifetime')
         if os.path.exists('templates/ad.html') and os.path.exists('templates/error.html'):
             ad_html = open('templates/ad.html').read()
             error_html = open('templates/error.html').read()
@@ -286,19 +283,31 @@ class PsiturkShell(Cmd):
         # 6. lifetime for the ad
         
         ad_content = {
-            "server": str(server),
-            "port": str(port),
-            "support_ie": str(support_ie),
+            "server": str(self.webservices.get_my_ip()),
+            "port": str(self.config.get('Server Parameters', 'port')),
+            "support_ie": str(self.config.get('Task Parameters', 'support_ie')),
             "ad.html": ad_html,
             "error.html": error_html,
-            "lifetime": str(hours)
+            "lifetime": str(self.config.getfloat('HIT Configuration', 'lifetime'))
         }
 
         create_failed = False
         ad_id = self.webservices.create_ad(ad_content)
         if ad_id != False:
             ad_url = self.webservices.get_ad_url(ad_id)
-            hit_id = self.services.create_hit(ad_url)
+            hit_config = {
+                "ad_location": ad_url,
+                "approve_requirement": self.config.get('HIT Configuration', 'Approve_Requirement'),
+                "us_only": self.config.getboolean('HIT Configuration', 'US_only'),
+                "lifetime": datetime.timedelta(hours=self.config.getfloat('HIT Configuration', 'lifetime')),
+                "max_assignments": self.config.getint('HIT Configuration', 'max_assignments'),
+                "title": self.config.get('HIT Configuration', 'title'),
+                "description": self.config.get('HIT Configuration', 'description'),
+                "keywords": self.config.get('HIT Configuration', 'keywords'),
+                "reward": self.config.getfloat('HIT Configuration', 'reward'),
+                "duration": datetime.timedelta(hours=self.config.getfloat('HIT Configuration', 'duration'))
+            }
+            hit_id = self.services.create_hit(hit_config)
             if hit_id != False:
                 if not self.webservices.set_ad_hitid(ad_id, hit_id):
                     create_failed = True
@@ -478,8 +487,9 @@ def run():
     opt = docopt(__doc__, sys.argv[1:])
     config = PsiturkConfig()
     config.load_config()
-    services = MTurkServices(config)
-    webservices = PsiturkOrgServices(config)
+    services = MTurkServices(config.get('AWS Access', 'aws_access_key_id'), \
+                             config.get('AWS Access', 'aws_secret_access_key'), \
+                             config.getboolean('HIT Configuration','using_sandbox'))
     webservices = PsiturkOrgServices(config.get('Secure Ad Server','location'))
     server = control.ExperimentServerController(config)
     shell = PsiturkShell(config, services, webservices, server)

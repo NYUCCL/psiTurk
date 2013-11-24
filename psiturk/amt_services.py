@@ -84,77 +84,68 @@ class MTurkServices:
         except MTurkRequestError:
             return(False)
 
-    def verify_aws_login(self, key_id, secret_key):
-        is_sandbox = self.config.getboolean('HIT Configuration', 'using_sandbox')
-        if is_sandbox:
-            host = 'mechanicalturk.sandbox.amazonaws.com'
+    def verify_aws_login(self):
+        if (self.aws_access_key_id == 'YourAccessKeyId') or (self.aws_secret_access_key == 'YourSecretAccessKey'):
+            return False
         else:
             host = 'mechanicalturk.amazonaws.com'
-        mturkparams = dict(
-            aws_access_key_id=key_id,
-            aws_secret_access_key=secret_key,
-            host=host)
-        self.mtc = MTurkConnection(**mturkparams)
-        try:
-            self.mtc.get_account_balance()
-        except MTurkRequestError as e:
-            print(e.error_message)
-            print('AWS Credentials invalid')
-            return 0
-        else:
-            print('AWS Credentials valid')
-            return 1
+            mturkparams = dict(
+                aws_access_key_id=self.aws_access_key_id,
+                aws_secret_access_key=self.aws_secret_access_key,
+                host=host)
+            self.mtc = MTurkConnection(**mturkparams)
+            try:
+                self.mtc.get_account_balance()
+            except MTurkRequestError as e:
+                print(e.error_message)
+                return False
+            else:
+                return True
 
     def connect_to_turk(self):
-        is_sandbox = self.config.getboolean('HIT Configuration', 'using_sandbox')
-        if is_sandbox:
+        if self.is_sandbox:
             host = 'mechanicalturk.sandbox.amazonaws.com'
         else:
             host = 'mechanicalturk.amazonaws.com'
         
         mturkparams = dict(
-            aws_access_key_id = self.config.get('AWS Access', 'aws_access_key_id'),
-            aws_secret_access_key = self.config.get('AWS Access', 'aws_secret_access_key'),
+            aws_access_key_id = self.aws_access_key_id,
+            aws_secret_access_key = self.aws_secret_access_key,
             host=host)
         self.mtc = MTurkConnection(**mturkparams)
 
-    def configure_hit(self, ad_location):
+    def configure_hit(self, hit_config):
 
-        # 3. configure question_url based on the id
-        experimentPortalURL = ad_location 
+        # configure question_url based on the id
+        experimentPortalURL = hit_config['ad_location']
         frameheight = 600
         mturkQuestion = ExternalQuestion(experimentPortalURL, frameheight)
 
         # Qualification:
         quals = Qualifications()
-        approve_requirement = self.config.get('HIT Configuration', 'Approve_Requirement')
+        approve_requirement = hit_config['approve_requirement']
         quals.add(
             PercentAssignmentsApprovedRequirement("GreaterThanOrEqualTo",
                                                   approve_requirement))
-        if self.config.getboolean('HIT Configuration', 'US_only'):
+
+        if hit_config['us_only']:
             quals.add(LocaleRequirement("EqualTo", "US"))
 
         # Specify all the HIT parameters
         self.paramdict = dict(
             hit_type = None,
             question = mturkQuestion,
-            lifetime = datetime.timedelta(hours=self.config.getfloat('HIT Configuration', 'HIT_lifetime')),
-            max_assignments = self.config.getint('HIT Configuration', 'max_assignments'),
-            title = self.config.get('HIT Configuration', 'title'),
-            description = self.config.get('HIT Configuration', 'description'),
-            keywords = self.config.get('HIT Configuration', 'keywords'),
-            reward = self.config.getfloat('HIT Configuration', 'reward'),
-            duration = datetime.timedelta(hours=self.config.getfloat('HIT Configuration', 'duration')),
+            lifetime = hit_config['lifetime'],
+            max_assignments = hit_config['max_assignments'],
+            title = hit_config['title'],
+            description = hit_config['description'],
+            keywords = hit_config['keywords'],
+            reward = hit_config['reward'],
+            duration = hit_config['duration'],
             approval_delay = None,
             questions = None,
             qualifications = quals
         )
-    
-    def is_signed_up(self):
-        access_key_id = self.config.get('AWS Access', 'aws_access_key_id')
-        access_key = self.config.get('AWS Access', 'aws_secret_access_key')
-        return (access_key_id != 'YourAccessKeyId') and \
-               (access_key != 'YourSecreteAccessKey')
 
     def check_balance(self):
         if self.is_signed_up():
@@ -165,10 +156,10 @@ class MTurkServices:
 
     # TODO (if valid AWS credentials haven't been provided then connect_to_turk() will
     # fail, not error checking here and elsewhere)
-    def create_hit(self, ad_url):
+    def create_hit(self, hit_config):
         try:
             self.connect_to_turk()
-            self.configure_hit(ad_url)
+            self.configure_hit(hit_config)
             myhit = self.mtc.create_hit(**self.paramdict)[0]
             self.hitid = myhit.HITId
         except:
