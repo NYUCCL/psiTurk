@@ -460,7 +460,7 @@ def completed():
     adequately debriefed, and that response is logged in the database.
     """
     print "accessing the /complete route"
-    if not (request.args.has_key('uniqueId') and request.form.has_key('agree')):
+    if not (request.form.has_key('uniqueId') and request.form.has_key('agree')):
         raise ExperimentError('improper_inputs')
     uniqueId = request.form['uniqueId']
     agreed = request.form['agree']
