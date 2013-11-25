@@ -15,9 +15,11 @@ class MTurkServices:
     def __init__(self, aws_access_key_id, aws_secret_access_key, is_sandbox):
         self.update_credentials(aws_access_key_id, aws_secret_access_key)
         self.set_sandbox(is_sandbox)
-        if not self.verify_aws_login():
-            print('Sorry, AWS Credentials invalid.  Please check the AWS Access section of config.txt.')
-            exit()
+        self.validLogin = self.verify_aws_login()
+        if not self.validLogin:
+            print 'Sorry, AWS Credentials invalid.\nYou will only be able to '\
+                  + 'test experiments locally until you enter\nvalid '\
+                  + 'credentials in the AWS Access section of config.txt.'
 
     def update_credentials(self, aws_access_key_id, aws_secret_access_key):
         self.aws_access_key_id = aws_access_key_id
@@ -27,7 +29,8 @@ class MTurkServices:
         self.is_sandbox = is_sandbox
 
     def get_active_hits(self):
-        self.connect_to_turk()
+        if not self.connect_to_turk():
+            return False
         # hits = self.mtc.search_hits()
         try:
             hits = self.mtc.get_all_hits()
@@ -47,7 +50,8 @@ class MTurkServices:
         return(hits_data)
 
     def get_workers(self):
-        self.connect_to_turk()
+        if not self.connect_to_turk():
+            return False
         try:
             hits = self.mtc.search_hits(sort_direction='Descending', page_size=20)
             hit_ids = [hit.HITId for hit in hits]
@@ -70,15 +74,18 @@ class MTurkServices:
                        } for worker in completed_workers]
         return(worker_data)
 
+
     def approve_worker(self, assignment_id):
-        self.connect_to_turk()
+        if not self.connect_to_turk():
+            return(False)
         try:
             self.mtc.approve_assignment(assignment_id, feedback=None)
         except MTurkRequestError:
             return(False)
 
     def reject_worker(self, assignment_id):
-        self.connect_to_turk()
+        if not self.connect_to_turk():
+            return False
         try:
             self.mtc.reject_assignment(assignment_id, feedback=None)
         except MTurkRequestError:
@@ -102,7 +109,11 @@ class MTurkServices:
             else:
                 return True
 
+
     def connect_to_turk(self):
+        if not self.validLogin:
+            print 'Sorry, AWS credentials invalid.'
+            return False
         if self.is_sandbox:
             host = 'mechanicalturk.sandbox.amazonaws.com'
         else:
@@ -113,6 +124,7 @@ class MTurkServices:
             aws_secret_access_key = self.aws_secret_access_key,
             host=host)
         self.mtc = MTurkConnection(**mturkparams)
+        return True
 
     def configure_hit(self, hit_config):
 
@@ -149,7 +161,8 @@ class MTurkServices:
 
     def check_balance(self):
         if self.is_signed_up():
-            self.connect_to_turk()
+            if not self.connect_to_turk():
+                return('-')
             return(self.mtc.get_account_balance()[0])
         else:
             return('-')
@@ -158,7 +171,8 @@ class MTurkServices:
     # fail, not error checking here and elsewhere)
     def create_hit(self, hit_config):
         try:
-            self.connect_to_turk()
+            if not self.connect_to_turk():
+                return False
             self.configure_hit(hit_config)
             myhit = self.mtc.create_hit(**self.paramdict)[0]
             self.hitid = myhit.HITId
@@ -170,11 +184,13 @@ class MTurkServices:
     # TODO(Jay): Have a wrapper around functions that serializes them. 
     # Default output should not be serialized.
     def expire_hit(self, hitid):
-        self.connect_to_turk()
+        if not self.connect_to_turk():
+            return False
         self.mtc.expire_hit(hitid)
 
     def extend_hit(self, hitid, assignments_increment=None, expiration_increment=None):
-        self.connect_to_turk()
+        if not self.connect_to_turk():
+            return False
         self.mtc.extend_hit(hitid, assignments_increment=int(assignments_increment))
         self.mtc.extend_hit(hitid, expiration_increment=int(expiration_increment)*60)
 

@@ -153,11 +153,13 @@ class PsiturkShell(Cmd):
         if arg['<which>'] == 'live':
             self.sandbox = False
             self.config.set('HIT Configuration', 'using_sandbox', False)
+            self.services.set_sandbox(False)
             self.tally_hits()
             print 'Entered ' + colorize('live', 'bold') + ' mode'
         else:
             self.sandbox = True
             self.config.set('HIT Configuration', 'using_sandbox', True)
+            self.services.set_sandbox(True)
             self.tally_hits()
             print 'Entered ' + colorize('sandbox', 'bold') + ' mode'
 
