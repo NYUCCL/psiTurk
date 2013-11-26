@@ -30,7 +30,7 @@ var stims = [
 	["BLUE", "green", "incongruent"],
 	["RED", "blue", "incongruent"]
 	];
-_.shuffle(stims);
+stims = _.shuffle(stims);
 
 // Task object to keep track of the current phase
 var currentview;
