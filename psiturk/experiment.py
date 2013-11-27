@@ -398,7 +398,7 @@ def quitter():
         db_session.add(user)
         db_session.commit()
     except:
-        return render_template('error.html', errornum= experiment_errors['tried_to_quit'])
+        raise ExperimentError('tried_to_quit')
 
 @app.route('/debrief', methods=['GET'])
 def savedata():
