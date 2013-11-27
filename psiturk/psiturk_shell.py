@@ -270,6 +270,7 @@ class PsiturkShell(Cmd):
         if os.path.exists('templates/ad.html') and os.path.exists('templates/error.html'):
             ad_html = open('templates/ad.html').read()
             error_html = open('templates/error.html').read()
+            thanks_html = open('templates/thanks.html').read()
         else:
             print '*****************************'
             print '  Sorry there was an error registering ad.'
@@ -290,6 +291,7 @@ class PsiturkShell(Cmd):
             "support_ie": str(self.config.get('Task Parameters', 'support_ie')),
             "ad.html": ad_html,
             "error.html": error_html,
+            "thanks.html": thanks_html
             "lifetime": str(self.config.getfloat('HIT Configuration', 'lifetime'))
         }
 
