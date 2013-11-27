@@ -355,7 +355,10 @@ def enterexp():
     db_session.commit()
     return "Success"
 
-@app.route('/sync/<id>', methods=['GET', 'PUT'])
+# TODD SAYS: this the only route in the whole thing that uses <id> like this
+# where everything else uses POST!  This could be confusing but is forced
+# somewhat by Backbone?  take heed!
+@app.route('/sync/<id>', methods=['GET', 'PUT'])  
 def update(id=None):
     """
     Save experiment data, which should be a JSON object and will be stored
