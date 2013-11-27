@@ -456,11 +456,6 @@ def completed():
     db_session.commit()
     return render_template('closepopup.html')
 
-# Is this a security risk?
-@app.route("/ppid")
-def ppid():
-    ppid = os.getppid()
-    return str(ppid)
 
 #----------------------------------------------
 # generic route
