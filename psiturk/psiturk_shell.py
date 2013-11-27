@@ -289,6 +289,7 @@ class PsiturkShell(Cmd):
             "server": str(self.webservices.get_my_ip()),
             "port": str(self.config.get('Server Parameters', 'port')),
             "support_ie": str(self.config.get('Task Parameters', 'support_ie')),
+            "is_sandbox": str(self.sandbox),
             "ad.html": ad_html,
             "error.html": error_html,
             "thanks.html": thanks_html

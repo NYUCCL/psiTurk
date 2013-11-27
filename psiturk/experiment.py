@@ -236,7 +236,7 @@ def advertisement():
         # They've done the debriefing but perhaps haven't submitted the HIT yet..
         # Turn asignmentId into original assignment id before sending it back to AMT
         return render_template('thanks.html', 
-                               using_sandbox=config.getboolean('HIT Configuration', 'using_sandbox'), 
+                               is_sandbox=config.getboolean('HIT Configuration', 'using_sandbox'), 
                                hitid = hitId, 
                                assignmentid = assignmentId, 
                                workerid = workerId)
