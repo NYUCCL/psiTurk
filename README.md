@@ -1,13 +1,12 @@
 What is this?
 ============
 
-**psiTurk** is an open platform for conducting custom behavioral experiments on
-Amazon's Mechanical Turk. 
+**psiTurk** is an open platform for science on Amazon's Mechanical Turk. 
 
-It is intended to provide most of the backend machinery necessary to run your
-experiment. It uses AMT's _External Question_ HIT type, meaning that you can
-collect data using any website. As long as you can turn your experiment into a
-website, you can run it with **psiTurk**!
+It is intended to provide most of the backend machinery necessary to run dynamic
+and interactive behavioral experiments on Amazon Mechanical Turk (AMT). As long 
+as you can turn your experiment into a dynamic webpage, you can run it with 
+**psiTurk**!
 
 *Features*
 
@@ -24,6 +23,8 @@ website, you can run it with **psiTurk**!
   - Simplifies paying participants quickly
   - Assign bonuses
   - Debug and test your experiment
+
+Please visit [psiturk.org](https://psiturk.org) for more information.
 
 Install
 =======
