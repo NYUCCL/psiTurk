@@ -466,7 +466,7 @@ class PsiturkShell(Cmd):
             arg['<HITid>'] = [hit['hitid'] for hit in hits_data]
         for hit in arg['<HITid>']:
             self.amt_services.expire_hit(hit)
-            self.web_services.expire_ad(hit)  # also expire the ad
+            self.web_services.delete_ad(hit)  # also expire the ad
             if self.sandbox:
                 print "expiring sandbox HIT", hit
                 self.sandboxHITs -= 1
