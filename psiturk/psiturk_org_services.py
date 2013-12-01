@@ -54,11 +54,11 @@ class PsiturkOrgServices:
         else:
             return False
 
-    def expire_ad(self, hitId):
+    def delete_ad(self, hitId):
         """
-            expire_ad:
+            delete_ad:
         """
-        ad_server_expire_link = self.adServer + '/ad/expire?hitid=' + hitId
+        ad_server_expire_link = self.adServer + '/ad/delete?hitid=' + hitId
         response = urllib2.urlopen(ad_server_expire_link)
         if json.load(response)['status']=="we're good!":
             return True
