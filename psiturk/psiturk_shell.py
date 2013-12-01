@@ -87,12 +87,12 @@ def docopt_cmd(func):
 class PsiturkShell(Cmd):
 
 
-    def __init__(self, config, services, webservices, server):
+    def __init__(self, config, amt_services, web_services, server):
         Cmd.__init__(self)
         self.config = config
         self.server = server
-        self.services = services
-        self.webservices = webservices
+        self.amt_services = amt_services
+        self.web_services = web_services
         self.sandbox = self.config.getboolean('HIT Configuration', 
                                               'using_sandbox')
         self.sandboxHITs = 0
@@ -153,13 +153,13 @@ class PsiturkShell(Cmd):
         if arg['<which>'] == 'live':
             self.sandbox = False
             self.config.set('HIT Configuration', 'using_sandbox', False)
-            self.services.set_sandbox(False)
+            self.amt_services.set_sandbox(False)
             self.tally_hits()
             print 'Entered ' + colorize('live', 'bold') + ' mode'
         else:
             self.sandbox = True
             self.config.set('HIT Configuration', 'using_sandbox', True)
-            self.services.set_sandbox(True)
+            self.amt_services.set_sandbox(True)
             self.tally_hits()
             print 'Entered ' + colorize('sandbox', 'bold') + ' mode'
 
@@ -218,7 +218,7 @@ class PsiturkShell(Cmd):
             print 'AMT worker site - ' + colorize('live', 'bold') + ': ' + str(self.liveHITs) + ' HITs available'
 
     def tally_hits(self):
-        hits = self.services.get_active_hits()
+        hits = self.amt_services.get_active_hits()
         if hits:
             if self.sandbox:
                 self.sandboxHITs = len(hits)
@@ -286,20 +286,20 @@ class PsiturkShell(Cmd):
         # 6. lifetime for the ad
         
         ad_content = {
-            "server": str(self.webservices.get_my_ip()),
+            "server": str(self.web_services.get_my_ip()),
             "port": str(self.config.get('Server Parameters', 'port')),
             "support_ie": str(self.config.get('Task Parameters', 'support_ie')),
             "is_sandbox": str(self.sandbox),
             "ad.html": ad_html,
             "error.html": error_html,
-            "thanks.html": thanks_html
+            "thanks.html": thanks_html,
             "lifetime": str(self.config.getfloat('HIT Configuration', 'lifetime'))
         }
 
         create_failed = False
-        ad_id = self.webservices.create_ad(ad_content)
+        ad_id = self.web_services.create_ad(ad_content)
         if ad_id != False:
-            ad_url = self.webservices.get_ad_url(ad_id)
+            ad_url = self.web_services.get_ad_url(ad_id)
             hit_config = {
                 "ad_location": ad_url,
                 "approve_requirement": self.config.get('HIT Configuration', 'Approve_Requirement'),
@@ -312,9 +312,9 @@ class PsiturkShell(Cmd):
                 "reward": self.config.getfloat('HIT Configuration', 'reward'),
                 "duration": datetime.timedelta(hours=self.config.getfloat('HIT Configuration', 'duration'))
             }
-            hit_id = self.services.create_hit(hit_config)
+            hit_id = self.amt_services.create_hit(hit_config)
             if hit_id != False:
-                if not self.webservices.set_ad_hitid(ad_id, hit_id):
+                if not self.web_services.set_ad_hitid(ad_id, hit_id):
                     create_failed = True
             else:
                 create_failed = True
@@ -380,11 +380,11 @@ class PsiturkShell(Cmd):
         print "Log program launching..."
 
     def do_list_workers(self, arg):
-        workers = self.services.get_workers()
+        workers = self.amt_services.get_workers()
         if not workers:
             print colorize('failed to get workers', 'red')
         else:
-            print json.dumps(self.services.get_workers(), indent=4,
+            print json.dumps(self.amt_services.get_workers(), indent=4,
                              separators=(',', ': '))
 
     @docopt_cmd
@@ -396,10 +396,10 @@ class PsiturkShell(Cmd):
 
         """
         if arg['--all']:
-            workers = self.services.get_workers()
+            workers = self.amt_services.get_workers()
             arg['<assignment_id>'] = [worker['assignmentId'] for worker in workers]
         for assignmentID in arg['<assignment_id>']:
-            success = self.services.approve_worker(assignmentID)
+            success = self.amt_services.approve_worker(assignmentID)
             if success:
                 print 'approved', assignmentID
             else:
@@ -413,20 +413,20 @@ class PsiturkShell(Cmd):
         -a, --all           reject all completed workers
         """
         if arg['--all']:
-            workers = self.services.get_workers()
+            workers = self.amt_services.get_workers()
             arg['<assignment_it>'] = [worker['assignmentId'] for worker in workers]
         for assignmentID in arg['<assignment_id>']:
-            success = self.services.reject_worker(assignmentID)
+            success = self.amt_services.reject_worker(assignmentID)
             if success:
                 print 'rejected', assignmentID
             else:
                 print '*** failed to reject', assignmentID
 
     def do_check_balance(self, arg):
-        print self.services.check_balance()
+        print self.amt_services.check_balance()
 
     def do_list_active_hits(self, arg):
-        hits_data = self.services.get_active_hits()
+        hits_data = self.amt_services.get_active_hits()
         if not hits_data:
             print '*** no active hits retrieved'
         else:
@@ -451,7 +451,7 @@ class PsiturkShell(Cmd):
         -a <number>, --assignments <number>    Increase number of assignments on HIT
         -e <time>, --expiration <time>         Increase expiration time on HIT (hours)
         """
-        self.services.extend_hit(self, arg['<HITid>'], arg['--assignments'],
+        self.amt_services.extend_hit(self, arg['<HITid>'], arg['--assignments'],
                                  arg['--expiration'])
 
     @docopt_cmd
@@ -462,11 +462,11 @@ class PsiturkShell(Cmd):
         -a, --all              expire all HITs
         """
         if arg['--all']:
-            hits_data = self.services.get_active_hits()
+            hits_data = self.amt_services.get_active_hits()
             arg['<HITid>'] = [hit['hitid'] for hit in hits_data]
         for hit in arg['<HITid>']:
-            self.services.expire_hit(hit)
-            self.webservices.expire_ad(hit)  # also expire the ad
+            self.amt_services.expire_hit(hit)
+            self.web_services.expire_ad(hit)  # also expire the ad
             if self.sandbox:
                 print "expiring sandbox HIT", hit
                 self.sandboxHITs -= 1
@@ -492,10 +492,10 @@ def run():
     opt = docopt(__doc__, sys.argv[1:])
     config = PsiturkConfig()
     config.load_config()
-    services = MTurkServices(config.get('AWS Access', 'aws_access_key_id'), \
+    amt_services = MTurkServices(config.get('AWS Access', 'aws_access_key_id'), \
                              config.get('AWS Access', 'aws_secret_access_key'), \
                              config.getboolean('HIT Configuration','using_sandbox'))
-    webservices = PsiturkOrgServices(config.get('Secure Ad Server','location'))
+    web_services = PsiturkOrgServices(config.get('Secure Ad Server','location'))
     server = control.ExperimentServerController(config)
-    shell = PsiturkShell(config, services, webservices, server)
+    shell = PsiturkShell(config, amt_services, web_services, server)
     shell.cmdloop()
