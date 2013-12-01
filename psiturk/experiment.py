@@ -339,7 +339,10 @@ def start_exp():
     ad_server_base_url = config.get("Secure Ad Server", "location")
     ad_id = get_ad_via_hitid(ad_server_base_url, hitId)
     if ad_id != "error":
-        ad_server_location = ad_server_base_url + "/ad/" + str(ad_id) + "/"
+        if ad_server_base_url[-1] == '/':
+            ad_server_location = ad_server_base_url + "ad/" + str(ad_id)
+        else:
+            ad_server_location = ad_server_base_url + "/ad/" + str(ad_id)
     else:
         raise ExperimentError('hit_not_registered_with_ad_server')
     return render_template('exp.html', uniqueId=part.uniqueid, condition=part.cond, counterbalance=part.counterbalance, adServerLoc=ad_server_location)
