@@ -208,7 +208,7 @@ var Questionnaire = function() {
 	};
 	
 	finish = function() {
-		debriefing();
+		completeHIT();
 	};
 	
 	prompt_resubmit = function() {
@@ -242,7 +242,10 @@ var Questionnaire = function() {
 };
 
 
-var debriefing = function() { window.location="/debrief?uniqueId=" + psiTurk.taskdata.id; };
+var completeHIT = function() {
+	// save data one last time here?
+	window.location= adServerLoc + "/complete?uniqueId=" + psiTurk.taskdata.id;
+}
 
 
 /*******************

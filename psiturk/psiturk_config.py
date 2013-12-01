@@ -88,7 +88,6 @@ class PsiturkConfig(SafeConfigParser):
         self.set('Task Parameters', 'experiment_code_version', '1.0')
         self.set('Task Parameters', 'num_conds', '1')
         self.set('Task Parameters', 'num_counters', '1')
-        self.set('Task Parameters', 'use_debriefing', 'true')
         self.set('Task Parameters', 'support_ie', 'true')
 
 

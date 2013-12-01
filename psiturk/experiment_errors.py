@@ -27,6 +27,7 @@ class ExperimentError(Exception):
             server_not_reachable = 1015,
             ad_not_found = 1016,
             error_setting_worker_complete = 1017,
+            hit_not_registered_with_ad_server = 1018,
             page_not_found = 404,
             in_debug = 2005,
             unknown_error = 9999

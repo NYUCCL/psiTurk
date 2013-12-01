@@ -33,7 +33,6 @@ class Participant(Base):
     beginexp = Column(DateTime)
     endhit = Column(DateTime)
     status = Column(Integer, default = 1)
-    debriefed = Column(Boolean)
     datastring = Column(Text)
     
     def __init__(self, **kwargs):
@@ -42,7 +41,6 @@ class Participant(Base):
             setattr(self, key, kwargs[key])
         self.status = 1
         self.codeversion = CODE_VERSION
-        self.debriefed = False
         self.beginhit = datetime.datetime.now()
     
     def __repr__(self):

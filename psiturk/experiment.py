@@ -2,8 +2,10 @@ import os
 import sys
 import datetime
 import logging
+import urllib2
 from functools import wraps
 from random import choice
+import json
 try:
     from collections import Counter
 except ImportError:
@@ -37,9 +39,8 @@ NOT_ACCEPTED = 0
 ALLOCATED = 1
 STARTED = 2
 COMPLETED = 3
-DEBRIEFED = 4
-CREDITED = 5
-QUITEARLY = 6
+CREDITED = 4
+QUITEARLY = 5
 
 ###########################################################
 # let's start
@@ -228,11 +229,6 @@ def advertisement():
         # them to start the task again.
         raise ExperimentError('already_started_exp_mturk')
     elif status == COMPLETED:
-        # They've done the whole task, but haven't signed the debriefing yet.
-        return render_template('debriefing.html', 
-                               workerId = workerId,
-                               assignmentId = assignmentId)
-    elif status == DEBRIEFED:
         # They've done the debriefing but perhaps haven't submitted the HIT yet..
         # Turn asignmentId into original assignment id before sending it back to AMT
         return render_template('thanks.html', 
@@ -263,6 +259,15 @@ def give_consent():
     assignmentId = request.args['assignmentId']
     workerId = request.args['workerId']
     return render_template('consent.html', hitid = hitId, assignmentid=assignmentId, workerid=workerId)
+
+def get_ad_via_hitid(server, hitId):
+    try:
+        request_url = str(server) + "/ad/query?hitId=" + str(hitId)
+        response = urllib2.urlopen(request_url)
+        data = json.load(response)
+    except:
+        raise ExperimentError('server_not_reachable')
+    return data['ad_id']
 
 @app.route('/exp', methods=['GET'])
 def start_exp():
@@ -330,7 +335,14 @@ def start_exp():
             if other_assignment:
                 raise ExperimentError('already_did_exp_hit')
     
-    return render_template('exp.html', uniqueId=part.uniqueid, condition=part.cond, counterbalance=part.counterbalance)
+    # if everything goes ok here relatively safe to assume we can lookup the ad
+    ad_server_base_url = config.get("Secure Ad Server", "location")
+    ad_id = get_ad_via_hitid(ad_server_base_url, hitId)
+    if ad_id != "error":
+        ad_server_location = ad_server_base_url + "/ad/" + str(ad_id) + "/"
+    else:
+        raise ExperimentError('hit_not_registered_with_ad_server')
+    return render_template('exp.html', uniqueId=part.uniqueid, condition=part.cond, counterbalance=part.counterbalance, adServerLoc=ad_server_location)
 
 @app.route('/inexp', methods=['POST'])
 def enterexp():
@@ -403,61 +415,26 @@ def quitter():
     except:
         raise ExperimentError('tried_to_quit')
 
-@app.route('/debrief', methods=['GET'])
-def savedata():
-    """
-    User has finished the experiment and is posting their data in the form of a
-    (long) string. They will receive a debreifing back.
-    """
-    app.logger.info( request.args.keys())
+
+@app.route('/worker_complete', methods=['GET'])
+def worker_complete():
     if not request.args.has_key('uniqueId'):
-        raise ExperimentError('improper_inputs')
+        resp = {"status": "bad request"}
+        return jsonify(**resp)
     else:
         uniqueId = request.args['uniqueId']
-    app.logger.info( "/debrief called with %s" % uniqueId)
-
-    user = Participant.query.\
-           filter(Participant.uniqueid == uniqueId).\
-           one()
-
-    if config.getboolean('Task Parameters', 'use_debriefing'):
-        user.status = COMPLETED
-        user.endhit = datetime.datetime.now()
-        db_session.add(user)
-        db_session.commit()
-    
-        return render_template('debriefing.html', uniqueId=user.uniqueid)
-
-    else:
-        user.status = DEBRIEFED
-        user.endhit = datetime.datetime.now()
-        db_session.add(user)
-        db_session.commit()
-
-        return render_template('closepopup.html')
-
-@app.route('/complete', methods=['POST'])
-def completed():
-    """
-    This is sent in when the participant completes the debriefing. The
-    participant can accept the debriefing or declare that they were not
-    adequately debriefed, and that response is logged in the database.
-    """
-    app.logger.info( "accessing the /complete route")
-    if not (request.form.has_key('uniqueId') and request.form.has_key('agree')):
-        raise ExperimentError('improper_inputs')
-    uniqueId = request.form['uniqueId']
-    agreed = request.form['agree']
-    app.logger.info( uniqueId +  agreed)
-    
-    user = Participant.query.\
-            filter(Participant.uniqueid == uniqueId).\
-            one()
-    user.status = DEBRIEFED
-    user.debriefed = agreed == 'true'
-    db_session.add(user)
-    db_session.commit()
-    return render_template('closepopup.html')
+        try:
+            user = Participant.query.\
+                        filter(Participant.uniqueid == uniqueId).\
+                        one()
+            user.status = COMPLETED 
+            db_session.add(user)
+            db_session.commit()
+            status = "success"
+        except:
+            status = "database error"
+        resp = {"status" : status}
+        return jsonify(**resp)
 
 # Is this a security risk?
 @app.route("/ppid")
@@ -476,8 +453,6 @@ def regularpage(pagename=None):
     if pagename==None:
         raise ExperimentError('page_not_found')
     return render_template(pagename)
-
-
 
 # # Initialize database if necessary
 def run_webserver():
