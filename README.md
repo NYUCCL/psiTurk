@@ -117,5 +117,17 @@ McDonnell, J.V., Martin, J.B., Markant, D.B., Coenen, A., Rich, A.S., and Gureck
 (2012). psiTurk (Version 1.02) [Software]. New York, NY: New York University. 
 Available from https://github.com/NYUCCL/psiTurk
 
+Import into BibTeX:
+
+```latex
+@manual{Mcdonnell12,
+	Address = {New York, NY},
+	Author = {McDonnell, J.V. AND Martin, J.B. AND Markant, D.B. AND Coenen, A. AND Rich, A.S. AND Gureckis, T.M.},
+	Organization = {New York University},
+	Title = {psiTurk (Version 1.02) [Software]},
+	Url = {https://github.com/NYUCCL/psiTurk},
+	Year = {2012}
+}
+```
 
 
