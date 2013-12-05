@@ -455,6 +455,26 @@ class PsiturkShell(Cmd):
                                  arg['--expiration'])
 
     @docopt_cmd
+    def do_dispose_hit(self, arg):
+        """
+        Usage: dispose_hit (--all | <HITid> ...)
+
+        -a, --all              delete all HITs
+        """
+        if arg['--all']:
+            hits_data = self.amt_services.get_active_hits()
+            arg['<HITid>'] = [hit['hitid'] for hit in hits_data]
+        for hit in arg['<HITid>']:
+            self.amt_services.dispose_hit(hit)
+            self.web_services.delete_ad(hit)  # also delete the ad
+            if self.sandbox:
+                print "deleting sandbox HIT", hit
+                self.sandboxHITs -= 1
+            else:
+                print "deleting live HIT", hit
+                self.liveHITs -= 1
+
+    @docopt_cmd
     def do_expire_hit(self, arg):
         """
         Usage: expire_hit (--all | <HITid> ...)
@@ -466,7 +486,6 @@ class PsiturkShell(Cmd):
             arg['<HITid>'] = [hit['hitid'] for hit in hits_data]
         for hit in arg['<HITid>']:
             self.amt_services.expire_hit(hit)
-            self.web_services.delete_ad(hit)  # also expire the ad
             if self.sandbox:
                 print "expiring sandbox HIT", hit
                 self.sandboxHITs -= 1

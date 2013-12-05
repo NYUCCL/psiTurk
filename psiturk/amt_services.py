@@ -188,6 +188,11 @@ class MTurkServices:
             return False
         self.mtc.expire_hit(hitid)
 
+   def dispose_hit(self, hitid):
+        if not self.connect_to_turk():
+            return False
+        self.mtc.dispose_hit(hitid)
+
     def extend_hit(self, hitid, assignments_increment=None, expiration_increment=None):
         if not self.connect_to_turk():
             return False
