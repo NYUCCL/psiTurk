@@ -11,6 +11,21 @@ from flask import jsonify
 import socket
 import webbrowser
 
+class MTurkHIT:
+    def __init__(self, json_options):
+        self.options = json_options
+
+    def __repr__(self):
+        return "%s \n\tStatus: %s \n\tHITid: %s \n\tmax:%s/pending:%s/complete:%s \n\tCreated:%s \n\tExpires:%s\n" % ( 
+            self.options['title'],
+            self.options['status'],
+            self.options['hitid'],
+            self.options['max_assignments'],
+            self.options['number_assignments_pending'],
+            self.options['number_assignments_completed'],
+            self.options['creation_time'],
+            self.options['expiration'])
+
 class MTurkServices:
     def __init__(self, aws_access_key_id, aws_secret_access_key, is_sandbox):
         self.update_credentials(aws_access_key_id, aws_secret_access_key)
@@ -28,16 +43,14 @@ class MTurkServices:
     def set_sandbox(self, is_sandbox):
         self.is_sandbox = is_sandbox
 
-    def get_active_hits(self):
+    def get_all_hits(self):
         if not self.connect_to_turk():
             return False
-        # hits = self.mtc.search_hits()
         try:
             hits = self.mtc.get_all_hits()
         except MTurkRequestError:
-            return(False)
-        active_hits = [hit for hit in hits if not(hit.expired)]
-        hits_data = [{'hitid': hit.HITId,
+            return False
+        hits_data = [MTurkHIT({'hitid': hit.HITId,
                       'title': hit.Title,
                       'status': hit.HITStatus,
                       'max_assignments': hit.MaxAssignments,
@@ -46,7 +59,28 @@ class MTurkServices:
                       'number_assignments_available': hit.NumberOfAssignmentsAvailable,
                       'creation_time': hit.CreationTime,
                       'expiration': hit.Expiration,
-                      } for hit in active_hits]
+                      }) for hit in hits]
+        return(hits_data)
+
+    def get_active_hits(self):
+        if not self.connect_to_turk():
+            return False
+        # hits = self.mtc.search_hits()
+        try:
+            hits = self.mtc.get_all_hits()
+        except MTurkRequestError:
+            return False
+        active_hits = [hit for hit in hits if not(hit.expired)]
+        hits_data = [MTurkHIT({'hitid': hit.HITId,
+                      'title': hit.Title,
+                      'status': hit.HITStatus,
+                      'max_assignments': hit.MaxAssignments,
+                      'number_assignments_completed': hit.NumberOfAssignmentsCompleted,
+                      'number_assignments_pending': hit.NumberOfAssignmentsCompleted,
+                      'number_assignments_available': hit.NumberOfAssignmentsAvailable,
+                      'creation_time': hit.CreationTime,
+                      'expiration': hit.Expiration,
+                      }) for hit in active_hits]
         return(hits_data)
 
     def get_workers(self):
@@ -188,7 +222,7 @@ class MTurkServices:
             return False
         self.mtc.expire_hit(hitid)
 
-   def dispose_hit(self, hitid):
+    def dispose_hit(self, hitid):
         if not self.connect_to_turk():
             return False
         self.mtc.dispose_hit(hitid)

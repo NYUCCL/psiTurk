@@ -425,12 +425,21 @@ class PsiturkShell(Cmd):
     def do_check_balance(self, arg):
         print self.amt_services.check_balance()
 
+    def do_list_all_hits(self, arg):
+        hits_data = self.amt_services.get_all_hits()
+        if not hits_data:
+            print '*** no hits retrieved'
+        else:
+            for hit in hits_data:
+                print hit
+
     def do_list_active_hits(self, arg):
         hits_data = self.amt_services.get_active_hits()
         if not hits_data:
             print '*** no active hits retrieved'
         else:
-            print json.dumps(hits_data, indent=4, separators=(',', ': '))
+            for hit in hits_data:
+                print hit
 
     def do_download_datafiles(self, arg):
         contents = {"trialdata": lambda p: p.get_trial_data(), "eventdata": lambda p: p.get_event_data(), "questiondata": lambda p: p.get_question_data()}
