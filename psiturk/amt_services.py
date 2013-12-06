@@ -233,6 +233,15 @@ class MTurkServices:
         self.mtc.extend_hit(hitid, assignments_increment=int(assignments_increment))
         self.mtc.extend_hit(hitid, expiration_increment=int(expiration_increment)*60)
 
+    def get_hit_status(self, hitid):
+        if not self.connect_to_turk():
+            return False
+        try:
+            hitdata = self.mtc.get_hit(hitd)
+        except:
+            return False
+        return hitdata.HITStatus
+
     def get_summary(self):
       try:
           balance = self.check_balance()
