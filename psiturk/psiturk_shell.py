@@ -275,6 +275,13 @@ class PsiturkShell(Cmd):
             print "  Both ad.html is required to be in the templates/ folder of your project so that these Ad can be served!"
             return
 
+        size_of_ad = sys.getsizeof(ad_html)
+        if size_of_ad >= 1048576:
+            print '*****************************'
+            print '  Sorry there was an error registering ad.'
+            print "  Your local ad.html is %s byes, but the maximum template size uploadable to the Ad server is 1048576 bytes!", size_of_ad
+            return
+
         # what all do we need to send to server?
         # 1. server
         # 2. port 
