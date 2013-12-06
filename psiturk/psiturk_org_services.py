@@ -13,8 +13,9 @@ class PsiturkOrgServices:
         interfacing with the experiment exchange
         see: https://github.com/NYUCCL/psiTurk_website
     """
-    def __init__(self, ad_server_location):
+    def __init__(self, ad_server_location, contact_email):
         self.adServer = ad_server_location # by default for now
+        self.contactEmail = contact_email
 
     def connect(self, server):
         """

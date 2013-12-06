@@ -267,14 +267,12 @@ class PsiturkShell(Cmd):
         self.config.set('HIT Configuration', 'duration', arg['<duration>'])
 
         # register with the ad server (psiturk.org/ad/register) using POST
-        if os.path.exists('templates/ad.html') and os.path.exists('templates/error.html'):
+        if os.path.exists('templates/ad.html'):
             ad_html = open('templates/ad.html').read()
-            error_html = open('templates/error.html').read()
-            thanks_html = open('templates/thanks.html').read()
         else:
             print '*****************************'
             print '  Sorry there was an error registering ad.'
-            print "  Both ad.html and error.html are required to be in the templates/ folder of your project so that these Ad can be served!"
+            print "  Both ad.html is required to be in the templates/ folder of your project so that these Ad can be served!"
             return
 
         # what all do we need to send to server?
@@ -282,8 +280,7 @@ class PsiturkShell(Cmd):
         # 2. port 
         # 3. support_ie?
         # 4. ad.html template
-        # 5. error.html template
-        # 6. lifetime for the ad
+        # 5. contact_email in case an error happens
         
         ad_content = {
             "server": str(self.web_services.get_my_ip()),
@@ -291,9 +288,7 @@ class PsiturkShell(Cmd):
             "support_ie": str(self.config.get('Task Parameters', 'support_ie')),
             "is_sandbox": str(self.sandbox),
             "ad.html": ad_html,
-            "error.html": error_html,
-            "thanks.html": thanks_html,
-            "lifetime": str(self.config.getfloat('HIT Configuration', 'lifetime'))
+            "contact_email": str(self.config.get('Secure Ad Server', 'contact_email'))
         }
 
         create_failed = False
@@ -523,7 +518,7 @@ def run():
     amt_services = MTurkServices(config.get('AWS Access', 'aws_access_key_id'), \
                              config.get('AWS Access', 'aws_secret_access_key'), \
                              config.getboolean('HIT Configuration','using_sandbox'))
-    web_services = PsiturkOrgServices(config.get('Secure Ad Server','location'))
+    web_services = PsiturkOrgServices(config.get('Secure Ad Server','location'), self.config.get('Secure Ad Server', 'contact_email'))
     server = control.ExperimentServerController(config)
     shell = PsiturkShell(config, amt_services, web_services, server)
     shell.cmdloop()

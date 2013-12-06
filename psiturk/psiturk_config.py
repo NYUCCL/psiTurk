@@ -56,6 +56,7 @@ class PsiturkConfig(SafeConfigParser):
 
         # Secure Ad Server
         self.set('Secure Ad Server', 'location', 'https://psiturk.org')
+        self.set('Secure Ad Server', 'contact_email', 'gureckislab@gmail.com')
 
         # HIT Configuration
         self.set('HIT Configuration', 'title', 'Stroop task')
