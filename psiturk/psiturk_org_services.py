@@ -15,6 +15,8 @@ class PsiturkOrgServices:
     """
     def __init__(self, ad_server_location, contact_email):
         self.adServer = ad_server_location # by default for now
+        if self.adServer[-1]=='/':
+            self.adServer = self.adServer[:-1]
         self.contactEmail = contact_email
 
     def connect(self, server):
@@ -78,10 +80,15 @@ class PsiturkOrgServices:
         
         # 2. get id in response
         data = json.load(response) 
-        if data['id'] == "correct parameters not provided":
-            print "Error: registering Ad with server, you didn't provide all the required parameters (server, port, support_ie)"
-            return False
-        elif data['id'] == "localhost not allowed":
-            print "Error: attempting to localhost or 127.0.0.1 as your server location to the Ad server, but this is not allowed.  Check the 'host' parameter in config.txt and make it a publically accessible hostname/ip."
-            return False
-        return data['id']
+        if isinstance(data['id'], int):
+            return data['id']
+        else:
+            if data['id'] == "correct parameters not provided":
+                print "Error: registering Ad with server, you didn't provide all the required parameters (server, port, support_ie)"
+                return False
+            elif data['id'] == "localhost not allowed":
+                print "Error: attempting to localhost or 127.0.0.1 as your server location to the Ad server, but this is not allowed.  Check the 'host' parameter in config.txt and make it a publically accessible hostname/ip."
+                return False
+            elif data['id'][:25] == "The maximum template size":
+                print data['id']  # print out the message about template size
+                return False

@@ -529,7 +529,7 @@ def run():
     amt_services = MTurkServices(config.get('AWS Access', 'aws_access_key_id'), \
                              config.get('AWS Access', 'aws_secret_access_key'), \
                              config.getboolean('HIT Configuration','using_sandbox'))
-    web_services = PsiturkOrgServices(config.get('Secure Ad Server','location'), self.config.get('Secure Ad Server', 'contact_email'))
+    web_services = PsiturkOrgServices(config.get('Secure Ad Server','location'), config.get('Secure Ad Server', 'contact_email'))
     server = control.ExperimentServerController(config)
     shell = PsiturkShell(config, amt_services, web_services, server)
     shell.cmdloop()
