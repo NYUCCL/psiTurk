@@ -16,13 +16,14 @@ class MTurkHIT:
         self.options = json_options
 
     def __repr__(self):
-        return "%s \n\tStatus: %s \n\tHITid: %s \n\tmax:%s/pending:%s/complete:%s \n\tCreated:%s \n\tExpires:%s\n" % ( 
+        return "%s \n\tStatus: %s \n\tHITid: %s \n\tmax:%s/pending:%s/complete:%s/remain:%s \n\tCreated:%s \n\tExpires:%s\n" % ( 
             self.options['title'],
             self.options['status'],
             self.options['hitid'],
             self.options['max_assignments'],
             self.options['number_assignments_pending'],
             self.options['number_assignments_completed'],
+            self.options['number_assignments_available'],
             self.options['creation_time'],
             self.options['expiration'])
 
@@ -43,6 +44,26 @@ class MTurkServices:
     def set_sandbox(self, is_sandbox):
         self.is_sandbox = is_sandbox
 
+    def get_reviewable_hits(self):
+        if not self.connect_to_turk():
+            return False
+        try:
+            hits = self.mtc.get_all_hits()
+        except MTurkRequestError:
+            return False
+        reviewable_hits = [hit for hit in hits if (hit.HITStatus == "Reviewable" or hit.HITStatus == "Reviewing")]
+        hits_data = [MTurkHIT({'hitid': hit.HITId,
+                      'title': hit.Title,
+                      'status': hit.HITStatus,
+                      'max_assignments': hit.MaxAssignments,
+                      'number_assignments_completed': hit.NumberOfAssignmentsCompleted,
+                      'number_assignments_pending': hit.NumberOfAssignmentsPending,
+                      'number_assignments_available': hit.NumberOfAssignmentsAvailable,
+                      'creation_time': hit.CreationTime,
+                      'expiration': hit.Expiration,
+                      }) for hit in reviewable_hits]
+        return(hits_data)
+
     def get_all_hits(self):
         if not self.connect_to_turk():
             return False
@@ -55,7 +76,7 @@ class MTurkServices:
                       'status': hit.HITStatus,
                       'max_assignments': hit.MaxAssignments,
                       'number_assignments_completed': hit.NumberOfAssignmentsCompleted,
-                      'number_assignments_pending': hit.NumberOfAssignmentsCompleted,
+                      'number_assignments_pending': hit.NumberOfAssignmentsPending,
                       'number_assignments_available': hit.NumberOfAssignmentsAvailable,
                       'creation_time': hit.CreationTime,
                       'expiration': hit.Expiration,
@@ -76,7 +97,7 @@ class MTurkServices:
                       'status': hit.HITStatus,
                       'max_assignments': hit.MaxAssignments,
                       'number_assignments_completed': hit.NumberOfAssignmentsCompleted,
-                      'number_assignments_pending': hit.NumberOfAssignmentsCompleted,
+                      'number_assignments_pending': hit.NumberOfAssignmentsPending,
                       'number_assignments_available': hit.NumberOfAssignmentsAvailable,
                       'creation_time': hit.CreationTime,
                       'expiration': hit.Expiration,
@@ -237,10 +258,10 @@ class MTurkServices:
         if not self.connect_to_turk():
             return False
         try:
-            hitdata = self.mtc.get_hit(hitd)
+            hitdata = self.mtc.get_hit(hitid)
         except:
             return False
-        return hitdata.HITStatus
+        return hitdata[0].HITStatus
 
     def get_summary(self):
       try:

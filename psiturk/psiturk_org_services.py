@@ -63,7 +63,8 @@ class PsiturkOrgServices:
         """
         ad_server_expire_link = self.adServer + '/ad/delete?hitid=' + hitId
         response = urllib2.urlopen(ad_server_expire_link)
-        if json.load(response)['status']=="we're good!":
+        status_msg = json.load(response)['status']
+        if status_msg=="we're good!" or status_msg=="add not found":
             return True
         else:
             return False

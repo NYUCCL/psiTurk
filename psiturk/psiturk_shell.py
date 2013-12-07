@@ -443,6 +443,14 @@ class PsiturkShell(Cmd):
             for hit in hits_data:
                 print hit
 
+    def do_list_reviewable_hits(self, arg):
+        hits_data = self.amt_services.get_reviewable_hits()
+        if not hits_data:
+            print '*** no reviewable hits retrieved'
+        else:
+            for hit in hits_data:
+                print hit
+    
     def do_download_datafiles(self, arg):
         contents = {"trialdata": lambda p: p.get_trial_data(), "eventdata": lambda p: p.get_event_data(), "questiondata": lambda p: p.get_question_data()}
         query = Participant.query.all()
@@ -477,8 +485,13 @@ class PsiturkShell(Cmd):
             arg['<HITid>'] = [hit.options['hitid'] for hit in hits_data if (hit.options['status']=="Reviewable")]
         for hit in arg['<HITid>']:
             # check that the his is reviewable
-            if self.amt_services.check_hit_status(hit)!="Reviewable":
-                print "*** This hit is not 'Reviewable' and so cannot be disposed of"
+            status = self.amt_services.get_hit_status(hit)
+            if not status:
+                print "*** Error getting hit status"
+                return                
+            if self.amt_services.get_hit_status(hit)!="Reviewable":
+                print "*** This hit is not 'Reviewable' and so can not be disposed of"
+                return
             else:
                 self.amt_services.dispose_hit(hit)
                 self.web_services.delete_ad(hit)  # also delete the ad
