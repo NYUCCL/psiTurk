@@ -280,7 +280,7 @@ def start_exp():
     assignmentId = request.args['assignmentId']
     workerId = request.args['workerId']
     app.logger.info( "Accessing /exp: %(h)s %(a)s %(w)s " % {"h" : hitId, "a": assignmentId, "w": workerId})
-    if hitId[:5] != "debug":
+    if hitId[:5] == "debug":
         debug_mode = True
     else:
         debug_mode = False
