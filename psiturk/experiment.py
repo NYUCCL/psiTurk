@@ -246,7 +246,7 @@ def advertisement():
                                assignmentid = assignmentId, 
                                workerid = workerId)
     else:
-        raise ExperimentError('STATUS_INCORRECTLY_SET')
+        raise ExperimentError('status_incorrectly_set')
 
 @app.route('/consent', methods=['GET'])
 def give_consent():
@@ -368,13 +368,15 @@ def enterexp():
     if not request.form.has_key('uniqueId'):
         raise ExperimentError('improper_inputs')
     uniqueId = request.form['uniqueId']
-    user = Participant.query.\
-            filter(Participant.uniqueid == uniqueId).\
-            one()
-    user.status = STARTED
-    user.beginexp = datetime.datetime.now()
-    db_session.add(user)
-    db_session.commit()
+
+    if uniqueId[:5]!='debug':  # do not set "started" field if debugging
+        user = Participant.query.\
+                filter(Participant.uniqueid == uniqueId).\
+                one()
+        user.status = STARTED
+        user.beginexp = datetime.datetime.now()
+        db_session.add(user)
+        db_session.commit()
     return "Success"
 
 # TODD SAYS: this the only route in the whole thing that uses <id> like this
@@ -425,9 +427,24 @@ def quitter():
     except:
         raise ExperimentError('tried_to_quit')
 
+# this route should only used when debugging
 @app.route('/complete', methods=['GET'])
 def debug_complete():
-    return render_template('complete.html')
+    if not request.args.has_key('uniqueId'):
+        raise ExperimentError('improper_inputs')
+    else:
+        uniqueId = request.args['uniqueId']
+        try:
+            user = Participant.query.\
+                        filter(Participant.uniqueid == uniqueId).\
+                        one()
+            user.status = COMPLETED 
+            db_session.add(user)
+            db_session.commit()
+        except:
+            raise ExperimentError('error_setting_worker_complete')
+        else:
+            return render_template('complete.html')
 
 @app.route('/worker_complete', methods=['GET'])
 def worker_complete():
