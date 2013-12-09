@@ -280,7 +280,11 @@ def start_exp():
     assignmentId = request.args['assignmentId']
     workerId = request.args['workerId']
     app.logger.info( "Accessing /exp: %(h)s %(a)s %(w)s " % {"h" : hitId, "a": assignmentId, "w": workerId})
-    
+    if hitId[:5] != "debug":
+        debug_mode = True
+    else:
+        debug_mode = False
+
     # check first to see if this hitId or assignmentId exists.  if so check to see if inExp is set
     matches = Participant.query.\
                         filter(Participant.workerid == workerId).\
@@ -335,16 +339,20 @@ def start_exp():
             if other_assignment:
                 raise ExperimentError('already_did_exp_hit')
     
-    # if everything goes ok here relatively safe to assume we can lookup the ad
-    ad_server_base_url = config.get("Secure Ad Server", "location")
-    ad_id = get_ad_via_hitid(ad_server_base_url, hitId)
-    if ad_id != "error":
-        if ad_server_base_url[-1] == '/':
-            ad_server_location = ad_server_base_url + "ad/" + str(ad_id)
-        else:
-            ad_server_location = ad_server_base_url + "/ad/" + str(ad_id)
+    if debug_mode:
+        ad_server_location = ''
     else:
-        raise ExperimentError('hit_not_registered_with_ad_server')
+        # if everything goes ok here relatively safe to assume we can lookup the ad
+        ad_server_base_url = config.get("Secure Ad Server", "location")
+        ad_id = get_ad_via_hitid(ad_server_base_url, hitId)
+        if ad_id != "error":
+            if ad_server_base_url[-1] == '/':
+                ad_server_location = ad_server_base_url + "ad/" + str(ad_id)
+            else:
+                ad_server_location = ad_server_base_url + "/ad/" + str(ad_id)
+        else:
+            raise ExperimentError('hit_not_registered_with_ad_server')
+        
     return render_template('exp.html', uniqueId=part.uniqueid, condition=part.cond, counterbalance=part.counterbalance, adServerLoc=ad_server_location)
 
 @app.route('/inexp', methods=['POST'])
@@ -360,7 +368,6 @@ def enterexp():
     if not request.form.has_key('uniqueId'):
         raise ExperimentError('improper_inputs')
     uniqueId = request.form['uniqueId']
-
     user = Participant.query.\
             filter(Participant.uniqueid == uniqueId).\
             one()
@@ -418,6 +425,9 @@ def quitter():
     except:
         raise ExperimentError('tried_to_quit')
 
+@app.route('/complete', methods=['GET'])
+def debug_complete():
+    return render_template('complete.html')
 
 @app.route('/worker_complete', methods=['GET'])
 def worker_complete():
