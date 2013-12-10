@@ -19,7 +19,9 @@ import readline
 
 import webbrowser
 
-from amt_services import MTurkServices
+import MySQLdb
+
+from amt_services import MTurkServices, RDSServices
 from psiturk_org_services import PsiturkOrgServices
 from version import version_number
 from psiturk_config import PsiturkConfig
@@ -87,12 +89,13 @@ def docopt_cmd(func):
 class PsiturkShell(Cmd):
 
 
-    def __init__(self, config, amt_services, web_services, server):
+    def __init__(self, config, amt_services, aws_rds_services, web_services, server):
         Cmd.__init__(self)
         self.config = config
         self.server = server
         self.amt_services = amt_services
         self.web_services = web_services
+        self.db_services = aws_rds_services
         self.sandbox = self.config.getboolean('HIT Configuration', 
                                               'using_sandbox')
         self.sandboxHITs = 0
@@ -521,6 +524,211 @@ class PsiturkShell(Cmd):
                 print "expiring live HIT", hit
                 self.liveHITs -= 1
 
+
+    #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
+    #  Local SQL database commands
+    #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
+    @docopt_cmd
+    def do_use_local_sqllite_db(self, arg):
+        """
+        Usage: use_local_sqllite_db
+               use_local_sqllite_db <filename> <tablename>
+        """
+        interactive = False
+        if arg['<filename>'] is None:
+            interactive = True
+            arg['<filename>'] = raw_input('enter the filename of the SQLLite database you would like to use [default=participants.db]: ')
+            if arg['<filename>']=='':
+                arg['<filename>']='participants.db'
+        base_url = "sqlite:///" + arg['<filename>']
+        self.config.set("Database Parameters", "database_url", base_url)
+        # restart servername
+
+
+    #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
+    #  AWS RDS commands
+    #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
+    def do_list_aws_db_instances(self, arg):
+        instances = self.db_services.get_db_instances()
+        for dbinst in instances:
+            print dbinst.id+":"+dbinst.status
+
+    @docopt_cmd
+    def do_delete_aws_db_instance(self, arg):
+        """
+        Usage: delete_db_instance
+               delete_db_instance <id>
+        """
+        interactive = False
+        if arg['<id>'] is None:
+            interactive = True
+            arg['<id>'] = raw_input('enter the instance identify you would like to delete: ')
+        try:
+            str(arg['<id>'])
+        except ValueError:
+            print '*** Ids are strings.  Run `list_db_instances` to get a list of valid options.'
+            return
+        r = raw_input("Deleting an instance will erase all your data associated with the database in that instance. Really quit? y or n: ")
+        if r == 'y':
+            res = self.db_services.delete_db_instance(arg['<id>'])
+            if res:
+                print "AWS RDS database instance %s deleted." % arg['<id>']
+            else:
+                print "*** Error deleting database instance ", arg['<id>'], ". It maybe because it is still being created or is being backed up.  Run `list_db_instances` for current status."
+        else:
+            return
+
+    def do_list_aws_regions(self, arg):
+        print self.db_services.get_regions()
+
+    @docopt_cmd
+    def do_use_aws_db_instance(self, arg):
+        """
+        Usage: use_aws_db_instance
+               use_aws_db_instance <id>
+        """
+        # set your database info to use the current instance
+        # configure a security zone for this based on your ip
+        interactive = False
+        if arg['<id>'] is None:
+            interactive = True
+            arg['<id>'] = raw_input('enter the instance identify you would like to use: ')
+        try:
+            str(arg['<id>'])
+        except ValueError:
+            print '*** Ids are strings.  Run `list_db_instances` to get a list of valid options (i.e., status is `available`).'
+            return
+
+        r = raw_input("Switching your DB settings to use this instance.  Are you sure you want to do this? ")
+        if r == 'y':
+            # ask for password
+            arg['<password>'] = raw_input('enter the master password for this instance: ')
+            try:
+                str(arg['<password>'])
+            except ValueError:
+                print '*** must be 8–41 alphanumeric characters'
+                return
+
+            # get instance
+            myinstance = self.db_services.get_db_instance_info(arg['<id>'])
+            if myinstance:
+                # add security zone to this node to allow connections
+                my_ip = self.web_services.get_my_ip()
+                if not self.db_services.allow_access_to_instance(myinstance, my_ip):
+                    print "*** Error authorizing your ip address to connect to server (%s)." % my_ip
+                    return
+                print "AWS RDS database instance %s selected." % arg['<id>']
+
+                # using regular sql commands list available database on this node
+                connection = MySQLdb.connect(
+                        host= myinstance.endpoint[0],
+                        user = myinstance.master_username,
+                        passwd = arg['<password>']
+                    ).cursor()
+                connection.execute("show databases")
+                db_names = connection.fetchall() 
+                
+                existing_dbs = [db[0] for db in db_names if db not in [('information_schema',), ('innodb',), ('mysql',), ('performance_schema',)]]
+                create_db=False
+                if len(existing_dbs)==0:
+                    db_name = raw_input("No existing DBs in this instance.  Enter a new name to create one: ")
+                    create_db=True
+                else:
+                    print "Here are the available database tables"
+                    for db in existing_dbs:
+                        print "\t" + db
+                    print "\n"
+                    db_name = raw_input("Enter the name of the database you want to use or a new name to create a new one: ")
+                    if db_name not in existing_dbs:
+                        create_db=True
+                if create_db:
+                    connection.execute("CREATE DATABASE %s;" % db_name)
+                base_url = 'mysql://' + myinstance.master_username + ":" + arg['<password>'] + "@" + myinstance.endpoint[0] + ":" + str(myinstance.endpoint[1]) + "/" + db_name
+                self.config.set("Database Parameters", "database_url", base_url)
+                if self.server.is_server_running()=='maybe' or self.server.is_server_running()=='yes':
+                    self.do_restart_server('')
+            else:
+                print "*** Error selecting database instance ", arg['<id>'], ". Run `list_db_instances` for current status of instances."
+        else:
+            return
+
+
+    @docopt_cmd
+    def do_create_aws_db_instance(self, arg):
+        """
+        Usage: create_aws_db_instance
+               create_aws_db_instance <id> <size> <username> <password> <dbname>
+        """
+        interactive = False
+        if arg['<id>'] is None:
+            interactive = True
+            arg['<id>'] = raw_input('enter an identifier for the instance (1-63 alpha, first a letter): ')
+        try:
+            str(arg['<id>'])
+        except ValueError:
+            print '*** Must contain 1-63 alphanumeric characters. First character must be a letter. May not end with a hyphen or contain two consecutive hyphens'
+            return
+
+        if interactive:
+            arg['<size>'] = raw_input('size of db in GB (5-1024): ')
+        try:
+            int(arg['<size>'])
+        except ValueError:
+            print '*** size must be a whole number'
+            return
+        if int(arg['<size>']) < 5 or int(arg['<size>']) > 1024:
+            print '*** size must be between 5-1024 GB'
+            return
+
+        if interactive:
+            arg['<username>'] = raw_input('master username: ')
+        try:
+            str(arg['<username>'])
+        except ValueError:
+            print '*** 1–16 alphanumeric characters - first character must be a letter - cannot be a reserved MySQL word'
+            return
+
+        if interactive:
+            arg['<password>'] = raw_input('master password: ')
+        try:
+            str(arg['<password>'])
+        except ValueError:
+            print '*** must be 8–41 alphanumeric characters'
+            return
+
+        if interactive:
+            arg['<dbname>'] = raw_input('name for first database on this instance: ')
+        try:
+            str(arg['<dbname>'])
+        except ValueError:
+            print '*** Must contain 1–64 alphanumeric characters and cannot be a reserved MySQL word'
+            return
+
+        options = {
+            'id': arg['<id>'],
+            'size': arg['<size>'],
+            'username': arg['<username>'],
+            'password': arg['<password>'],
+            'dbname': arg['<dbname>']
+        }
+        instance = self.db_services.create_db_instance(options)
+        if not instance:
+            print '*****************************'
+            print '  Sorry there was an error creating db instance.'
+        else:
+            print '*****************************'
+            print '  Creating AWS RDS MySQL Instance'
+            print '    id: ', str(options['id'])
+            print '    size: ', str(options['size']), " GB"
+            print '    username: ', str(options['username'])
+            print '    password: ', str(options['password'])
+            print '    dbname: ',  str(options['dbname'])
+            print '    type: MySQL/db.t1.micro'
+            print '    ________________________'
+            print ' Please wait a few moments while your database is created in the cloud.  You can run `list_db_instances` to verify it was created.'
+
+
+
     def do_eof(self, arg):
         self.do_quit(arg)
         return True
@@ -542,7 +750,9 @@ def run():
     amt_services = MTurkServices(config.get('AWS Access', 'aws_access_key_id'), \
                              config.get('AWS Access', 'aws_secret_access_key'), \
                              config.getboolean('HIT Configuration','using_sandbox'))
+    aws_rds_services = RDSServices(config.get('AWS Access', 'aws_access_key_id'), \
+                             config.get('AWS Access', 'aws_secret_access_key'))
     web_services = PsiturkOrgServices(config.get('Secure Ad Server','location'), config.get('Secure Ad Server', 'contact_email'))
     server = control.ExperimentServerController(config)
-    shell = PsiturkShell(config, amt_services, web_services, server)
+    shell = PsiturkShell(config, amt_services, aws_rds_services, web_services, server)
     shell.cmdloop()

@@ -3,6 +3,10 @@ import subprocess,signal
 from threading import Thread, Event
 import urllib2
 import datetime
+import boto.rds
+import boto.ec2
+from boto.exception import EC2ResponseError
+from boto.rds import RDSConnection
 from boto.mturk.connection import MTurkConnection, MTurkRequestError
 from boto.mturk.question import ExternalQuestion
 from boto.mturk.qualification import LocaleRequirement, \
@@ -12,6 +16,7 @@ import socket
 import webbrowser
 
 class MTurkHIT:
+
     def __init__(self, json_options):
         self.options = json_options
 
@@ -26,6 +31,129 @@ class MTurkHIT:
             self.options['number_assignments_available'],
             self.options['creation_time'],
             self.options['expiration'])
+
+class RDSServices:
+
+    def __init__(self, aws_access_key_id, aws_secret_access_key, region='us-east-1'):
+        self.update_credentials(aws_access_key_id, aws_secret_access_key)
+        self.set_region(region)
+        self.validLogin = self.verify_aws_login()
+        if not self.validLogin:
+            print 'Sorry, AWS Credentials invalid.\nYou will only be able to '\
+                  + 'test experiments locally until you enter\nvalid '\
+                  + 'credentials in the AWS Access section of config.txt.'
+
+    def update_credentials(self, aws_access_key_id, aws_secret_access_key):
+        self.aws_access_key_id = aws_access_key_id
+        self.aws_secret_access_key = aws_secret_access_key
+
+    def get_regions(self):
+        regions = boto.rds.regions()
+        return regions
+
+    def set_region(self, region):
+        self.region = region
+
+    def verify_aws_login(self):
+        if (self.aws_access_key_id == 'YourAccessKeyId') or (self.aws_secret_access_key == 'YourSecretAccessKey'):
+            return False
+        else:
+            # rdsparams = dict(
+            #     aws_access_key_id=self.aws_access_key_id,
+            #     aws_secret_access_key=self.aws_secret_access_key,
+            #     region=self.region)
+            # self.rdsc = RDSConnection(**rdsparams)
+            self.rdsc = boto.rds.connect_to_region(self.region, aws_access_key_id=self.aws_access_key_id, aws_secret_access_key=self.aws_secret_access_key)
+            try:
+                self.rdsc.get_all_dbinstances()
+            except MTurkRequestError as e:
+                print(e.error_message)
+                return False
+            else:
+                return True
+
+    def connect_to_aws_rds(self):
+        if not self.validLogin:
+            print 'Sorry, AWS credentials invalid.'
+            return False
+        # rdsparams = dict(
+        #     aws_access_key_id = self.aws_access_key_id,
+        #     aws_secret_access_key = self.aws_secret_access_key,
+        #     region=self.region)
+        # self.rdsc = RDSConnection(**rdsparams)
+        self.rdsc = boto.rds.connect_to_region(self.region, aws_access_key_id=self.aws_access_key_id, aws_secret_access_key=self.aws_secret_access_key)
+        return True
+
+    def get_db_instance_info(self, dbid):
+        if not self.connect_to_aws_rds():
+            return False
+        try:
+            instances = self.rdsc.get_all_dbinstances(dbid)
+        except:
+            return False
+        else:
+            myinstance = instances[0]
+            return myinstance
+
+    def allow_access_to_instance(self, instance, ip_address):
+        if not self.connect_to_aws_rds():
+            return False
+        try:
+            conn = boto.ec2.connect_to_region(self.region, aws_access_key_id=self.aws_access_key_id, aws_secret_access_key=self.aws_secret_access_key)
+            sgs = conn.get_all_security_groups('default')
+            default_sg = sgs[0]
+            default_sg.authorize(ip_protocol='tcp', from_port=3306, to_port=3306, cidr_ip=str(ip_address)+'/32')
+        except EC2ResponseError, e:
+            if e.error_code=="InvalidPermission.Duplicate":
+                return True  # ok it already exists
+            else:
+                return False
+        else:
+            return True
+
+
+
+    def get_db_instances(self):
+        if not self.connect_to_aws_rds():
+            return False
+        try:
+            instances = self.rdsc.get_all_dbinstances()
+        except:
+            return False
+        else:
+            return instances
+
+    def delete_db_instance(self, dbid):
+        if not self.connect_to_aws_rds():
+            return False
+        try:
+            db = self.rdsc.delete_dbinstance(dbid, skip_final_snapshot=True)
+            print db
+        except:
+            return False
+        else:
+            return True
+
+    def create_db_instance(self, params):
+        if not self.connect_to_aws_rds():
+            return False
+        try:
+            db = self.rdsc.create_dbinstance(
+                    id = params['id'],
+                    allocated_storage = params['size'],
+                    instance_class = 'db.t1.micro',
+                    engine = 'MySQL',
+                    master_username = params['username'],
+                    master_password = params['password'],
+                    db_name = params['dbname'],
+                    multi_az = False
+                )
+        except:
+            return False
+        else:
+            return True
+
+
 
 class MTurkServices:
     def __init__(self, aws_access_key_id, aws_secret_access_key, is_sandbox):
