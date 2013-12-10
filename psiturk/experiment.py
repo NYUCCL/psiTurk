@@ -48,6 +48,19 @@ QUITEARLY = 5
 app = Flask("Experiment_Server")
 init_db()  
 
+###########################################################
+#  serving warm, fresh, & sweet custom, user-provided routes
+###########################################################
+
+try:
+    sys.path.append(os.getcwd())
+    from custom import custom_code
+except ImportError:
+    app.logger.info( "Hmm... is seems no custom code (custom.py) assocated with this project.")
+    pass # do nothing if the 
+else:
+    app.register_blueprint(custom_code)
+
 #----------------------------------------------
 # function for authentication
 #----------------------------------------------
