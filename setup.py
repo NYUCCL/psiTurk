@@ -1,6 +1,6 @@
 from setuptools import setup
 
-version_number = "1.0.3dev"  # this must be defined here so we can import it elsewhere
+version_number = "1.0.4dev"  # this must be defined here so we can import it elsewhere
 
 try:
     with open("README.md") as readmefile:
