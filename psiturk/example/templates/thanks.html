@@ -1,0 +1,30 @@
+<!doctype html>
+
+<html>
+<head>
+	<title>Thanks Page for Group Learning Experiment</title>
+	<link rel=stylesheet href="static/css/style.css" type="text/css" media="screen">
+</head>
+<body>
+	<div style="text-align: center;" id="thanks">
+		<h1>Thanks for your participation</h1>
+
+		<div id="debriefingtext">
+			<p style="text-align: center; font-size: 140%" >Thanks again for your participation in our study!</p>
+
+			<p style="text-align: center; font-size: 140%" >To complete the HIT, simply press the button below.</p>
+            {% if is_sandbox %}
+		        <form style="width: auto;" id="mturk_form" action="https://workersandbox.mturk.com/mturk/externalSubmit" method="post">
+            {% else %}
+    		    <form style="width: auto;" id="mturk_form" action="https://www.mturk.com/mturk/externalSubmit" method="post">
+            {% endif %}
+			<input type="hidden" id="assignmentId" name="assignmentId" value="{{ assignmentid }}"  /> 
+			<input type="hidden" id="hitId" name="hitId" value="{{ hitid }}"  /> 
+			<input type="hidden" id="workerId" name="workerId" value="{{ workerid }}"  /> 
+			<input style="margin: 0 auto; font-size: 140%; width: 100%;" id="submitButton" type="submit" name="Submit" value="Complete HIT"  /> 
+             </form>
+        </div>
+	</div>
+</body>
+
+</html>

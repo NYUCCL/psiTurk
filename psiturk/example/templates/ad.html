@@ -1,0 +1,62 @@
+<!doctype html>
+
+<html>
+	<head>
+		<title>CompCog Psychology Experiment</title>
+		<style type="text/css">
+			body {
+				margin: 20px;
+				width: 600px;
+				font-family: verdana, helvetica, sans-serif;
+				background-color: black;
+				color: white;
+			}
+			p {
+				width: 450px;;
+				text-align: left;
+			}
+			#logo {
+				float: right;
+				width: 120px;
+			}
+			a {
+				color: purple;
+			}
+		</style>
+	</head>
+	<body>
+		<img id="logo" src="{{ server_location }}/static/images/nyu-logo.png" alt="New York University Logo" />
+		{% if assignmentid != "ASSIGNMENT_ID_NOT_AVAILABLE" %}
+		<h1>Thank you for accepting this HIT!</h1>
+		<p>By clicking the following URL link, you will be taken to the experiment,
+				including complete instructions and an informed consent agreement.</p>
+		
+		<script>
+			function openwindow() {
+				popup = window.open('{{ server_location }}/consent?hitId={{ hitid }}&assignmentId={{ assignmentid }}&workerId={{ workerid }}','Popup','toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=no,width='+screen.availWidth+',height='+screen.availHeight+'');
+				popup.onunload = function() { location.reload(true) }
+			}
+		</script>
+		<p>
+		Please disable pop-up blockers before continuing.
+		</p>
+		<p><a href="#" onClick="openwindow()">Ok, I understand, I'm read to start.</a></p>
+
+		{% else %}
+		<h1> Call for participants</h1>
+		<p>The Cognition and Computation Lab at New York University (NYU)
+		is looking for online participants for a brief experiment on how
+		people learn. The only requirements are that you are at least 18
+		years old and are a fluent English speaker.
+		</p>
+		<p>Example example, herp derp.
+		</p>
+                <p>This task can only be completed once. If you have already
+                completed this task before the system will not allow you to run
+                again. If this looks familiar please release the hit so someone
+                else can participate.</p>
+
+		Otherwise, please click the "Accept Hit" button on the Amazon site above to begin the task.
+		{% endif %}
+	</body>
+</html>
