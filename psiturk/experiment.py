@@ -453,11 +453,13 @@ def worker_complete():
         return jsonify(**resp)
     else:
         uniqueId = request.args['uniqueId']
+        app.logger.info( "Completed experiment %s" % uniqueId)
         try:
             user = Participant.query.\
                         filter(Participant.uniqueid == uniqueId).\
                         one()
-            user.status = COMPLETED 
+            user.status = COMPLETED
+            user.endhit = datetime.datetime.now()
             db_session.add(user)
             db_session.commit()
             status = "success"
