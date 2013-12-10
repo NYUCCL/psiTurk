@@ -11,19 +11,22 @@ as you can turn your experiment into a dynamic webpage, you can run it with
 *Features*
 
 1. Provide access to your experiments online directly from your desktop computer
-  - No need to install complex webserver software (e.g., Apache)
+  - No need to install complex webserver software (e.g., Apache, MySQL)
   - Minimizes security issues since server only runs while you want to collect data
   - Secure Ad server ensures your HITs are visible to all AMT workers
   - Ensures that conditions of your experiment fill in randomly but evenly
-  - Backup and store data in the cloud (Amazon Web Services)
+  - Prevent the same workers from completing your expermient more than once
+  - Highly customizable for wide variety of experiment designs
+  - Backup and store data seamlessly in the cloud (using Amazon Web Services)
 1. Javacript API helps you get going with experiment programming faster
-  - Record if participants switching between windows during task
+  - Record if participants switch between windows during task, etc...
   - Save data incrementally to minimize data loss
   - Prevent users from quiting then restarting experiment
 1. Powerful command line interface
   - Simplifies paying participants quickly
-  - Assign bonuses
+  - Assign bonuses with ease
   - Debug and test your experiment
+  - Create and manage robust cloud-based databases for your data
 
 Please visit [psiturk.org](https://psiturk.org) for more information.
 
@@ -73,25 +76,6 @@ your participant's browser. To take a look at the example, type
 `psiturk-setup-example` in an empty directory.  Detailed instructions
 stepping you through the examples are provided [here](https://github.com/NYUCCL/psiTurk/wiki/Getting-up-and-running-with-the-basic-Stroop-task)
 .
-
-Databases
-=========
-
-In order to provide robust data storage, **psiTurk** stores your data in a
-relational database.  By default, this is set to a local SQLite installation
-on your local computer.  This is find for development and testing.
-However, SQLite does not allow concurrent access to the database, 
-so if the locks work properly, simultaneous access (say, from multiple users 
-submitting their data at the same time) could destabilize your database. In 
-the worst (unlikely) scenario, the database could become corrupted, resulting 
-in data loss.
-
-As a result, we recommend setting up a more robust database solution when
-you post your experiment "live" on Mechanical Turk.  **psiTurk** provides a
-simple command-line interface to dynamically create a MySQL database in the 
-"cloud" using Amazon web services.  This database is backuped regularly by
-Amazon meaning you don't have to worry about data loss.  This also means 
-less software to install and configure!
 
 
 FAQ
