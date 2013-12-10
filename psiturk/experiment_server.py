@@ -53,7 +53,7 @@ class ExperimentServer(Application):
             'workers': workers,
             'loglevels': self.loglevels,
             'loglevel': self.loglevels[config.getint("Server Parameters", "loglevel")],
-            'accesslog': config.get("Server Parameters", "logfile"),
+            # 'accesslog': config.get("Server Parameters", "logfile"),
             'errorlog': config.get("Server Parameters", "logfile")
         }
 
