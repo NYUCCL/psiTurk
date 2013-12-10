@@ -15,6 +15,7 @@ as you can turn your experiment into a dynamic webpage, you can run it with
   - Minimizes security issues since server only runs while you want to collect data
   - Secure Ad server ensures your HITs are visible to all AMT workers
   - Ensures that conditions of your experiment fill in randomly but evenly
+  - Backup and store data in the cloud (Amazon Web Services)
 1. Javacript API helps you get going with experiment programming faster
   - Record if participants switching between windows during task
   - Save data incrementally to minimize data loss
@@ -73,21 +74,25 @@ your participant's browser. To take a look at the example, type
 stepping you through the examples are provided [here](https://github.com/NYUCCL/psiTurk/wiki/Getting-up-and-running-with-the-basic-Stroop-task)
 .
 
-Database Requirement
-====================
+Databases
+=========
 
-**psiTurk** includes a fully functional database solution based on
-SQLite.  However, we recommend setting up a more robust database solution such as
-[MySQL](http://www.mysql.org) or [PostgreSQL](http://www.postgresql.org).
-SQLite does not allow concurrent access to the database, so if the locks work
-properly, simultaneous access (say, from multiple users submitting their data
-at the same time) could destabilize your database. In the worst (unlikely)
-scenario, the database could become corrupted, resulting in data loss.
+In order to provide robust data storage, **psiTurk** stores your data in a
+relational database.  By default, this is set to a local SQLite installation
+on your local computer.  This is find for development and testing.
+However, SQLite does not allow concurrent access to the database, 
+so if the locks work properly, simultaneous access (say, from multiple users 
+submitting their data at the same time) could destabilize your database. In 
+the worst (unlikely) scenario, the database could become corrupted, resulting 
+in data loss.
 
-Instructions for setting up a MySQL server on a Mac can be found 
-[in the wiki](https://github.com/NYUCCL/psiTurk/wiki/Macintosh-Configuration).
-Other platforms, check out instructions at
-[mysql.org](http://dev.mysql.com/doc/refman/5.5/en//installing.html).
+As a result, we recommend setting up a more robust database solution when
+you post your experiment "live" on Mechanical Turk.  **psiTurk** provides a
+simple command-line interface to dynamically create a MySQL database in the 
+"cloud" using Amazon web services.  This database is backuped regularly by
+Amazon meaning you don't have to worry about data loss.  This also means 
+less software to install and configure!
+
 
 FAQ
 ===
