@@ -25,7 +25,7 @@
 		</style>
 	</head>
 	<body>
-		<img id="logo" src="static/images/nyu-logo.png" alt="New York University Logo" />
+		<img id="logo" src="{{ server_location }}/static/images/nyu-logo.png" alt="New York University Logo" />
 		{% if assignmentid != "ASSIGNMENT_ID_NOT_AVAILABLE" %}
 		<h1>Thank you for accepting this HIT!</h1>
 		<p>By clicking the following URL link, you will be taken to the experiment,
@@ -33,7 +33,7 @@
 		
 		<script>
 			function openwindow() {
-				popup = window.open('/consent?hitId={{ hitid }}&assignmentId={{ assignmentid }}&workerId={{ workerid }}','Popup','toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=no,width='+screen.availWidth+',height='+screen.availHeight+'');
+				popup = window.open('{{ server_location }}/consent?hitId={{ hitid }}&assignmentId={{ assignmentid }}&workerId={{ workerid }}','Popup','toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=no,width='+screen.availWidth+',height='+screen.availHeight+'');
 				popup.onunload = function() { location.reload(true) }
 			}
 		</script>

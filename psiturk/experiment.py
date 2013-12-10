@@ -1,8 +1,11 @@
 import os
+import sys
 import datetime
 import logging
+import urllib2
 from functools import wraps
 from random import choice
+import json
 try:
     from collections import Counter
 except ImportError:
@@ -17,6 +20,7 @@ from models import Participant
 from sqlalchemy import or_
 
 from psiturk_config import PsiturkConfig
+from experiment_errors import ExperimentError
 
 config = PsiturkConfig()
 config.load_config()
@@ -29,23 +33,14 @@ loglevels = [logging.DEBUG, logging.INFO, logging.WARNING, logging.ERROR, loggin
 loglevel = loglevels[config.getint('Server Parameters', 'loglevel')]
 logging.basicConfig( filename=logfilepath, format='%(asctime)s %(message)s', level=loglevel )
 
-# config.get( 'Mechanical Turk Info', 'aws_secret_access_key' )
-
-# constants
-USING_SANDBOX = config.getboolean('HIT Configuration', 'using_sandbox')
-CODE_VERSION = config.get('Task Parameters', 'code_version')
-
-# Database configuration and constants
-TABLENAME = config.get('Database Parameters', 'table_name')
-SUPPORT_IE = config.getboolean('Server Parameters', 'support_IE')
 
 # Status codes
+NOT_ACCEPTED = 0
 ALLOCATED = 1
 STARTED = 2
 COMPLETED = 3
-DEBRIEFED = 4
-CREDITED = 5
-QUITEARLY = 6
+CREDITED = 4
+QUITEARLY = 5
 
 ###########################################################
 # let's start
@@ -87,43 +82,6 @@ def requires_auth(f):
             return authenticate()
         return f(*args, **kwargs)
     return decorated
-
-#----------------------------------------------
-# ExperimentError Exception, for db errors, etc.
-#----------------------------------------------
-# Possible ExperimentError values.
-experiment_errors = dict(
-    status_incorrectly_set = 1000,
-    hit_assign_worker_id_not_set_in_mturk = 1001,
-    hit_assign_worker_id_not_set_in_consent = 1002,
-    hit_assign_worker_id_not_set_in_exp = 1003,
-    hit_assign_appears_in_database_more_than_once = 1004,
-    already_started_exp = 1008,
-    already_started_exp_mturk = 1009,
-    already_did_exp_hit = 1010,
-    tried_to_quit= 1011,
-    intermediate_save = 1012,
-    improper_inputs = 1013,
-    page_not_found = 404,
-    in_debug = 2005,
-    unknown_error = 9999
-)
-
-class ExperimentError(Exception):
-    """
-    Error class for experimental errors, such as subject not being found in
-    the database.
-    """
-    def __init__(self, value):
-        self.value = value
-        self.errornum = experiment_errors[self.value]
-        self.template = "error.html"
-    def __str__(self):
-        return repr(self.value)
-    def error_page(self, request):
-        return render_template(self.template, 
-                               errornum=self.errornum, 
-                               **request.args)
 
 #----------------------------------------------
 # favicon
@@ -169,7 +127,7 @@ def get_random_condcount():
     numcounts = config.getint('Task Parameters', 'num_counters')
     
     participants = Participant.query.\
-                   filter(Participant.codeversion == CODE_VERSION).\
+                   filter(Participant.codeversion == config.get('Task Parameters', 'experiment_code_version')).\
                    filter(or_(Participant.status == 4, 
                               Participant.status == 5, 
                               Participant.beginhit > starttime)).\
@@ -185,7 +143,7 @@ def get_random_condcount():
     chosen = choice(minima)
     #conds += [ 0 for _ in range(1000) ]
     #conds += [ 1 for _ in range(1000) ]
-    print "given ", counts, " chose ", chosen
+    app.logger.info( "given %(a)s chose %(b)s" % {'a': counts, 'b': chosen})
     
     return chosen
 
@@ -195,6 +153,30 @@ def get_random_condcount():
 @app.route('/')
 def index():
     return render_template('default.html')
+
+@app.route('/check_worker_status', methods=['GET'])
+def check_worker_status():
+    if not (request.args.has_key('hitId') and \
+            request.args.has_key('assignmentId') and \
+            request.args.has_key('workerId')):
+        resp = {"status": "bad request"}
+        return jsonify(**resp)
+    else:
+        workerId = request.args['workerId']
+        assignmentId = request.args['assignmentId']
+        hitId = request.args['hitId']
+        try:
+            part = Participant.query.\
+                   filter(Participant.hitid == hitId).\
+                   filter(Participant.assignmentid == assignmentId).\
+                   filter(Participant.workerid == workerId).\
+                   one()
+            status = part.status
+        except:
+            status = NOT_ACCEPTED
+        resp = {"status" : status}
+        return jsonify(**resp)
+
 
 @app.route('/ad', methods=['GET'])
 def advertisement():
@@ -210,9 +192,9 @@ def advertisement():
       These arguments will have appropriate values and we should enter the person
       in the database and provide a link to the experiment popup.
     """
-    if (not SUPPORT_IE) and request.user_agent.browser == 'msie':
+    if (not config.getboolean('Task Parameters', 'support_ie')) and request.user_agent.browser == 'msie':
         # Handler for IE users if IE is not supported.
-        return render_template( 'ie.html' )
+        raise ExperimentError('ie_not_allowed')
     if not (request.args.has_key('hitId') and request.args.has_key('assignmentId')):
         raise ExperimentError('hit_assign_worker_id_not_set_in_mturk')
     hitId = request.args['hitId']
@@ -247,15 +229,10 @@ def advertisement():
         # them to start the task again.
         raise ExperimentError('already_started_exp_mturk')
     elif status == COMPLETED:
-        # They've done the whole task, but haven't signed the debriefing yet.
-        return render_template('debriefing.html', 
-                               workerId = workerId,
-                               assignmentId = assignmentId)
-    elif status == DEBRIEFED:
         # They've done the debriefing but perhaps haven't submitted the HIT yet..
         # Turn asignmentId into original assignment id before sending it back to AMT
         return render_template('thanks.html', 
-                               using_sandbox=USING_SANDBOX, 
+                               is_sandbox=config.getboolean('HIT Configuration', 'using_sandbox'), 
                                hitid = hitId, 
                                assignmentid = assignmentId, 
                                workerid = workerId)
@@ -269,7 +246,7 @@ def advertisement():
                                assignmentid = assignmentId, 
                                workerid = workerId)
     else:
-        raise ExperimentError('STATUS_INCORRECTLY_SET')
+        raise ExperimentError('status_incorrectly_set')
 
 @app.route('/consent', methods=['GET'])
 def give_consent():
@@ -283,6 +260,15 @@ def give_consent():
     workerId = request.args['workerId']
     return render_template('consent.html', hitid = hitId, assignmentid=assignmentId, workerid=workerId)
 
+def get_ad_via_hitid(server, hitId):
+    try:
+        request_url = str(server) + "/ad/query?hitId=" + str(hitId)
+        response = urllib2.urlopen(request_url)
+        data = json.load(response)
+    except:
+        raise ExperimentError('server_not_reachable')
+    return data['ad_id']
+
 @app.route('/exp', methods=['GET'])
 def start_exp():
     """
@@ -293,8 +279,12 @@ def start_exp():
     hitId = request.args['hitId']
     assignmentId = request.args['assignmentId']
     workerId = request.args['workerId']
-    print "Accessing /exp: ", hitId, assignmentId, workerId
-    
+    app.logger.info( "Accessing /exp: %(h)s %(a)s %(w)s " % {"h" : hitId, "a": assignmentId, "w": workerId})
+    if hitId[:5] == "debug":
+        debug_mode = True
+    else:
+        debug_mode = False
+
     # check first to see if this hitId or assignmentId exists.  if so check to see if inExp is set
     matches = Participant.query.\
                         filter(Participant.workerid == workerId).\
@@ -344,12 +334,26 @@ def start_exp():
                 raise ExperimentError('already_started_exp')
         else:
             if nrecords > 1:
-                print "Error, hit/assignment appears in database more than once (serious problem)"
+                app.logger.error( "Error, hit/assignment appears in database more than once (serious problem)")
                 raise ExperimentError('hit_assign_appears_in_database_more_than_once')
             if other_assignment:
                 raise ExperimentError('already_did_exp_hit')
     
-    return render_template('exp.html', uniqueId=part.uniqueid, condition=part.cond, counterbalance=part.counterbalance)
+    if debug_mode:
+        ad_server_location = ''
+    else:
+        # if everything goes ok here relatively safe to assume we can lookup the ad
+        ad_server_base_url = config.get("Secure Ad Server", "location")
+        ad_id = get_ad_via_hitid(ad_server_base_url, hitId)
+        if ad_id != "error":
+            if ad_server_base_url[-1] == '/':
+                ad_server_location = ad_server_base_url + "ad/" + str(ad_id)
+            else:
+                ad_server_location = ad_server_base_url + "/ad/" + str(ad_id)
+        else:
+            raise ExperimentError('hit_not_registered_with_ad_server')
+        
+    return render_template('exp.html', uniqueId=part.uniqueid, condition=part.cond, counterbalance=part.counterbalance, adServerLoc=ad_server_location)
 
 @app.route('/inexp', methods=['POST'])
 def enterexp():
@@ -360,34 +364,38 @@ def enterexp():
     experiment applet (meaning they can't do part of the experiment and
     referesh to start over).
     """
-    print "Accessing /inexp"
+    app.logger.info( "Accessing /inexp")
     if not request.form.has_key('uniqueId'):
         raise ExperimentError('improper_inputs')
     uniqueId = request.form['uniqueId']
 
-    user = Participant.query.\
-            filter(Participant.uniqueid == uniqueId).\
-            one()
-    user.status = STARTED
-    user.beginexp = datetime.datetime.now()
-    db_session.add(user)
-    db_session.commit()
+    if uniqueId[:5]!='debug':  # do not set "started" field if debugging
+        user = Participant.query.\
+                filter(Participant.uniqueid == uniqueId).\
+                one()
+        user.status = STARTED
+        user.beginexp = datetime.datetime.now()
+        db_session.add(user)
+        db_session.commit()
     return "Success"
 
-@app.route('/sync/<id>', methods=['GET', 'PUT'])
+# TODD SAYS: this the only route in the whole thing that uses <id> like this
+# where everything else uses POST!  This could be confusing but is forced
+# somewhat by Backbone?  take heed!
+@app.route('/sync/<id>', methods=['GET', 'PUT'])  
 def update(id=None):
     """
     Save experiment data, which should be a JSON object and will be stored
     after converting to string.
     """
-    print "accessing the /sync route with id:", id
+    app.logger.info("accessing the /sync route with id: %s" % id)
     
     try:
         user = Participant.query.\
                 filter(Participant.uniqueid == id).\
                 one()
     except:
-        print "DB error: Unique user not found."
+        app.logger.error( "DB error: Unique user not found.")
     
     if hasattr(request, 'json'):
         user.datastring = request.data
@@ -409,7 +417,7 @@ def quitter():
     """
     try:
         uniqueId = request.form['uniqueId']
-        print "Marking quitter", uniqueId
+        app.logger.info( "Marking quitter %s" % uniqueId)
         user = Participant.query.\
                 filter(Participant.uniqueid == uniqueId).\
                 one()
@@ -417,63 +425,46 @@ def quitter():
         db_session.add(user)
         db_session.commit()
     except:
-        return render_template('error.html', errornum= experiment_errors['tried_to_quit'])
+        raise ExperimentError('tried_to_quit')
 
-@app.route('/debrief', methods=['GET'])
-def savedata():
-    """
-    User has finished the experiment and is posting their data in the form of a
-    (long) string. They will receive a debreifing back.
-    """
-    print request.args.keys()
+# this route should only used when debugging
+@app.route('/complete', methods=['GET'])
+def debug_complete():
     if not request.args.has_key('uniqueId'):
         raise ExperimentError('improper_inputs')
     else:
         uniqueId = request.args['uniqueId']
-    print "/debrief called with", uniqueId
+        try:
+            user = Participant.query.\
+                        filter(Participant.uniqueid == uniqueId).\
+                        one()
+            user.status = COMPLETED 
+            db_session.add(user)
+            db_session.commit()
+        except:
+            raise ExperimentError('error_setting_worker_complete')
+        else:
+            return render_template('complete.html')
 
-    user = Participant.query.\
-           filter(Participant.uniqueid == uniqueId).\
-           one()
-
-    if config.getboolean('Task Parameters', 'use_debriefing'):
-        user.status = COMPLETED
-        user.endhit = datetime.datetime.now()
-        db_session.add(user)
-        db_session.commit()
-    
-        return render_template('debriefing.html', uniqueId=user.uniqueid)
-
+@app.route('/worker_complete', methods=['GET'])
+def worker_complete():
+    if not request.args.has_key('uniqueId'):
+        resp = {"status": "bad request"}
+        return jsonify(**resp)
     else:
-        user.status = DEBRIEFED
-        user.endhit = datetime.datetime.now()
-        db_session.add(user)
-        db_session.commit()
-
-        return render_template('closepopup.html')
-
-@app.route('/complete', methods=['POST'])
-def completed():
-    """
-    This is sent in when the participant completes the debriefing. The
-    participant can accept the debriefing or declare that they were not
-    adequately debriefed, and that response is logged in the database.
-    """
-    print "accessing the /complete route"
-    if not (request.form.has_key('uniqueId') and request.form.has_key('agree')):
-        raise ExperimentError('improper_inputs')
-    uniqueId = request.form['uniqueId']
-    agreed = request.form['agree']
-    print uniqueId, agreed
-    
-    user = Participant.query.\
-            filter(Participant.uniqueid == uniqueId).\
-            one()
-    user.status = DEBRIEFED
-    user.debriefed = agreed == 'true'
-    db_session.add(user)
-    db_session.commit()
-    return render_template('closepopup.html')
+        uniqueId = request.args['uniqueId']
+        try:
+            user = Participant.query.\
+                        filter(Participant.uniqueid == uniqueId).\
+                        one()
+            user.status = COMPLETED 
+            db_session.add(user)
+            db_session.commit()
+            status = "success"
+        except:
+            status = "database error"
+        resp = {"status" : status}
+        return jsonify(**resp)
 
 # Is this a security risk?
 @app.route("/ppid")
@@ -492,8 +483,6 @@ def regularpage(pagename=None):
     if pagename==None:
         raise ExperimentError('page_not_found')
     return render_template(pagename)
-
-
 
 # # Initialize database if necessary
 def run_webserver():

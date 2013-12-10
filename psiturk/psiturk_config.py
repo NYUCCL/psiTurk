@@ -46,19 +46,24 @@ class PsiturkConfig(SafeConfigParser):
 
 
     def write_default_config(self):
-        sections = ['AWS Access', 'HIT Configuration', 'Database Parameters',
+        sections = ['AWS Access', 'Secure Ad Server', 'HIT Configuration', 'Database Parameters',
                     'Server Parameters', 'Task Parameters']
         map(self.add_section, sections)
+
         # AWS Access Section
         self.set('AWS Access', 'aws_access_key_id', 'YourAccessKeyId')
-        self.set('AWS Access', 'aws_secret_access_key', 'YourSecreteAccessKey')
+        self.set('AWS Access', 'aws_secret_access_key', 'YourSecretAccessKey')
+
+        # Secure Ad Server
+        self.set('Secure Ad Server', 'location', 'https://psiturk.org')
+        self.set('Secure Ad Server', 'contact_email', 'gureckislab@gmail.com')
+
         # HIT Configuration
         self.set('HIT Configuration', 'title', 'Stroop task')
         self.set('HIT Configuration', 'description', 'Judge the color of a series of words.')
         self.set('HIT Configuration', 'keywords', 'Perception, Psychology')
-        self.set('HIT Configuration', 'question_url', 'http://localhost:22362/ad')
         self.set('HIT Configuration', 'max_assignments', '10')
-        self.set('HIT Configuration', 'HIT_lifetime', '24')
+        self.set('HIT Configuration', 'lifetime', '24')
         self.set('HIT Configuration', 'reward', '1')
         self.set('HIT Configuration', 'duration', '2')
         self.set('HIT Configuration', 'US_only', 'true')
@@ -73,17 +78,17 @@ class PsiturkConfig(SafeConfigParser):
         self.set('Server Parameters', 'host', 'localhost')
         self.set('Server Parameters', 'port', '22362')
         self.set('Server Parameters', 'cutoff_time', '30')
-        self.set('Server Parameters', 'support_IE', 'true')
         self.set('Server Parameters', 'logfile', 'server.log')
         self.set('Server Parameters', 'loglevel', '2')
         self.set('Server Parameters', 'debug', 'true')
         self.set('Server Parameters', 'login_username', 'examplename')
         self.set('Server Parameters', 'login_pw', 'examplepassword')
-        self.set('Server Parameters', 'num_workers', '-1')
+        self.set('Server Parameters', 'threads', 'auto')
         
         # Task Parameters
-        self.set('Task Parameters', 'code_version', '1.0')
+        self.set('Task Parameters', 'experiment_code_version', '1.0')
         self.set('Task Parameters', 'num_conds', '1')
         self.set('Task Parameters', 'num_counters', '1')
-        self.set('Task Parameters', 'use_debriefing', 'true')
+        self.set('Task Parameters', 'support_ie', 'true')
+
 

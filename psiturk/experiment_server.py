@@ -42,8 +42,8 @@ class ExperimentServer(Application):
         return util.import_app("psiturk.experiment:app")
 
     def load_user_config(self):
-        workers = config.get("Server Parameters", "num_workers")
-        if workers == "-1":
+        workers = config.get("Server Parameters", "threads")  # config calls these threads to avoid confusing with workers
+        if workers == "auto":
             workers = str(multiprocessing.cpu_count() * 2 + 1)
 
         self.loglevels = ["debug", "info", "warning", "error", "critical"]
@@ -52,7 +52,9 @@ class ExperimentServer(Application):
             'bind': config.get("Server Parameters", "host") + ":" + config.get("Server Parameters", "port"),
             'workers': workers,
             'loglevels': self.loglevels,
-            'loglevel': self.loglevels[config.getint("Server Parameters", "loglevel")]
+            'loglevel': self.loglevels[config.getint("Server Parameters", "loglevel")],
+            'accesslog': config.get("Server Parameters", "logfile"),
+            'errorlog': config.get("Server Parameters", "logfile")
         }
 
 def launch():

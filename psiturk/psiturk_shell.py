@@ -4,20 +4,27 @@ Usage:
     psiturk_shell setup_example
 """
 import sys
+import subprocess
 import re
 import time
 import json
+import os
+import string
+import random
+import datetime
 
 from cmd2 import Cmd
 from docopt import docopt, DocoptExit
 import readline
 
+import webbrowser
+
 from amt_services import MTurkServices
+from psiturk_org_services import PsiturkOrgServices
 from version import version_number
 from psiturk_config import PsiturkConfig
 import experiment_server_controller as control
-# import dashboard_server as dbs
-
+from models import Participant
 
 # Escape sequences for display.
 def colorize(target, color):
@@ -77,13 +84,16 @@ def docopt_cmd(func):
 #  -  if a command takes any arguments, use @docopt_cmd decorator
 #     and describe command usage in docstring
 #---------------------------------
-class Psiturk_Shell(Cmd):
-    def __init__(self, config, services, server):
+class PsiturkShell(Cmd):
+
+
+    def __init__(self, config, amt_services, web_services, server):
         Cmd.__init__(self)
         self.config = config
         self.server = server
-        self.services = services
-        self.sandbox = self.config.getboolean('HIT Configuration',
+        self.amt_services = amt_services
+        self.web_services = web_services
+        self.sandbox = self.config.getboolean('HIT Configuration', 
                                               'using_sandbox')
         self.sandboxHITs = 0
         self.liveHITs = 0
@@ -93,6 +103,7 @@ class Psiturk_Shell(Cmd):
                               '\nType "help" for more information.', 'green')
         # Prevents running of commands by abbreviation
         self.abbrev = False
+        self.debug = True
 
     def color_prompt(self):
         prompt = '[' + colorize('psiTurk', 'bold')
@@ -142,32 +153,55 @@ class Psiturk_Shell(Cmd):
         if arg['<which>'] == 'live':
             self.sandbox = False
             self.config.set('HIT Configuration', 'using_sandbox', False)
+            self.amt_services.set_sandbox(False)
             self.tally_hits()
             print 'Entered ' + colorize('live', 'bold') + ' mode'
         else:
             self.sandbox = True
             self.config.set('HIT Configuration', 'using_sandbox', True)
+            self.amt_services.set_sandbox(True)
             self.tally_hits()
             print 'Entered ' + colorize('sandbox', 'bold') + ' mode'
 
+    def random_id_generator(self, size = 6, chars = string.ascii_uppercase + string.digits):
+        return ''.join(random.choice(chars) for x in range(size))
 
-    #@docopt_cmd
-    # def do_dashboard(self, arg):
-    #     """
-    #     Usage: dashboard [options]
-    #
-    #     -i <address>, --ip <address>    IP to run dashboard on. [default: localhost].
-    #     -p <num>, --port <num>          Port to run dashboard on. [default: 22361].
-    #     """
-    #     arg['--port'] = int(arg['--port'])
-    #     dbs.launch(ip=arg['--ip'], port=arg['--port'])
+    @docopt_cmd
+    def do_debug(self, arg):
+        """
+        Usage: debug [options]
+
+        -p, --print-only         just provides the URL, doesn't attempt to launch browser
+        """
+        if self.server.is_server_running() == 'no' or self.server.is_server_running()=='maybe':
+            print "Error: Sorry, you need to have the server running to debug your experiment.  Try 'start_server' first."
+            return
+
+        base_url = "http://" + self.config.get('Server Parameters', 'host') + ":" + self.config.get('Server Parameters', 'port') + "/ad"
+        launchurl = base_url + "?assignmentId=debug" + str(self.random_id_generator()) \
+                    + "&hitId=debug" + str(self.random_id_generator()) \
+                    + "&workerId=debug" + str(self.random_id_generator())
+
+        if arg['--print-only']:
+            print "Here's your randomized debug link, feel free to request another:\n\t", launchurl
+        else:
+            print "Launching browser pointed at your randomized debug link, feel free to request another.\n\t", launchurl
+            webbrowser.open(launchurl, new=1, autoraise=True)
+
     def do_version(self, arg):
         print 'psiTurk version ' + version_number
 
     def do_print_config(self, arg):
-        f = open('config.txt', 'r')
-        for line in f:
-            sys.stdout.write(line)
+        for section in self.config.sections():
+            print '[%s]' % section
+            items = dict(self.config.items(section))
+            for k in items:
+                print "%(a)s=%(b)s" % {'a': k, 'b': items[k]}
+            print ''
+            
+
+    def do_reload_config(self, arg):
+        self.config.load_config()
 
     def do_status(self, arg):
         server_status = self.server.is_server_running()
@@ -184,7 +218,7 @@ class Psiturk_Shell(Cmd):
             print 'AMT worker site - ' + colorize('live', 'bold') + ': ' + str(self.liveHITs) + ' HITs available'
 
     def tally_hits(self):
-        hits = self.services.get_active_hits()
+        hits = self.amt_services.get_active_hits()
         if hits:
             if self.sandbox:
                 self.sandboxHITs = len(hits)
@@ -231,28 +265,93 @@ class Psiturk_Shell(Cmd):
                         arg['<numWorkers>'])
         self.config.set('HIT Configuration', 'reward', arg['<reward>'])
         self.config.set('HIT Configuration', 'duration', arg['<duration>'])
-        self.services.create_hit()
-        if self.sandbox:
-            self.sandboxHITs += 1
+
+        # register with the ad server (psiturk.org/ad/register) using POST
+        if os.path.exists('templates/ad.html'):
+            ad_html = open('templates/ad.html').read()
         else:
-            self.liveHITs += 1
-        # print results
-        total = float(arg['<numWorkers>']) * float(arg['<reward>'])
-        fee = total / 10
-        total = total + fee
-        location = ''
-        if self.sandbox:
-            location = 'sandbox'
+            print '*****************************'
+            print '  Sorry there was an error registering ad.'
+            print "  Both ad.html is required to be in the templates/ folder of your project so that these Ad can be served!"
+            return
+
+        size_of_ad = sys.getsizeof(ad_html)
+        if size_of_ad >= 1048576:
+            print '*****************************'
+            print '  Sorry there was an error registering ad.'
+            print "  Your local ad.html is %s byes, but the maximum template size uploadable to the Ad server is 1048576 bytes!", size_of_ad
+            return
+
+        # what all do we need to send to server?
+        # 1. server
+        # 2. port 
+        # 3. support_ie?
+        # 4. ad.html template
+        # 5. contact_email in case an error happens
+        
+        ad_content = {
+            "server": str(self.web_services.get_my_ip()),
+            "port": str(self.config.get('Server Parameters', 'port')),
+            "support_ie": str(self.config.get('Task Parameters', 'support_ie')),
+            "is_sandbox": str(self.sandbox),
+            "ad.html": ad_html,
+            "contact_email": str(self.config.get('Secure Ad Server', 'contact_email'))
+        }
+
+        create_failed = False
+        ad_id = self.web_services.create_ad(ad_content)
+        if ad_id != False:
+            ad_url = self.web_services.get_ad_url(ad_id)
+            hit_config = {
+                "ad_location": ad_url,
+                "approve_requirement": self.config.get('HIT Configuration', 'Approve_Requirement'),
+                "us_only": self.config.getboolean('HIT Configuration', 'US_only'),
+                "lifetime": datetime.timedelta(hours=self.config.getfloat('HIT Configuration', 'lifetime')),
+                "max_assignments": self.config.getint('HIT Configuration', 'max_assignments'),
+                "title": self.config.get('HIT Configuration', 'title'),
+                "description": self.config.get('HIT Configuration', 'description'),
+                "keywords": self.config.get('HIT Configuration', 'keywords'),
+                "reward": self.config.getfloat('HIT Configuration', 'reward'),
+                "duration": datetime.timedelta(hours=self.config.getfloat('HIT Configuration', 'duration'))
+            }
+            hit_id = self.amt_services.create_hit(hit_config)
+            if hit_id != False:
+                if not self.web_services.set_ad_hitid(ad_id, hit_id):
+                    create_failed = True
+            else:
+                create_failed = True
         else:
-            location = 'live'
-        print '*****************************'
-        print '  Creating %s HIT' % colorize(location, 'bold')
-        print '    Max workers: ' + arg['<numWorkers>']
-        print '    Reward: $' + arg['<reward>']
-        print '    Duration: ' + arg['<duration>'] + ' hours'
-        print '    Fee: $%.2f' % fee
-        print '    ________________________'
-        print '    Total: $%.2f' % total
+            create_failed = True
+
+        if create_failed:
+            print '*****************************'
+            print '  Sorry there was an error creating hit and registering ad.'
+
+        else:
+            if self.sandbox:
+                self.sandboxHITs += 1
+            else:
+                self.liveHITs += 1
+            #print results
+            total = float(arg['<numWorkers>']) * float(arg['<reward>'])
+            fee = total / 10
+            total = total + fee
+            location = ''
+            if self.sandbox:
+                location = 'sandbox'
+            else:
+                location = 'live'
+            print '*****************************'
+            print '  Creating %s HIT' % colorize(location, 'bold')
+            print '    HITid: ', str(hit_id)
+            print '    Max workers: ' + arg['<numWorkers>']
+            print '    Reward: $' + arg['<reward>']
+            print '    Duration: ' + arg['<duration>'] + ' hours'
+            print '    Fee: $%.2f' % fee
+            print '    ________________________'
+            print '    Total: $%.2f' % total
+            print '  Ad for this HIT now hosted at: http://psiturk.org/ad/' + str(ad_id) + "?assignmentId=debug" + str(self.random_id_generator()) \
+                        + "&hitId=debug" + str(self.random_id_generator())
 
     def do_setup_example(self, arg):
         import setup_example as se
@@ -269,17 +368,25 @@ class Psiturk_Shell(Cmd):
         while self.server.is_server_running() != 'no':
             time.sleep(0.5)
 
-    # This doesn't work with the server's slow shutdown right now.
     def do_restart_server(self, arg):
         self.do_stop_server('')
         self.do_start_server('')
 
+    def do_open_server_log(self, arg):
+        logfilename = self.config.get('Server Parameters', 'logfile')
+        if sys.platform == "darwin":
+            args = ["open", "-a", "Console.app", logfilename]
+        else:
+            args = ["xterm", "-e", "'tail -f %s'" % logfilename]
+        subprocess.Popen(args, close_fds=True)
+        print "Log program launching..."
+
     def do_list_workers(self, arg):
-        workers = self.services.get_workers()
+        workers = self.amt_services.get_workers()
         if not workers:
             print colorize('failed to get workers', 'red')
         else:
-            print json.dumps(self.services.get_workers(), indent=4,
+            print json.dumps(self.amt_services.get_workers(), indent=4,
                              separators=(',', ': '))
 
     @docopt_cmd
@@ -291,10 +398,10 @@ class Psiturk_Shell(Cmd):
 
         """
         if arg['--all']:
-            workers = self.services.get_workers()
+            workers = self.amt_services.get_workers()
             arg['<assignment_id>'] = [worker['assignmentId'] for worker in workers]
         for assignmentID in arg['<assignment_id>']:
-            success = self.services.approve_worker(assignmentID)
+            success = self.amt_services.approve_worker(assignmentID)
             if success:
                 print 'approved', assignmentID
             else:
@@ -308,24 +415,52 @@ class Psiturk_Shell(Cmd):
         -a, --all           reject all completed workers
         """
         if arg['--all']:
-            workers = self.services.get_workers()
+            workers = self.amt_services.get_workers()
             arg['<assignment_it>'] = [worker['assignmentId'] for worker in workers]
         for assignmentID in arg['<assignment_id>']:
-            success = self.services.reject_worker(assignmentID)
+            success = self.amt_services.reject_worker(assignmentID)
             if success:
                 print 'rejected', assignmentID
             else:
                 print '*** failed to reject', assignmentID
 
     def do_check_balance(self, arg):
-        print self.services.check_balance()
+        print self.amt_services.check_balance()
+
+    def do_list_all_hits(self, arg):
+        hits_data = self.amt_services.get_all_hits()
+        if not hits_data:
+            print '*** no hits retrieved'
+        else:
+            for hit in hits_data:
+                print hit
 
     def do_list_active_hits(self, arg):
-        hits_data = self.services.get_active_hits()
+        hits_data = self.amt_services.get_active_hits()
         if not hits_data:
             print '*** no active hits retrieved'
         else:
-            print json.dumps(hits_data, indent=4, separators=(',', ': '))
+            for hit in hits_data:
+                print hit
+
+    def do_list_reviewable_hits(self, arg):
+        hits_data = self.amt_services.get_reviewable_hits()
+        if not hits_data:
+            print '*** no reviewable hits retrieved'
+        else:
+            for hit in hits_data:
+                print hit
+    
+    def do_download_datafiles(self, arg):
+        contents = {"trialdata": lambda p: p.get_trial_data(), "eventdata": lambda p: p.get_event_data(), "questiondata": lambda p: p.get_question_data()}
+        query = Participant.query.all()
+        for k in contents:
+            ret = "".join([contents[k](p) for p in query])
+            f = open(k + '.csv', 'w')
+            f.write(ret)
+            f.close()
+        
+
 
     @docopt_cmd
     def do_extend_hit(self, arg):
@@ -335,8 +470,37 @@ class Psiturk_Shell(Cmd):
         -a <number>, --assignments <number>    Increase number of assignments on HIT
         -e <time>, --expiration <time>         Increase expiration time on HIT (hours)
         """
-        self.services.extend_hit(self, arg['<HITid>'], arg['--assignments'],
+        self.amt_services.extend_hit(self, arg['<HITid>'], arg['--assignments'],
                                  arg['--expiration'])
+
+    @docopt_cmd
+    def do_dispose_hit(self, arg):
+        """
+        Usage: dispose_hit (--all | <HITid> ...)
+
+        -a, --all              delete all "Reviewable"/"Expired" HITs
+        """
+        if arg['--all']:
+            hits_data = self.amt_services.get_all_hits()
+            arg['<HITid>'] = [hit.options['hitid'] for hit in hits_data if (hit.options['status']=="Reviewable")]
+        for hit in arg['<HITid>']:
+            # check that the his is reviewable
+            status = self.amt_services.get_hit_status(hit)
+            if not status:
+                print "*** Error getting hit status"
+                return                
+            if self.amt_services.get_hit_status(hit)!="Reviewable":
+                print "*** This hit is not 'Reviewable' and so can not be disposed of"
+                return
+            else:
+                self.amt_services.dispose_hit(hit)
+                self.web_services.delete_ad(hit)  # also delete the ad
+                if self.sandbox:
+                    print "deleting sandbox HIT", hit
+                    self.sandboxHITs -= 1
+                else:
+                    print "deleting live HIT", hit
+                    self.liveHITs -= 1
 
     @docopt_cmd
     def do_expire_hit(self, arg):
@@ -346,10 +510,10 @@ class Psiturk_Shell(Cmd):
         -a, --all              expire all HITs
         """
         if arg['--all']:
-            hits_data = self.services.get_active_hits()
-            arg['<HITid>'] = [hit['hitid'] for hit in hits_data]
+            hits_data = self.amt_services.get_active_hits()
+            arg['<HITid>'] = [hit.options['hitid'] for hit in hits_data]
         for hit in arg['<HITid>']:
-            self.services.expire_hit(hit)
+            self.amt_services.expire_hit(hit)
             if self.sandbox:
                 print "expiring sandbox HIT", hit
                 self.sandboxHITs -= 1
@@ -375,7 +539,10 @@ def run():
     opt = docopt(__doc__, sys.argv[1:])
     config = PsiturkConfig()
     config.load_config()
-    services = MTurkServices(config)
+    amt_services = MTurkServices(config.get('AWS Access', 'aws_access_key_id'), \
+                             config.get('AWS Access', 'aws_secret_access_key'), \
+                             config.getboolean('HIT Configuration','using_sandbox'))
+    web_services = PsiturkOrgServices(config.get('Secure Ad Server','location'), config.get('Secure Ad Server', 'contact_email'))
     server = control.ExperimentServerController(config)
-    shell = Psiturk_Shell(config, services, server)
+    shell = PsiturkShell(config, amt_services, web_services, server)
     shell.cmdloop()

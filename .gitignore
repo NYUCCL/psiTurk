@@ -2,6 +2,8 @@
 config.txt
 participants.db
 server.log
+static
+templates
 
 *.py[cod]
 
@@ -55,3 +57,5 @@ static/dashboard/js/templates/screen_off.r
 static/dashboard/js/templates/explain_way.py
 
 /server.log
+
+.DS_Store

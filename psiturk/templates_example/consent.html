@@ -2,25 +2,25 @@
 
 <html>
     <head>
-	<title>Consent Form</title>
-	<script src="static/jquery-min.js" type="text/lib/javascript"> </script>
-	<script src="static/cardtask.js" type="text/js/javascript"> </script>
-	<link rel=stylesheet href="static/css/task.css" type="text/css" media="screen">
-	<script type="text/javascript">
-	    function onexit() {
-		self.close()
-	    }
-	</script>
+      <title>Consent Form</title>
+      <script src="static/jquery-min.js" type="text/lib/javascript"> </script>
+      <script src="static/cardtask.js" type="text/js/javascript"> </script>
+      <link rel=stylesheet href="static/css/task.css" type="text/css" media="screen">
+      <script type="text/javascript">
+          function onexit() {
+            self.close()
+          }
+      </script>
     </head>
     <body>
-	<div class="instruct" id="main">
-	    <h1>Consent title.</h1>
+      <div class="instruct" id="main">
+          <h1>Consent title.</h1>
             <p class="warm">Hello there! Thank you for taking the time to
             participate in this experiment. Below is a consent form that
             describes the nature of the experiment, what to expect, and how you
             will be measured. Please take the time to read this over before
             deciding to participate in this experiment.</p>
-	    <div class="legal">
+          <div class="legal">
             <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed
             diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam
             erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci
@@ -59,11 +59,11 @@
             litterarum formas humanitatis per seacula quarta decima et quinta
             decima. Eodem modo typi, qui nunc nobis videntur parum clari, fiant
             sollemnes in futurum.</p>
-	    <p><a href="javascript:window.print()">Please print a copy of this consent document to keep.</a></p>
-	    </div>
-	    <div class="instructions warm">Do you understand and consent to the terms of the experiment explained above?</div>
-	    <input type="button" class="continue" id="IAgree" value="I Agree" onClick="window.location='/exp?hitId={{ hitid }}&assignmentId={{ assignmentid }}&workerId={{ workerid }}'">
-	    <input type="button" id="NoThanks" value="No Thanks" onclick="onexit()">
-	</div>
+          <p><a href="javascript:window.print()">Please print a copy of this consent document to keep.</a></p>
+          </div>
+          <div class="instructions warm">Do you understand and consent to the terms of the experiment explained above?</div>
+          <input type="button" class="continue" id="IAgree" value="I Agree" onClick="window.location='/exp?hitId={{ hitid }}&assignmentId={{ assignmentid }}&workerId={{ workerid }}'">
+          <input type="button" id="NoThanks" value="No Thanks" onclick="onexit()">
+      </div>
     </body>
 </html>

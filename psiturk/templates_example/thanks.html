@@ -13,7 +13,7 @@
 			<p style="text-align: center; font-size: 140%" >Thanks again for your participation in our study!</p>
 
 			<p style="text-align: center; font-size: 140%" >To complete the HIT, simply press the button below.</p>
-            {% if using_sandbox %}
+            {% if is_sandbox %}
 		        <form style="width: auto;" id="mturk_form" action="https://workersandbox.mturk.com/mturk/externalSubmit" method="post">
             {% else %}
     		    <form style="width: auto;" id="mturk_form" action="https://www.mturk.com/mturk/externalSubmit" method="post">
@@ -22,8 +22,8 @@
 			<input type="hidden" id="hitId" name="hitId" value="{{ hitid }}"  /> 
 			<input type="hidden" id="workerId" name="workerId" value="{{ workerid }}"  /> 
 			<input style="margin: 0 auto; font-size: 140%; width: 100%;" id="submitButton" type="submit" name="Submit" value="Complete HIT"  /> 
-                    </form>
-                </div>
+             </form>
+        </div>
 	</div>
 </body>
 
