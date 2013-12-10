@@ -581,6 +581,23 @@ class PsiturkShell(Cmd):
     def do_list_aws_regions(self, arg):
         print self.db_services.get_regions()
 
+    def do_set_aws_region(self, arg):
+        """
+        Usage: set_aws_regions
+               set_aws_regions <region_name>
+        """
+        interactive = False
+        if arg['<region_name>'] is None:
+            interactive = True
+            arg['<region_name>'] = raw_input('Enter the region you like to use (`list_aws_regions` to see options): ')
+        try:
+            str(arg['<region_name>'])
+        except ValueError:
+            print '*** Ids are strings.  Run `list_db_instances` to get a list of valid options (i.e., status is `available`).'
+            return
+        else:
+            self.db_services.set_region(arg['<region_name>'])
+
     @docopt_cmd
     def do_use_aws_db_instance(self, arg):
         """
@@ -648,7 +665,7 @@ class PsiturkShell(Cmd):
                 if self.server.is_server_running()=='maybe' or self.server.is_server_running()=='yes':
                     self.do_restart_server('')
             else:
-                print "*** Error selecting database instance ", arg['<id>'], ". Run `list_db_instances` for current status of instances."
+                print "*** Error selecting database instance " + arg['<id>'] + ". Run `list_db_instances` for current status of instances."
         else:
             return
 
@@ -664,7 +681,7 @@ class PsiturkShell(Cmd):
             interactive = True
             arg['<id>'] = raw_input('enter an identifier for the instance (1-63 alpha, first a letter): ')
         try:
-            str(arg['<id>'])
+            str(arg['<id>'])  # TODO: this should check the AWS rules instead of this string test
         except ValueError:
             print '*** Must contain 1-63 alphanumeric characters. First character must be a letter. May not end with a hyphen or contain two consecutive hyphens'
             return
@@ -683,7 +700,7 @@ class PsiturkShell(Cmd):
         if interactive:
             arg['<username>'] = raw_input('master username: ')
         try:
-            str(arg['<username>'])
+            str(arg['<username>']) # TODO: this should check the AWS rules instead of this string test
         except ValueError:
             print '*** 1–16 alphanumeric characters - first character must be a letter - cannot be a reserved MySQL word'
             return
@@ -691,7 +708,7 @@ class PsiturkShell(Cmd):
         if interactive:
             arg['<password>'] = raw_input('master password: ')
         try:
-            str(arg['<password>'])
+            str(arg['<password>']) # TODO: this should check the AWS rules instead of this string test
         except ValueError:
             print '*** must be 8–41 alphanumeric characters'
             return
@@ -699,7 +716,7 @@ class PsiturkShell(Cmd):
         if interactive:
             arg['<dbname>'] = raw_input('name for first database on this instance: ')
         try:
-            str(arg['<dbname>'])
+            str(arg['<dbname>']) # TODO: this should check the AWS rules instead of this string test
         except ValueError:
             print '*** Must contain 1–64 alphanumeric characters and cannot be a reserved MySQL word'
             return
