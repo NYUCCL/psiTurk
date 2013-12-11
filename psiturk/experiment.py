@@ -199,6 +199,10 @@ def advertisement():
         raise ExperimentError('hit_assign_worker_id_not_set_in_mturk')
     hitId = request.args['hitId']
     assignmentId = request.args['assignmentId'] 
+    if hitId[:5] == "debug":
+        debug_mode = True
+    else:
+        debug_mode = False
     already_in_db = False
     if request.args.has_key('workerId'):
         workerId = request.args['workerId']
@@ -224,7 +228,7 @@ def advertisement():
     except:
         status = None
     
-    if status == STARTED:
+    if status == STARTED and not debug_mode:
         # Once participants have finished the instructions, we do not allow
         # them to start the task again.
         raise ExperimentError('already_started_exp_mturk')
@@ -236,7 +240,7 @@ def advertisement():
                                hitid = hitId, 
                                assignmentid = assignmentId, 
                                workerid = workerId)
-    elif already_in_db:
+    elif already_in_db and not debug_mode:
         raise ExperimentError('already_did_exp_hit')
     elif status == ALLOCATED or not status:
         # Participant has not yet agreed to the consent. They might not
