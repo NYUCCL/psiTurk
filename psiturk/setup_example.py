@@ -2,20 +2,25 @@ import os
 from distutils import dir_util
 from psiturk_config import PsiturkConfig
 
-static_dir = os.path.join(os.path.dirname(__file__), "static_example")
-templates_dir = os.path.join(os.path.dirname(__file__), "templates_example")
+example_dir = os.path.join(os.path.dirname(__file__), "example")
 
-static_target = os.path.join(os.curdir, "static")
-templates_target = os.path.join(os.curdir, "templates")
+example_target = os.path.join(os.curdir, "psiturk-example")
 
 def setup_example():
-    print "Copying", static_dir, "to", static_target
-    dir_util.copy_tree(static_dir, static_target)
-    print "Copying", templates_dir, "to", templates_target
-    dir_util.copy_tree(templates_dir, templates_target)
-    print "Creating default configuration file (config.txt)"
-    config = PsiturkConfig()
-    config.write_default_config()
+	if os.path.exists(example_target):
+		print "Error, `psiturk-example` directory already exists.  Please remove it then re-run the command."
+	else:
+		print "Creating new folder `psiturk-example` in the current working directory"
+		os.mkdir(example_target)
+		print "Copying", example_dir, "to", example_target
+		dir_util.copy_tree(example_dir, example_target)
+		# change to target director
+		os.chdir(example_target)
+		os.rename('custom.py.txt', 'custom.py')
+		os.remove("./custom.pyc")
+		print "Creating default configuration file (config.txt)"
+		config = PsiturkConfig()
+		config.write_default_config()
 
 if __name__=="__main__":
-    setup_example()
+	setup_example()

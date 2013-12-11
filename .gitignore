@@ -2,8 +2,7 @@
 config.txt
 participants.db
 server.log
-static
-templates
+psiturk-example
 
 *.py[cod]
 
@@ -53,8 +52,6 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
-static/dashboard/js/templates/screen_off.r
-static/dashboard/js/templates/explain_way.py
 
 /server.log
 

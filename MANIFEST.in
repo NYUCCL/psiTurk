@@ -1,2 +1,1 @@
-recursive-include psiturk/templates_example *
-recursive-include psiturk/static_example *
+recursive-include psiturk/example *
