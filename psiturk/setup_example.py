@@ -17,7 +17,6 @@ def setup_example():
 		# change to target director
 		os.chdir(example_target)
 		os.rename('custom.py.txt', 'custom.py')
-		os.remove("./custom.pyc")
 		print "Creating default configuration file (config.txt)"
 		config = PsiturkConfig()
 		config.write_default_config()
