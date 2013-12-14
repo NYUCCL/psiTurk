@@ -108,6 +108,11 @@ class PsiturkShell(Cmd):
         self.abbrev = False
         self.debug = True
 
+
+    #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
+    #  basic command line functions
+    #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
+
     def color_prompt(self):
         prompt = '[' + colorize('psiTurk', 'bold')
         serverString = ''
@@ -219,6 +224,187 @@ class PsiturkShell(Cmd):
             print 'AMT worker site - ' + colorize('sandbox', 'bold') + ': ' + str(self.sandboxHITs) + ' HITs available'
         else:
             print 'AMT worker site - ' + colorize('live', 'bold') + ': ' + str(self.liveHITs) + ' HITs available'
+
+
+
+    def do_setup_example(self, arg):
+        import setup_example as se
+        se.setup_example()
+
+    #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
+    #  server management
+    #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
+    def do_start_server(self, arg):
+        self.server.startup()
+        while self.server.is_server_running() != 'yes':
+            time.sleep(0.5)
+
+    def do_stop_server(self, arg):
+        self.server.shutdown()
+        print 'Please wait. This could take a few seconds.'
+        while self.server.is_server_running() != 'no':
+            time.sleep(0.5)
+
+    def do_restart_server(self, arg):
+        self.do_stop_server('')
+        self.do_start_server('')
+
+    def do_open_server_log(self, arg):
+        logfilename = self.config.get('Server Parameters', 'logfile')
+        if sys.platform == "darwin":
+            args = ["open", "-a", "Console.app", logfilename]
+        else:
+            args = ["xterm", "-e", "'tail -f %s'" % logfilename]
+        subprocess.Popen(args, close_fds=True)
+        print "Log program launching..."
+
+
+    #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
+    #  worker management
+    #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
+    def do_list_workers(self, arg):
+        workers = self.amt_services.get_workers()
+        if not workers:
+            print colorize('failed to get workers', 'red')
+        else:
+            print json.dumps(self.amt_services.get_workers(), indent=4,
+                             separators=(',', ': '))
+
+    @docopt_cmd
+    def do_approve_worker(self, arg):
+        """
+        Usage: approve_worker (--all | <assignment_id> ...)
+
+        -a, --all        approve all completed workers
+
+        """
+        if arg['--all']:
+            workers = self.amt_services.get_workers()
+            arg['<assignment_id>'] = [worker['assignmentId'] for worker in workers]
+        for assignmentID in arg['<assignment_id>']:
+            success = self.amt_services.approve_worker(assignmentID)
+            if success:
+                print 'approved', assignmentID
+            else:
+                print '*** failed to approve', assignmentID
+
+    @docopt_cmd
+    def do_reject_worker(self, arg):
+        """
+        Usage: reject_worker (--all | <assignment_id> ...)
+
+        -a, --all           reject all completed workers
+        """
+        if arg['--all']:
+            workers = self.amt_services.get_workers()
+            arg['<assignment_it>'] = [worker['assignmentId'] for worker in workers]
+        for assignmentID in arg['<assignment_id>']:
+            success = self.amt_services.reject_worker(assignmentID)
+            if success:
+                print 'rejected', assignmentID
+            else:
+                print '*** failed to reject', assignmentID
+
+
+    #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
+    #  hit management
+    #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
+    def do_check_balance(self, arg):
+        print self.amt_services.check_balance()
+
+    def do_list_all_hits(self, arg):
+        hits_data = self.amt_services.get_all_hits()
+        if not hits_data:
+            print '*** no hits retrieved'
+        else:
+            for hit in hits_data:
+                print hit
+
+    def do_list_active_hits(self, arg):
+        hits_data = self.amt_services.get_active_hits()
+        if not hits_data:
+            print '*** no active hits retrieved'
+        else:
+            for hit in hits_data:
+                print hit
+
+    def do_list_reviewable_hits(self, arg):
+        hits_data = self.amt_services.get_reviewable_hits()
+        if not hits_data:
+            print '*** no reviewable hits retrieved'
+        else:
+            for hit in hits_data:
+                print hit
+    
+    def do_download_datafiles(self, arg):
+        contents = {"trialdata": lambda p: p.get_trial_data(), "eventdata": lambda p: p.get_event_data(), "questiondata": lambda p: p.get_question_data()}
+        query = Participant.query.all()
+        for k in contents:
+            ret = "".join([contents[k](p) for p in query])
+            f = open(k + '.csv', 'w')
+            f.write(ret)
+            f.close()
+        
+
+
+    @docopt_cmd
+    def do_extend_hit(self, arg):
+        """
+        Usage: extend_hit <HITid> [options]
+
+        -a <number>, --assignments <number>    Increase number of assignments on HIT
+        -e <time>, --expiration <time>         Increase expiration time on HIT (hours)
+        """
+        self.amt_services.extend_hit(self, arg['<HITid>'], arg['--assignments'],
+                                 arg['--expiration'])
+
+    @docopt_cmd
+    def do_dispose_hit(self, arg):
+        """
+        Usage: dispose_hit (--all | <HITid> ...)
+
+        -a, --all              delete all "Reviewable"/"Expired" HITs
+        """
+        if arg['--all']:
+            hits_data = self.amt_services.get_all_hits()
+            arg['<HITid>'] = [hit.options['hitid'] for hit in hits_data if (hit.options['status']=="Reviewable")]
+        for hit in arg['<HITid>']:
+            # check that the his is reviewable
+            status = self.amt_services.get_hit_status(hit)
+            if not status:
+                print "*** Error getting hit status"
+                return                
+            if self.amt_services.get_hit_status(hit)!="Reviewable":
+                print "*** This hit is not 'Reviewable' and so can not be disposed of"
+                return
+            else:
+                self.amt_services.dispose_hit(hit)
+                self.web_services.delete_ad(hit)  # also delete the ad
+                if self.sandbox:
+                    print "deleting sandbox HIT", hit
+                    self.sandboxHITs -= 1
+                else:
+                    print "deleting live HIT", hit
+                    self.liveHITs -= 1
+
+    @docopt_cmd
+    def do_expire_hit(self, arg):
+        """
+        Usage: expire_hit (--all | <HITid> ...)
+
+        -a, --all              expire all HITs
+        """
+        if arg['--all']:
+            hits_data = self.amt_services.get_active_hits()
+            arg['<HITid>'] = [hit.options['hitid'] for hit in hits_data]
+        for hit in arg['<HITid>']:
+            self.amt_services.expire_hit(hit)
+            if self.sandbox:
+                print "expiring sandbox HIT", hit
+                self.sandboxHITs -= 1
+            else:
+                print "expiring live HIT", hit
+                self.liveHITs -= 1
 
     def tally_hits(self):
         hits = self.amt_services.get_active_hits()
@@ -355,175 +541,6 @@ class PsiturkShell(Cmd):
             print '    Total: $%.2f' % total
             print '  Ad for this HIT now hosted at: http://psiturk.org/ad/' + str(ad_id) + "?assignmentId=debug" + str(self.random_id_generator()) \
                         + "&hitId=debug" + str(self.random_id_generator())
-
-    def do_setup_example(self, arg):
-        import setup_example as se
-        se.setup_example()
-
-    def do_start_server(self, arg):
-        self.server.startup()
-        while self.server.is_server_running() != 'yes':
-            time.sleep(0.5)
-
-    def do_stop_server(self, arg):
-        self.server.shutdown()
-        print 'Please wait. This could take a few seconds.'
-        while self.server.is_server_running() != 'no':
-            time.sleep(0.5)
-
-    def do_restart_server(self, arg):
-        self.do_stop_server('')
-        self.do_start_server('')
-
-    def do_open_server_log(self, arg):
-        logfilename = self.config.get('Server Parameters', 'logfile')
-        if sys.platform == "darwin":
-            args = ["open", "-a", "Console.app", logfilename]
-        else:
-            args = ["xterm", "-e", "'tail -f %s'" % logfilename]
-        subprocess.Popen(args, close_fds=True)
-        print "Log program launching..."
-
-    def do_list_workers(self, arg):
-        workers = self.amt_services.get_workers()
-        if not workers:
-            print colorize('failed to get workers', 'red')
-        else:
-            print json.dumps(self.amt_services.get_workers(), indent=4,
-                             separators=(',', ': '))
-
-    @docopt_cmd
-    def do_approve_worker(self, arg):
-        """
-        Usage: approve_worker (--all | <assignment_id> ...)
-
-        -a, --all        approve all completed workers
-
-        """
-        if arg['--all']:
-            workers = self.amt_services.get_workers()
-            arg['<assignment_id>'] = [worker['assignmentId'] for worker in workers]
-        for assignmentID in arg['<assignment_id>']:
-            success = self.amt_services.approve_worker(assignmentID)
-            if success:
-                print 'approved', assignmentID
-            else:
-                print '*** failed to approve', assignmentID
-
-    @docopt_cmd
-    def do_reject_worker(self, arg):
-        """
-        Usage: reject_worker (--all | <assignment_id> ...)
-
-        -a, --all           reject all completed workers
-        """
-        if arg['--all']:
-            workers = self.amt_services.get_workers()
-            arg['<assignment_it>'] = [worker['assignmentId'] for worker in workers]
-        for assignmentID in arg['<assignment_id>']:
-            success = self.amt_services.reject_worker(assignmentID)
-            if success:
-                print 'rejected', assignmentID
-            else:
-                print '*** failed to reject', assignmentID
-
-    def do_check_balance(self, arg):
-        print self.amt_services.check_balance()
-
-    def do_list_all_hits(self, arg):
-        hits_data = self.amt_services.get_all_hits()
-        if not hits_data:
-            print '*** no hits retrieved'
-        else:
-            for hit in hits_data:
-                print hit
-
-    def do_list_active_hits(self, arg):
-        hits_data = self.amt_services.get_active_hits()
-        if not hits_data:
-            print '*** no active hits retrieved'
-        else:
-            for hit in hits_data:
-                print hit
-
-    def do_list_reviewable_hits(self, arg):
-        hits_data = self.amt_services.get_reviewable_hits()
-        if not hits_data:
-            print '*** no reviewable hits retrieved'
-        else:
-            for hit in hits_data:
-                print hit
-    
-    def do_download_datafiles(self, arg):
-        contents = {"trialdata": lambda p: p.get_trial_data(), "eventdata": lambda p: p.get_event_data(), "questiondata": lambda p: p.get_question_data()}
-        query = Participant.query.all()
-        for k in contents:
-            ret = "".join([contents[k](p) for p in query])
-            f = open(k + '.csv', 'w')
-            f.write(ret)
-            f.close()
-        
-
-
-    @docopt_cmd
-    def do_extend_hit(self, arg):
-        """
-        Usage: extend_hit <HITid> [options]
-
-        -a <number>, --assignments <number>    Increase number of assignments on HIT
-        -e <time>, --expiration <time>         Increase expiration time on HIT (hours)
-        """
-        self.amt_services.extend_hit(self, arg['<HITid>'], arg['--assignments'],
-                                 arg['--expiration'])
-
-    @docopt_cmd
-    def do_dispose_hit(self, arg):
-        """
-        Usage: dispose_hit (--all | <HITid> ...)
-
-        -a, --all              delete all "Reviewable"/"Expired" HITs
-        """
-        if arg['--all']:
-            hits_data = self.amt_services.get_all_hits()
-            arg['<HITid>'] = [hit.options['hitid'] for hit in hits_data if (hit.options['status']=="Reviewable")]
-        for hit in arg['<HITid>']:
-            # check that the his is reviewable
-            status = self.amt_services.get_hit_status(hit)
-            if not status:
-                print "*** Error getting hit status"
-                return                
-            if self.amt_services.get_hit_status(hit)!="Reviewable":
-                print "*** This hit is not 'Reviewable' and so can not be disposed of"
-                return
-            else:
-                self.amt_services.dispose_hit(hit)
-                self.web_services.delete_ad(hit)  # also delete the ad
-                if self.sandbox:
-                    print "deleting sandbox HIT", hit
-                    self.sandboxHITs -= 1
-                else:
-                    print "deleting live HIT", hit
-                    self.liveHITs -= 1
-
-    @docopt_cmd
-    def do_expire_hit(self, arg):
-        """
-        Usage: expire_hit (--all | <HITid> ...)
-
-        -a, --all              expire all HITs
-        """
-        if arg['--all']:
-            hits_data = self.amt_services.get_active_hits()
-            arg['<HITid>'] = [hit.options['hitid'] for hit in hits_data]
-        for hit in arg['<HITid>']:
-            self.amt_services.expire_hit(hit)
-            if self.sandbox:
-                print "expiring sandbox HIT", hit
-                self.sandboxHITs -= 1
-            else:
-                print "expiring live HIT", hit
-                self.liveHITs -= 1
-
 
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #  Local SQL database commands
@@ -743,7 +760,6 @@ class PsiturkShell(Cmd):
             print '    type: MySQL/db.t1.micro'
             print '    ________________________'
             print ' Please wait a few moments while your database is created in the cloud.  You can run `list_db_instances` to verify it was created.'
-
 
 
     def do_eof(self, arg):
