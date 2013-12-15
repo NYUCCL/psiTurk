@@ -27,7 +27,16 @@ class PsiturkOrgServices:
             you are talking to
         """
         self.adServer = server
-    
+
+    def get_system_status(self):
+        """
+            get_system_status:
+        """
+        ad_server_status_link= self.adServer + '/status_msg'
+        response = urllib2.urlopen(ad_server_status_link)
+        status_msg = json.load(response)['status']
+        return status_msg
+        
     def get_my_ip(self):
         """
             get_my_ip:

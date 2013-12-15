@@ -99,11 +99,22 @@ class PsiturkShell(Cmd):
         self.liveHITs = 0
         self.tally_hits()
         self.color_prompt()
-        self.intro = colorize('psiTurk version ' + version_number +
-                              '\nType "help" for more information.', 'green')
+        self.intro = self.get_intro_prompt()
+
         # Prevents running of commands by abbreviation
         self.abbrev = False
         self.debug = True
+
+
+    #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
+    #  basic command line functions
+    #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
+    def get_intro_prompt(self):
+        # if you can reach psiTurk.org, request system status
+        # message
+        server_msg = self.web_services.get_system_status()
+        return server_msg + colorize('psiTurk version ' + version_number +
+                              '\nType "help" for more information.', 'green')
 
     def color_prompt(self):
         prompt = '[' + colorize('psiTurk', 'bold')
