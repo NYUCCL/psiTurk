@@ -545,6 +545,15 @@ class PsiturkShell(Cmd):
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #  Local SQL database commands
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
+    def do_get_db_config(self, arg):
+        """
+        Usage: get_db_config
+               
+        Description:
+            Gets the current setting of the database (database_url)
+        """
+        print "Current database setting: \n\t", self.config.get("Database Parameters", "database_url")
+    
     @docopt_cmd
     def do_use_local_sqllite_db(self, arg):
         """
