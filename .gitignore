@@ -33,6 +33,8 @@ var
 sdist
 develop-eggs
 .installed.cfg
+lib
+!psiturk/example/static/lib/
 lib64
 __pycache__
 
