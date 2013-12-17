@@ -156,7 +156,7 @@ var TestPhase = function() {
 	};
 
 	var finish = function() {
-		$("body").keydown(function() {}); // Unbind keys
+		$("body").unbind("keydown", response_handler); // Unbind keys
 		currentview = new Questionnaire();
 	};
 	
