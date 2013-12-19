@@ -1,7 +1,6 @@
 """
 Usage:
     psiturk_shell
-    psiturk_shell setup_example
 """
 import sys
 import subprocess
@@ -231,7 +230,7 @@ class PsiturkShell(Cmd):
         Usage: create_hit
                create_hit <numWorkers> <reward> <duration>
         """
-        interactive = False
+        Interactive = False
         if arg['<numWorkers>'] is None:
             interactive = True
             arg['<numWorkers>'] = raw_input('number of participants? ')
@@ -534,6 +533,57 @@ class PsiturkShell(Cmd):
                 return
         return True
 
+    @docopt_cmd
+    def do_server(self, arg):
+        """
+        Usage: 
+          server start
+          server stop
+          server restart
+          server status
+        """
+        if arg['start']:
+            self.do_start_server('')
+        elif arg['stop']:
+            self.do_stop_server('')
+        elif arg['restart']:
+            self.do_restart_server('')
+
+    @docopt_cmd
+    def do_hit(self, arg):
+        """
+        Usage:
+          hit create <numWorkers> <reward> <duration>
+          hit extend <HITid> [-a <number>] [-e <time]
+          hit expire (--all | <HITid> ...)
+          hit dispose (--all | <HITid> ...)
+          hit list (all|active|reviewable)
+          hit tally
+        """
+    @docopt_cmd
+    def do_worker(self, arg):
+        """
+        Usage:
+          worker approve (--all | <assignment_id> ...)
+          worker reject (--all | <assignment_id> ...)
+          worker bonus
+          worker list
+        """
+    @docopt_cmd
+    def do_aws(self, arg):
+        """
+        Usage: 
+          aws balance
+          aws validate
+        """
+
+    @docopt_cmd
+    def do_config(self, arg):
+        """
+        Usage: 
+        """
+
+    
 
 def run():
     opt = docopt(__doc__, sys.argv[1:])
