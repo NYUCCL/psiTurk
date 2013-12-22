@@ -138,6 +138,9 @@ class PsiturkShell(Cmd):
     def emptyline(self):
         self.color_prompt()
 
+    def complete(self, text, state):
+        return Cmd.complete(self, text, state) + ' '
+
     @docopt_cmd
     def do_mode(self, arg):
         """
@@ -537,20 +540,26 @@ class PsiturkShell(Cmd):
     def do_server(self, arg):
         """
         Usage: 
-          server start
-          server stop
-          server restart
+          server launch
+          server shutdown
+          server relaunch
           server status
         """
-        if arg['start']:
+        if arg['launch']:
             self.do_start_server('')
-        elif arg['stop']:
+        elif arg['shutdown']:
             self.do_stop_server('')
-        elif arg['restart']:
+        elif arg['relaunch']:
             self.do_restart_server('')
+
+    server_commands = ('launch', 'shutdown', 'relaunch', 'status')
+
+    def complete_server(self, text, line, begidx, endidx):
+        return  [i for i in PsiturkShell.server_commands if i.startswith(text)]
 
     @docopt_cmd
     def do_hit(self, arg):
+        return
         """
         Usage:
           hit create <numWorkers> <reward> <duration>
@@ -562,6 +571,7 @@ class PsiturkShell(Cmd):
         """
     @docopt_cmd
     def do_worker(self, arg):
+        return
         """
         Usage:
           worker approve (--all | <assignment_id> ...)
@@ -571,6 +581,7 @@ class PsiturkShell(Cmd):
         """
     @docopt_cmd
     def do_aws(self, arg):
+        return
         """
         Usage: 
           aws balance
@@ -579,6 +590,7 @@ class PsiturkShell(Cmd):
 
     @docopt_cmd
     def do_config(self, arg):
+        return
         """
         Usage: 
         """
