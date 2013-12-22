@@ -569,6 +569,12 @@ class PsiturkShell(Cmd):
           hit list (all|active|reviewable)
           hit tally
         """
+
+    hit_commands = ('create', 'extend', 'expire', 'dispose', 'list', 'tally')
+
+    def complete_hit((self, text, line, begidx, endidx):
+        return  [i for i in PsiturkShell.hit_commands if i.startswith(text)]
+
     @docopt_cmd
     def do_worker(self, arg):
         return
@@ -579,6 +585,12 @@ class PsiturkShell(Cmd):
           worker bonus
           worker list
         """
+    
+    worker_commands = ('approve', 'reject', 'bonus', 'list')
+
+    def complete_worker (self, text, line, begidx, endidx):
+        return  [i for i in PsiturkShell.worker_commands if i.startswith(text)]
+
     @docopt_cmd
     def do_aws(self, arg):
         return
