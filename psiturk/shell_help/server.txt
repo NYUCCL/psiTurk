@@ -1,0 +1,13 @@
+Usage:
+  server launch
+  server shutdown
+  server relaunch
+  server status
+  server log
+
+'server' is used with subcommands to perform several server functions:
+  launch    Start server. Will not work if server is already running.
+  shutdown  Stop server. May take several seconds.
+  relaunch  Run 'shutdown', followed by 'launch'.
+  status    Print information on current server state.
+  log	    Open live server log in a separate window.

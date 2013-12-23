@@ -103,6 +103,8 @@ class PsiturkShell(Cmd):
         # Prevents running of commands by abbreviation
         self.abbrev = False
         self.debug = True
+        self.helpPath = os.path.join(os.path.dirname(__file__), "shell_help/")
+
 
     def color_prompt(self):
         prompt = '[' + colorize('psiTurk', 'bold')
@@ -544,6 +546,8 @@ class PsiturkShell(Cmd):
           server shutdown
           server relaunch
           server status
+          server log
+          server
         """
         if arg['launch']:
             self.do_start_server('')
@@ -551,11 +555,21 @@ class PsiturkShell(Cmd):
             self.do_stop_server('')
         elif arg['relaunch']:
             self.do_restart_server('')
+        elif arg['status']:
+            self.do_status('')
+        elif arg['log']:
+            self.do_open_server_log('')
+        else:
+            self.help_server()
 
     server_commands = ('launch', 'shutdown', 'relaunch', 'status')
 
     def complete_server(self, text, line, begidx, endidx):
         return  [i for i in PsiturkShell.server_commands if i.startswith(text)]
+
+    def help_server(self):
+        with open(self.helpPath + 'server.txt', 'r') as helpText:
+            print helpText.read()
 
     @docopt_cmd
     def do_hit(self, arg):
@@ -572,12 +586,11 @@ class PsiturkShell(Cmd):
 
     hit_commands = ('create', 'extend', 'expire', 'dispose', 'list', 'tally')
 
-    def complete_hit((self, text, line, begidx, endidx):
+    def complete_hit(self, text, line, begidx, endidx):
         return  [i for i in PsiturkShell.hit_commands if i.startswith(text)]
 
     @docopt_cmd
     def do_worker(self, arg):
-        return
         """
         Usage:
           worker approve (--all | <assignment_id> ...)
@@ -593,21 +606,17 @@ class PsiturkShell(Cmd):
 
     @docopt_cmd
     def do_aws(self, arg):
-        return
         """
         Usage: 
           aws balance
           aws validate
         """
-
-    @docopt_cmd
-    def do_config(self, arg):
-        return
-        """
-        Usage: 
-        """
-
+        if arg['balance']:
+            self.do_check_balance('')
     
+    aws_commands = ('balance', 'validate')
+    def complete_aws(self, text, line, begidx, endidx):
+        return [i for i in PsiturkShell.aws_commands if i.startswith(text)]
 
 def run():
     opt = docopt(__doc__, sys.argv[1:])
