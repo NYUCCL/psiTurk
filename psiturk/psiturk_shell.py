@@ -207,7 +207,7 @@ class PsiturkShell(Cmd):
     def do_reload_config(self, arg):
         self.config.load_config()
 
-    def do_status(self, arg):
+    def status(self, arg):
         server_status = self.server.is_server_running()
         if server_status == 'yes':
             print 'Server: ' + colorize('currently online', 'green')
@@ -361,22 +361,37 @@ class PsiturkShell(Cmd):
         import setup_example as se
         se.setup_example()
 
-    def do_start_server(self, arg):
+    def server_launch(self):
         self.server.startup()
         while self.server.is_server_running() != 'yes':
             time.sleep(0.5)
+        
 
-    def do_stop_server(self, arg):
+    def do_start_server(self, arg):
+        print 'start_server deprecated, try \'server launch\''
+        self.server_launch()
+        
+    def server_shutdown(self):
         self.server.shutdown()
         print 'Please wait. This could take a few seconds.'
         while self.server.is_server_running() != 'no':
             time.sleep(0.5)
 
-    def do_restart_server(self, arg):
-        self.do_stop_server('')
-        self.do_start_server('')
+        
 
-    def do_open_server_log(self, arg):
+    def do_stop_server(self, arg):
+        print 'stop_server deprecated, try \'server shutdown\''
+        self.server_shutdown()
+
+    def server_relaunch(self):
+        self.do_shutdown_server('')
+        self.do_launch_server('')
+
+    def do_restart_server(self, arg):
+        print 'restart_server deprecated, try \'server restart\''
+        self.server_relaunch()
+
+    def server_log(self):
         logfilename = self.config.get('Server Parameters', 'logfile')
         if sys.platform == "darwin":
             args = ["open", "-a", "Console.app", logfilename]
@@ -385,7 +400,11 @@ class PsiturkShell(Cmd):
         subprocess.Popen(args, close_fds=True)
         print "Log program launching..."
 
-    def do_list_workers(self, arg):
+    def do_open_server_log(self, arg):
+        print 'open_server_log deprecated, try \'server log\''
+        self.server_log()
+        
+    def worker_list(self):
         workers = self.amt_services.get_workers()
         if not workers:
             print colorize('failed to get workers', 'red')
@@ -393,23 +412,43 @@ class PsiturkShell(Cmd):
             print json.dumps(self.amt_services.get_workers(), indent=4,
                              separators=(',', ': '))
 
+    def do_list_workers(self, arg):
+        print 'list_workers deprecated, try \'worker list\''
+        self.worker_list()
+
+    
+    def worker_approve(self, allWorkers, assignment_ids = []):
+        if allWorkers:
+            workers = self.amt_services.get_workers()
+            assignment_ids = [worker['assignmentId'] for worker in workers]
+        for assignmentID in assignment_ids:
+            success = self.amt_services.approve_worker(assignmentID)
+            if success:
+                print 'approved', assignmentID
+            else:
+                print '*** failed to approve', assignmentID
+
     @docopt_cmd
     def do_approve_worker(self, arg):
         """
         Usage: approve_worker (--all | <assignment_id> ...)
 
         -a, --all        approve all completed workers
-
         """
-        if arg['--all']:
+        print 'approve_worker deprecated, try \'worker approve\''
+        self.worker_approve(arg['--all'], arg['<assignment_id>)'])
+
+
+    def worker_reject(self, allWorkers, assignment_ids = []):
+        if allWorkers:
             workers = self.amt_services.get_workers()
-            arg['<assignment_id>'] = [worker['assignmentId'] for worker in workers]
-        for assignmentID in arg['<assignment_id>']:
-            success = self.amt_services.approve_worker(assignmentID)
+            assignment_ids = [worker['assignmentId'] for worker in workers]
+        for assignmentID in assignment_ids:
+            success = self.amt_services.reject_worker(assignmentID)
             if success:
-                print 'approved', assignmentID
+                print 'rejected', assignmentID
             else:
-                print '*** failed to approve', assignmentID
+                print '*** failed to reject', assignmentID
 
     @docopt_cmd
     def do_reject_worker(self, arg):
@@ -418,15 +457,8 @@ class PsiturkShell(Cmd):
 
         -a, --all           reject all completed workers
         """
-        if arg['--all']:
-            workers = self.amt_services.get_workers()
-            arg['<assignment_it>'] = [worker['assignmentId'] for worker in workers]
-        for assignmentID in arg['<assignment_id>']:
-            success = self.amt_services.reject_worker(assignmentID)
-            if success:
-                print 'rejected', assignmentID
-            else:
-                print '*** failed to reject', assignmentID
+        print 'reject_worker deprecated, try \'worker reject\''
+        self.worker_reject(arg['--all'], arg['<assignment_id>'])
 
     def do_check_balance(self, arg):
         print self.amt_services.check_balance()
@@ -476,6 +508,7 @@ class PsiturkShell(Cmd):
         """
         self.amt_services.extend_hit(self, arg['<HITid>'], arg['--assignments'],
                                  arg['--expiration'])
+
 
     @docopt_cmd
     def do_dispose_hit(self, arg):
@@ -533,7 +566,7 @@ class PsiturkShell(Cmd):
         if self.server.is_server_running() == 'yes' or self.server.is_server_running() == 'maybe':
             r = raw_input("Quitting shell will shut down experiment server. Really quit? y or n: ")
             if r == 'y':
-                self.do_stop_server('')
+                self.server_shutdown()
             else:
                 return
         return True
@@ -545,24 +578,21 @@ class PsiturkShell(Cmd):
           server launch
           server shutdown
           server relaunch
-          server status
           server log
-          server
+          server help
         """
         if arg['launch']:
-            self.do_start_server('')
+            self.server_launch('')
         elif arg['shutdown']:
-            self.do_stop_server('')
+            self.server_shutdown('')
         elif arg['relaunch']:
-            self.do_restart_server('')
-        elif arg['status']:
-            self.do_status('')
+            self.server_relaunch('')
         elif arg['log']:
-            self.do_open_server_log('')
+            self.server_log()
         else:
             self.help_server()
 
-    server_commands = ('launch', 'shutdown', 'relaunch', 'status')
+    server_commands = ('launch', 'shutdown', 'relaunch', 'log', 'help')
 
     def complete_server(self, text, line, begidx, endidx):
         return  [i for i in PsiturkShell.server_commands if i.startswith(text)]
@@ -595,14 +625,26 @@ class PsiturkShell(Cmd):
         Usage:
           worker approve (--all | <assignment_id> ...)
           worker reject (--all | <assignment_id> ...)
-          worker bonus
           worker list
+          worker help
         """
-    
-    worker_commands = ('approve', 'reject', 'bonus', 'list')
+        if arg['approve']:
+            self.worker_approve(arg['--all'], arg['<assignment_id>'])
+        elif arg['reject']:
+            self.worker_reject(arg['--all'], arg['<assignment_id>'])
+        elif arg['list']:
+            self.worker_list()
+        else:
+            self.help_worker()
 
-    def complete_worker (self, text, line, begidx, endidx):
+    worker_commands = ('approve', 'reject', 'list', 'help')
+
+    def complete_worker(self, text, line, begidx, endidx):
         return  [i for i in PsiturkShell.worker_commands if i.startswith(text)]
+
+    def help_worker(self):
+        with open(self.helpPath + 'worker.txt', 'r') as helpText:
+            print helpText.read()
 
     @docopt_cmd
     def do_aws(self, arg):
@@ -617,6 +659,7 @@ class PsiturkShell(Cmd):
     aws_commands = ('balance', 'validate')
     def complete_aws(self, text, line, begidx, endidx):
         return [i for i in PsiturkShell.aws_commands if i.startswith(text)]
+
 
 def run():
     opt = docopt(__doc__, sys.argv[1:])
