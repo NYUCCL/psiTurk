@@ -143,83 +143,7 @@ class PsiturkShell(Cmd):
     def complete(self, text, state):
         return Cmd.complete(self, text, state) + ' '
 
-    @docopt_cmd
-    def do_mode(self, arg):
-        """
-        Usage: mode
-               mode <which>
-        """
-        if arg['<which>'] is None:
-            if self.sandbox:
-                arg['<which>'] = 'live'
-            else:
-                arg['<which>'] = 'sandbox'
-        if arg['<which>'] == 'live':
-            self.sandbox = False
-            self.config.set('HIT Configuration', 'using_sandbox', False)
-            self.amt_services.set_sandbox(False)
-            self.tally_hits()
-            print 'Entered ' + colorize('live', 'bold') + ' mode'
-        else:
-            self.sandbox = True
-            self.config.set('HIT Configuration', 'using_sandbox', True)
-            self.amt_services.set_sandbox(True)
-            self.tally_hits()
-            print 'Entered ' + colorize('sandbox', 'bold') + ' mode'
 
-    def random_id_generator(self, size = 6, chars = string.ascii_uppercase + string.digits):
-        return ''.join(random.choice(chars) for x in range(size))
-
-    @docopt_cmd
-    def do_debug(self, arg):
-        """
-        Usage: debug [options]
-
-        -p, --print-only         just provides the URL, doesn't attempt to launch browser
-        """
-        if self.server.is_server_running() == 'no' or self.server.is_server_running()=='maybe':
-            print "Error: Sorry, you need to have the server running to debug your experiment.  Try 'start_server' first."
-            return
-
-        base_url = "http://" + self.config.get('Server Parameters', 'host') + ":" + self.config.get('Server Parameters', 'port') + "/ad"
-        launchurl = base_url + "?assignmentId=debug" + str(self.random_id_generator()) \
-                    + "&hitId=debug" + str(self.random_id_generator()) \
-                    + "&workerId=debug" + str(self.random_id_generator())
-
-        if arg['--print-only']:
-            print "Here's your randomized debug link, feel free to request another:\n\t", launchurl
-        else:
-            print "Launching browser pointed at your randomized debug link, feel free to request another.\n\t", launchurl
-            webbrowser.open(launchurl, new=1, autoraise=True)
-
-    def do_version(self, arg):
-        print 'psiTurk version ' + version_number
-
-    def do_print_config(self, arg):
-        for section in self.config.sections():
-            print '[%s]' % section
-            items = dict(self.config.items(section))
-            for k in items:
-                print "%(a)s=%(b)s" % {'a': k, 'b': items[k]}
-            print ''
-            
-
-    def do_reload_config(self, arg):
-        self.config.load_config()
-
-    def status(self, arg):
-        server_status = self.server.is_server_running()
-        if server_status == 'yes':
-            print 'Server: ' + colorize('currently online', 'green')
-        elif server_status == 'no':
-            print 'Server: ' + colorize('currently offline', 'red')
-        elif server_status == 'maybe':
-            print 'Server: ' + colorize('please wait', 'yellow')
-        self.tally_hits()
-        if self.sandbox:
-            print 'AMT worker site - ' + colorize('sandbox', 'bold') + ': ' + str(self.sandboxHITs) + ' HITs available'
-        else:
-            print 'AMT worker site - ' + colorize('live', 'bold') + ': ' + str(self.liveHITs) + ' HITs available'
 
     def tally_hits(self):
         hits = self.amt_services.get_active_hits()
@@ -354,47 +278,22 @@ class PsiturkShell(Cmd):
                         + "&hitId=debug" + str(self.random_id_generator())
 
 
-    @docopt_cmd
-    def do_create_hit(self, arg):
-        """
-        Usage: create_hit (<numWorkers> <reward> <duration>)
-        """
-        print 'create_hit deprecated, try \'hit create\''
-        self.hit_create(arg['<numWorkers>'], arg['<reward>'], arg['<duration>'])
 
-    def do_setup_example(self, arg):
-        import setup_example as se
-        se.setup_example()
 
     def server_launch(self):
         self.server.startup()
         while self.server.is_server_running() != 'yes':
             time.sleep(0.5)
-        
-
-    def do_start_server(self, arg):
-        print 'start_server deprecated, try \'server launch\''
-        self.server_launch()
-        
+                
     def server_shutdown(self):
         self.server.shutdown()
         print 'Please wait. This could take a few seconds.'
         while self.server.is_server_running() != 'no':
             time.sleep(0.5)
 
-        
-
-    def do_stop_server(self, arg):
-        print 'stop_server deprecated, try \'server shutdown\''
-        self.server_shutdown()
-
     def server_relaunch(self):
-        self.do_shutdown_server('')
-        self.do_launch_server('')
-
-    def do_restart_server(self, arg):
-        print 'restart_server deprecated, try \'server restart\''
-        self.server_relaunch()
+        self.server_shutdown()
+        self.server_launch()
 
     def server_log(self):
         logfilename = self.config.get('Server Parameters', 'logfile')
@@ -405,9 +304,6 @@ class PsiturkShell(Cmd):
         subprocess.Popen(args, close_fds=True)
         print "Log program launching..."
 
-    def do_open_server_log(self, arg):
-        print 'open_server_log deprecated, try \'server log\''
-        self.server_log()
         
     def worker_list(self):
         workers = self.amt_services.get_workers()
@@ -416,11 +312,6 @@ class PsiturkShell(Cmd):
         else:
             print json.dumps(self.amt_services.get_workers(), indent=4,
                              separators=(',', ': '))
-
-    def do_list_workers(self, arg):
-        print 'list_workers deprecated, try \'worker list\''
-        self.worker_list()
-
     
     def worker_approve(self, allWorkers, assignment_ids = []):
         if allWorkers:
@@ -433,17 +324,6 @@ class PsiturkShell(Cmd):
             else:
                 print '*** failed to approve', assignmentID
 
-    @docopt_cmd
-    def do_approve_worker(self, arg):
-        """
-        Usage: approve_worker (--all | <assignment_id> ...)
-
-        -a, --all        approve all completed workers
-        """
-        print 'approve_worker deprecated, try \'worker approve\''
-        self.worker_approve(arg['--all'], arg['<assignment_id>)'])
-
-
     def worker_reject(self, allWorkers, assignment_ids = None):
         if allWorkers:
             workers = self.amt_services.get_workers()
@@ -455,35 +335,10 @@ class PsiturkShell(Cmd):
             else:
                 print '*** failed to reject', assignmentID
 
-    @docopt_cmd
-    def do_reject_worker(self, arg):
-        """
-        Usage: reject_worker (--all | <assignment_id> ...)
-
-        -a, --all           reject all completed workers
-        """
-        print 'reject_worker deprecated, try \'worker reject\''
-        self.worker_reject(arg['--all'], arg['<assignment_id>'])
 
     def aws_balance(self):
         print self.amt_services.check_balance()
 
-    def do_check_balance(self, arg):
-        print 'check_balance is deprecated, try \'aws balance\''
-        self.aws_balance()
-
-    def do_list_all_hits(self, arg):
-        print 'list_all_hits deprecated, try \'hit list all\''
-        self.hit_list(True, False, False)        
-
-    def do_list_active_hits(self, arg):
-        print 'list_active_hits deprecated, try \'hit list active\''
-        self.hit_list(False, True, False)
-
-
-    def do_list_reviewable_hits(self, arg):
-        print 'list_reviewable_hits deprecated, try \'hit list reviewable\''
-        self.hit_list(False, False, True)
     
     def hit_list(self, allHits, activeHits, reviewableHits):
         hits_data = []
@@ -500,30 +355,12 @@ class PsiturkShell(Cmd):
                 print hit
         
 
-    def do_download_datafiles(self, arg):
-        contents = {"trialdata": lambda p: p.get_trial_data(), "eventdata": lambda p: p.get_event_data(), "questiondata": lambda p: p.get_question_data()}
-        query = Participant.query.all()
-        for k in contents:
-            ret = "".join([contents[k](p) for p in query])
-            f = open(k + '.csv', 'w')
-            f.write(ret)
-            f.close()
         
 
     def hit_extend(self, hitID, assignments, time):
         self.amt_services.extend_hit(hitID, assignments, time)
 
 
-    @docopt_cmd
-    def do_extend_hit(self, arg):
-        """
-        Usage: extend_hit <HITid> [options]
-
-        -a <number>, --assignments <number>    Increase number of assignments on HIT
-        -e <time>, --expiration <time>         Increase expiration time on HIT (hours)
-        """
-        print 'extend_hit deprecated, try \'hit extend\''
-        self.hit_extend(arg['<HITid>'], arg['--assignments'], arg['--expiration'])
 
 
     def hit_dispose(self, allHits, hitIDs=None):
@@ -549,15 +386,6 @@ class PsiturkShell(Cmd):
                     print "deleting live HIT", hit
                     self.liveHITs -= 1
 
-    @docopt_cmd
-    def do_dispose_hit(self, arg):
-        """
-        Usage: dispose_hit (--all | <HITid> ...)
-
-        -a, --all              delete all "Reviewable"/"Expired" HITs
-        """
-        print 'dispose_hit deprecated, try \'hit dispose\''
-        self.hit_dispose(arg['--all'], arg['<HITid>'])
 
     def hit_expire(self, allHits, hitIDs=None):
         if allHits:
@@ -571,17 +399,96 @@ class PsiturkShell(Cmd):
             else:
                 print "expiring live HIT", hit
                 self.liveHITs -= 1
-        
 
     @docopt_cmd
-    def do_expire_hit(self, arg):
+    def do_mode(self, arg):
         """
-        Usage: expire_hit (--all | <HITid> ...)
+        Usage: mode
+               mode <which>
+        """
+        if arg['<which>'] is None:
+            if self.sandbox:
+                arg['<which>'] = 'live'
+            else:
+                arg['<which>'] = 'sandbox'
+        if arg['<which>'] == 'live':
+            self.sandbox = False
+            self.config.set('HIT Configuration', 'using_sandbox', False)
+            self.amt_services.set_sandbox(False)
+            self.tally_hits()
+            print 'Entered ' + colorize('live', 'bold') + ' mode'
+        else:
+            self.sandbox = True
+            self.config.set('HIT Configuration', 'using_sandbox', True)
+            self.amt_services.set_sandbox(True)
+            self.tally_hits()
+            print 'Entered ' + colorize('sandbox', 'bold') + ' mode'
 
-        -a, --all              expire all HITs
+    def random_id_generator(self, size = 6, chars = string.ascii_uppercase + string.digits):
+        return ''.join(random.choice(chars) for x in range(size))
+
+    @docopt_cmd
+    def do_debug(self, arg):
         """
-        print 'expire_hit deprecated, try \'hit expire\''
-        self.hit_expire(arg['--all'], arg['<HITid>'])
+        Usage: debug [options]
+
+        -p, --print-only         just provides the URL, doesn't attempt to launch browser
+        """
+        if self.server.is_server_running() == 'no' or self.server.is_server_running()=='maybe':
+            print "Error: Sorry, you need to have the server running to debug your experiment.  Try 'start_server' first."
+            return
+
+        base_url = "http://" + self.config.get('Server Parameters', 'host') + ":" + self.config.get('Server Parameters', 'port') + "/ad"
+        launchurl = base_url + "?assignmentId=debug" + str(self.random_id_generator()) \
+                    + "&hitId=debug" + str(self.random_id_generator()) \
+                    + "&workerId=debug" + str(self.random_id_generator())
+
+        if arg['--print-only']:
+            print "Here's your randomized debug link, feel free to request another:\n\t", launchurl
+        else:
+            print "Launching browser pointed at your randomized debug link, feel free to request another.\n\t", launchurl
+            webbrowser.open(launchurl, new=1, autoraise=True)
+
+    def do_version(self, arg):
+        print 'psiTurk version ' + version_number
+
+    def do_print_config(self, arg):
+        for section in self.config.sections():
+            print '[%s]' % section
+            items = dict(self.config.items(section))
+            for k in items:
+                print "%(a)s=%(b)s" % {'a': k, 'b': items[k]}
+            print ''
+            
+    def do_reload_config(self, arg):
+        self.config.load_config()
+
+    def do_status(self, arg):
+        server_status = self.server.is_server_running()
+        if server_status == 'yes':
+            print 'Server: ' + colorize('currently online', 'green')
+        elif server_status == 'no':
+            print 'Server: ' + colorize('currently offline', 'red')
+        elif server_status == 'maybe':
+            print 'Server: ' + colorize('please wait', 'yellow')
+        self.tally_hits()
+        if self.sandbox:
+            print 'AMT worker site - ' + colorize('sandbox', 'bold') + ': ' + str(self.sandboxHITs) + ' HITs available'
+        else:
+            print 'AMT worker site - ' + colorize('live', 'bold') + ': ' + str(self.liveHITs) + ' HITs available'
+
+    def do_setup_example(self, arg):
+        import setup_example as se
+        se.setup_example()
+        
+    def do_download_datafiles(self, arg):
+        contents = {"trialdata": lambda p: p.get_trial_data(), "eventdata": lambda p: p.get_event_data(), "questiondata": lambda p: p.get_question_data()}
+        query = Participant.query.all()
+        for k in contents:
+            ret = "".join([contents[k](p) for p in query])
+            f = open(k + '.csv', 'w')
+            f.write(ret)
+            f.close()
 
     def do_eof(self, arg):
         self.do_quit(arg)
@@ -692,13 +599,111 @@ class PsiturkShell(Cmd):
         """
         Usage: 
           aws balance
+          aws help
         """
         if arg['balance']:
             self.aws_balance()
     
-    aws_commands = ('balance')
+    aws_commands = ('balance', 'help')
     def complete_aws(self, text, line, begidx, endidx):
         return [i for i in PsiturkShell.aws_commands if i.startswith(text)]
+
+#### DEPRECATED COMMANDS
+    def do_start_server(self, arg):
+        print 'start_server deprecated, try \'server launch\''
+        self.server_launch()
+
+    def do_stop_server(self, arg):
+        print 'stop_server deprecated, try \'server shutdown\''
+        self.server_shutdown()
+
+    def do_restart_server(self, arg):
+        print 'restart_server deprecated, try \'server relaunch\''
+        self.server_relaunch()
+
+    def do_open_server_log(self, arg):
+        print 'open_server_log deprecated, try \'server log\''
+        self.server_log()
+
+    def do_list_workers(self, arg):
+        print 'list_workers deprecated, try \'worker list\''
+        self.worker_list()
+
+    @docopt_cmd
+    def do_approve_worker(self, arg):
+        """
+        Usage: approve_worker (--all | <assignment_id> ...)
+
+        -a, --all        approve all completed workers
+        """
+        print 'approve_worker deprecated, try \'worker approve\''
+        self.worker_approve(arg['--all'], arg['<assignment_id>)'])
+
+    @docopt_cmd
+    def do_reject_worker(self, arg):
+        """
+        Usage: reject_worker (--all | <assignment_id> ...)
+
+        -a, --all           reject all completed workers
+        """
+        print 'reject_worker deprecated, try \'worker reject\''
+        self.worker_reject(arg['--all'], arg['<assignment_id>'])
+
+    def do_check_balance(self, arg):
+        print 'check_balance is deprecated, try \'aws balance\''
+        self.aws_balance()
+
+    @docopt_cmd
+    def do_create_hit(self, arg):
+        """
+        Usage: create_hit (<numWorkers> <reward> <duration>)
+        """
+        print 'create_hit deprecated, try \'hit create\''
+        self.hit_create(arg['<numWorkers>'], arg['<reward>'], arg['<duration>'])
+
+    def do_list_all_hits(self, arg):
+        print 'list_all_hits deprecated, try \'hit list all\''
+        self.hit_list(True, False, False)        
+
+    def do_list_active_hits(self, arg):
+        print 'list_active_hits deprecated, try \'hit list active\''
+        self.hit_list(False, True, False)
+
+
+    def do_list_reviewable_hits(self, arg):
+        print 'list_reviewable_hits deprecated, try \'hit list reviewable\''
+        self.hit_list(False, False, True)
+
+    @docopt_cmd
+    def do_expire_hit(self, arg):
+        """
+        Usage: expire_hit (--all | <HITid> ...)
+
+        -a, --all              expire all HITs
+        """
+        print 'expire_hit deprecated, try \'hit expire\''
+        self.hit_expire(arg['--all'], arg['<HITid>'])
+
+    @docopt_cmd
+    def do_dispose_hit(self, arg):
+        """
+        Usage: dispose_hit (--all | <HITid> ...)
+
+        -a, --all              delete all "Reviewable"/"Expired" HITs
+        """
+        print 'dispose_hit deprecated, try \'hit dispose\''
+        self.hit_dispose(arg['--all'], arg['<HITid>'])
+
+    @docopt_cmd
+    def do_extend_hit(self, arg):
+        """
+        Usage: extend_hit <HITid> [options]
+
+        -a <number>, --assignments <number>    Increase number of assignments on HIT
+        -e <time>, --expiration <time>         Increase expiration time on HIT (hours)
+        """
+        print 'extend_hit deprecated, try \'hit extend\''
+        self.hit_extend(arg['<HITid>'], arg['--assignments'], arg['--expiration'])
 
 
 def run():
