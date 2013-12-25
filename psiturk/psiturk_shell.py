@@ -229,46 +229,42 @@ class PsiturkShell(Cmd):
             else:
                 self.liveHITs = len(hits)
 
-    @docopt_cmd
-    def do_create_hit(self, arg):
-        """
-        Usage: create_hit
-               create_hit <numWorkers> <reward> <duration>
-        """
-        Interactive = False
-        if arg['<numWorkers>'] is None:
+
+    def hit_create(self, numWorkers, reward, duration):
+        interactive = False
+        if numWorkers is None:
             interactive = True
-            arg['<numWorkers>'] = raw_input('number of participants? ')
+            numWorkers = raw_input('number of participants? ')
         try:
-            int(arg['<numWorkers>'])
+            int(numWorkers)
         except ValueError:
 
             print '*** number of participants must be a whole number'
             return
-        if int(arg['<numWorkers>']) <= 0:
+        if int(numWorkers) <= 0:
             print '*** number of participants must be greater than 0'
             return
         if interactive:
-            arg['<reward>'] = raw_input('reward per HIT? ')
+            reward = raw_input('reward per HIT? ')
         p = re.compile('\d*.\d\d')
-        m = p.match(arg['<reward>'])
+        m = p.match(reward)
         if m is None:
             print '*** reward must have format [dollars].[cents]'
             return
         if interactive:
-            arg['<duration>'] = raw_input('duration of hit (in hours)? ')
+            duration = raw_input('duration of hit (in hours)? ')
         try:
-            int(arg['<duration>'])
+            int(duration)
         except ValueError:
             print '*** duration must be a whole number'
             return
-        if int(arg['<duration>']) <= 0:
+        if int(duration) <= 0:
             print '*** duration must be greater than 0'
             return
         self.config.set('HIT Configuration', 'max_assignments',
-                        arg['<numWorkers>'])
-        self.config.set('HIT Configuration', 'reward', arg['<reward>'])
-        self.config.set('HIT Configuration', 'duration', arg['<duration>'])
+                        numWorkers)
+        self.config.set('HIT Configuration', 'reward', reward)
+        self.config.set('HIT Configuration', 'duration', duration)
 
         # register with the ad server (psiturk.org/ad/register) using POST
         if os.path.exists('templates/ad.html'):
@@ -337,7 +333,7 @@ class PsiturkShell(Cmd):
             else:
                 self.liveHITs += 1
             #print results
-            total = float(arg['<numWorkers>']) * float(arg['<reward>'])
+            total = float(numWorkers) * float(reward)
             fee = total / 10
             total = total + fee
             location = ''
@@ -348,14 +344,23 @@ class PsiturkShell(Cmd):
             print '*****************************'
             print '  Creating %s HIT' % colorize(location, 'bold')
             print '    HITid: ', str(hit_id)
-            print '    Max workers: ' + arg['<numWorkers>']
-            print '    Reward: $' + arg['<reward>']
-            print '    Duration: ' + arg['<duration>'] + ' hours'
+            print '    Max workers: ' + numWorkers
+            print '    Reward: $' + reward
+            print '    Duration: ' + duration + ' hours'
             print '    Fee: $%.2f' % fee
             print '    ________________________'
             print '    Total: $%.2f' % total
             print '  Ad for this HIT now hosted at: http://psiturk.org/ad/' + str(ad_id) + "?assignmentId=debug" + str(self.random_id_generator()) \
                         + "&hitId=debug" + str(self.random_id_generator())
+
+
+    @docopt_cmd
+    def do_create_hit(self, arg):
+        """
+        Usage: create_hit (<numWorkers> <reward> <duration>)
+        """
+        print 'create_hit deprecated, try \'hit create\''
+        self.hit_create(arg['<numWorkers>'], arg['<reward>'], arg['<duration>'])
 
     def do_setup_example(self, arg):
         import setup_example as se
@@ -439,7 +444,7 @@ class PsiturkShell(Cmd):
         self.worker_approve(arg['--all'], arg['<assignment_id>)'])
 
 
-    def worker_reject(self, allWorkers, assignment_ids = []):
+    def worker_reject(self, allWorkers, assignment_ids = None):
         if allWorkers:
             workers = self.amt_services.get_workers()
             assignment_ids = [worker['assignmentId'] for worker in workers]
@@ -460,33 +465,41 @@ class PsiturkShell(Cmd):
         print 'reject_worker deprecated, try \'worker reject\''
         self.worker_reject(arg['--all'], arg['<assignment_id>'])
 
-    def do_check_balance(self, arg):
+    def aws_balance(self):
         print self.amt_services.check_balance()
 
+    def do_check_balance(self, arg):
+        print 'check_balance is deprecated, try \'aws balance\''
+        self.aws_balance()
+
     def do_list_all_hits(self, arg):
-        hits_data = self.amt_services.get_all_hits()
+        print 'list_all_hits deprecated, try \'hit list all\''
+        self.hit_list(True, False, False)        
+
+    def do_list_active_hits(self, arg):
+        print 'list_active_hits deprecated, try \'hit list active\''
+        self.hit_list(False, True, False)
+
+
+    def do_list_reviewable_hits(self, arg):
+        print 'list_reviewable_hits deprecated, try \'hit list reviewable\''
+        self.hit_list(False, False, True)
+    
+    def hit_list(self, allHits, activeHits, reviewableHits):
+        hits_data = []
+        if allHits:
+            hits_data = self.amt_services.get_all_hits()
+        elif activeHits:
+            hits_data = self.amt_services.get_active_hits()
+        elif reviewableHits:
+            hits_data = self.amt_services.get_reviewable_hits()
         if not hits_data:
             print '*** no hits retrieved'
         else:
             for hit in hits_data:
                 print hit
+        
 
-    def do_list_active_hits(self, arg):
-        hits_data = self.amt_services.get_active_hits()
-        if not hits_data:
-            print '*** no active hits retrieved'
-        else:
-            for hit in hits_data:
-                print hit
-
-    def do_list_reviewable_hits(self, arg):
-        hits_data = self.amt_services.get_reviewable_hits()
-        if not hits_data:
-            print '*** no reviewable hits retrieved'
-        else:
-            for hit in hits_data:
-                print hit
-    
     def do_download_datafiles(self, arg):
         contents = {"trialdata": lambda p: p.get_trial_data(), "eventdata": lambda p: p.get_event_data(), "questiondata": lambda p: p.get_question_data()}
         query = Participant.query.all()
@@ -497,6 +510,9 @@ class PsiturkShell(Cmd):
             f.close()
         
 
+    def hit_extend(self, hitID, assignments, time):
+        self.amt_services.extend_hit(hitID, assignments, time)
+
 
     @docopt_cmd
     def do_extend_hit(self, arg):
@@ -506,21 +522,15 @@ class PsiturkShell(Cmd):
         -a <number>, --assignments <number>    Increase number of assignments on HIT
         -e <time>, --expiration <time>         Increase expiration time on HIT (hours)
         """
-        self.amt_services.extend_hit(self, arg['<HITid>'], arg['--assignments'],
-                                 arg['--expiration'])
+        print 'extend_hit deprecated, try \'hit extend\''
+        self.hit_extend(arg['<HITid>'], arg['--assignments'], arg['--expiration'])
 
 
-    @docopt_cmd
-    def do_dispose_hit(self, arg):
-        """
-        Usage: dispose_hit (--all | <HITid> ...)
-
-        -a, --all              delete all "Reviewable"/"Expired" HITs
-        """
-        if arg['--all']:
+    def hit_dispose(self, allHits, hitIDs=None):
+        if allHits:
             hits_data = self.amt_services.get_all_hits()
-            arg['<HITid>'] = [hit.options['hitid'] for hit in hits_data if (hit.options['status']=="Reviewable")]
-        for hit in arg['<HITid>']:
+            hitIDs = [hit.options['hitid'] for hit in hits_data if (hit.options['status']=="Reviewable")]
+        for hit in hitIDs:
             # check that the his is reviewable
             status = self.amt_services.get_hit_status(hit)
             if not status:
@@ -540,16 +550,20 @@ class PsiturkShell(Cmd):
                     self.liveHITs -= 1
 
     @docopt_cmd
-    def do_expire_hit(self, arg):
+    def do_dispose_hit(self, arg):
         """
-        Usage: expire_hit (--all | <HITid> ...)
+        Usage: dispose_hit (--all | <HITid> ...)
 
-        -a, --all              expire all HITs
+        -a, --all              delete all "Reviewable"/"Expired" HITs
         """
-        if arg['--all']:
+        print 'dispose_hit deprecated, try \'hit dispose\''
+        self.hit_dispose(arg['--all'], arg['<HITid>'])
+
+    def hit_expire(self, allHits, hitIDs=None):
+        if allHits:
             hits_data = self.amt_services.get_active_hits()
-            arg['<HITid>'] = [hit.options['hitid'] for hit in hits_data]
-        for hit in arg['<HITid>']:
+            hitIDs = [hit.options['hitid'] for hit in hits_data]
+        for hit in hitIDs:
             self.amt_services.expire_hit(hit)
             if self.sandbox:
                 print "expiring sandbox HIT", hit
@@ -557,6 +571,17 @@ class PsiturkShell(Cmd):
             else:
                 print "expiring live HIT", hit
                 self.liveHITs -= 1
+        
+
+    @docopt_cmd
+    def do_expire_hit(self, arg):
+        """
+        Usage: expire_hit (--all | <HITid> ...)
+
+        -a, --all              expire all HITs
+        """
+        print 'expire_hit deprecated, try \'hit expire\''
+        self.hit_expire(arg['--all'], arg['<HITid>'])
 
     def do_eof(self, arg):
         self.do_quit(arg)
@@ -582,11 +607,11 @@ class PsiturkShell(Cmd):
           server help
         """
         if arg['launch']:
-            self.server_launch('')
+            self.server_launch()
         elif arg['shutdown']:
-            self.server_shutdown('')
+            self.server_shutdown()
         elif arg['relaunch']:
-            self.server_relaunch('')
+            self.server_relaunch()
         elif arg['log']:
             self.server_log()
         else:
@@ -603,21 +628,37 @@ class PsiturkShell(Cmd):
 
     @docopt_cmd
     def do_hit(self, arg):
-        return
         """
         Usage:
-          hit create <numWorkers> <reward> <duration>
-          hit extend <HITid> [-a <number>] [-e <time]
+          hit create (<numWorkers> <reward> <duration>)
+          hit extend <HITid> [--assignments <number>] [--expiration <time>]
           hit expire (--all | <HITid> ...)
           hit dispose (--all | <HITid> ...)
-          hit list (all|active|reviewable)
-          hit tally
+          hit list (all | active | reviewable)
+          hit help
         """
+        if arg['create']:
+            self.hit_create(arg['<numWorkers>'], arg['<reward>'], arg['<duration>'])
+        elif arg['extend']:
+            self.hit_extend(arg['<HITid>'], arg['--assignments'], arg['--expiration'])
+        elif arg['expire']:
+            self.hit_expire(arg['--all'], arg['<HITid>'])
+        elif arg['dispose']:
+            self.hit_dispose(arg['--all'], arg['<HITid>'])
+        elif arg['list']:
+            self.hit_list(arg['all'], arg['active'], arg['reviewable'])
+        else:
+            self.help_hit()
 
-    hit_commands = ('create', 'extend', 'expire', 'dispose', 'list', 'tally')
+    hit_commands = ('create', 'extend', 'expire', 'dispose', 'list')
 
     def complete_hit(self, text, line, begidx, endidx):
         return  [i for i in PsiturkShell.hit_commands if i.startswith(text)]
+
+    def help_hit(self):
+        with open(self.helpPath + 'hit.txt', 'r') as helpText:
+            print helpText.read()
+        
 
     @docopt_cmd
     def do_worker(self, arg):
@@ -651,12 +692,11 @@ class PsiturkShell(Cmd):
         """
         Usage: 
           aws balance
-          aws validate
         """
         if arg['balance']:
-            self.do_check_balance('')
+            self.aws_balance()
     
-    aws_commands = ('balance', 'validate')
+    aws_commands = ('balance')
     def complete_aws(self, text, line, begidx, endidx):
         return [i for i in PsiturkShell.aws_commands if i.startswith(text)]
 
