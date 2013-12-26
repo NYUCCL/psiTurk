@@ -215,13 +215,10 @@ class MTurkServices:
         )
 
     def check_balance(self):
-        if self.is_signed_up():
-            if not self.connect_to_turk():
-                return('-')
-            return(self.mtc.get_account_balance()[0])
-        else:
+        if not self.connect_to_turk():
             return('-')
-
+        return(self.mtc.get_account_balance()[0])
+        
     # TODO (if valid AWS credentials haven't been provided then connect_to_turk() will
     # fail, not error checking here and elsewhere)
     def create_hit(self, hit_config):
