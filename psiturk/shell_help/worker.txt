@@ -10,4 +10,4 @@ Usage:
   reject    Reject worker assignments for one or more assignment ID's,
   	    or reject all assignments using the '--all' flag.
   list	    List all submitted worker assignments.
-  help	    display this screen.
+  help	    Display this screen.

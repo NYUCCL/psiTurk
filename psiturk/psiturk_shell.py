@@ -424,6 +424,11 @@ class PsiturkShell(Cmd):
             self.tally_hits()
             print 'Entered ' + colorize('sandbox', 'bold') + ' mode'
 
+    def help_mode(self):
+        with open(self.helpPath + 'mode.txt', 'r') as helpText:
+            print helpText.read()
+
+
     def random_id_generator(self, size = 6, chars = string.ascii_uppercase + string.digits):
         return ''.join(random.choice(chars) for x in range(size))
 
@@ -435,7 +440,7 @@ class PsiturkShell(Cmd):
         -p, --print-only         just provides the URL, doesn't attempt to launch browser
         """
         if self.server.is_server_running() == 'no' or self.server.is_server_running()=='maybe':
-            print "Error: Sorry, you need to have the server running to debug your experiment.  Try 'start_server' first."
+            print "Error: Sorry, you need to have the server running to debug your experiment.  Try 'server launch' first."
             return
 
         base_url = "http://" + self.config.get('Server Parameters', 'host') + ":" + self.config.get('Server Parameters', 'port') + "/ad"
@@ -448,6 +453,10 @@ class PsiturkShell(Cmd):
         else:
             print "Launching browser pointed at your randomized debug link, feel free to request another.\n\t", launchurl
             webbrowser.open(launchurl, new=1, autoraise=True)
+
+    def help_debug(self):
+        with open(self.helpPath + 'debug.txt', 'r') as helpText:
+            print helpText.read()
 
     def do_version(self, arg):
         print 'psiTurk version ' + version_number
@@ -605,8 +614,13 @@ class PsiturkShell(Cmd):
             self.aws_balance()
     
     aws_commands = ('balance', 'help')
+
     def complete_aws(self, text, line, begidx, endidx):
         return [i for i in PsiturkShell.aws_commands if i.startswith(text)]
+
+    def help_aws(self):
+        with open(self.helpPath + 'aws.txt', 'r') as helpText:
+            print helpText.read()
 
 #### DEPRECATED COMMANDS
     def do_start_server(self, arg):
