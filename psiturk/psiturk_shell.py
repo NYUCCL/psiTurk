@@ -105,7 +105,6 @@ class PsiturkShell(Cmd):
         self.debug = True
         self.helpPath = os.path.join(os.path.dirname(__file__), "shell_help/")
 
-
     def color_prompt(self):
         prompt = '[' + colorize('psiTurk', 'bold')
         serverString = ''
@@ -128,6 +127,17 @@ class PsiturkShell(Cmd):
         prompt += ']$ '
         self.prompt = prompt
 
+    # keep persistent command history
+    def preloop(self):
+        # create file if it doesn't exist
+        open('.psiturk_history', 'a').close()
+        readline.read_history_file('.psiturk_history')
+        Cmd.preloop(self)
+
+    def postloop(self):
+        readline.write_history_file('.psiturk_history')
+        Cmd.postloop(self)
+
     def onecmd_plus_hooks(self, line):
         if not line:
             return self.emptyline()
@@ -139,7 +149,9 @@ class PsiturkShell(Cmd):
 
     def emptyline(self):
         self.color_prompt()
-
+    
+    # add space after a completion, makes tab completion with 
+    # multi-word commands cleaner
     def complete(self, text, state):
         return Cmd.complete(self, text, state) + ' '
 
