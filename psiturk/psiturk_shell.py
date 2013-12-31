@@ -803,7 +803,7 @@ class PsiturkShell(Cmd):
     def do_hit(self, arg):
         """
         Usage:
-          hit create (<numWorkers> <reward> <duration>)
+          hit create [<numWorkers> <reward> <duration>]
           hit extend <HITid> [--assignments <number>] [--expiration <time>]
           hit expire (--all | <HITid> ...)
           hit dispose (--all | <HITid> ...)
