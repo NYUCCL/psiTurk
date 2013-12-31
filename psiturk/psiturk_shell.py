@@ -861,22 +861,22 @@ class PsiturkShell(Cmd):
             print helpText.read()
 
     @docopt_cmd
-    def do_aws(self, arg):
+    def do_amt(self, arg):
         """
         Usage: 
-          aws balance
-          aws help
+          amt balance
+          amt help
         """
         if arg['balance']:
-            self.aws_balance()
+            self.amt_balance()
     
-    aws_commands = ('balance', 'help')
+    amt_commands = ('balance', 'help')
 
-    def complete_aws(self, text, line, begidx, endidx):
-        return [i for i in PsiturkShell.aws_commands if i.startswith(text)]
+    def complete_amt(self, text, line, begidx, endidx):
+        return [i for i in PsiturkShell.amt_commands if i.startswith(text)]
 
-    def help_aws(self):
-        with open(self.helpPath + 'aws.txt', 'r') as helpText:
+    def help_amt(self):
+        with open(self.helpPath + 'amt.txt', 'r') as helpText:
             print helpText.read()
 
 #### DEPRECATED COMMANDS

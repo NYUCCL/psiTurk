@@ -1,7 +1,7 @@
 Usage:
-  aws balance
-  aws help
+  amt balance
+  amt help
 
-'aws' is used with the following subcommands:
+'amt' is used with the following subcommands:
   balance     Display current Amazon Mechanical Turk or Worker Sandbox balance.
   help	      Display this screen.
