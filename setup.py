@@ -1,6 +1,5 @@
 from setuptools import setup
-
-version_number = "1.0.4dev"  # this must be defined here so we can import it elsewhere
+from psiturk.version import version_number
 
 try:
     with open("README.md") as readmefile:

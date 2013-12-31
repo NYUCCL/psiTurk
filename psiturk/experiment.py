@@ -3,7 +3,6 @@ import sys
 import datetime
 import logging
 import urllib2
-from functools import wraps
 from random import choice
 import json
 try:
@@ -48,40 +47,19 @@ QUITEARLY = 5
 app = Flask("Experiment_Server")
 init_db()  
 
-#----------------------------------------------
-# function for authentication
-#----------------------------------------------
-queryname = config.get('Server Parameters', 'login_username')
-querypw = config.get('Server Parameters', 'login_pw')
+###########################################################
+#  serving warm, fresh, & sweet custom, user-provided routes
+###########################################################
 
-def wrapper(func, args):
-    return func(*args)
+try:
+    sys.path.append(os.getcwd())
+    from custom import custom_code
+except ImportError:
+    app.logger.info( "Hmm... is seems no custom code (custom.py) assocated with this project.")
+    pass # do nothing if the 
+else:
+    app.register_blueprint(custom_code)
 
-def check_auth(username, password):
-    """This function is called to check if a username /
-    password combination is valid.
-    """
-    return username == queryname and password == querypw
-
-def authenticate():
-    """Sends a 401 response that enables basic auth"""
-    return Response(
-    'Could not verify your access level for that URL.\n'
-    'You have to login with proper credentials', 401,
-    {'WWW-Authenticate': 'Basic realm="Login Required"'})
-
-def requires_auth(f):
-    """
-    Decorator to prompt for user name and password. Useful for data dumps, etc.
-    that you don't want to be public.
-    """
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        auth = request.authorization
-        if not auth or not check_auth(auth.username, auth.password):
-            return authenticate()
-        return f(*args, **kwargs)
-    return decorated
 
 #----------------------------------------------
 # favicon
@@ -199,6 +177,10 @@ def advertisement():
         raise ExperimentError('hit_assign_worker_id_not_set_in_mturk')
     hitId = request.args['hitId']
     assignmentId = request.args['assignmentId'] 
+    if hitId[:5] == "debug":
+        debug_mode = True
+    else:
+        debug_mode = False
     already_in_db = False
     if request.args.has_key('workerId'):
         workerId = request.args['workerId']
@@ -224,7 +206,7 @@ def advertisement():
     except:
         status = None
     
-    if status == STARTED:
+    if status == STARTED and not debug_mode:
         # Once participants have finished the instructions, we do not allow
         # them to start the task again.
         raise ExperimentError('already_started_exp_mturk')
@@ -236,7 +218,7 @@ def advertisement():
                                hitid = hitId, 
                                assignmentid = assignmentId, 
                                workerid = workerId)
-    elif already_in_db:
+    elif already_in_db and not debug_mode:
         raise ExperimentError('already_did_exp_hit')
     elif status == ALLOCATED or not status:
         # Participant has not yet agreed to the consent. They might not
@@ -453,11 +435,13 @@ def worker_complete():
         return jsonify(**resp)
     else:
         uniqueId = request.args['uniqueId']
+        app.logger.info( "Completed experiment %s" % uniqueId)
         try:
             user = Participant.query.\
                         filter(Participant.uniqueid == uniqueId).\
                         one()
-            user.status = COMPLETED 
+            user.status = COMPLETED
+            user.endhit = datetime.datetime.now()
             db_session.add(user)
             db_session.commit()
             status = "success"

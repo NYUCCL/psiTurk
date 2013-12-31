@@ -1,0 +1,6 @@
+<h1>Here are all your users in the database</h1>
+
+{% for person in participants: %}
+	{{ person.workerid }} &nbsp; {{ person.ipaddress }}<br>
+
+{% endfor %}

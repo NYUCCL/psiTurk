@@ -1,0 +1,13 @@
+Usage:
+  worker approve (--all | <assignment_id> ...)
+  worker reject (--all | <assignment_id> ...)
+  worker list
+  worker help
+
+'worker' is used with the following subcommands: 
+  approve   Approve worker assignments for one or more assignment ID's,
+  	    or approve all assignments using the '--all' flag.
+  reject    Reject worker assignments for one or more assignment ID's,
+  	    or reject all assignments using the '--all' flag.
+  list	    List all submitted worker assignments.
+  help	    Display this screen.
