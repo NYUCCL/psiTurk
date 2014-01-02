@@ -104,6 +104,9 @@ class PsiturkShell(Cmd):
         self.abbrev = False
         self.debug = True
         self.helpPath = os.path.join(os.path.dirname(__file__), "shell_help/")
+        self.psiTurk_header = 'psiTurk command help:'
+        self.super_header = 'basic CMD command help:'
+
 
     def color_prompt(self):
         prompt = '[' + colorize('psiTurk', 'bold')
@@ -636,6 +639,53 @@ class PsiturkShell(Cmd):
     def help_aws(self):
         with open(self.helpPath + 'aws.txt', 'r') as helpText:
             print helpText.read()
+
+    # modified version of standard cmd help which lists psiturk commands first
+    def do_help(self, arg):
+        if arg:
+            try:
+                func = getattr(self, 'help_' + arg)
+            except AttributeError:
+                try:
+                    doc = getattr(self, 'do_' + arg).__doc__
+                    if doc:
+                        self.stdout.write("%s\n" % str(doc))
+                        return
+                except AttributeError:
+                    pass
+                self.stdout.write("%s\n" % str(self.nohelp % (arg,)))
+                return
+            func()
+        else:
+            # Modifications start here
+            names = dir(PsiturkShell)
+            superNames = dir(Cmd)
+            newNames = [m for m in names if m not in superNames]
+            help = {}
+            cmds_psiTurk = []
+            cmds_super = []
+            for name in names:
+                if name[:5] == 'help_':
+                    help[name[5:]]=1
+            names.sort()
+            prevname = ''
+            for name in names:
+                if name[:3] == 'do_':
+                    if name == prevname:
+                        continue
+                    prevname = name
+                    cmd = name[3:]
+                    if cmd in help:
+                        del help[cmd]
+                    if name in newNames:
+                        cmds_psiTurk.append(cmd)
+                    else:
+                        cmds_super.append(cmd)
+            self.stdout.write("%s\n" % str(self.doc_leader))
+            self.print_topics(self.psiTurk_header, cmds_psiTurk, 15, 80)
+            self.print_topics(self.misc_header, help.keys(), 15, 80)
+            self.print_topics(self.super_header, cmds_super, 15, 80)
+            
 
 #### DEPRECATED COMMANDS
     def do_start_server(self, arg):
