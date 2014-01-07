@@ -165,7 +165,7 @@ class RDSServices:
         return True
 
     def validate_instance_username(self, username):
-        # 1–16 alphanumeric characters - first character must be a letter - cannot be a reserved MySQL word
+        # 1-16 alphanumeric characters - first character must be a letter - cannot be a reserved MySQL word
         if re.match('[\w-]+$', username) is not None:
             if len(username) <=16 and len(username)>=1:
                 if username[0].isalpha():
@@ -174,7 +174,7 @@ class RDSServices:
         return '*** Error: Usernames must be 1-16 alphanumeric chracters, first a letter, cannot be reserved MySQL word.'
 
     def validate_instance_password(self, password):
-        # 1–16 alphanumeric characters - first character must be a letter - cannot be a reserved MySQL word
+        # 1-16 alphanumeric characters - first character must be a letter - cannot be a reserved MySQL word
         if re.match('[\w-]+$', password) is not None:
             if len(password) <=41 and len(password)>=8:
                 return True

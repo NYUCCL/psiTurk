@@ -312,7 +312,7 @@ def start_exp():
                 nrecords += 1
         if nrecords <= 1 and not other_assignment:
             part = matches[0]
-            if part.status>=STARTED: # in experiment (or later) can't restart at this point
+            if part.status>=STARTED and not debug_mode: # in experiment (or later) can't restart at this point
                 raise ExperimentError('already_started_exp')
         else:
             if nrecords > 1:
