@@ -2,7 +2,12 @@ import os, sys
 import subprocess,signal
 from threading import Thread, Event
 import urllib2
+import string
 import datetime
+import boto.rds
+import boto.ec2
+from boto.exception import EC2ResponseError
+from boto.rds import RDSConnection
 from boto.mturk.connection import MTurkConnection, MTurkRequestError
 from boto.mturk.question import ExternalQuestion
 from boto.mturk.qualification import LocaleRequirement, \
@@ -10,8 +15,14 @@ from boto.mturk.qualification import LocaleRequirement, \
 from flask import jsonify
 import socket
 import webbrowser
+import re as re
+
+
+MYSQL_RESERVED_WORDS_CAP = ['ACCESSIBLE','ADD','ALL','ALTER','ANALYZE','AND','AS','ASC','ASENSITIVE','BEFORE','BETWEEN','BIGINT', 'BINARY','BLOB','BOTH','BY','CALL','CASCADE','CASE','CHANGE','CHAR','CHARACTER','CHECK','COLLATE','COLUMN','CONDITION','CONSTRAINT','CONTINUE','CONVERT','CREATE','CROSS','CURRENT_DATE','CURRENT_TIME','CURRENT_TIMESTAMP','CURRENT_USER','CURSOR','DATABASE','DATABASES','DAY_HOUR','DAY_MICROSECOND','DAY_MINUTE','DAY_SECOND','DEC','DECIMAL','DECLARE','DEFAULT','DELAYED','DELETE','DESC','DESCRIBE','DETERMINISTIC','DISTINCT','DISTINCTROW','DIV','DOUBLE','DROP','DUAL','EACH','ELSE','ELSEIF','ENCLOSED','ESCAPED','EXISTS','EXIT','EXPLAIN','FALSE','FETCH','FLOAT','FLOAT4','FLOAT8','FOR','FORCE','FOREIGN','FROM','FULLTEXT','GET','GRANT','GROUP','HAVING','HIGH_PRIORITY','HOUR_MICROSECOND','HOUR_MINUTE','HOUR_SECOND','IF','IGNORE','IN','INDEX','INFILE','INNER','INOUT','INSENSITIVE','INSERT','INT','INT1','INT2','INT3','INT4','INT8','INTEGER','INTERVAL','INTO','IO_AFTER_GTIDS','IO_BEFORE_GTIDS','IS','ITERATE','JOIN','KEY','KEYS','KILL','LEADING','LEAVE','LEFT','LIKE','LIMIT','LINEAR','LINES','LOAD','LOCALTIME','LOCALTIMESTAMP','LOCK','LONG','LONGBLOB','LONGTEXT','LOOP','LOW_PRIORITY','MASTER_BIND','MASTER_SSL_VERIFY_SERVER_CERT','MATCH','MAXVALUE','MEDIUMBLOB','MEDIUMINT','MEDIUMTEXT','MIDDLEINT','MINUTE_MICROSECOND','MINUTE_SECOND','MOD','MODIFIES','NATURAL','NOT','NO_WRITE_TO_BINLOG','NULL','NUMERIC','ON','OPTIMIZE','OPTION','OPTIONALLY','OR','ORDER','OUT','OUTER','OUTFILE','PARTITION','PRECISION','PRIMARY','PROCEDURE','PURGE','RANGE','READ','READS','READ_WRITE','REAL','REFERENCES','REGEXP','RELEASE','RENAME','REPEAT','REPLACE','REQUIRE','RESIGNAL','RESTRICT','RETURN','REVOKE','RIGHT','RLIKE','SCHEMA','SCHEMAS','SECOND_MICROSECOND','SELECT','SENSITIVE','SEPARATOR','SET','SHOW','SIGNAL','SMALLINT','SPATIAL','SPECIFIC','SQL','SQLEXCEPTION','SQLSTATE','SQLWARNING','SQL_BIG_RESULT','SQL_CALC_FOUND_ROWS','SQL_SMALL_RESULT','SSL','STARTING','STRAIGHT_JOIN','TABLE','TERMINATED','THEN','TINYBLOB','TINYINT','TINYTEXT','TO','TRAILING','TRIGGER','TRUE','UNDO','UNION','UNIQUE','UNLOCK','UNSIGNED','UPDATE','USAGE','USE','USING','UTC_DATE','UTC_TIME','UTC_TIMESTAMP','VALUES','VARBINARY','VARCHAR','VARCHARACTER','VARYING','WHEN','WHERE','WHILE','WITH','WRITE','XOR','YEAR_MONTH','ZEROFILL']
+MYSQL_RESERVED_WORDS = [word.lower() for word in MYSQL_RESERVED_WORDS_CAP]
 
 class MTurkHIT:
+
     def __init__(self, json_options):
         self.options = json_options
 
@@ -26,6 +37,177 @@ class MTurkHIT:
             self.options['number_assignments_available'],
             self.options['creation_time'],
             self.options['expiration'])
+
+class RDSServices:
+
+    def __init__(self, aws_access_key_id, aws_secret_access_key, region='us-east-1'):
+        self.update_credentials(aws_access_key_id, aws_secret_access_key)
+        self.set_region(region)
+        self.validLogin = self.verify_aws_login()
+        if not self.validLogin:
+            print 'Sorry, AWS Credentials invalid.\nYou will only be able to '\
+                  + 'test experiments locally until you enter\nvalid '\
+                  + 'credentials in the AWS Access section of config.txt.'
+
+    def update_credentials(self, aws_access_key_id, aws_secret_access_key):
+        self.aws_access_key_id = aws_access_key_id
+        self.aws_secret_access_key = aws_secret_access_key
+
+    def list_regions(self):
+        regions = boto.rds.regions()
+        return [reg.name for reg in regions]
+
+    def get_region(self):
+        return self.region
+
+    def set_region(self, region):
+        self.region = region
+
+    def verify_aws_login(self):
+        if (self.aws_access_key_id == 'YourAccessKeyId') or (self.aws_secret_access_key == 'YourSecretAccessKey'):
+            return False
+        else:
+            # rdsparams = dict(
+            #     aws_access_key_id=self.aws_access_key_id,
+            #     aws_secret_access_key=self.aws_secret_access_key,
+            #     region=self.region)
+            # self.rdsc = RDSConnection(**rdsparams)
+            self.rdsc = boto.rds.connect_to_region(self.region, aws_access_key_id=self.aws_access_key_id, aws_secret_access_key=self.aws_secret_access_key)
+            try:
+                self.rdsc.get_all_dbinstances()
+            except MTurkRequestError as e:
+                print(e.error_message)
+                return False
+            except AttributeError:
+                print "*** Unable to establish connection to AWS region %s using your accesskey/secrete key", self.region
+                return False
+            else:
+                return True
+
+    def connect_to_aws_rds(self):
+        if not self.validLogin:
+            print 'Sorry, AWS credentials invalid.'
+            return False
+        # rdsparams = dict(
+        #     aws_access_key_id = self.aws_access_key_id,
+        #     aws_secret_access_key = self.aws_secret_access_key,
+        #     region=self.region)
+        # self.rdsc = RDSConnection(**rdsparams)
+        self.rdsc = boto.rds.connect_to_region(self.region, aws_access_key_id=self.aws_access_key_id, aws_secret_access_key=self.aws_secret_access_key)
+        return True
+
+    def get_db_instance_info(self, dbid):
+        if not self.connect_to_aws_rds():
+            return False
+        try:
+            instances = self.rdsc.get_all_dbinstances(dbid)
+        except:
+            return False
+        else:
+            myinstance = instances[0]
+            return myinstance
+
+    def allow_access_to_instance(self, instance, ip_address):
+        if not self.connect_to_aws_rds():
+            return False
+        try:
+            conn = boto.ec2.connect_to_region(self.region, aws_access_key_id=self.aws_access_key_id, aws_secret_access_key=self.aws_secret_access_key)
+            sgs = conn.get_all_security_groups('default')
+            default_sg = sgs[0]
+            default_sg.authorize(ip_protocol='tcp', from_port=3306, to_port=3306, cidr_ip=str(ip_address)+'/32')
+        except EC2ResponseError, e:
+            if e.error_code=="InvalidPermission.Duplicate":
+                return True  # ok it already exists
+            else:
+                return False
+        else:
+            return True
+
+
+
+    def get_db_instances(self):
+        if not self.connect_to_aws_rds():
+            return False
+        try:
+            instances = self.rdsc.get_all_dbinstances()
+        except:
+            return False
+        else:
+            return instances
+
+    def delete_db_instance(self, dbid):
+        if not self.connect_to_aws_rds():
+            return False
+        try:
+            db = self.rdsc.delete_dbinstance(dbid, skip_final_snapshot=True)
+            print db
+        except:
+            return False
+        else:
+            return True
+
+    def validate_instance_id(self, instid):
+        # 1-63 alphanumeric characters, first must be a letter.
+        if re.match('[\w-]+$', instid) is not None:
+            if len(instid) <=63 and len(instid)>=1:
+                if instid[0].isalpha():
+                    return True
+        return "*** Error: Instance ids must be 1-63 alphanumeric characters, first is a letter."
+
+    def validate_instance_size(self, size):
+        # integer between 5-1024 (inclusive)
+        try:
+            int(size)
+        except ValueError:
+            return '*** Error: size must be a whole number between 5 and 1024.'
+        if int(size) < 5 or int(size) > 1024:
+            return '*** Error: size must be between 5-1024 GB.'
+        return True
+
+    def validate_instance_username(self, username):
+        # 1–16 alphanumeric characters - first character must be a letter - cannot be a reserved MySQL word
+        if re.match('[\w-]+$', username) is not None:
+            if len(username) <=16 and len(username)>=1:
+                if username[0].isalpha():
+                    if username not in MYSQL_RESERVED_WORDS:
+                        return True
+        return '*** Error: Usernames must be 1-16 alphanumeric chracters, first a letter, cannot be reserved MySQL word.'
+
+    def validate_instance_password(self, password):
+        # 1–16 alphanumeric characters - first character must be a letter - cannot be a reserved MySQL word
+        if re.match('[\w-]+$', password) is not None:
+            if len(password) <=41 and len(password)>=8:
+                return True
+        return '*** Error: Passwords must be 8-41 alphanumeric characters'
+
+    def validate_instance_dbname(self, dbname):
+        # 1-64 alphanumeric characters, cannot be a reserved MySQL word
+        if re.match('[\w-]+$', dbname) is not None:
+            if len(dbname) <=41 and len(dbname)>=1:
+                if dbname.lower() not in MYSQL_RESERVED_WORDS:
+                    return True
+        return '*** Error: Database names must be 1-64 alphanumeric characters, cannot be a reserved MySQL word.'
+
+    def create_db_instance(self, params):
+        if not self.connect_to_aws_rds():
+            return False
+        try:
+            db = self.rdsc.create_dbinstance(
+                    id = params['id'],
+                    allocated_storage = params['size'],
+                    instance_class = 'db.t1.micro',
+                    engine = 'MySQL',
+                    master_username = params['username'],
+                    master_password = params['password'],
+                    db_name = params['dbname'],
+                    multi_az = False
+                )
+        except:
+            return False
+        else:
+            return True
+
+
 
 class MTurkServices:
     def __init__(self, aws_access_key_id, aws_secret_access_key, is_sandbox):
@@ -215,13 +397,10 @@ class MTurkServices:
         )
 
     def check_balance(self):
-        if self.is_signed_up():
-            if not self.connect_to_turk():
-                return('-')
-            return(self.mtc.get_account_balance()[0])
-        else:
+        if not self.connect_to_turk():
             return('-')
-
+        return(self.mtc.get_account_balance()[0])
+        
     # TODO (if valid AWS credentials haven't been provided then connect_to_turk() will
     # fail, not error checking here and elsewhere)
     def create_hit(self, hit_config):
@@ -249,10 +428,11 @@ class MTurkServices:
         self.mtc.dispose_hit(hitid)
 
     def extend_hit(self, hitid, assignments_increment=None, expiration_increment=None):
+        
         if not self.connect_to_turk():
             return False
-        self.mtc.extend_hit(hitid, assignments_increment=int(assignments_increment))
-        self.mtc.extend_hit(hitid, expiration_increment=int(expiration_increment)*60)
+        self.mtc.extend_hit(hitid, assignments_increment=int(assignments_increment or 0))
+        self.mtc.extend_hit(hitid, expiration_increment=int(expiration_increment or 0)*60)
 
     def get_hit_status(self, hitid):
         if not self.connect_to_turk():

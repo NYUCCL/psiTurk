@@ -3,6 +3,7 @@ config.txt
 participants.db
 server.log
 psiturk-example
+.psiturk_history
 
 *.py[cod]
 

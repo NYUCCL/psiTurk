@@ -11,18 +11,22 @@ as you can turn your experiment into a dynamic webpage, you can run it with
 *Features*
 
 1. Provide access to your experiments online directly from your desktop computer
-  - No need to install complex webserver software (e.g., Apache)
+  - No need to install complex webserver software (e.g., Apache, MySQL)
   - Minimizes security issues since server only runs while you want to collect data
   - Secure Ad server ensures your HITs are visible to all AMT workers
   - Ensures that conditions of your experiment fill in randomly but evenly
+  - Prevent the same workers from completing your expermient more than once
+  - Highly customizable for wide variety of experiment designs
+  - Backup and store data seamlessly in the cloud (using Amazon Web Services)
 1. Javacript API helps you get going with experiment programming faster
-  - Record if participants switching between windows during task
+  - Record if participants switch between windows during task, etc...
   - Save data incrementally to minimize data loss
   - Prevent users from quiting then restarting experiment
 1. Powerful command line interface
   - Simplifies paying participants quickly
-  - Assign bonuses
+  - Assign bonuses with ease
   - Debug and test your experiment
+  - Create and manage robust cloud-based databases for your data
 
 Please visit [psiturk.org](https://psiturk.org) for more information.
 
@@ -73,21 +77,6 @@ your participant's browser. To take a look at the example, type
 stepping you through the examples are provided [here](https://github.com/NYUCCL/psiTurk/wiki/Getting-up-and-running-with-the-basic-Stroop-task)
 .
 
-Database Requirement
-====================
-
-**psiTurk** includes a fully functional database solution based on
-SQLite.  However, we recommend setting up a more robust database solution such as
-[MySQL](http://www.mysql.org) or [PostgreSQL](http://www.postgresql.org).
-SQLite does not allow concurrent access to the database, so if the locks work
-properly, simultaneous access (say, from multiple users submitting their data
-at the same time) could destabilize your database. In the worst (unlikely)
-scenario, the database could become corrupted, resulting in data loss.
-
-Instructions for setting up a MySQL server on a Mac can be found 
-[in the wiki](https://github.com/NYUCCL/psiTurk/wiki/Macintosh-Configuration).
-Other platforms, check out instructions at
-[mysql.org](http://dev.mysql.com/doc/refman/5.5/en//installing.html).
 
 FAQ
 ===

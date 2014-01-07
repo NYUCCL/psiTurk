@@ -1,1 +1,2 @@
 recursive-include psiturk/example *
+recursive-include psiturk/shell_help *
