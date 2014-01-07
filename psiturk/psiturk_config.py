@@ -53,6 +53,7 @@ class PsiturkConfig(SafeConfigParser):
         # AWS Access Section
         self.set('AWS Access', 'aws_access_key_id', 'YourAccessKeyId')
         self.set('AWS Access', 'aws_secret_access_key', 'YourSecretAccessKey')
+        self.set('AWS Access', 'aws_region', 'us-east-1')
 
         # Secure Ad Server
         self.set('Secure Ad Server', 'location', 'https://psiturk.org')

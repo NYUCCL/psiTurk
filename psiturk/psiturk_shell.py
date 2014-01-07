@@ -1,3 +1,4 @@
+# coding: utf-8
 """
 Usage:
     psiturk_shell
@@ -167,6 +168,128 @@ class PsiturkShell(Cmd):
         return Cmd.complete(self, text, state) + ' '
 
 
+    #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
+    #  server management
+    #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
+    def server_launch(self):
+        self.server.startup()
+        while self.server.is_server_running() != 'yes':
+            time.sleep(0.5)
+                
+    def server_shutdown(self):
+        self.server.shutdown()
+        print 'Please wait. This could take a few seconds.'
+        while self.server.is_server_running() != 'no':
+            time.sleep(0.5)
+
+    def server_relaunch(self):
+        self.server_shutdown()
+        self.server_launch()
+
+    def server_log(self):
+        logfilename = self.config.get('Server Parameters', 'logfile')
+        if sys.platform == "darwin":
+            args = ["open", "-a", "Console.app", logfilename]
+        else:
+            args = ["xterm", "-e", "'tail -f %s'" % logfilename]
+        subprocess.Popen(args, close_fds=True)
+        print "Log program launching..."
+
+    #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
+    #  worker management
+    #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
+    def worker_list(self):
+        workers = self.amt_services.get_workers()
+        if not workers:
+            print colorize('failed to get workers', 'red')
+        else:
+            print json.dumps(self.amt_services.get_workers(), indent=4,
+                             separators=(',', ': '))
+    
+    def worker_approve(self, allWorkers, assignment_ids = []):
+        if allWorkers:
+            workers = self.amt_services.get_workers()
+            assignment_ids = [worker['assignmentId'] for worker in workers]
+        for assignmentID in assignment_ids:
+            success = self.amt_services.approve_worker(assignmentID)
+            if success:
+                print 'approved', assignmentID
+            else:
+                print '*** failed to approve', assignmentID
+
+    def worker_reject(self, allWorkers, assignment_ids = None):
+        if allWorkers:
+            workers = self.amt_services.get_workers()
+            assignment_ids = [worker['assignmentId'] for worker in workers]
+        for assignmentID in assignment_ids:
+            success = self.amt_services.reject_worker(assignmentID)
+            if success:
+                print 'rejected', assignmentID
+            else:
+                print '*** failed to reject', assignmentID
+
+    
+    #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
+    #  hit management
+    #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
+    def amt_balance(self):
+        print self.amt_services.check_balance()
+
+    
+    def hit_list(self, allHits, activeHits, reviewableHits):
+        hits_data = []
+        if allHits:
+            hits_data = self.amt_services.get_all_hits()
+        elif activeHits:
+            hits_data = self.amt_services.get_active_hits()
+        elif reviewableHits:
+            hits_data = self.amt_services.get_reviewable_hits()
+        if not hits_data:
+            print '*** no hits retrieved'
+        else:
+            for hit in hits_data:
+                print hit
+    
+    def hit_extend(self, hitID, assignments, time):
+        self.amt_services.extend_hit(hitID, assignments, time)
+
+    def hit_dispose(self, allHits, hitIDs=None):
+        if allHits:
+            hits_data = self.amt_services.get_all_hits()
+            hitIDs = [hit.options['hitid'] for hit in hits_data if (hit.options['status']=="Reviewable")]
+        for hit in hitIDs:
+            # check that the his is reviewable
+            status = self.amt_services.get_hit_status(hit)
+            if not status:
+                print "*** Error getting hit status"
+                return                
+            if self.amt_services.get_hit_status(hit)!="Reviewable":
+                print "*** This hit is not 'Reviewable' and so can not be disposed of"
+                return
+            else:
+                self.amt_services.dispose_hit(hit)
+                self.web_services.delete_ad(hit)  # also delete the ad
+                if self.sandbox:
+                    print "deleting sandbox HIT", hit
+                    self.sandboxHITs -= 1
+                else:
+                    print "deleting live HIT", hit
+                    self.liveHITs -= 1
+
+
+    def hit_expire(self, allHits, hitIDs=None):
+        if allHits:
+            hits_data = self.amt_services.get_active_hits()
+            hitIDs = [hit.options['hitid'] for hit in hits_data]
+        for hit in hitIDs:
+            self.amt_services.expire_hit(hit)
+            if self.sandbox:
+                print "expiring sandbox HIT", hit
+                self.sandboxHITs -= 1
+            else:
+                print "expiring live HIT", hit
+                self.liveHITs -= 1
+
     def tally_hits(self):
         hits = self.amt_services.get_active_hits()
         if hits:
@@ -301,345 +424,405 @@ class PsiturkShell(Cmd):
 
 
 
-    #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
-    #  server management
-    #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
-    def server_launch(self):
-        self.server.startup()
-        while self.server.is_server_running() != 'yes':
-            time.sleep(0.5)
-                
-    def server_shutdown(self):
-        self.server.shutdown()
-        print 'Please wait. This could take a few seconds.'
-        while self.server.is_server_running() != 'no':
-            time.sleep(0.5)
-
-    def server_relaunch(self):
-        self.server_shutdown()
-        self.server_launch()
-
-    def server_log(self):
-        logfilename = self.config.get('Server Parameters', 'logfile')
-        if sys.platform == "darwin":
-            args = ["open", "-a", "Console.app", logfilename]
+    @docopt_cmd
+    def do_db(self, arg):
+        """
+        Usage: 
+          db get_config
+          db use_local_file [<filename>]
+          db use_aws_instance [<instance_id>]
+          db aws_list_regions
+          db aws_get_region
+          db aws_set_region [<region_name>]
+          db aws_list_instances
+          db aws_create_instance [<instance_id> <size> <username> <password> <dbname>]
+          db aws_delete_instance [<instance_id>]
+          db help
+        """
+        if arg['get_config']:
+            self.db_get_config()
+        elif arg['use_local_file']:
+            self.db_use_local_file(arg['<filename>'])
+        elif arg['use_aws_instance']:
+            self.db_use_aws_instance(arg['<instance_id>'])
+            pass
+        elif arg['aws_list_regions']:
+            self.db_aws_list_regions()
+        elif arg['aws_get_region']:
+            self.db_aws_get_region()
+        elif arg['aws_set_region']:
+            self.db_aws_set_region(arg['<region_name>'])
+        elif arg['aws_list_instances']:
+            self.db_aws_list_instances()
+        elif arg['aws_create_instance']:
+            self.do_create_aws_db_instance(arg['<instance_id>'], arg['<size>'], arg['<username>'], arg['<password>'], arg['<dbname>'])
+        elif arg['aws_delete_instance']:
+            self.db_aws_delete_instance(arg['<instance_id>'])
         else:
-            args = ["xterm", "-e", "'tail -f %s'" % logfilename]
-        subprocess.Popen(args, close_fds=True)
-        print "Log program launching..."
+            self.help_db()
 
-    #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
-    #  worker management
-    #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
-    def worker_list(self):
-        workers = self.amt_services.get_workers()
-        if not workers:
-            print colorize('failed to get workers', 'red')
-        else:
-            print json.dumps(self.amt_services.get_workers(), indent=4,
-                             separators=(',', ': '))
-    
-    def worker_approve(self, allWorkers, assignment_ids = []):
-        if allWorkers:
-            workers = self.amt_services.get_workers()
-            assignment_ids = [worker['assignmentId'] for worker in workers]
-        for assignmentID in assignment_ids:
-            success = self.amt_services.approve_worker(assignmentID)
-            if success:
-                print 'approved', assignmentID
-            else:
-                print '*** failed to approve', assignmentID
+    db_commands = ('get_config', 'use_local_file', 'use_aws_instance', 'aws_list_regions', 'aws_get_region', 'aws_set_region', 'aws_list_instances', 'aws_create_instance', 'aws_delete_instance', 'help')
 
-    def worker_reject(self, allWorkers, assignment_ids = None):
-        if allWorkers:
-            workers = self.amt_services.get_workers()
-            assignment_ids = [worker['assignmentId'] for worker in workers]
-        for assignmentID in assignment_ids:
-            success = self.amt_services.reject_worker(assignmentID)
-            if success:
-                print 'rejected', assignmentID
-            else:
-                print '*** failed to reject', assignmentID
+    def complete_db(self, text, line, begidx, endidx):
+        return  [i for i in PsiturkShell.db_commands if i.startswith(text)]
 
-    
-    #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
-    #  hit management
-    #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
-    def aws_balance(self):
-        print self.amt_services.check_balance()
+    def help_db(self):
+        with open(self.helpPath + 'db.txt', 'r') as helpText:
+            print helpText.read()
 
-    
-    def hit_list(self, allHits, activeHits, reviewableHits):
-        hits_data = []
-        if allHits:
-            hits_data = self.amt_services.get_all_hits()
-        elif activeHits:
-            hits_data = self.amt_services.get_active_hits()
-        elif reviewableHits:
-            hits_data = self.amt_services.get_reviewable_hits()
-        if not hits_data:
-            print '*** no hits retrieved'
-        else:
-            for hit in hits_data:
-                print hit
-        
-
-        
-
-    def hit_extend(self, hitID, assignments, time):
-        self.amt_services.extend_hit(hitID, assignments, time)
-
-
-
-
-    def hit_dispose(self, allHits, hitIDs=None):
-        if allHits:
-            hits_data = self.amt_services.get_all_hits()
-            hitIDs = [hit.options['hitid'] for hit in hits_data if (hit.options['status']=="Reviewable")]
-        for hit in hitIDs:
-            # check that the his is reviewable
-            status = self.amt_services.get_hit_status(hit)
-            if not status:
-                print "*** Error getting hit status"
-                return                
-            if self.amt_services.get_hit_status(hit)!="Reviewable":
-                print "*** This hit is not 'Reviewable' and so can not be disposed of"
-                return
-            else:
-                self.amt_services.dispose_hit(hit)
-                self.web_services.delete_ad(hit)  # also delete the ad
-                if self.sandbox:
-                    print "deleting sandbox HIT", hit
-                    self.sandboxHITs -= 1
-                else:
-                    print "deleting live HIT", hit
-                    self.liveHITs -= 1
-
-
-    def hit_expire(self, allHits, hitIDs=None):
-        if allHits:
-            hits_data = self.amt_services.get_active_hits()
-            hitIDs = [hit.options['hitid'] for hit in hits_data]
-        for hit in hitIDs:
-            self.amt_services.expire_hit(hit)
-            if self.sandbox:
-                print "expiring sandbox HIT", hit
-                self.sandboxHITs -= 1
-            else:
-                print "expiring live HIT", hit
-                self.liveHITs -= 1
 
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #  Local SQL database commands
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
-    def do_get_db_config(self, arg):
-        """
-        Usage: get_db_config
-               
-        Description:
-            Gets the current setting of the database (database_url)
-        """
-        print "Current database setting: \n\t", self.config.get("Database Parameters", "database_url")
+    def db_get_config(self):
+        print "Current database setting (database_url): \n\t", self.config.get("Database Parameters", "database_url")
     
-    @docopt_cmd
-    def do_use_local_sqllite_db(self, arg):
-        """
-        Usage: use_local_sqllite_db
-               use_local_sqllite_db <filename> <tablename>
-        """
+    def db_use_local_file(self, filename=None):
         interactive = False
-        if arg['<filename>'] is None:
+        if filename is None:
             interactive = True
-            arg['<filename>'] = raw_input('enter the filename of the SQLLite database you would like to use [default=participants.db]: ')
-            if arg['<filename>']=='':
-                arg['<filename>']='participants.db'
-        base_url = "sqlite:///" + arg['<filename>']
+            filename = raw_input('Enter the filename of the local SQLLite database you would like to use [default=participants.db]: ')
+            if filename=='':
+                filename='participants.db'
+        base_url = "sqlite:///" + filename
         self.config.set("Database Parameters", "database_url", base_url)
-        # restart servername
+        print "Updated database setting (database_url): \n\t", self.config.get("Database Parameters", "database_url")
+        if self.server.is_server_running() == 'yes':
+            self.server_relaunch()
 
 
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #  AWS RDS commands
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
-    def do_list_aws_db_instances(self, arg):
-        instances = self.db_services.get_db_instances()
-        for dbinst in instances:
-            print dbinst.id+":"+dbinst.status
+    def db_aws_list_regions(self):
+        regions = self.db_services.list_regions()
+        if regions != []:
+            print "Avaliable AWS regions:"
+        for reg in regions:
+            print '\t' + reg,
+            if reg == self.db_services.get_region():
+                print "(currently selected)"
+            else:
+                print ''
 
-    @docopt_cmd
-    def do_delete_aws_db_instance(self, arg):
-        """
-        Usage: delete_db_instance
-               delete_db_instance <id>
-        """
+    def db_aws_get_region(self):
+        print self.db_services.get_region()
+
+    def db_aws_set_region(self, region_name):
         interactive = False
-        if arg['<id>'] is None:
+        if region_name is None:
             interactive = True
-            arg['<id>'] = raw_input('enter the instance identify you would like to delete: ')
-        try:
-            str(arg['<id>'])
-        except ValueError:
-            print '*** Ids are strings.  Run `list_db_instances` to get a list of valid options.'
-            return
+            self.db_aws_list_regions()
+            allowed_regions = self.db_services.list_regions()
+            region_name = "NONSENSE WORD1234"
+            tries = 0
+            while region_name not in allowed_regions:
+                if tries == 0:
+                    region_name = raw_input('Enter the name of the region you would like to use: ')
+                else:
+                    print "*** The region name (%s) you entered is not allowed, please choose from the list printed above (use type 'db aws_list_regions'." % region_name
+                    region_name = raw_input('Enter the name of the region you would like to use: ')
+                tries+=1
+                if tries > 5:
+                    print "*** Error, region you are requesting not available.  No changes made to regions."
+                    return
+        self.db_services.set_region(region_name)
+        print "Region updated to ", region_name
+        self.config.set('AWS Access', 'aws_region', region_name)
+        if self.server.is_server_running() == 'yes':
+            self.server_relaunch()
+
+    def db_aws_list_instances(self):
+        instances = self.db_services.get_db_instances()
+        if not instances:
+            print "There are no DB instances associated with your AWS account in region ", self.db_services.get_region()
+        else:
+            print "Here are the current DB instances associated with your AWS account in region ", self.db_services.get_region()
+            for dbinst in instances:
+                print '\t'+'-'*20
+                print "\tInstance ID: " + dbinst.id
+                print "\tStatus: " + dbinst.status
+
+    def db_aws_delete_instance(self, instance_id):
+        interactive = False
+        if instance_id is None:
+            interactive = True
+
+        instances = self.db_services.get_db_instances()
+        instance_list = [dbinst.id for dbinst in instances]
+
+        if interactive:
+            valid = False
+            if len(instances)==0:
+                print "There are no instances you can delete currently.  Use `db aws_create_instance` to make one."
+                return
+            print "Here are the available instances you can delete:"
+            for inst in instances:
+                print "\t ", inst.id, "(", inst.status, ")"
+            while not valid:
+                instance_id = raw_input('Enter the instance identity you would like to delete: ')
+                res = self.db_services.validate_instance_id(instance_id)
+                if (res == True):
+                    valid = True
+                else:
+                    print res + " Try again, instance name not valid.  Check for typos."
+                if instance_id in instance_list:
+                    valid = True
+                else:
+                    valid = False
+                    print "Try again, instance not present in this account.  Try again checking for typos."
+        else:
+            res = self.db_services.validate_instance_id(instance_id)
+            if (res != True):
+                print "*** Error, instance name either not valid.  Try again checking for typos."
+                return
+            if instance_id not in instance_list:
+                print "*** Error, This instance not present in this account.  Try again checking for typos.  Run `db aws_list_dinstances` to see valid list."
+                return
+
         r = raw_input("Deleting an instance will erase all your data associated with the database in that instance. Really quit? y or n: ")
         if r == 'y':
-            res = self.db_services.delete_db_instance(arg['<id>'])
+            res = self.db_services.delete_db_instance(instance_id)
             if res:
-                print "AWS RDS database instance %s deleted." % arg['<id>']
+                print "AWS RDS database instance %s deleted.  Run `db aws_list_dinstances` for current status." % instance_id
             else:
-                print "*** Error deleting database instance ", arg['<id>'], ". It maybe because it is still being created or is being backed up.  Run `list_db_instances` for current status."
+                print "*** Error deleting database instance ", instance_id, ". It maybe because it is still being created, deleted, or is being backed up.  Run `db aws_list_dinstances` for current status."
         else:
             return
 
-    def do_list_aws_regions(self, arg):
-        print self.db_services.get_regions()
-
-    def do_set_aws_region(self, arg):
-        """
-        Usage: set_aws_regions
-               set_aws_regions <region_name>
-        """
-        interactive = False
-        if arg['<region_name>'] is None:
-            interactive = True
-            arg['<region_name>'] = raw_input('Enter the region you like to use (`list_aws_regions` to see options): ')
-        try:
-            str(arg['<region_name>'])
-        except ValueError:
-            print '*** Ids are strings.  Run `list_db_instances` to get a list of valid options (i.e., status is `available`).'
-            return
-        else:
-            self.db_services.set_region(arg['<region_name>'])
-
-    @docopt_cmd
-    def do_use_aws_db_instance(self, arg):
-        """
-        Usage: use_aws_db_instance
-               use_aws_db_instance <id>
-        """
+    def db_use_aws_instance(self, instance_id):
         # set your database info to use the current instance
         # configure a security zone for this based on your ip
         interactive = False
-        if arg['<id>'] is None:
+        if instance_id is None:
             interactive = True
-            arg['<id>'] = raw_input('enter the instance identify you would like to use: ')
-        try:
-            str(arg['<id>'])
-        except ValueError:
-            print '*** Ids are strings.  Run `list_db_instances` to get a list of valid options (i.e., status is `available`).'
+
+        instances = self.db_services.get_db_instances()
+        instance_list = [dbinst.id for dbinst in instances]
+
+        if len(instances)==0:
+            print "There are no instances in this region/account.  Use `db aws_create_instance` to make one first."
             return
+
+        # show list of available instances, if there are none cancel immediately
+        if interactive:
+            valid = False
+            print "Here are the available instances you have.  You can only use those listed as 'available':"
+            for inst in instances:
+                print "\t ", inst.id, "(", inst.status, ")"
+            while not valid:
+                instance_id = raw_input('Enter the instance identity you would like to use: ')
+                res = self.db_services.validate_instance_id(instance_id)
+                if (res == True):
+                    valid = True
+                else:
+                    print res + " Try again, instance name not valid.  Check for typos."
+                if instance_id in instance_list:
+                    valid = True
+                else:
+                    valid = False
+                    print "Try again, instance not present in this account.  Try again checking for typos."
+        else:
+            res = self.db_services.validate_instance_id(instance_id)
+            if (res != True):
+                print "*** Error, instance name either not valid.  Try again checking for typos."
+                return
+            if instance_id not in instance_list:
+                print "*** Error, This instance not present in this account.  Try again checking for typos.  Run `db aws_list_dinstances` to see valid list."
+                return
 
         r = raw_input("Switching your DB settings to use this instance.  Are you sure you want to do this? ")
         if r == 'y':
             # ask for password
-            arg['<password>'] = raw_input('enter the master password for this instance: ')
-            try:
-                str(arg['<password>'])
-            except ValueError:
-                print '*** must be 8–41 alphanumeric characters'
-                return
-
+            valid = False
+            while not valid:
+                password = raw_input('enter the master password for this instance: ')
+                res = self.db_services.validate_instance_password(password)
+                if res != True:
+                    print "*** Error: password seems incorrect, doesn't conform to AWS rules.  Try again"
+                else:
+                    valid = True
+    
             # get instance
-            myinstance = self.db_services.get_db_instance_info(arg['<id>'])
+            myinstance = self.db_services.get_db_instance_info(instance_id)
             if myinstance:
                 # add security zone to this node to allow connections
                 my_ip = self.web_services.get_my_ip()
                 if not self.db_services.allow_access_to_instance(myinstance, my_ip):
                     print "*** Error authorizing your ip address to connect to server (%s)." % my_ip
                     return
-                print "AWS RDS database instance %s selected." % arg['<id>']
+                print "AWS RDS database instance %s selected." % instance_id
 
                 # using regular sql commands list available database on this node
-                connection = MySQLdb.connect(
-                        host= myinstance.endpoint[0],
-                        user = myinstance.master_username,
-                        passwd = arg['<password>']
-                    ).cursor()
-                connection.execute("show databases")
-                db_names = connection.fetchall() 
-                
+                try:
+                    connection = MySQLdb.connect(
+                            host= myinstance.endpoint[0],
+                            user = myinstance.master_username,
+                            passwd = password
+                        ).cursor()
+                    connection.execute("show databases")
+                    db_names = connection.fetchall() 
+                except:
+                    print "***  Error connecting to instance.  Your password my be incorrect."
+                    return
+
                 existing_dbs = [db[0] for db in db_names if db not in [('information_schema',), ('innodb',), ('mysql',), ('performance_schema',)]]
                 create_db=False
                 if len(existing_dbs)==0:
-                    db_name = raw_input("No existing DBs in this instance.  Enter a new name to create one: ")
+                    valid = False
+                    while not valid:
+                        db_name = raw_input("No existing DBs in this instance.  Enter a new name to create one: ")
+                        res = self.db_services.validate_instance_dbname(db_name)
+                        if res == True:
+                            valid = True
+                        else:
+                            print res + " Try again."
                     create_db=True
                 else:
                     print "Here are the available database tables"
                     for db in existing_dbs:
                         print "\t" + db
-                    print "\n"
-                    db_name = raw_input("Enter the name of the database you want to use or a new name to create a new one: ")
+                    valid = False
+                    while not valid:
+                        db_name = raw_input("Enter the name of the database you want to use or a new name to create a new one: ")
+                        res = self.db_services.validate_instance_dbname(db_name)
+                        if res == True:
+                            valid = True
+                        else:
+                            print res + " Try again."
                     if db_name not in existing_dbs:
                         create_db=True
                 if create_db:
-                    connection.execute("CREATE DATABASE %s;" % db_name)
-                base_url = 'mysql://' + myinstance.master_username + ":" + arg['<password>'] + "@" + myinstance.endpoint[0] + ":" + str(myinstance.endpoint[1]) + "/" + db_name
+                    try:
+                        connection.execute("CREATE DATABASE %s;" % db_name)
+                    except:
+                        print "*** Error creating database %s on instance %s" % (db_name,instance_id)
+                        return
+                base_url = 'mysql://' + myinstance.master_username + ":" + password + "@" + myinstance.endpoint[0] + ":" + str(myinstance.endpoint[1]) + "/" + db_name
                 self.config.set("Database Parameters", "database_url", base_url)
+                print "Successfully set your current database (database_url) to \n\t%s" % base_url
                 if self.server.is_server_running()=='maybe' or self.server.is_server_running()=='yes':
                     self.do_restart_server('')
             else:
-                print "*** Error selecting database instance " + arg['<id>'] + ". Run `list_db_instances` for current status of instances."
+                print "*** Error selecting database instance " + arg['<id>'] + ". Run `list_db_instances` for current status of instances, only `available` instances can be used.  Also your password may be incorrect."
         else:
             return
 
 
-    @docopt_cmd
-    def do_create_aws_db_instance(self, arg):
-        """
-        Usage: create_aws_db_instance
-               create_aws_db_instance <id> <size> <username> <password> <dbname>
-        """
+    def do_create_aws_db_instance(self, instid=None, size=None, username=None, password=None, dbname=None):
         interactive = False
-        if arg['<id>'] is None:
+        if instid is None:
             interactive = True
-            arg['<id>'] = raw_input('enter an identifier for the instance (1-63 alpha, first a letter): ')
-        try:
-            str(arg['<id>'])  # TODO: this should check the AWS rules instead of this string test
-        except ValueError:
-            print '*** Must contain 1-63 alphanumeric characters. First character must be a letter. May not end with a hyphen or contain two consecutive hyphens'
-            return
 
         if interactive:
-            arg['<size>'] = raw_input('size of db in GB (5-1024): ')
-        try:
-            int(arg['<size>'])
-        except ValueError:
-            print '*** size must be a whole number'
-            return
-        if int(arg['<size>']) < 5 or int(arg['<size>']) > 1024:
-            print '*** size must be between 5-1024 GB'
-            return
+            print '*************************************************'
+            print 'Ok, here are the rules on creating instances:'
+            print ''
+            print 'instance id:'
+            print '  Each instance needs an identifier.  This is the name'
+            print '  of the virtual machine created for you on AWS.'
+            print '  Rules are 1-63 alphanumeric characters, first must'
+            print '  be a letter, must be unique to this AWS account.'
+            print ''
+            print 'size:'
+            print '  The maximum size of you database in GB.  Enter an'
+            print '  integer between 5-1024'
+            print ''
+            print 'master username:'
+            print '  The username you will use to connect.  Rules are'
+            print '  1-16 alphanumeric characters, first must be a letter,'
+            print '  cannot be a reserved MySQL word/phrase'
+            print ''
+            print 'master password:'
+            print '  Rules are 8-41 alphanumeric characters'
+            print ''
+            print 'database name:'
+            print '  The name for the first database on this instance.  Rules are'
+            print '  1-64 alphanumeric characters, cannot be a reserved MySQL word'
+            print '*************************************************'
+            print ''
 
         if interactive:
-            arg['<username>'] = raw_input('master username: ')
-        try:
-            str(arg['<username>']) # TODO: this should check the AWS rules instead of this string test
-        except ValueError:
-            print '*** 1–16 alphanumeric characters - first character must be a letter - cannot be a reserved MySQL word'
-            return
+            valid = False
+            while not valid:
+                instid = raw_input('enter an identifier for the instance (see rules above): ')
+                res = self.db_services.validate_instance_id(instid)
+                if res == True:
+                    valid = True
+                else:
+                    print res + " Try again."
+        else:
+            res = self.db_services.validate_instance_id(instid) 
+            if res is not True:
+                print res
+                return
 
         if interactive:
-            arg['<password>'] = raw_input('master password: ')
-        try:
-            str(arg['<password>']) # TODO: this should check the AWS rules instead of this string test
-        except ValueError:
-            print '*** must be 8–41 alphanumeric characters'
-            return
+            valid = False
+            while not valid:
+                size = raw_input('size of db in GB (5-1024): ')
+                res = self.db_services.validate_instance_size(size)
+                if res == True:
+                    valid = True
+                else:
+                    print res + " Try again."
+        else:
+            res = self.db_services.validate_instance_size(size) 
+            if res is not True:
+                print res
+                return
 
         if interactive:
-            arg['<dbname>'] = raw_input('name for first database on this instance: ')
-        try:
-            str(arg['<dbname>']) # TODO: this should check the AWS rules instead of this string test
-        except ValueError:
-            print '*** Must contain 1–64 alphanumeric characters and cannot be a reserved MySQL word'
-            return
+            valid = False
+            while not valid:
+                username = raw_input('master username (see rules above): ')
+                res = self.db_services.validate_instance_username(username)
+                if res == True:
+                    valid = True
+                else:
+                    print res + " Try again."
+        else:
+            res = self.db_services.validate_instance_username(username) 
+            if res is not True:
+                print res
+                return
+
+        if interactive:
+            valid = False
+            while not valid:
+                password = raw_input('master password (see rules above): ')
+                res = self.db_services.validate_instance_password(password)
+                if res == True:
+                    valid = True
+                else:
+                    print res + " Try again."
+        else:
+            res = self.db_services.validate_instance_password(password) 
+            if res is not True:
+                print res
+                return
+
+        if interactive:
+            valid = False
+            while not valid:
+                dbname = raw_input('name for first database on this instance (see rules): ')
+                res = self.db_services.validate_instance_dbname(dbname)
+                if res == True:
+                    valid = True
+                else:
+                    print res + " Try again."
+        else:
+            res = self.db_services.validate_instance_dbname(dbname) 
+            if res is not True:
+                print res
+                return
 
         options = {
-            'id': arg['<id>'],
-            'size': arg['<size>'],
-            'username': arg['<username>'],
-            'password': arg['<password>'],
-            'dbname': arg['<dbname>']
+            'id': instid,
+            'size': size,
+            'username': username,
+            'password': password,
+            'dbname': dbname
         }
         instance = self.db_services.create_db_instance(options)
         if not instance:
@@ -655,8 +838,15 @@ class PsiturkShell(Cmd):
             print '    dbname: ',  str(options['dbname'])
             print '    type: MySQL/db.t1.micro'
             print '    ________________________'
-            print ' Please wait a few moments while your database is created in the cloud.  You can run `list_db_instances` to verify it was created.'
+            print ' Be sure to store this information in a safe place.'
+            print ' Please wait 5-10 minutes while your database is created in the cloud.'
+            print ' You can run \'db aws_list_instances\' to verify it was created (status'
+            print ' will say \'available\' when it is ready'
 
+
+    #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
+    #  Basic shell commands
+    #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     @docopt_cmd
     def do_mode(self, arg):
         """
@@ -887,7 +1077,8 @@ def run():
                              config.get('AWS Access', 'aws_secret_access_key'), \
                              config.getboolean('HIT Configuration','using_sandbox'))
     aws_rds_services = RDSServices(config.get('AWS Access', 'aws_access_key_id'), \
-                             config.get('AWS Access', 'aws_secret_access_key'))
+                             config.get('AWS Access', 'aws_secret_access_key'),
+                             config.get('AWS Access', 'aws_region'))
     web_services = PsiturkOrgServices(config.get('Secure Ad Server','location'), config.get('Secure Ad Server', 'contact_email'))
     server = control.ExperimentServerController(config)
     shell = PsiturkShell(config, amt_services, aws_rds_services, web_services, server)
