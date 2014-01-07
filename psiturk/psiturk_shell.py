@@ -466,7 +466,7 @@ class PsiturkShell(Cmd):
         elif arg['aws_list_instances']:
             self.db_aws_list_instances()
         elif arg['aws_create_instance']:
-            self.do_create_aws_db_instance(arg['<instance_id>'], arg['<size>'], arg['<username>'], arg['<password>'], arg['<dbname>'])
+            self.db_create_aws_db_instance(arg['<instance_id>'], arg['<size>'], arg['<username>'], arg['<password>'], arg['<dbname>'])
         elif arg['aws_delete_instance']:
             self.db_aws_delete_instance(arg['<instance_id>'])
         else:
@@ -720,7 +720,7 @@ class PsiturkShell(Cmd):
             return
 
 
-    def do_create_aws_db_instance(self, instid=None, size=None, username=None, password=None, dbname=None):
+    def db_create_aws_db_instance(self, instid=None, size=None, username=None, password=None, dbname=None):
         interactive = False
         if instid is None:
             interactive = True
