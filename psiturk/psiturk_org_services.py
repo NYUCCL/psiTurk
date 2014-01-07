@@ -27,7 +27,19 @@ class PsiturkOrgServices:
             you are talking to
         """
         self.adServer = server
-    
+
+    def get_system_status(self):
+        """
+            get_system_status:
+        """
+        try:
+            ad_server_status_link= self.adServer + '/status_msg'
+            response=urllib2.urlopen(ad_server_status_link,timeout=1)
+            status_msg = json.load(response)['status']
+        except urllib2.URLError as err:
+            status_msg = "Sorry, can't connect to psiturk.org, please check your internet connection.\n You will not be able to create new hits, but testing locally should work."  
+        return status_msg
+        
     def get_my_ip(self):
         """
             get_my_ip:
