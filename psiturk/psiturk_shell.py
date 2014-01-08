@@ -19,7 +19,7 @@ import readline
 
 import webbrowser
 
-import MySQLdb
+import sqlalchemy as sa
 
 from amt_services import MTurkServices, RDSServices
 from psiturk_org_services import PsiturkOrgServices
@@ -669,17 +669,13 @@ class PsiturkShell(Cmd):
 
                 # using regular sql commands list available database on this node
                 try:
-                    connection = MySQLdb.connect(
-                            host= myinstance.endpoint[0],
-                            user = myinstance.master_username,
-                            passwd = password
-                        ).cursor()
-                    connection.execute("show databases")
-                    db_names = connection.fetchall() 
+                    db_url = 'mysql://' + myinstance.master_username + ":" + password + "@" + myinstance.endpoint[0] + ":" + str(myinstance.endpoint[1])
+                    engine = sa.create_engine(db_url, echo=False)
+                    e = engine.connect().execute
+                    db_names = e("show databases").fetchall()
                 except:
                     print "***  Error connecting to instance.  Your password my be incorrect."
                     return
-
                 existing_dbs = [db[0] for db in db_names if db not in [('information_schema',), ('innodb',), ('mysql',), ('performance_schema',)]]
                 create_db=False
                 if len(existing_dbs)==0:
@@ -1073,6 +1069,8 @@ class PsiturkShell(Cmd):
         """
         if arg['balance']:
             self.amt_balance()
+        else:
+            self.help_amt()
     
     amt_commands = ('balance', 'help')
 
