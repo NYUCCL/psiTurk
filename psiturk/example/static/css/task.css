@@ -113,9 +113,9 @@ input {
 
 .questionnaire td {
     padding-right: 0.25em;
-	vertical-align: middle;
-	border-width: 0 1px;
-	border: none
+    vertical-align: middle;
+    border-width: 0 1px;
+    border: none;
     margin: 20px;
     padding-bottom: 10px;
 }
