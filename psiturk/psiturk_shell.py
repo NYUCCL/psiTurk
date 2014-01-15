@@ -958,6 +958,10 @@ class PsiturkShell(Cmd):
         self.do_quit(arg)
         return True
 
+    def do_exit(self, arg):
+        self.do_quit(arg)
+        return True
+
     def do_quit(self, arg):
         if self.server.is_server_running() == 'yes' or self.server.is_server_running() == 'maybe':
             r = raw_input("Quitting shell will shut down experiment server. Really quit? y or n: ")
