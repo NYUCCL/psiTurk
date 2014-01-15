@@ -116,17 +116,15 @@ class PsiturkShell(Cmd):
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #  basic command line functions
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
-
-
-    #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
-    #  basic command line functions
-    #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     def get_intro_prompt(self):
         # if you can reach psiTurk.org, request system status
         # message
         server_msg = self.web_services.get_system_status()
         return server_msg + colorize('psiTurk version ' + version_number +
                               '\nType "help" for more information.', 'green')
+
+    def do_system_status(self, args):
+        print self.get_intro_prompt()
 
     def color_prompt(self):
         prompt = '[' + colorize('psiTurk', 'bold')
