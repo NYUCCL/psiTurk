@@ -15,55 +15,6 @@
 Backbone.Notifications = {};
 _.extend(Backbone.Notifications, Backbone.Events);
 
-var optoutmessage = "By leaving this page, you opt out of the experiment.";
-var startTask = function () {
-	psiTurk.saveData();
-	
-	$.ajax("inexp", {
-			type: "POST",
-			data: {uniqueId: uniqueId}
-	});
-	
-	// Provide opt-out 
-	$(window).on("beforeunload", function(){
-		psiTurk.saveData();
-		
-		$.ajax("quitter", {
-				type: "POST",
-				data: {uniqueId: uniqueId}
-		});
-		alert(msg);
-		return "Are you sure you want to leave the experiment?";
-	});
-};
-
-Backbone.Notifications.on('_psiturk_finishedinstructions', startTask);
-Backbone.Notifications.on('_psiturk_finishedtask', function(msg) { $(window).off("beforeunload"); });
-
-$(window).blur( function() {
-	Backbone.Notifications.trigger('_psiturk_lostfocus');
-});
-
-$(window).focus( function() {
-	Backbone.Notifications.trigger('_psiturk_gainedfocus');	
-});
-
-
-
-// track changes in window size
-triggerResize = function() {
-	Backbone.Notifications.trigger('_psiturk_windowresize', [window.innerWidth, window.innerHeight]);
-};
-
-var to = false;
-$(window).resize(function(){
- if(to !== false)
-    clearTimeout(to);
- to = setTimeout(triggerResize, 200);
-});
-
-
-
 
 /*******
  * API *
@@ -71,8 +22,6 @@ $(window).resize(function(){
 var PsiTurk = function() {
 	var self = this;
 	
-
-
 	/****************
 	 * TASK DATA    *
 	 ***************/
@@ -88,7 +37,7 @@ var PsiTurk = function() {
 			hitId: 0,
 			currenttrial: 0,
 			bonus: 0,
-			data: "",
+			data: [],
 			questiondata: {},
 			eventdata: [],
 			useragent: ""
@@ -105,8 +54,10 @@ var PsiTurk = function() {
 		},
 
 		addTrialData: function(trialdata) {
-			trialdata = [this.id, this.get("currenttrial"), (new Date().getTime())].concat(trialdata);
-			this.set({"data": this.get("data").concat(trialdata, "\n")});
+			trialdata = {"uniqueid":this.id, "current_trial":this.get("currenttrial"), "dateTime":(new Date().getTime()), "trialdata":trialdata};
+			data = this.get('data');
+			data.push(trialdata);
+			this.set('data', data);
 			this.set({"currenttrial": this.get("currenttrial")+1});
 		},
 		
@@ -176,7 +127,7 @@ var PsiTurk = function() {
 			if (currentscreen < 0) {
 				currentscreen = 0; // can't go back that far
 			} else {
-				psiturk.recordTrialData({"pages":"INSTRUCTIONS", "template":pages[viewedscreen], "indexOf":viewedscreen, "action":"PrevPage", "viewTime":rt});
+				psiturk.recordTrialData({"phase":"INSTRUCTIONS", "template":pages[viewedscreen], "indexOf":viewedscreen, "action":"PrevPage", "viewTime":rt});
 				loadPage(instruction_pages[currentscreen]);
 			}
 
@@ -190,10 +141,10 @@ var PsiTurk = function() {
 			currentscreen = currentscreen + 1;
 
 			if (currentscreen == instruction_pages.length) {
-				psiturk.recordTrialData({"pages":"INSTRUCTIONS", "template":pages[viewedscreen], "indexOf":viewedscreen, "action":"FinishInstructions", "viewTime":rt});
+				psiturk.recordTrialData({"phase":"INSTRUCTIONS", "template":pages[viewedscreen], "indexOf":viewedscreen, "action":"FinishInstructions", "viewTime":rt});
 				finish();
 			} else {
-				psiturk.recordTrialData({"pages":"INSTRUCTIONS", "template":pages[viewedscreen], "indexOf":viewedscreen, "action":"NextPage", "viewTime":rt});
+				psiturk.recordTrialData({"phase":"INSTRUCTIONS", "template":pages[viewedscreen], "indexOf":viewedscreen, "action":"NextPage", "viewTime":rt});
 				loadPage(instruction_pages[viewedscreen]);
 			}
 
@@ -223,11 +174,14 @@ var PsiTurk = function() {
 
 		self.loadFirstPage = function () { loadPage(); }
 
+		// log instruction are starting
+		psiturk.recordTrialData({"phase":"INSTRUCTIONS", "templates":pages, "action":"Begin"});
+
 		return self;
 	};
 	
 	/*  PUBLIC METHODS: */
-	this.preloadImages = function(imagenames) {
+	self.preloadImages = function(imagenames) {
 		$(imagenames).each(function() {
 			image = new Image();
 			image.src = this;
@@ -271,6 +225,28 @@ var PsiTurk = function() {
 	self.saveData = function(callbacks) {
 		taskdata.save(undefined, callbacks);
 	};
+
+	self.startTask = function () {
+		self.saveData();
+		
+		$.ajax("inexp", {
+				type: "POST",
+				data: {uniqueId: uniqueId}
+		});
+		
+		// Provide opt-out 
+		$(window).on("beforeunload", function(){
+			self.saveData();
+			
+			$.ajax("quitter", {
+					type: "POST",
+					data: {uniqueId: uniqueId}
+			});
+			var optoutmessage = "By leaving this page, you opt out of the experiment.";
+			alert(optoutmessage);
+			return "Are you sure you want to leave the experiment?";
+		});
+	};
 	
 	// Notify app that participant has begun main experiment
 	self.finishInstructions = function(optmessage) {
@@ -305,6 +281,33 @@ var PsiTurk = function() {
 	/*  DATA: */
 	self.pages = {};
 	self.taskdata = taskdata;
+
+
+	/* Backbone stuff */
+	Backbone.Notifications.on('_psiturk_finishedinstructions', self.startTask);
+	Backbone.Notifications.on('_psiturk_finishedtask', function(msg) { $(window).off("beforeunload"); });
+
+
+	$(window).blur( function() {
+		Backbone.Notifications.trigger('_psiturk_lostfocus');
+	});
+
+	$(window).focus( function() {
+		Backbone.Notifications.trigger('_psiturk_gainedfocus');	
+	});
+
+	// track changes in window size
+	var triggerResize = function() {
+		Backbone.Notifications.trigger('_psiturk_windowresize', [window.innerWidth, window.innerHeight]);
+	};
+
+	// set up the window resize trigger
+	var to = false;
+	$(window).resize(function(){
+	 if(to !== false)
+	    clearTimeout(to);
+	 to = setTimeout(triggerResize, 200);
+	});
 
 	return self;
 };
