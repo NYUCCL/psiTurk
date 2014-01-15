@@ -954,6 +954,19 @@ class PsiturkShell(Cmd):
             f.write(ret)
             f.close()
 
+    @docopt_cmd
+    def do_open(self, arg):
+        """
+        Usage: open
+               open <folder>
+
+        Opens folder or current directory using the local system's shell comamnd 'open'.
+        """
+        if arg['<folder>'] is None:
+            subprocess.call(["open"])
+        else:
+            subprocess.call(["open",arg['<folder>']])
+
     def do_eof(self, arg):
         self.do_quit(arg)
         return True
