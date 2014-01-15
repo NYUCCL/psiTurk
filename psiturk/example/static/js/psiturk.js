@@ -69,7 +69,7 @@ $(window).resize(function(){
  * API *
  ******/
 var PsiTurk = function() {
-	that = this;
+	var self = this;
 	
 
 
@@ -139,6 +139,7 @@ var PsiTurk = function() {
 	******************************************************/
 	var Instructions = function(parent, pages, callback) {
 
+		var self = this;
 		var psiturk = parent;
 		var currentscreen = 0, timestamp;
 		var instruction_pages = pages; 
@@ -216,13 +217,13 @@ var PsiTurk = function() {
 
 
 		/* public interface */
-		this.getIndicator = function() {
+		self.getIndicator = function() {
 			return {"currently_viewing":{"indexOf":currentscreen, "template":pages[currentscreen]}, "instruction_deck":{"total_pages":instruction_pages.length, "templates":instruction_pages}};
 		}
 
-		this.loadFirstPage = function () { loadPage(); }
+		self.loadFirstPage = function () { loadPage(); }
 
-		return this;
+		return self;
 	};
 	
 	/*  PUBLIC METHODS: */
@@ -233,59 +234,59 @@ var PsiTurk = function() {
 		});
 	};
 	
-	this.preloadPages = function(pagenames) {
+	self.preloadPages = function(pagenames) {
 		// Synchronously preload pages.
 		$(pagenames).each(function() {
 			$.ajax({
 				url: this,
-				success: function(page_html) { that.pages[this.url] = page_html;},
+				success: function(page_html) { self.pages[this.url] = page_html;},
 				dataType: "html",
 				async: false
 			});
 		});
 	};
 	// Get HTML file from collection and pass on to a callback
-	this.getPage = function(pagename) {
-		return that.pages[pagename];
+	self.getPage = function(pagename) {
+		return self.pages[pagename];
 	};
 	
 	
 	// Add a line of data with any number of columns
-	this.recordTrialData = function(trialdata) {
+	self.recordTrialData = function(trialdata) {
 		taskdata.addTrialData(trialdata);
 	};
 	
 	// Add data value for a named column. If a value already
 	// exists for that column, it will be overwritten
-	this.recordUnstructuredData = function(field, value) {
+	self.recordUnstructuredData = function(field, value) {
 		taskdata.addUnstructuredData(field, value);
 	};
 
 	// Add bonus to task data
-	this.recordBonus = function(bonus) {
+	self.recordBonus = function(bonus) {
 		taskdata.set('bonus', bonus);
 	}
 	
 	// Save data to server
-	this.saveData = function(callbacks) {
+	self.saveData = function(callbacks) {
 		taskdata.save(undefined, callbacks);
 	};
 	
 	// Notify app that participant has begun main experiment
-	this.finishInstructions = function(optmessage) {
+	self.finishInstructions = function(optmessage) {
 		Backbone.Notifications.trigger('_psiturk_finishedinstructions', optmessage);
 	};
 	
-	this.teardownTask = function(optmessage) {
+	self.teardownTask = function(optmessage) {
 		Backbone.Notifications.trigger('_psiturk_finishedtask', optmessage);
 	};
 
-	this.doInstructions = function(pages, callback) {
-		instructionController = new Instructions(this, pages, callback);
+	self.doInstructions = function(pages, callback) {
+		instructionController = new Instructions(self, pages, callback);
 		instructionController.loadFirstPage();
 	};
 
-	this.getInstructionIndicator = function() {
+	self.getInstructionIndicator = function() {
 		if (instructionController!=undefined) {
 			return instructionController.getIndicator();
 		}
@@ -294,7 +295,7 @@ var PsiTurk = function() {
 	// To be fleshed out with backbone views in the future.
 	var replaceBody = function(x) { $('body').html(x); };
 
-	this.showPage = _.compose(replaceBody, this.getPage);
+	self.showPage = _.compose(replaceBody, self.getPage);
 
 	/* initialized local variables */
 
@@ -302,10 +303,10 @@ var PsiTurk = function() {
 	taskdata.fetch({async: false});
 	
 	/*  DATA: */
-	this.pages = {};
-	this.taskdata = taskdata;
+	self.pages = {};
+	self.taskdata = taskdata;
 
-	return this;
+	return self;
 };
 
 // vi: noexpandtab nosmartindent shiftwidth=4 tabstop=4
