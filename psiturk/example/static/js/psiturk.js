@@ -36,6 +36,7 @@ var startTask = function () {
 		return "Are you sure you want to leave the experiment?";
 	});
 };
+
 Backbone.Notifications.on('_psiturk_finishedinstructions', startTask);
 Backbone.Notifications.on('_psiturk_finishedtask', function(msg) { $(window).off("beforeunload"); });
 
@@ -63,75 +64,6 @@ $(window).resize(function(){
 
 
 
-/******************
- * VIEW FUNCTIONS *
- ***************/
-
-// To be fleshed out with backbone views in the future.
-var replaceBody = function(x) { $('body').html(x); };
-
-
-/****************
- * TASK DATA    *
- ***************/
-
-var TaskData = Backbone.Model.extend({
-	urlRoot: "/sync", // Save will PUT to /data, with mimetype 'application/JSON'
-	id: uniqueId,
-	
-	defaults: {
-		condition: 0,
-		counterbalance: 0,
-		assignmentId: 0,
-		workerId: 0,
-		hitId: 0,
-		currenttrial: 0,
-		bonus: 0,
-		data: "",
-		questiondata: {},
-		eventdata: [],
-		useragent: ""
-	},
-	
-	initialize: function() {
-		this.useragent = navigator.userAgent;
-		this.addEvent('initialized', null);
-		this.addEvent('window_resize', [window.innerWidth, window.innerHeight]);
-
-		this.listenTo(Backbone.Notifications, '_psiturk_lostfocus', function() { this.addEvent('focus', 'off'); });
-		this.listenTo(Backbone.Notifications, '_psiturk_gainedfocus', function() { this.addEvent('focus', 'on'); });
-		this.listenTo(Backbone.Notifications, '_psiturk_windowresize', function(newsize) { this.addEvent('window_resize', newsize); });
-	},
-
-	addTrialData: function(trialdata) {
-		trialdata = [this.id, this.get("currenttrial"), (new Date().getTime())].concat(trialdata);
-		this.set({"data": this.get("data").concat(trialdata, "\n")});
-		this.set({"currenttrial": this.get("currenttrial")+1});
-	},
-	
-	addUnstructuredData: function(field, response) {
-		qd = this.get("questiondata");
-		qd[field] = response;
-		this.set("questiondata", qd);
-	},
-
-	addEvent: function(eventtype, value) {
-		var interval,
-		    ed = this.get('eventdata'),
-		    timestamp = new Date().getTime();
-
-		if (eventtype == 'initialized') {
-			interval = 0;
-		} else {
-			interval = timestamp - ed[ed.length-1]['timestamp'];
-		}
-
-		ed.push({'eventtype': eventtype, 'value': value, 'timestamp': timestamp, 'interval': interval});
-		this.set('eventdata', ed);
-	}
-});
-
-
 
 /*******
  * API *
@@ -139,13 +71,66 @@ var TaskData = Backbone.Model.extend({
 var PsiTurk = function() {
 	that = this;
 	
-	var taskdata = new TaskData();
-	taskdata.fetch({async: false});
-	
-	/*  DATA: */
-	this.pages = {};
-	this.taskdata = taskdata;
-	var instructionController = undefined;
+
+
+	/****************
+	 * TASK DATA    *
+	 ***************/
+	var TaskData = Backbone.Model.extend({
+		urlRoot: "/sync", // Save will PUT to /data, with mimetype 'application/JSON'
+		id: uniqueId,
+		
+		defaults: {
+			condition: 0,
+			counterbalance: 0,
+			assignmentId: 0,
+			workerId: 0,
+			hitId: 0,
+			currenttrial: 0,
+			bonus: 0,
+			data: "",
+			questiondata: {},
+			eventdata: [],
+			useragent: ""
+		},
+		
+		initialize: function() {
+			this.useragent = navigator.userAgent;
+			this.addEvent('initialized', null);
+			this.addEvent('window_resize', [window.innerWidth, window.innerHeight]);
+
+			this.listenTo(Backbone.Notifications, '_psiturk_lostfocus', function() { this.addEvent('focus', 'off'); });
+			this.listenTo(Backbone.Notifications, '_psiturk_gainedfocus', function() { this.addEvent('focus', 'on'); });
+			this.listenTo(Backbone.Notifications, '_psiturk_windowresize', function(newsize) { this.addEvent('window_resize', newsize); });
+		},
+
+		addTrialData: function(trialdata) {
+			trialdata = [this.id, this.get("currenttrial"), (new Date().getTime())].concat(trialdata);
+			this.set({"data": this.get("data").concat(trialdata, "\n")});
+			this.set({"currenttrial": this.get("currenttrial")+1});
+		},
+		
+		addUnstructuredData: function(field, response) {
+			qd = this.get("questiondata");
+			qd[field] = response;
+			this.set("questiondata", qd);
+		},
+
+		addEvent: function(eventtype, value) {
+			var interval,
+			    ed = this.get('eventdata'),
+			    timestamp = new Date().getTime();
+
+			if (eventtype == 'initialized') {
+				interval = 0;
+			} else {
+				interval = timestamp - ed[ed.length-1]['timestamp'];
+			}
+
+			ed.push({'eventtype': eventtype, 'value': value, 'timestamp': timestamp, 'interval': interval});
+			this.set('eventdata', ed);
+		}
+	});
 
 
 	/*****************************************************
@@ -239,8 +224,6 @@ var PsiTurk = function() {
 
 		return this;
 	};
-
-
 	
 	/*  PUBLIC METHODS: */
 	this.preloadImages = function(imagenames) {
@@ -308,9 +291,21 @@ var PsiTurk = function() {
 		}
 	}
 
+	// To be fleshed out with backbone views in the future.
+	var replaceBody = function(x) { $('body').html(x); };
+
 	this.showPage = _.compose(replaceBody, this.getPage);
+
+	/* initialized local variables */
+
+	var taskdata = new TaskData();
+	taskdata.fetch({async: false});
+	
+	/*  DATA: */
+	this.pages = {};
+	this.taskdata = taskdata;
+
 	return this;
 };
-
 
 // vi: noexpandtab nosmartindent shiftwidth=4 tabstop=4
