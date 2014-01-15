@@ -460,13 +460,17 @@ def ppid():
 # generic route
 #----------------------------------------------
 @app.route('/<pagename>')
-def regularpage(pagename=None):
+@app.route('/<foldername>/<pagename>')
+def regularpage(foldername=None,pagename=None):
     """
     Route not found by the other routes above. May point to a static template.
     """
-    if pagename==None:
+    if foldername==None and pagename==None:
         raise ExperimentError('page_not_found')
-    return render_template(pagename)
+    if foldername==None and pagename!=None:
+        return render_template(pagename)
+    else:
+        return render_template(foldername+"/"+pagename)
 
 # # Initialize database if necessary
 def run_webserver():
