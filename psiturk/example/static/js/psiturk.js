@@ -145,8 +145,104 @@ var PsiTurk = function() {
 	/*  DATA: */
 	this.pages = {};
 	this.taskdata = taskdata;
+	var instructionController = undefined;
+
+
+	/*****************************************************
+	* INSTRUCTIONS 
+	*   - a simple, default instruction player
+	******************************************************/
+	var Instructions = function(parent, pages, callback) {
+
+		var psiturk = parent;
+		var currentscreen = 0, timestamp;
+		var instruction_pages = pages; 
+		var complete_fn = callback;
+
+		var loadPage = function() {
+
+			// show the page
+			psiTurk.showPage(instruction_pages[currentscreen]);
+
+			// connect event handler to previous button
+			if(currentscreen != 0) {  // can't do this if first page
+				$('.previous').bind('click.psiturk.instructions.prev', function() {
+					prevPageButtonPress();
+				});
+			}
+
+			// connect event handler to continue button
+			$('.continue').bind('click.psiturk.instructions.next', function() {
+				nextPageButtonPress();
+			});
+			
+			// Record the time that an instructions page is first presented
+			timestamp = new Date().getTime();
+
+		};
+
+		var prevPageButtonPress = function () {
+
+			// Record the response time
+			var rt = (new Date().getTime()) - timestamp;
+			viewedscreen = currentscreen;
+			currentscreen = currentscreen - 1;
+			if (currentscreen < 0) {
+				currentscreen = 0; // can't go back that far
+			} else {
+				psiturk.recordTrialData({"pages":"INSTRUCTIONS", "template":pages[viewedscreen], "indexOf":viewedscreen, "action":"PrevPage", "viewTime":rt});
+				loadPage(instruction_pages[currentscreen]);
+			}
+
+		}
+
+		var nextPageButtonPress = function() {
+
+			// Record the response time
+			var rt = (new Date().getTime()) - timestamp;
+			viewedscreen = currentscreen;
+			currentscreen = currentscreen + 1;
+
+			if (currentscreen == instruction_pages.length) {
+				psiturk.recordTrialData({"pages":"INSTRUCTIONS", "template":pages[viewedscreen], "indexOf":viewedscreen, "action":"FinishInstructions", "viewTime":rt});
+				finish();
+			} else {
+				psiturk.recordTrialData({"pages":"INSTRUCTIONS", "template":pages[viewedscreen], "indexOf":viewedscreen, "action":"NextPage", "viewTime":rt});
+				loadPage(instruction_pages[viewedscreen]);
+			}
+
+		};
+
+		var finish = function() {
+
+			// unbind all instruction related events
+			$('.continue').unbind('click.psiturk.instructions.next');
+			$('.previous').unbind('click.psiturk.instructions.prev');
+
+			// Record that the user has finished the instructions and 
+			// moved on to the experiment. This changes their status code
+			// in the database.
+			psiturk.finishInstructions();
+
+			// Move on to the experiment 
+			complete_fn();
+		};
+
+
+
+		/* public interface */
+		this.getIndicator = function() {
+			return {"currently_viewing":{"indexOf":currentscreen, "template":pages[currentscreen]}, "instruction_deck":{"total_pages":instruction_pages.length, "templates":instruction_pages}};
+		}
+
+		this.loadFirstPage = function () { loadPage(); }
+
+		return this;
+	};
+
+
 	
-	/*  METHODS: */
+	/*  PUBLIC METHODS: */
 	this.preloadImages = function(imagenames) {
 		$(imagenames).each(function() {
 			image = new Image();
@@ -200,8 +296,21 @@ var PsiTurk = function() {
 	this.teardownTask = function(optmessage) {
 		Backbone.Notifications.trigger('_psiturk_finishedtask', optmessage);
 	};
+
+	this.doInstructions = function(pages, callback) {
+		instructionController = new Instructions(this, pages, callback);
+		instructionController.loadFirstPage();
+	};
+
+	this.getInstructionIndicator = function() {
+		if (instructionController!=undefined) {
+			return instructionController.getIndicator();
+		}
+	}
+
 	this.showPage = _.compose(replaceBody, this.getPage);
 	return this;
 };
+
 
 // vi: noexpandtab nosmartindent shiftwidth=4 tabstop=4

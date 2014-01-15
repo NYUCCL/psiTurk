@@ -16,7 +16,9 @@ var pages = [
 
 psiTurk.preloadPages(pages);
 
-
+var instructionPages = [ // add as a list as many pages as you like
+	"instruct.html"
+];
 
 // Stimuli for a basic Stroop experiment
 var stims = [
@@ -47,60 +49,9 @@ var currentview;
 ********************/
 
 
-/*************************
-* INSTRUCTIONS         
-*************************/
-
-var Instructions = function(pages) {
-	var currentscreen = 0,
-	    timestamp;
-	    instruction_pages = pages; 
-	
-	var next = function() {
-		psiTurk.showPage(instruction_pages[currentscreen]);
-		$('.continue').click(function() {
-			buttonPress();
-		});
-		
-		currentscreen = currentscreen + 1;
-
-		// Record the time that an instructions page is presented
-		timestamp = new Date().getTime();
-	};
-
-	var buttonPress = function() {
-
-		// Record the response time
-		var rt = (new Date().getTime()) - timestamp;
-		psiTurk.recordTrialData(["INSTRUCTIONS", currentscreen, rt]);
-
-		if (currentscreen == instruction_pages.length) {
-			finish();
-		} else {
-			next();
-		}
-
-	};
-
-	var finish = function() {
-		// Record that the user has finished the instructions and 
-		// moved on to the experiment. This changes their status code
-		// in the database.
-		//psiTurk.finishInstructions();
-
-		// Move on to the experiment 
-		currentview = new TestPhase();
-	};
-
-	next();
-};
-
-
-
 /********************
 * STROOP TEST       *
 ********************/
-
 var TestPhase = function() {
 
 	var wordon, // time word is presented
@@ -252,9 +203,10 @@ var completeHIT = function() {
  * Run Task
  ******************/
 $(window).load( function(){
-    currentview = new Instructions([
-		"instruct.html"
-	]);
+    psiTurk.doInstructions(
+    	instructionPages, // a list of pages you want to display in sequence
+    	function() { currentview = new TestPhase(); } // what you want to do when you are done with instructions
+    );
 });
 
 // vi: noexpandtab tabstop=4 shiftwidth=4
