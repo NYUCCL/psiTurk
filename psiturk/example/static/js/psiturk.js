@@ -242,10 +242,11 @@ var PsiTurk = function() {
 					type: "POST",
 					data: {uniqueId: uniqueId}
 			});
-			var optoutmessage = "By leaving this page, you opt out of the experiment.";
-			alert(optoutmessage);
-			return "Are you sure you want to leave the experiment?";
+			//var optoutmessage = "By leaving this page, you opt out of the experiment.";
+			//alert(optoutmessage);
+			return "By leaving or reloading this page, you opt out of the experiment.  Are you sure you want to leave the experiment?";
 		});
+
 	};
 	
 	// Notify app that participant has begun main experiment
