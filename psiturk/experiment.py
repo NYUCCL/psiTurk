@@ -359,7 +359,8 @@ def enterexp():
         user.beginexp = datetime.datetime.now()
         db_session.add(user)
         db_session.commit()
-    return "Success"
+    resp = {"status": "success"}
+    return jsonify(**resp)
 
 # TODD SAYS: this the only route in the whole thing that uses <id> like this
 # where everything else uses POST!  This could be confusing but is forced
@@ -408,6 +409,9 @@ def quitter():
         db_session.commit()
     except:
         raise ExperimentError('tried_to_quit')
+    else:
+        resp = {"status": "marked as quitter"}
+        return jsonify(**resp)
 
 # this route should only used when debugging
 @app.route('/complete', methods=['GET'])
