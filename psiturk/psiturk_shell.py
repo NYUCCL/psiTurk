@@ -606,16 +606,16 @@ class PsiturkShell(Cmd):
                 print "*** Error, instance name either not valid.  Try again checking for typos."
                 return
             if instance_id not in instance_list:
-                print "*** Error, This instance not present in this account.  Try again checking for typos.  Run `db aws_list_dinstances` to see valid list."
+                print "*** Error, This instance not present in this account.  Try again checking for typos.  Run `db aws_list_instances` to see valid list."
                 return
 
         r = raw_input("Deleting an instance will erase all your data associated with the database in that instance. Really quit? y or n: ")
         if r == 'y':
             res = self.db_services.delete_db_instance(instance_id)
             if res:
-                print "AWS RDS database instance %s deleted.  Run `db aws_list_dinstances` for current status." % instance_id
+                print "AWS RDS database instance %s deleted.  Run `db aws_list_instances` for current status." % instance_id
             else:
-                print "*** Error deleting database instance ", instance_id, ". It maybe because it is still being created, deleted, or is being backed up.  Run `db aws_list_dinstances` for current status."
+                print "*** Error deleting database instance ", instance_id, ". It maybe because it is still being created, deleted, or is being backed up.  Run `db aws_list_instances` for current status."
         else:
             return
 
@@ -657,7 +657,7 @@ class PsiturkShell(Cmd):
                 print "*** Error, instance name either not valid.  Try again checking for typos."
                 return
             if instance_id not in instance_list:
-                print "*** Error, This instance not present in this account.  Try again checking for typos.  Run `db aws_list_dinstances` to see valid list."
+                print "*** Error, This instance not present in this account.  Try again checking for typos.  Run `db aws_list_instances` to see valid list."
                 return
 
         r = raw_input("Switching your DB settings to use this instance.  Are you sure you want to do this? ")

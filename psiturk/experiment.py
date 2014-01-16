@@ -55,7 +55,7 @@ try:
     sys.path.append(os.getcwd())
     from custom import custom_code
 except ImportError:
-    app.logger.info( "Hmm... is seems no custom code (custom.py) assocated with this project.")
+    app.logger.info( "Hmm... it seems no custom code (custom.py) assocated with this project.")
     pass # do nothing if the 
 else:
     app.register_blueprint(custom_code)
