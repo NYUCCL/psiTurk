@@ -317,6 +317,7 @@ class MTurkServices:
             return(False)
         try:
             self.mtc.approve_assignment(assignment_id, feedback=None)
+            return True
         except MTurkRequestError:
             return(False)
 
@@ -325,6 +326,7 @@ class MTurkServices:
             return False
         try:
             self.mtc.reject_assignment(assignment_id, feedback=None)
+            return True
         except MTurkRequestError:
             return(False)
 
