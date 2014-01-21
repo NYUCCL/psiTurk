@@ -301,11 +301,8 @@ class PsiturkShell(Cmd):
                 self.web_services.delete_ad(hit)  # also delete the ad
                 if self.sandbox:
                     print "deleting sandbox HIT", hit
-                    self.sandboxHITs -= 1
                 else:
                     print "deleting live HIT", hit
-                    self.liveHITs -= 1
-
 
     def hit_expire(self, allHits, hitIDs=None):
         if allHits:
