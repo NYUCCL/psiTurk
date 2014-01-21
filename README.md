@@ -27,6 +27,7 @@ as you can turn your experiment into a dynamic webpage, you can run it with
   - Assign bonuses with ease
   - Debug and test your experiment
   - Create and manage robust cloud-based databases for your data
+  - Develop and test without an Internet connection (airplanes, etc...)
 
 Please visit [psiturk.org](https://psiturk.org) for more information.
 

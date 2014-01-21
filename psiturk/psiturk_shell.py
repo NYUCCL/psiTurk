@@ -82,7 +82,7 @@ def docopt_cmd(func):
 #  -  if a command takes any arguments, use @docopt_cmd decorator
 #     and describe command usage in docstring
 #---------------------------------
-class PsiturkShell(Cmd):
+class PsiturkShell(Cmd, object):
     """
     Usage:
         psiturk -c
@@ -177,6 +177,7 @@ class PsiturkShell(Cmd):
     def complete(self, text, state):
         return Cmd.complete(self, text, state) + ' '
 
+
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #  server management
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
@@ -252,16 +253,31 @@ class PsiturkShell(Cmd):
             print 'Server: ' + colorize('currently offline', 'red')
         elif server_status == 'maybe':
             print 'Server: ' + colorize('please wait', 'yellow')
-        self.tally_hits()
-        if self.sandbox:
-            print 'AMT worker site - ' + colorize('sandbox', 'bold') + ': ' + str(self.sandboxHITs) + ' HITs available'
-        else:
-            print 'AMT worker site - ' + colorize('live', 'bold') + ': ' + str(self.liveHITs) + ' HITs available'
 
     def do_setup_example(self, arg):
         import setup_example as se
         se.setup_example()
-        
+
+
+    #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
+    #  Local SQL database commands
+    #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
+    def db_get_config(self):
+        print "Current database setting (database_url): \n\t", self.config.get("Database Parameters", "database_url")
+    
+    def db_use_local_file(self, filename=None):
+        interactive = False
+        if filename is None:
+            interactive = True
+            filename = raw_input('Enter the filename of the local SQLLite database you would like to use [default=participants.db]: ')
+            if filename=='':
+                filename='participants.db'
+        base_url = "sqlite:///" + filename
+        self.config.set("Database Parameters", "database_url", base_url)
+        print "Updated database setting (database_url): \n\t", self.config.get("Database Parameters", "database_url")
+        if self.server.is_server_running() == 'yes':
+            self.server_relaunch()
+
     def do_download_datafiles(self, arg):
         contents = {"trialdata": lambda p: p.get_trial_data(), "eventdata": lambda p: p.get_event_data(), "questiondata": lambda p: p.get_question_data()}
         query = Participant.query.all()
@@ -409,14 +425,14 @@ class PsiturkNetworkShell(PsiturkShell):
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #  basic command line functions
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
-    def get_intro_prompt(self):  # OVERRIDE INTRO PROMT WITH NETWORK ACCESS
+    def get_intro_prompt(self):  # overloads intro prompt with network-aware version
         # if you can reach psiTurk.org, request system status
         # message
         server_msg = self.web_services.get_system_status()
         return server_msg + colorize('psiTurk version ' + version_number +
                               '\nType "help" for more information.', 'green')
 
-    def color_prompt(self):  # OVERRIDE PROMPT WITH NETWORK INFO
+    def color_prompt(self):  # overloads prompt with network info
         prompt = '[' + colorize('psiTurk', 'bold')
         serverString = ''
         server_status = self.server.is_server_running()
@@ -437,6 +453,15 @@ class PsiturkNetworkShell(PsiturkShell):
             prompt += ' #HITs:' + str(self.liveHITs)
         prompt += ']$ '
         self.prompt = prompt
+
+    def do_status(self, arg): # overloads do_status with AMT info
+        super(PsiturkNetworkShell, self).do_status(arg)
+        server_status = self.server.is_server_running()
+        self.tally_hits()
+        if self.sandbox:
+            print 'AMT worker site - ' + colorize('sandbox', 'bold') + ': ' + str(self.sandboxHITs) + ' HITs available'
+        else:
+            print 'AMT worker site - ' + colorize('live', 'bold') + ': ' + str(self.liveHITs) + ' HITs available'
 
 
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
@@ -713,26 +738,6 @@ class PsiturkNetworkShell(PsiturkShell):
     def help_db(self):
         with open(self.helpPath + 'db.txt', 'r') as helpText:
             print helpText.read()
-
-
-    #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
-    #  Local SQL database commands
-    #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
-    def db_get_config(self):
-        print "Current database setting (database_url): \n\t", self.config.get("Database Parameters", "database_url")
-    
-    def db_use_local_file(self, filename=None):
-        interactive = False
-        if filename is None:
-            interactive = True
-            filename = raw_input('Enter the filename of the local SQLLite database you would like to use [default=participants.db]: ')
-            if filename=='':
-                filename='participants.db'
-        base_url = "sqlite:///" + filename
-        self.config.set("Database Parameters", "database_url", base_url)
-        print "Updated database setting (database_url): \n\t", self.config.get("Database Parameters", "database_url")
-        if self.server.is_server_running() == 'yes':
-            self.server_relaunch()
 
 
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
@@ -1216,7 +1221,7 @@ class PsiturkNetworkShell(PsiturkShell):
             func()
         else:
             # Modifications start here
-            names = dir(PsiturkShell)
+            names = dir(PsiturkNetworkShell)
             superNames = dir(Cmd)
             newNames = [m for m in names if m not in superNames]
             help = {}
