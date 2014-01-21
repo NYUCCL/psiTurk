@@ -52,11 +52,14 @@ def launch_shell():
 
 	# optional flags
 	parser.add_argument('-v', '--version', help='Print version number.', action="store_true")
+	parser.add_argument('-c', '--cabinmode', help='Launch psiturk in cabin (offline) mode', action="store_true")
 	args = parser.parse_args()
-
 	# if requested version just print and quite
 	if args.version:
 		print version_number
 	else:
 		import psiturk_shell as ps
-		ps.run()
+		if args.cabinmode:
+			ps.run(cabinmode=True)
+		else:
+			ps.run(cabinmode=False)
