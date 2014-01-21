@@ -104,9 +104,23 @@ class PsiturkShell(Cmd):
         self.color_prompt()
         self.intro = self.get_intro_prompt()
 
+
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #  basic command line functions
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
+    def check_offline_configuration(self):
+        quit_on_start = False
+        database_url = self.config.get('Database Parameters', 'database_url')
+        host = self.config.get('Server Parameters', 'host', 'localhost')
+        if database_url[:6] != 'sqlite':
+            print "*** Error: config.txt option 'database_url' set to use mysql://.  Please change this sqllite:// while in cabin mode."
+            quit_on_start = True
+        if host != 'localhost':
+            print "*** Error: config option 'host' is not set to localhost.  Please change this to localhost while in cabin mode."
+            quit_on_start = True
+        if quit_on_start:
+            exit()
+
     def get_intro_prompt(self):
         # offline message
         sysStatus = open(self.helpPath + 'cabin.txt', 'r')
@@ -1238,6 +1252,7 @@ def run(cabinmode=False):
     server = control.ExperimentServerController(config)
     if cabinmode:
         shell = PsiturkShell(config, server)
+        shell.check_offline_configuration()
     else:
         amt_services = MTurkServices(config.get('AWS Access', 'aws_access_key_id'), \
                                  config.get('AWS Access', 'aws_secret_access_key'), \
