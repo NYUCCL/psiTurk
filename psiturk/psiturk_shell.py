@@ -212,8 +212,10 @@ class PsiturkShell(Cmd):
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     def worker_list(self):
         workers = self.amt_services.get_workers()
-        if not workers:
-            print colorize('failed to get workers', 'red')
+        if workers==False:
+            print colorize('*** failed to get workers', 'red')
+        elif not len(workers):
+            print "*** no submitted workers"
         else:
             print json.dumps(self.amt_services.get_workers(), indent=4,
                              separators=(',', ': '))
