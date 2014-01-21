@@ -27,7 +27,7 @@ class MTurkHIT:
         self.options = json_options
 
     def __repr__(self):
-        return "%s \n\tStatus: %s \n\tHITid: %s \n\tmax:%s/pending:%s/complete:%s/remain:%s \n\tCreated:%s \n\tExpires:%s\n" % ( 
+        return "%s \n\tStatus: %s \n\tHITid: %s \n\tmax:%s/pending:%s/complete:%s/remain:%s \n\tCreated:%s \n\tExpires:%s\n" % (
             self.options['title'],
             self.options['status'],
             self.options['hitid'],
@@ -357,7 +357,7 @@ class MTurkServices:
             host = 'mechanicalturk.sandbox.amazonaws.com'
         else:
             host = 'mechanicalturk.amazonaws.com'
-        
+
         mturkparams = dict(
             aws_access_key_id = self.aws_access_key_id,
             aws_secret_access_key = self.aws_secret_access_key,
@@ -402,7 +402,7 @@ class MTurkServices:
         if not self.connect_to_turk():
             return('-')
         return(self.mtc.get_account_balance()[0])
-        
+
     # TODO (if valid AWS credentials haven't been provided then connect_to_turk() will
     # fail, not error checking here and elsewhere)
     def create_hit(self, hit_config):
@@ -416,8 +416,8 @@ class MTurkServices:
             return False
         else:
             return self.hitid
- 
-    # TODO(Jay): Have a wrapper around functions that serializes them. 
+
+    # TODO(Jay): Have a wrapper around functions that serializes them.
     # Default output should not be serialized.
     def expire_hit(self, hitid):
         if not self.connect_to_turk():
@@ -430,11 +430,14 @@ class MTurkServices:
         self.mtc.dispose_hit(hitid)
 
     def extend_hit(self, hitid, assignments_increment=None, expiration_increment=None):
-        
         if not self.connect_to_turk():
             return False
-        self.mtc.extend_hit(hitid, assignments_increment=int(assignments_increment or 0))
-        self.mtc.extend_hit(hitid, expiration_increment=int(expiration_increment or 0)*60)
+        try:
+            self.mtc.extend_hit(hitid, assignments_increment=int(assignments_increment or 0))
+            self.mtc.extend_hit(hitid, expiration_increment=int(expiration_increment or 0)*60)
+            return True
+        except Exception, e:
+            print "HIT failed to extend. Please check the ID and try again."
 
     def get_hit_status(self, hitid):
         if not self.connect_to_turk():

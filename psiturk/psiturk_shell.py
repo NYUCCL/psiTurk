@@ -96,7 +96,7 @@ class PsiturkShell(Cmd):
         self.amt_services = amt_services
         self.web_services = web_services
         self.db_services = aws_rds_services
-        self.sandbox = self.config.getboolean('HIT Configuration', 
+        self.sandbox = self.config.getboolean('HIT Configuration',
                                               'using_sandbox')
         self.sandboxHITs = 0
         self.liveHITs = 0
@@ -173,8 +173,8 @@ class PsiturkShell(Cmd):
 
     def emptyline(self):
         self.color_prompt()
-    
-    # add space after a completion, makes tab completion with 
+
+    # add space after a completion, makes tab completion with
     # multi-word commands cleaner
     def complete(self, text, state):
         return Cmd.complete(self, text, state) + ' '
@@ -187,7 +187,7 @@ class PsiturkShell(Cmd):
         self.server.startup()
         while self.server.is_server_running() != 'yes':
             time.sleep(0.5)
-                
+
     def server_shutdown(self):
         self.server.shutdown()
         print 'Please wait. This could take a few seconds.'
@@ -217,7 +217,7 @@ class PsiturkShell(Cmd):
         else:
             print json.dumps(self.amt_services.get_workers(), indent=4,
                              separators=(',', ': '))
-    
+
     def worker_approve(self, allWorkers, assignment_ids = []):
         if allWorkers:
             workers = self.amt_services.get_workers()
@@ -240,14 +240,14 @@ class PsiturkShell(Cmd):
             else:
                 print '*** failed to reject', assignmentID
 
-    
+
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #  hit management
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     def amt_balance(self):
         print self.amt_services.check_balance()
 
-    
+
     def hit_list(self, allHits, activeHits, reviewableHits):
         hits_data = []
         if allHits:
@@ -261,9 +261,27 @@ class PsiturkShell(Cmd):
         else:
             for hit in hits_data:
                 print hit
-    
-    def hit_extend(self, hitID, assignments, time):
-        self.amt_services.extend_hit(hitID, assignments, time)
+
+    def hit_extend(self, hitID, assignments, minutes):
+        """ Add additional worker assignments or minutes to a HIT.
+
+        Args:
+            hitID: A list conaining one hitID string.
+            assignments: Variable <int> for number of assignments to add.
+            minutes: Variable <int> for number of minutes to add.
+
+        Returns:
+            A side effect of this function is that the state of a HIT changes on AMT servers.
+
+        Raises:
+
+        """
+
+        assert type(hitID) is list
+        assert type(hitID[0]) is str
+
+        if self.amt_services.extend_hit(hitID[0], assignments, minutes):
+            print "HIT extended."
 
     def hit_dispose(self, allHits, hitIDs=None):
         if allHits:
@@ -274,7 +292,7 @@ class PsiturkShell(Cmd):
             status = self.amt_services.get_hit_status(hit)
             if not status:
                 print "*** Error getting hit status"
-                return                
+                return
             if self.amt_services.get_hit_status(hit)!="Reviewable":
                 print "*** This hit is not 'Reviewable' and so can not be disposed of"
                 return
@@ -365,11 +383,11 @@ class PsiturkShell(Cmd):
 
         # what all do we need to send to server?
         # 1. server
-        # 2. port 
+        # 2. port
         # 3. support_ie?
         # 4. ad.html template
         # 5. contact_email in case an error happens
-        
+
         ad_content = {
             "server": str(self.web_services.get_my_ip()),
             "port": str(self.config.get('Server Parameters', 'port')),
@@ -439,7 +457,7 @@ class PsiturkShell(Cmd):
     @docopt_cmd
     def do_db(self, arg):
         """
-        Usage: 
+        Usage:
           db get_config
           db use_local_file [<filename>]
           db use_aws_instance [<instance_id>]
@@ -488,7 +506,7 @@ class PsiturkShell(Cmd):
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     def db_get_config(self):
         print "Current database setting (database_url): \n\t", self.config.get("Database Parameters", "database_url")
-    
+
     def db_use_local_file(self, filename=None):
         interactive = False
         if filename is None:
@@ -654,7 +672,7 @@ class PsiturkShell(Cmd):
                     print "*** Error: password seems incorrect, doesn't conform to AWS rules.  Try again"
                 else:
                     valid = True
-    
+
             # get instance
             myinstance = self.db_services.get_db_instance_info(instance_id)
             if myinstance:
@@ -760,7 +778,7 @@ class PsiturkShell(Cmd):
                 else:
                     print res + " Try again."
         else:
-            res = self.db_services.validate_instance_id(instid) 
+            res = self.db_services.validate_instance_id(instid)
             if res is not True:
                 print res
                 return
@@ -775,7 +793,7 @@ class PsiturkShell(Cmd):
                 else:
                     print res + " Try again."
         else:
-            res = self.db_services.validate_instance_size(size) 
+            res = self.db_services.validate_instance_size(size)
             if res is not True:
                 print res
                 return
@@ -790,7 +808,7 @@ class PsiturkShell(Cmd):
                 else:
                     print res + " Try again."
         else:
-            res = self.db_services.validate_instance_username(username) 
+            res = self.db_services.validate_instance_username(username)
             if res is not True:
                 print res
                 return
@@ -805,7 +823,7 @@ class PsiturkShell(Cmd):
                 else:
                     print res + " Try again."
         else:
-            res = self.db_services.validate_instance_password(password) 
+            res = self.db_services.validate_instance_password(password)
             if res is not True:
                 print res
                 return
@@ -820,7 +838,7 @@ class PsiturkShell(Cmd):
                 else:
                     print res + " Try again."
         else:
-            res = self.db_services.validate_instance_dbname(dbname) 
+            res = self.db_services.validate_instance_dbname(dbname)
             if res is not True:
                 print res
                 return
@@ -923,7 +941,7 @@ class PsiturkShell(Cmd):
             for k in items:
                 print "%(a)s=%(b)s" % {'a': k, 'b': items[k]}
             print ''
-            
+
     def do_reload_config(self, arg):
         self.config.load_config()
 
@@ -944,7 +962,7 @@ class PsiturkShell(Cmd):
     def do_setup_example(self, arg):
         import setup_example as se
         se.setup_example()
-        
+
     def do_download_datafiles(self, arg):
         contents = {"trialdata": lambda p: p.get_trial_data(), "eventdata": lambda p: p.get_event_data(), "questiondata": lambda p: p.get_question_data()}
         query = Participant.query.all()
@@ -987,7 +1005,7 @@ class PsiturkShell(Cmd):
     @docopt_cmd
     def do_server(self, arg):
         """
-        Usage: 
+        Usage:
           server launch
           server shutdown
           server relaunch
@@ -1019,7 +1037,7 @@ class PsiturkShell(Cmd):
         """
         Usage:
           hit create [<numWorkers> <reward> <duration>]
-          hit extend <HITid> [--assignments <number>] [--expiration <time>]
+          hit extend <HITid> [--assignments <number>] [--expiration <minutes>]
           hit expire (--all | <HITid> ...)
           hit dispose (--all | <HITid> ...)
           hit list (all | active | reviewable)
@@ -1046,7 +1064,7 @@ class PsiturkShell(Cmd):
     def help_hit(self):
         with open(self.helpPath + 'hit.txt', 'r') as helpText:
             print helpText.read()
-        
+
 
     @docopt_cmd
     def do_worker(self, arg):
@@ -1078,7 +1096,7 @@ class PsiturkShell(Cmd):
     @docopt_cmd
     def do_amt(self, arg):
         """
-        Usage: 
+        Usage:
           amt balance
           amt help
         """
@@ -1086,7 +1104,7 @@ class PsiturkShell(Cmd):
             self.amt_balance()
         else:
             self.help_amt()
-    
+
     amt_commands = ('balance', 'help')
 
     def complete_amt(self, text, line, begidx, endidx):
@@ -1141,7 +1159,7 @@ class PsiturkShell(Cmd):
             self.print_topics(self.psiTurk_header, cmds_psiTurk, 15, 80)
             self.print_topics(self.misc_header, help.keys(), 15, 80)
             self.print_topics(self.super_header, cmds_super, 15, 80)
-            
+
 def run():
     opt = docopt(__doc__, sys.argv[1:])
     config = PsiturkConfig()
