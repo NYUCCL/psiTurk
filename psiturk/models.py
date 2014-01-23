@@ -1,7 +1,7 @@
 
 import datetime
 import io, csv, json
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text, Float
 
 from db import Base
 from psiturk_config import PsiturkConfig
@@ -32,6 +32,7 @@ class Participant(Base):
     beginhit = Column(DateTime)
     beginexp = Column(DateTime)
     endhit = Column(DateTime)
+    bonus = Column(Float, default = 0)
     status = Column(Integer, default = 1)
     datastring = Column(Text)
     

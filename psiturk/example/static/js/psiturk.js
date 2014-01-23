@@ -217,9 +217,12 @@ var PsiTurk = function() {
 	};
 
 	// Add bonus to task data
-	self.recordBonus = function(bonus) {
-		taskdata.set('bonus', bonus);
-	}
+	this.computeBonus = function(url) {
+		$.ajax(url, {
+                    type: "GET",
+                    data: {uniqueId: uniqueId}
+                });
+	};
 	
 	// Save data to server
 	self.saveData = function(callbacks) {

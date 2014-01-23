@@ -49,6 +49,56 @@ var currentview;
 ********************/
 
 
+/*************************
+* INSTRUCTIONS         
+*************************/
+
+var Instructions = function(pages) {
+	var currentscreen = 0,
+	    timestamp;
+	    instruction_pages = pages; 
+	
+	var next = function() {
+		psiTurk.showPage(instruction_pages[currentscreen]);
+		$('.continue').click(function() {
+			buttonPress();
+		});
+		
+		currentscreen = currentscreen + 1;
+
+		// Record the time that an instructions page is presented
+		timestamp = new Date().getTime();
+	};
+
+	var buttonPress = function() {
+
+		// Record the response time
+		var rt = (new Date().getTime()) - timestamp;
+		psiTurk.recordTrialData({'phase':"INSTRUCTIONS",
+                                         'screen':currentscreen,
+                                         'rt':rt});
+
+		if (currentscreen == instruction_pages.length) {
+			finish();
+		} else {
+			next();
+		}
+
+	};
+
+	var finish = function() {
+		// Record that the user has finished the instructions and 
+		// moved on to the experiment. This changes their status code
+		// in the database.
+		//psiTurk.finishInstructions();
+
+		// Move on to the experiment 
+		currentview = new TestPhase();
+	};
+
+	next();
+};
+
 /********************
 * STROOP TEST       *
 ********************/
@@ -99,7 +149,18 @@ var TestPhase = function() {
 			var hit = response == stim[1];
 			var rt = new Date().getTime() - wordon;
 
-			psiTurk.recordTrialData(["TEST", stim[0], stim[1], stim[2], response, hit, rt]);
+			psiTurk.recordTrialData({'phase':"TEST",
+                                                 'word':stim[0],
+                                                 'color':stim[1],
+                                                 'relation':stim[2],
+                                                 'response':response,
+                                                 'hit':hit,
+                                                 'rt':rt}
+                                               );
+// ["TEST", stim[0], stim[1], stim[2],
+//                                                  response, hit, rt]);
+
+
 			
 			remove_word();
 			next();
@@ -107,8 +168,8 @@ var TestPhase = function() {
 	};
 
 	var finish = function() {
-		$("body").unbind("keydown", response_handler); // Unbind keys
-		currentview = new Questionnaire();
+	    $("body").unbind("keydown", response_handler); // Unbind keys
+	    currentview = new Questionnaire();
 	};
 	
 	
@@ -147,7 +208,7 @@ var Questionnaire = function() {
 
 	record_responses = function() {
 
-		psiTurk.recordTrialData(['postquestionnaire', 'submit']);
+		psiTurk.recordTrialData({'phase':'postquestionnaire', 'status':'submit'});
 
 		$('textarea').each( function(i, val) {
 			psiTurk.recordUnstructuredData(this.id, this.value);
@@ -182,12 +243,13 @@ var Questionnaire = function() {
 
 	// Load the questionnaire snippet 
 	psiTurk.showPage('postquestionnaire.html');
-	psiTurk.recordTrialData(['postquestionnaire', 'begin']);
+	psiTurk.recordTrialData({'phase':'postquestionnaire', 'status':'begin'});
 	
 	$("#continue").click(function () {
-		record_responses();
-		psiTurk.teardownTask();
-    	psiTurk.saveData({success: finish, error: prompt_resubmit});
+	    record_responses();
+	    psiTurk.teardownTask();
+    	    psiTurk.saveData({success: function(){psiTurk.computeBonus('/compute_bonus');}, error: prompt_resubmit});
+
 	});
 	
 };
