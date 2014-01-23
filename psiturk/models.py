@@ -1,7 +1,7 @@
 
 import datetime
 import io, csv, json
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, Float, UnicodeText
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, Float, Text
 
 from db import Base
 from psiturk_config import PsiturkConfig
