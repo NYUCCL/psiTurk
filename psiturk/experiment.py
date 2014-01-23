@@ -106,8 +106,8 @@ def get_random_condcount():
     
     participants = Participant.query.\
                    filter(Participant.codeversion == config.get('Task Parameters', 'experiment_code_version')).\
-                   filter(or_(Participant.status == 4, 
-                              Participant.status == 5, 
+                   filter(or_(Participant.status == COMPLETED, 
+                              Participant.status == CREDITED, 
                               Participant.beginhit > starttime)).\
                    all()
     counts = Counter()
