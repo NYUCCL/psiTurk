@@ -1,7 +1,7 @@
 
 import datetime
 import io, csv, json
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text, Float
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, Float, UnicodeText
 
 from db import Base
 from psiturk_config import PsiturkConfig
@@ -34,7 +34,7 @@ class Participant(Base):
     endhit = Column(DateTime)
     bonus = Column(Float, default = 0)
     status = Column(Integer, default = 1)
-    datastring = Column(Text)
+    datastring = Column(UnicodeText)
     
     def __init__(self, **kwargs):
         self.uniqueid = "{workerid}:{assignmentid}".format(**kwargs)
