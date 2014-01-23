@@ -33,7 +33,7 @@ class Participant(Base):
     beginexp = Column(DateTime)
     endhit = Column(DateTime)
     status = Column(Integer, default = 1)
-    datastring = Column(Text)
+    datastring = Column(Text(4294967295))
     
     def __init__(self, **kwargs):
         self.uniqueid = "{workerid}:{assignmentid}".format(**kwargs)
