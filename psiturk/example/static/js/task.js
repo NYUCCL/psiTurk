@@ -48,57 +48,6 @@ var currentview;
 *
 ********************/
 
-
-/*************************
-* INSTRUCTIONS         
-*************************/
-
-var Instructions = function(pages) {
-	var currentscreen = 0,
-	    timestamp;
-	    instruction_pages = pages; 
-	
-	var next = function() {
-		psiTurk.showPage(instruction_pages[currentscreen]);
-		$('.continue').click(function() {
-			buttonPress();
-		});
-		
-		currentscreen = currentscreen + 1;
-
-		// Record the time that an instructions page is presented
-		timestamp = new Date().getTime();
-	};
-
-	var buttonPress = function() {
-
-		// Record the response time
-		var rt = (new Date().getTime()) - timestamp;
-		psiTurk.recordTrialData({'phase':"INSTRUCTIONS",
-                                         'screen':currentscreen,
-                                         'rt':rt});
-
-		if (currentscreen == instruction_pages.length) {
-			finish();
-		} else {
-			next();
-		}
-
-	};
-
-	var finish = function() {
-		// Record that the user has finished the instructions and 
-		// moved on to the experiment. This changes their status code
-		// in the database.
-		//psiTurk.finishInstructions();
-
-		// Move on to the experiment 
-		currentview = new TestPhase();
-	};
-
-	next();
-};
-
 /********************
 * STROOP TEST       *
 ********************/
