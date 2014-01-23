@@ -217,10 +217,11 @@ var PsiTurk = function() {
 	};
 
 	// Add bonus to task data
-	this.computeBonus = function(url) {
+	this.computeBonus = function(url, callback) {
 		$.ajax(url, {
                     type: "GET",
-                    data: {uniqueId: uniqueId}
+                    data: {uniqueId: uniqueId},
+                    success: callback
                 });
 	};
 	

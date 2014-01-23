@@ -68,7 +68,6 @@ def list_my_data():
 
 @custom_code.route('/compute_bonus', methods=['GET'])
 def compute_bonus():
-    current_app.logger.info('reachedBonus') # print some info
     # check that user provided the correct keys
     # errors will not be that gracefull here if being
     # accessed by the Javascrip client
@@ -78,21 +77,16 @@ def compute_bonus():
 
     try:
         # lookup user in database
-        current_app.logger.info(uniqueId) # print some info
         user = Participant.query.\
                filter(Participant.uniqueid == uniqueId).\
                one()
         user_data = loads(user.datastring) # load datastring from JSON
         bonus = 0
 
-        current_app.logger.info('Bonus:' + str(bonus)) # print some info
         for record in user_data['data']: # for line in data file
             trial = record['trialdata']
-            current_app.logger.info("reachedForLoop") # print some info
             if trial['phase']=='TEST':
-                current_app.logger.info(trial['hit']) # print some info
                 if trial['hit']==True:
-                    current_app.logger.info(bonus) # print some info
                     bonus += 0.1
         user.bonus = bonus
         db_session.add(user)
