@@ -1148,10 +1148,11 @@ class PsiturkNetworkShell(PsiturkShell):
           hit list (all | active | reviewable)
           hit help
         """
+
         if arg['create']:
             self.hit_create(arg['<numWorkers>'], arg['<reward>'], arg['<duration>'])
         elif arg['extend']:
-            self.hit_extend(arg['<HITid>'], arg['--assignments'], arg['--expiration'])
+            self.hit_extend(arg['<HITid>'], arg['<number>'], arg['<minutes>'])
         elif arg['expire']:
             self.hit_expire(arg['--all'], arg['<HITid>'])
         elif arg['dispose']:
