@@ -477,10 +477,14 @@ class PsiturkNetworkShell(PsiturkShell):
             print json.dumps(self.amt_services.get_workers(), indent=4,
                              separators=(',', ': '))
 
-    def worker_approve(self, allWorkers, assignment_ids = []):
+    def worker_approve(self, allWorkers, chosenHit, assignment_ids = []):
         if allWorkers:
             workers = self.amt_services.get_workers()
             assignment_ids = [worker['assignmentId'] for worker in workers]
+        elif chosenHit:
+            workers = self.amt_services.get_workers()
+            assignment_ids = [worker['assignmentId'] for worker in workers if worker['hitId']==chosenHit]
+            print 'approving workers for HIT', chosenHit
         for assignmentID in assignment_ids:
             success = self.amt_services.approve_worker(assignmentID)
             if success:
@@ -488,10 +492,14 @@ class PsiturkNetworkShell(PsiturkShell):
             else:
                 print '*** failed to approve', assignmentID
 
-    def worker_reject(self, allWorkers, assignment_ids = None):
+    def worker_reject(self, allWorkers, chosenHit, assignment_ids = None):
         if allWorkers:
             workers = self.amt_services.get_workers()
             assignment_ids = [worker['assignmentId'] for worker in workers]
+        elif chosenHit:
+            workers = self.amt_services.get_workers()
+            assignment_ids = [worker['assignmentId'] for worker in workers if worker['hitId']==chosenHit]
+            print 'rejecting workers for HIT',chosenHit
         for assignmentID in assignment_ids:
             success = self.amt_services.reject_worker(assignmentID)
             if success:
@@ -1148,10 +1156,11 @@ class PsiturkNetworkShell(PsiturkShell):
           hit list (all | active | reviewable)
           hit help
         """
+
         if arg['create']:
             self.hit_create(arg['<numWorkers>'], arg['<reward>'], arg['<duration>'])
         elif arg['extend']:
-            self.hit_extend(arg['<HITid>'], arg['--assignments'], arg['--expiration'])
+            self.hit_extend(arg['<HITid>'], arg['<number>'], arg['<minutes>'])
         elif arg['expire']:
             self.hit_expire(arg['--all'], arg['<HITid>'])
         elif arg['dispose']:
@@ -1175,15 +1184,15 @@ class PsiturkNetworkShell(PsiturkShell):
     def do_worker(self, arg):
         """
         Usage:
-          worker approve (--all | <assignment_id> ...)
-          worker reject (--all | <assignment_id> ...)
+          worker approve (--all | --hit <hit_id> | <assignment_id> ...)
+          worker reject (--all | --hit <hit_id> | <assignment_id> ...)
           worker list
           worker help
         """
         if arg['approve']:
-            self.worker_approve(arg['--all'], arg['<assignment_id>'])
+            self.worker_approve(arg['--all'], arg['<hit_id>'], arg['<assignment_id>'])
         elif arg['reject']:
-            self.worker_reject(arg['--all'], arg['<assignment_id>'])
+            self.worker_reject(arg['--all'], arg['<hit_id>'], arg['<assignment_id>'])
         elif arg['list']:
             self.worker_list()
         else:
