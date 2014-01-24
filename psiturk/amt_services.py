@@ -322,6 +322,7 @@ class MTurkServices:
             self.mtc.grant_bonus(workerId, assignment_id, bonus, reason)
             return True
         except MTurkRequestError as e:
+            print e
             return False
 
 
