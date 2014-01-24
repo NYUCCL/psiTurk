@@ -22,6 +22,7 @@ from psiturk_org_services import PsiturkOrgServices
 from version import version_number
 from psiturk_config import PsiturkConfig
 import experiment_server_controller as control
+from db import db_session, init_db
 from models import Participant
 
 # Escape sequences for display.
@@ -511,11 +512,45 @@ class PsiturkNetworkShell(PsiturkShell):
                 print 'rejected', assignmentID
             else:
                 print '*** failed to reject', assignmentID
-
+    
+    #TODO: Implement passing a bonus "reason" in the command line
     def worker_bonus(self, chosenHit, auto, amount, reason, assignment_ids = None):
-        return
-
-
+        r = raw_input("Really bonus workers? (Running this command multiple times could cause you to pay bonus more than once.) y or n: ")
+        if r == 'n':
+            return
+        if not reason:
+            reason = "Experiment Bonus"
+        if chosenHit:
+            workers = self.amt_services.get_workers("Approved")
+            if workers==False:
+                print "No approved workers for HIT", chosenHit
+                return
+            assignment_ids = [worker['assignmentId'] for worker in workers if worker['hitId']==chosenHit]
+            print 'bonusing workers for HIT', chosenHit
+        for assignmentID in assignment_ids:
+            if not auto:
+                success = self.amt_services.bonus_worker(assignmentID, amount, reason)
+                if success:
+                    print "gave bonus of $" + amount + " to " + assignmentID
+                else:
+                    print "*** failed to bonus", assignmentID
+            else:
+                try:
+                    init_db()
+                    part = Participant.query.\
+                           filter(Participant.assignmentid == assignmentID).\
+                           one()
+                    amount = part.bonus
+                    if amount==0:
+                        "bonus amount $0, no bonus given to", assignmentID
+                    else:
+                        success = self.amt_services.bonus_worker(assignmentID, amount, reason)
+                        if success:
+                            print "gave bonus of $" + str(amount) + " to " + assignmentID
+                        else:
+                            print "*** failed to bonus", assignmentID
+                except:
+                    print "*** failed to bonus", assignmentID
 
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #  hit management
@@ -1195,7 +1230,7 @@ class PsiturkNetworkShell(PsiturkShell):
         Usage:
           worker approve (--hit <hit_id> | <assignment_id> ...)
           worker reject (--hit <hit_id> | <assignment_id> ...)
-          worker bonus (--hit <hit_id> | <assignment_id> ...) (--auto | <amount>) [--reason <reason>]
+          worker bonus (--hit <hit_id> | <assignment_id> ...) (--auto | <amount>)
           worker list (submitted | approved | rejected | all) [--hit <hit_id>]
           worker help
         """
@@ -1206,7 +1241,7 @@ class PsiturkNetworkShell(PsiturkShell):
         elif arg['list']:
             self.worker_list(arg['submitted'], arg['approved'], arg['rejected'], arg['all'], arg['<hit_id>'])
         elif arg['bonus']:
-            self.worker_bonus(arg['<hit_id>'], arg['auto'], arg['<amount>'], arg['<reason>'], arg['<assignment_id>'])
+            self.worker_bonus(arg['<hit_id>'], arg['--auto'], arg['<amount>'], "Experiment Bonus", arg['<assignment_id>'])
         else:
             self.help_worker()
 

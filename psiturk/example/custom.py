@@ -85,7 +85,7 @@ def compute_bonus():
             trial = record['trialdata'] # get part of line holding trial info
             if trial['phase']=='TEST': #check that trial is in test phase, not instructions
                 if trial['hit']==True: # increment bonus if subject got correct
-                    bonus += 0.1
+                    bonus += 0.02
         user.bonus = bonus #set bonus field to new value
         db_session.add(user)
         db_session.commit() #commit to database

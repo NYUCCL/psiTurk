@@ -317,11 +317,11 @@ class MTurkServices:
             return False
         try:
             bonus = MTurkConnection.get_price_as_price(amount)
-            assignment = self.mtc.get_assignment(assignment_id)
+            assignment = self.mtc.get_assignment(assignment_id)[0]
             workerId = assignment.WorkerId
             self.mtc.grant_bonus(workerId, assignment_id, bonus, reason)
             return True
-        except MTurkRequestError:
+        except MTurkRequestError as e:
             return False
 
 
