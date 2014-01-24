@@ -286,7 +286,7 @@ class MTurkServices:
                       }) for hit in active_hits]
         return(hits_data)
 
-    def get_workers(self):
+    def get_workers(self, assignmentStatus = None):
         if not self.connect_to_turk():
             return False
         try:
@@ -294,7 +294,7 @@ class MTurkServices:
             hit_ids = [hit.HITId for hit in hits]
             workers_nested = [self.mtc.get_assignments(
                                 hit_id,
-                                status="Submitted",
+                                status=assignmentStatus,
                                 sort_by='SubmitTime',
                                 page_size=100
                               ) for hit_id in hit_ids]
@@ -302,14 +302,27 @@ class MTurkServices:
             workers = [val for subl in workers_nested for val in subl]  # Flatten nested lists
         except MTurkRequestError:
             return(False)
-        completed_workers = [worker for worker in workers if worker.AssignmentStatus == "Submitted"]
         worker_data = [{'hitId': worker.HITId,
                         'assignmentId': worker.AssignmentId,
                         'workerId': worker.WorkerId,
                         'submit_time': worker.SubmitTime,
-                        'accept_time': worker.AcceptTime
-                       } for worker in completed_workers]
+                        'accept_time': worker.AcceptTime,
+                        'status': worker.AssignmentStatus
+                       } for worker in workers]
         return(worker_data)
+
+
+    def bonus_worker(self, assignment_id, amount, reason=""):
+        if not self.connect_to_turk():
+            return False
+        try:
+            bonus = MTurkConnection.get_price_as_price(amount)
+            assignment = self.mtc.get_assignment(assignment_id)
+            workerId = assignment.WorkerId
+            self.mtc.grant_bonus(workerId, assignment_id, bonus, reason)
+            return True
+        except MTurkRequestError:
+            return False
 
 
     def approve_worker(self, assignment_id):
