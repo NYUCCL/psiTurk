@@ -518,8 +518,9 @@ class PsiturkNetworkShell(PsiturkShell):
         r = raw_input("Really bonus workers? (Running this command multiple times could cause you to pay bonus more than once.) y or n: ")
         if r == 'n':
             return
-        if not reason:
-            reason = "Experiment Bonus"
+        while not reason:
+            r = raw_input("Type the reason for the bonus. Workers will see this message: ")
+            reason = r
         if chosenHit:
             workers = self.amt_services.get_workers("Approved")
             if workers==False:
@@ -1241,7 +1242,7 @@ class PsiturkNetworkShell(PsiturkShell):
         elif arg['list']:
             self.worker_list(arg['submitted'], arg['approved'], arg['rejected'], arg['all'], arg['<hit_id>'])
         elif arg['bonus']:
-            self.worker_bonus(arg['<hit_id>'], arg['--auto'], arg['<amount>'], "Experiment Bonus", arg['<assignment_id>'])
+            self.worker_bonus(arg['<hit_id>'], arg['--auto'], arg['<amount>'], "", arg['<assignment_id>'])
         else:
             self.help_worker()
 
