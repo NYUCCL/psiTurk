@@ -330,6 +330,15 @@ class MTurkServices:
         except MTurkRequestError:
             return(False)
 
+    def unreject_worker(self, assignment_id):
+        if not self.connect_to_turk():
+            return False
+        try:
+            self.mtc.approve_rejected_assignment(assignment_id)
+            return True
+        except MTurkRequestError:
+            return False
+
     def verify_aws_login(self):
         if (self.aws_access_key_id == 'YourAccessKeyId') or (self.aws_secret_access_key == 'YourSecretAccessKey'):
             return False
