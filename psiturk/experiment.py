@@ -48,6 +48,7 @@ QUITEARLY = 5
 ###########################################################
 app = Flask("Experiment_Server")
 init_db()
+app.config.update(SEND_FILE_MAX_AGE_DEFAULT=10) # set cache timeout to 10ms for static files
 
 ###########################################################
 #  serving warm, fresh, & sweet custom, user-provided routes
