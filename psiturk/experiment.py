@@ -4,7 +4,6 @@ import datetime
 import logging
 import urllib2
 from random import choice
-from functools import update_wrapper
 import json
 try:
     from collections import Counter
@@ -12,7 +11,7 @@ except ImportError:
     from counter import Counter
 
 # Importing flask
-from flask import Flask, render_template, request, Response, jsonify, make_response
+from flask import Flask, render_template, request, Response, jsonify
 
 # Database setup
 from db import db_session, init_db
