@@ -21,6 +21,7 @@ from sqlalchemy import or_
 
 from psiturk_config import PsiturkConfig
 from experiment_errors import ExperimentError
+from psiturk.user_utils import nocache
 
 config = PsiturkConfig()
 config.load_config()
@@ -83,18 +84,6 @@ def handleExpError(e):
 @app.teardown_request
 def shutdown_session(exception=None):
     db_session.remove()
-
-#----------------------------------------------
-# Helpers
-#----------------------------------------------
-
-def nocache(f):
-    """Stop caching for pages wrapped in nocache decorator."""
-    def new_func(*args, **kwargs):
-        resp = make_response(f(*args, **kwargs))
-        resp.cache_control.no_cache = True
-        return resp
-    return update_wrapper(new_func, f)
 
 #----------------------------------------------
 # Experiment counterbalancing code.
