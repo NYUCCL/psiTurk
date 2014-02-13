@@ -33,7 +33,7 @@ class PsiturkOrgServices:
             get_system_status:
         """
         try:
-            ad_server_status_link= self.adServer + '/status_msg'
+            ad_server_status_link= 'http://api.psiturk.org/get_status_msg'
             response=urllib2.urlopen(ad_server_status_link,timeout=1)
             status_msg = json.load(response)['status']
         except urllib2.URLError as err:
