@@ -56,7 +56,6 @@ class PsiturkConfig(SafeConfigParser):
         self.set('AWS Access', 'aws_region', 'us-east-1')
 
         # Secure Ad Server
-        self.set('Secure Ad Server', 'location', 'https://psiturk.org')
         self.set('Secure Ad Server', 'contact_email', 'gureckislab@gmail.com')
 
         # HIT Configuration
