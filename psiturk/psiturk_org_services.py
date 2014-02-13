@@ -13,10 +13,8 @@ class PsiturkOrgServices:
         interfacing with the experiment exchange
         see: https://github.com/NYUCCL/psiTurk_website
     """
-    def __init__(self, ad_server_location, contact_email):
-        self.adServer = ad_server_location # by default for now
-        if self.adServer[-1]=='/':
-            self.adServer = self.adServer[:-1]
+    def __init__(self, contact_email):
+        self.adServer = 'https://ad.psiturk.org' # by default for now
         self.contactEmail = contact_email
 
     def connect(self, server):
@@ -33,7 +31,7 @@ class PsiturkOrgServices:
             get_system_status:
         """
         try:
-            ad_server_status_link= 'http://api.psiturk.org/get_status_msg'
+            ad_server_status_link= 'https://psiturk.org/status_msg'
             response=urllib2.urlopen(ad_server_status_link,timeout=1)
             status_msg = json.load(response)['status']
         except:
@@ -62,7 +60,7 @@ class PsiturkOrgServices:
             get_ad_hitid:
             updates the ad with the corresponding hitid
         """
-        ad_server_update_link = self.adServer + '/ad/' + str(adId) + '/link?hitid=' + hitId
+        ad_server_update_link = self.adServer + '/' + str(adId) + '/link?hitid=' + hitId
         response = urllib2.urlopen(ad_server_update_link)
         if json.load(response)['status']=="we're good!":
             return True
@@ -73,7 +71,7 @@ class PsiturkOrgServices:
         """
             delete_ad:
         """
-        ad_server_expire_link = self.adServer + '/ad/delete?hitid=' + hitId
+        ad_server_expire_link = self.adServer + '/delete?hitid=' + hitId
         response = urllib2.urlopen(ad_server_expire_link)
         status_msg = json.load(response)['status']
         if status_msg=="we're good!" or status_msg=="add not found":
@@ -85,7 +83,7 @@ class PsiturkOrgServices:
         """
             create_ad:
         """
-        ad_server_register_url = self.adServer + '/ad/register'
+        ad_server_register_url = self.adServer + '/register'
         #ad_server_register_url = 'http://0.0.0.0:5004/ad/register'
         req = urllib2.Request(ad_server_register_url)
         req.add_header('Content-Type', 'application/json')
