@@ -36,7 +36,7 @@ class PsiturkOrgServices:
             ad_server_status_link= 'http://api.psiturk.org/get_status_msg'
             response=urllib2.urlopen(ad_server_status_link,timeout=1)
             status_msg = json.load(response)['status']
-        except urllib2.URLError as err:
+        except:
             status_msg = "Sorry, can't connect to psiturk.org, please check your internet connection.\n You will not be able to create new hits, but testing locally should work."  
         return status_msg
         
