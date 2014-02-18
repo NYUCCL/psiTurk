@@ -37,7 +37,7 @@ class PsiturkOrgServices:
             response=urllib2.urlopen(ad_server_status_link,timeout=1)
             status_msg = json.load(response)['status']
         except:
-            status_msg = "Sorry, can't connect to psiturk.org, please check your internet connection.\n You will not be able to create new hits, but testing locally should work."  
+            status_msg = "Sorry, can't connect to psiturk.org, please check your internet connection.\nYou will not be able to create new hits, but testing locally should work.\n"
         return status_msg
         
     def get_my_ip(self):
