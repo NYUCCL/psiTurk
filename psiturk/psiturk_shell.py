@@ -513,15 +513,14 @@ class PsiturkNetworkShell(PsiturkShell):
             else:
                 print '*** failed to reject', assignmentID
     
-    #TODO: Implement passing a bonus "reason" in the command line
     def worker_bonus(self, chosenHit, auto, amount, reason, assignment_ids = None):
-        r = raw_input("Really bonus workers? (Running this command multiple times could cause you to pay bonus more than once.) y or n: ")
-        if r == 'n':
-            return
         while not reason:
             r = raw_input("Type the reason for the bonus. Workers will see this message: ")
             reason = r
-        if chosenHit:
+        #bonus already-bonused workers if the user explicitly lists their worker IDs
+        overrideStatus = True
+        if chosenHit:        
+            overrideStatus = False
             workers = self.amt_services.get_workers("Approved")
             if workers==False:
                 print "No approved workers for HIT", chosenHit
@@ -529,29 +528,27 @@ class PsiturkNetworkShell(PsiturkShell):
             assignment_ids = [worker['assignmentId'] for worker in workers if worker['hitId']==chosenHit]
             print 'bonusing workers for HIT', chosenHit
         for assignmentID in assignment_ids:
-            if not auto:
-                success = self.amt_services.bonus_worker(assignmentID, amount, reason)
-                if success:
-                    print "gave bonus of $" + amount + " to " + assignmentID
-                else:
-                    print "*** failed to bonus", assignmentID
-            else:
-                try:
-                    init_db()
-                    part = Participant.query.\
-                           filter(Participant.assignmentid == assignmentID).\
-                           one()
+            try:
+                init_db()
+                part = Participant.query.\
+                       filter(Participant.assignmentid == assignmentID).\
+                       one()
+                if auto:
                     amount = part.bonus
-                    if amount==0:
-                        "bonus amount $0, no bonus given to", assignmentID
+                status = part.status
+                if amount<=0:
+                    print "bonus amount <=$0, no bonus given to", assignmentID
+                elif status==6 and not overrideStatus:
+                    print "bonus already awarded to ", assignmentID
+                else:
+                    success = self.amt_services.bonus_worker(assignmentID, amount, reason)
+                    if success:
+                        print "gave bonus of $" + str(amount) + " to " + assignmentID
+                        part.status = 6
                     else:
-                        success = self.amt_services.bonus_worker(assignmentID, amount, reason)
-                        if success:
-                            print "gave bonus of $" + str(amount) + " to " + assignmentID
-                        else:
-                            print "*** failed to bonus", assignmentID
-                except:
-                    print "*** failed to bonus", assignmentID
+                        print "*** failed to bonus", assignmentID
+            except:
+                print "*** failed to bonus", assignmentID
 
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #  hit management
