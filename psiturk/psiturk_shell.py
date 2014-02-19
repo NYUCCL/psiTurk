@@ -293,7 +293,7 @@ class PsiturkShell(Cmd, object):
         Usage: open
                open <folder>
 
-        Opens folder or current directory using the local system's shell comamnd 'open'.
+        Opens folder or current directory using the local system's shell command 'open'.
         """
         if arg['<folder>'] is None:
             subprocess.call(["open"])
