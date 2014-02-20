@@ -2,6 +2,7 @@ import os, sys
 import urllib2
 import json
 import datetime
+import requests
 from flask import jsonify
 
 class PsiturkOrgServices:

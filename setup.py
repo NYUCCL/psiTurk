@@ -30,7 +30,7 @@ if __name__ == "__main__":
             ]
         },
         setup_requires = [],
-        install_requires = ["argparse", "Flask", "SQLAlchemy", "gunicorn", "boto>=2.9","cmd2","docopt","readline"],
+        install_requires = ["argparse", "Flask", "SQLAlchemy", "gunicorn", "boto>=2.9","cmd2","docopt","readline","requests"],
         author = "NYU Computation and Cognition Lab",
         author_email = "authors@psiturk.org",
         description = "An open platform for science on Amazon Mechanical Turk",
