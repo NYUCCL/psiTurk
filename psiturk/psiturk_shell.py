@@ -651,14 +651,18 @@ class PsiturkNetworkShell(PsiturkShell):
         # 3. support_ie?
         # 4. ad.html template
         # 5. contact_email in case an error happens
-
-        ad_content = {
-            "server": str(self.web_services.get_my_ip()),
-            "port": str(self.config.get('Server Parameters', 'port')),
-            "support_ie": str(self.config.get('Task Parameters', 'support_ie')),
-            "is_sandbox": str(self.sandbox),
-            "ad.html": ad_html,
-            "contact_email": str(self.config.get('Secure Ad Server', 'contact_email'))
+        ad_content = {'psiturk_external': True,
+              'server': str(self.web_services.get_my_ip()),
+              'port': str(self.config.get('Server Parameters', 'port')),
+              'browser_exclude_rule': fake.paragraph(),
+              'is_sandbox': bool(str(self.sandbox)),
+              'ad_html': ad_html,
+              # 'amt_hit_id': hitid, Don't know this yet
+              'organization_name': str(self.config.get('HIT Configuration', 'organization_name')),
+              'experiment_name': str(self.config.get('HIT Configuration', 'title')),
+              'contact_email_on_error': str(self.config.get('HIT Configuration', 'contact_email')),
+              'primary_ad_group': str(self.config.get('HIT Configuration', 'primary_ad_group')),
+              'keywords': str(self.config.get('HIT Configuration', 'psiturk_keywords'))
         }
 
         create_failed = False
@@ -673,7 +677,7 @@ class PsiturkNetworkShell(PsiturkShell):
                 "max_assignments": self.config.getint('HIT Configuration', 'max_assignments'),
                 "title": self.config.get('HIT Configuration', 'title'),
                 "description": self.config.get('HIT Configuration', 'description'),
-                "keywords": self.config.get('HIT Configuration', 'keywords'),
+                "keywords": self.config.get('HIT Configuration', 'amt_keywords'),
                 "reward": self.config.getfloat('HIT Configuration', 'reward'),
                 "duration": datetime.timedelta(hours=self.config.getfloat('HIT Configuration', 'duration'))
             }
