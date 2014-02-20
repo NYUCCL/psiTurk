@@ -46,7 +46,7 @@ class PsiturkConfig(SafeConfigParser):
 
 
     def write_default_config(self):
-        sections = ['AWS Access', 'Secure Ad Server', 'HIT Configuration', 'Database Parameters',
+        sections = ['AWS Access', 'psiTurk Access', 'HIT Configuration', 'Database Parameters',
                     'Server Parameters', 'Task Parameters']
         map(self.add_section, sections)
 
@@ -55,8 +55,9 @@ class PsiturkConfig(SafeConfigParser):
         self.set('AWS Access', 'aws_secret_access_key', 'YourSecretAccessKey')
         self.set('AWS Access', 'aws_region', 'us-east-1')
 
-        # Secure Ad Server
-        self.set('Secure Ad Server', 'contact_email', 'gureckislab@gmail.com')
+        # psiTurk Access
+        self.set('psiTurk Access', 'psiturk_access_key_id', 'YourAccessKeyId')
+        self.set('psiTurk Access', 'psiturk_secret_access_id', 'YourSecretAccessKey')
 
         # HIT Configuration
         self.set('HIT Configuration', 'title', 'Stroop task')
@@ -69,6 +70,7 @@ class PsiturkConfig(SafeConfigParser):
         self.set('HIT Configuration', 'US_only', 'true')
         self.set('HIT Configuration', 'Approve_Requirement', '95')
         self.set('HIT Configuration', 'using_sandbox', 'true')
+        self.set('HIT Configuration', 'contact_email', 'gureckislab@gmail.com')
 
         # Database Parameters
         self.set('Database Parameters', 'database_url', 'sqlite:///participants.db')
