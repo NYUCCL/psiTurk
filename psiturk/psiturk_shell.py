@@ -565,7 +565,7 @@ class PsiturkNetworkShell(PsiturkShell):
                 return
             else:
                 self.amt_services.dispose_hit(hit)
-                self.web_services.delete_ad(hit)  # also delete the ad
+                #self.web_services.delete_ad(hit)  # also delete the ad
                 if self.sandbox:
                     print "deleting sandbox HIT", hit
                 else:
