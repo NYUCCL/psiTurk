@@ -1290,6 +1290,7 @@ def run(cabinmode=False):
         aws_rds_services = RDSServices(config.get('AWS Access', 'aws_access_key_id'), \
                                  config.get('AWS Access', 'aws_secret_access_key'),
                                  config.get('AWS Access', 'aws_region'))
-        web_services = PsiturkOrgServices(config.get('Secure Ad Server', 'contact_email'))
+        web_services = PsiturkOrgServices(config.get('psiTurk Access', 'psiturk_access_key_id'),
+                                 config.get('psiTurk Access', 'psiturk_secret_access_id'))
         shell = PsiturkNetworkShell(config, amt_services, aws_rds_services, web_services, server)
     shell.cmdloop()
