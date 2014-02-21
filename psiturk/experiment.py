@@ -172,7 +172,7 @@ def advertisement():
     """
     if (not config.getboolean('Task Parameters', 'support_ie')) and request.user_agent.browser == 'msie':
         # Handler for IE users if IE is not supported.
-        raise ExperimentError('ie_not_allowed')
+        raise ExperimentError('browser_type_not_allowed')
     if not (request.args.has_key('hitId') and request.args.has_key('assignmentId')):
         raise ExperimentError('hit_assign_worker_id_not_set_in_mturk')
     hitId = request.args['hitId']
