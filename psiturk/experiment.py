@@ -5,6 +5,8 @@ import logging
 import urllib2
 from random import choice
 import json
+import user_agents
+import string
 try:
     from collections import Counter
 except ImportError:
@@ -170,9 +172,25 @@ def advertisement():
       These arguments will have appropriate values and we should enter the person
       in the database and provide a link to the experiment popup.
     """
-    if (not config.getboolean('Task Parameters', 'support_ie')) and request.user_agent.browser == 'msie':
+    user_agent_string = request.user_agent.string
+    user_agent_obj = user_agents.parse(user_agent_string)
+    browser_ok = True
+    for rule in string.split(config.get('HIT Configuration', 'browser_exclude_rule'),','):
+        myrule = rule.strip()
+        if myrule in ["mobile","tablet","touchcapable","pc","bot"]:
+            if (myrule == "mobile" and user_agent_obj.is_mobile) or \
+               (myrule == "tablet" and user_agent_obj.is_tablet) or \
+               (myrule == "touchcapable" and user_agent_obj.is_touch_capable) or \
+               (myrule == "pc" and user_agent_obj.is_pc) or \
+               (myrule == "bot" and user_agent_obj.is_bot):
+                browser_ok = False
+        elif myrule in user_agent_string:
+            browser_ok = False
+
+    if not browser_ok:
         # Handler for IE users if IE is not supported.
-        raise ExperimentError('browser_type_not_allowed')
+        raise ExperimentError('browser_type_not_allowed', config.get('HIT Configuration', 'contact_email_on_error'))
+
     if not (request.args.has_key('hitId') and request.args.has_key('assignmentId')):
         raise ExperimentError('hit_assign_worker_id_not_set_in_mturk')
     hitId = request.args['hitId']
