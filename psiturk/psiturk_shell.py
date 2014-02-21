@@ -654,13 +654,13 @@ class PsiturkNetworkShell(PsiturkShell):
         ad_content = {'psiturk_external': True,
               'server': str(self.web_services.get_my_ip()),
               'port': str(self.config.get('Server Parameters', 'port')),
-              'browser_exclude_rule': fake.paragraph(),
+              'browser_exclude_rule': str(self.config.get('HIT Configuration', 'browser_exclude_rule')),
               'is_sandbox': bool(str(self.sandbox)),
               'ad_html': ad_html,
               # 'amt_hit_id': hitid, Don't know this yet
               'organization_name': str(self.config.get('HIT Configuration', 'organization_name')),
               'experiment_name': str(self.config.get('HIT Configuration', 'title')),
-              'contact_email_on_error': str(self.config.get('HIT Configuration', 'contact_email')),
+              'contact_email_on_error': str(self.config.get('HIT Configuration', 'contact_email_on_error')),
               'ad_group': str(self.config.get('HIT Configuration', 'ad_group')),
               'keywords': str(self.config.get('HIT Configuration', 'psiturk_keywords'))
         }

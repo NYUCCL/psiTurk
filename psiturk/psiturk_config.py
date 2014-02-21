@@ -65,15 +65,16 @@ class PsiturkConfig(SafeConfigParser):
         self.set('HIT Configuration', 'amt_keywords', 'Perception, Psychology')
         self.set('HIT Configuration', 'max_assignments', '10')
         self.set('HIT Configuration', 'lifetime', '24')
-        self.set('HIT Configuration', 'reward', '1')
-        self.set('HIT Configuration', 'duration', '2')
+        self.set('HIT Configuration', 'reward', '1.00')
+        self.set('HIT Configuration', 'duration', '1')
         self.set('HIT Configuration', 'US_only', 'true')
         self.set('HIT Configuration', 'Approve_Requirement', '95')
         self.set('HIT Configuration', 'using_sandbox', 'true')
-        self.set('HIT Configuration', 'contact_email', 'gureckislab@gmail.com')
+        self.set('HIT Configuration', 'contact_email_on_error', 'youremail@gmail.com')
         self.set('HIT Configuration', 'ad_group', 'My research project')
-        self.set('HIT Configuration', 'psiturk_keywords', 'stroop, demo')
+        self.set('HIT Configuration', 'psiturk_keywords', 'stroop')
         self.set('HIT Configuration', 'organization_name', 'New Great University')
+        self.set('HIT Configuration', 'browser_exclude_rule', 'MSIE, mobile, tablet')
 
         # Database Parameters
         self.set('Database Parameters', 'database_url', 'sqlite:///participants.db')
@@ -94,6 +95,5 @@ class PsiturkConfig(SafeConfigParser):
         self.set('Task Parameters', 'experiment_code_version', '1.0')
         self.set('Task Parameters', 'num_conds', '1')
         self.set('Task Parameters', 'num_counters', '1')
-        self.set('Task Parameters', 'support_ie', 'true')
 
 
