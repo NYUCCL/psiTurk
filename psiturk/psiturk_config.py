@@ -71,7 +71,7 @@ class PsiturkConfig(SafeConfigParser):
         self.set('HIT Configuration', 'Approve_Requirement', '95')
         self.set('HIT Configuration', 'using_sandbox', 'true')
         self.set('HIT Configuration', 'contact_email', 'gureckislab@gmail.com')
-        self.set('HIT Configuration', 'primary_ad_group', 'My research project')
+        self.set('HIT Configuration', 'ad_group', 'My research project')
         self.set('HIT Configuration', 'psiturk_keywords', 'stroop, demo')
         self.set('HIT Configuration', 'organization_name', 'New Great University')
 

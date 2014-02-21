@@ -15,7 +15,7 @@ class PsiturkOrgServices:
         see: https://github.com/NYUCCL/psiTurk_website
     """
     def __init__(self, key, secret):
-        self.apiServer = 'http://localhost:5000' # 'https://api.psiturk.org' # by default for now
+        self.apiServer = 'https://api.psiturk.org' # 'https://api.psiturk.org' # by default for now
         self.adServer = 'https://ad.psiturk.org'
         self.update_credentials(key,secret)
 

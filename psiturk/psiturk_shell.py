@@ -661,7 +661,7 @@ class PsiturkNetworkShell(PsiturkShell):
               'organization_name': str(self.config.get('HIT Configuration', 'organization_name')),
               'experiment_name': str(self.config.get('HIT Configuration', 'title')),
               'contact_email_on_error': str(self.config.get('HIT Configuration', 'contact_email')),
-              'primary_ad_group': str(self.config.get('HIT Configuration', 'primary_ad_group')),
+              'ad_group': str(self.config.get('HIT Configuration', 'ad_group')),
               'keywords': str(self.config.get('HIT Configuration', 'psiturk_keywords'))
         }
 
