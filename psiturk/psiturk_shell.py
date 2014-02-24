@@ -11,7 +11,7 @@ import datetime
 
 from cmd2 import Cmd
 from docopt import docopt, DocoptExit
-import gnureadline as readline
+import readline
 
 import webbrowser
 
