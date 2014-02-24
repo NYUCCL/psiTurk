@@ -1273,6 +1273,14 @@ class PsiturkNetworkShell(PsiturkShell):
             self.print_topics(self.super_header, cmds_super, 15, 80)
 
 def run(cabinmode=False):
+    usingLibedit = 'libedit' in readline.__doc__
+    if usingLibedit:
+        print colorize('\n'.join(['libedit version of readline detected.',
+                                   'readline will not be well behaved, which may cause all sorts',
+                                   'of problems for the psiTurk shell. We highly recommend installing',
+                                   'the gnu version of readline by running "sudo easy_install -a readline".',
+                                   'Note: "pip install readline" will NOT work because of how the OSX',
+                                   'pythonpath is structured.']), 'red')
     sys.argv = [sys.argv[0]] # drop arguments which were already processed in command_line.py
     #opt = docopt(__doc__, sys.argv[1:])
     config = PsiturkConfig()
