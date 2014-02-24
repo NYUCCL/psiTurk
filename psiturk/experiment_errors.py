@@ -23,7 +23,7 @@ class ExperimentError(Exception):
             tried_to_quit= 1011,
             intermediate_save = 1012,
             improper_inputs = 1013,
-            ie_not_allowed = 1014,
+            browser_type_not_allowed = 1014,
             server_not_reachable = 1015,
             ad_not_found = 1016,
             error_setting_worker_complete = 1017,

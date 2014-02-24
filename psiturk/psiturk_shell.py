@@ -11,7 +11,7 @@ import datetime
 
 from cmd2 import Cmd
 from docopt import docopt, DocoptExit
-import readline
+import gnureadline as readline
 
 import webbrowser
 
@@ -294,7 +294,7 @@ class PsiturkShell(Cmd, object):
         Usage: open
                open <folder>
 
-        Opens folder or current directory using the local system's shell comamnd 'open'.
+        Opens folder or current directory using the local system's shell command 'open'.
         """
         if arg['<folder>'] is None:
             subprocess.call(["open"])
@@ -405,9 +405,7 @@ class PsiturkNetworkShell(PsiturkShell):
         self.amt_services = amt_services
         self.web_services = web_services
         self.db_services = aws_rds_services
-        self.sandbox = self.config.getboolean('HIT Configuration', 
-                                              'using_sandbox')
-
+        self.sandbox = self.config.getboolean('HIT Configuration', 'using_sandbox')
 
         self.sandboxHITs = 0
         self.liveHITs = 0
@@ -607,7 +605,7 @@ class PsiturkNetworkShell(PsiturkShell):
                 return
             else:
                 self.amt_services.dispose_hit(hit)
-                self.web_services.delete_ad(hit)  # also delete the ad
+                #self.web_services.delete_ad(hit)  # also delete the ad
                 if self.sandbox:
                     print "deleting sandbox HIT", hit
                 else:
@@ -666,10 +664,6 @@ class PsiturkNetworkShell(PsiturkShell):
         if int(duration) <= 0:
             print '*** duration must be greater than 0'
             return
-        self.config.set('HIT Configuration', 'max_assignments',
-                        numWorkers)
-        self.config.set('HIT Configuration', 'reward', reward)
-        self.config.set('HIT Configuration', 'duration', duration)
 
         # register with the ad server (psiturk.org/ad/register) using POST
         if os.path.exists('templates/ad.html'):
@@ -693,14 +687,18 @@ class PsiturkNetworkShell(PsiturkShell):
         # 3. support_ie?
         # 4. ad.html template
         # 5. contact_email in case an error happens
-
-        ad_content = {
-            "server": str(self.web_services.get_my_ip()),
-            "port": str(self.config.get('Server Parameters', 'port')),
-            "support_ie": str(self.config.get('Task Parameters', 'support_ie')),
-            "is_sandbox": str(self.sandbox),
-            "ad.html": ad_html,
-            "contact_email": str(self.config.get('Secure Ad Server', 'contact_email'))
+        ad_content = {'psiturk_external': True,
+              'server': str(self.web_services.get_my_ip()),
+              'port': str(self.config.get('Server Parameters', 'port')),
+              'browser_exclude_rule': str(self.config.get('HIT Configuration', 'browser_exclude_rule')),
+              'is_sandbox': bool(str(self.sandbox)),
+              'ad_html': ad_html,
+              # 'amt_hit_id': hitid, Don't know this yet
+              'organization_name': str(self.config.get('HIT Configuration', 'organization_name')),
+              'experiment_name': str(self.config.get('HIT Configuration', 'title')),
+              'contact_email_on_error': str(self.config.get('HIT Configuration', 'contact_email_on_error')),
+              'ad_group': str(self.config.get('HIT Configuration', 'ad_group')),
+              'keywords': str(self.config.get('HIT Configuration', 'psiturk_keywords'))
         }
 
         create_failed = False
@@ -715,7 +713,7 @@ class PsiturkNetworkShell(PsiturkShell):
                 "max_assignments": self.config.getint('HIT Configuration', 'max_assignments'),
                 "title": self.config.get('HIT Configuration', 'title'),
                 "description": self.config.get('HIT Configuration', 'description'),
-                "keywords": self.config.get('HIT Configuration', 'keywords'),
+                "keywords": self.config.get('HIT Configuration', 'amt_keywords'),
                 "reward": self.config.getfloat('HIT Configuration', 'reward'),
                 "duration": datetime.timedelta(hours=self.config.getfloat('HIT Configuration', 'duration'))
             }
@@ -730,7 +728,7 @@ class PsiturkNetworkShell(PsiturkShell):
 
         if create_failed:
             print '*****************************'
-            print '  Sorry there was an error creating hit and registering ad.'
+            print '  Sorry, there was an error creating hit and registering ad.'
 
         else:
             if self.sandbox:
@@ -800,7 +798,7 @@ class PsiturkNetworkShell(PsiturkShell):
     db_commands = ('get_config', 'use_local_file', 'use_aws_instance', 'aws_list_regions', 'aws_get_region', 'aws_set_region', 'aws_list_instances', 'aws_create_instance', 'aws_delete_instance', 'help')
 
     def complete_db(self, text, line, begidx, endidx):
-        return  [i for i in PsiturkShell.db_commands if i.startswith(text)]
+        return  [i for i in PsiturkNetworkShell.db_commands if i.startswith(text)]
 
     def help_db(self):
         with open(self.helpPath + 'db.txt', 'r') as helpText:
@@ -844,7 +842,7 @@ class PsiturkNetworkShell(PsiturkShell):
                     return
         self.db_services.set_region(region_name)
         print "Region updated to ", region_name
-        self.config.set('AWS Access', 'aws_region', region_name)
+        self.config.set('AWS Access', 'aws_region', region_name, True)
         if self.server.is_server_running() == 'yes':
             self.server_relaunch()
 
@@ -1215,7 +1213,7 @@ class PsiturkNetworkShell(PsiturkShell):
     hit_commands = ('create', 'extend', 'expire', 'dispose', 'list')
 
     def complete_hit(self, text, line, begidx, endidx):
-        return  [i for i in PsiturkShell.hit_commands if i.startswith(text)]
+        return  [i for i in PsiturkNetworkShell.hit_commands if i.startswith(text)]
 
     def help_hit(self):
         with open(self.helpPath + 'hit.txt', 'r') as helpText:
@@ -1243,10 +1241,10 @@ class PsiturkNetworkShell(PsiturkShell):
         else:
             self.help_worker()
 
-    worker_commands = ('approve', 'reject', 'list', 'help')
+    worker_commands = ('approve', 'reject', 'bonus', 'list', 'help')
 
     def complete_worker(self, text, line, begidx, endidx):
-        return  [i for i in PsiturkShell.worker_commands if i.startswith(text)]
+        return  [i for i in PsiturkNetworkShell.worker_commands if i.startswith(text)]
 
     def help_worker(self):
         with open(self.helpPath + 'worker.txt', 'r') as helpText:
@@ -1267,7 +1265,7 @@ class PsiturkNetworkShell(PsiturkShell):
     amt_commands = ('balance', 'help')
 
     def complete_amt(self, text, line, begidx, endidx):
-        return [i for i in PsiturkShell.amt_commands if i.startswith(text)]
+        return [i for i in PsiturkNetworkShell.amt_commands if i.startswith(text)]
 
     def help_amt(self):
         with open(self.helpPath + 'amt.txt', 'r') as helpText:
@@ -1329,12 +1327,16 @@ def run(cabinmode=False):
         shell = PsiturkShell(config, server)
         shell.check_offline_configuration()
     else:
+        if config.getboolean("Shell Parameters", "always_launch_in_sandbox"):
+            config.set('HIT Configuration', 'using_sandbox', True)
+
         amt_services = MTurkServices(config.get('AWS Access', 'aws_access_key_id'), \
                                  config.get('AWS Access', 'aws_secret_access_key'), \
                                  config.getboolean('HIT Configuration','using_sandbox'))
         aws_rds_services = RDSServices(config.get('AWS Access', 'aws_access_key_id'), \
                                  config.get('AWS Access', 'aws_secret_access_key'),
                                  config.get('AWS Access', 'aws_region'))
-        web_services = PsiturkOrgServices(config.get('Secure Ad Server','location'), config.get('Secure Ad Server', 'contact_email'))
+        web_services = PsiturkOrgServices(config.get('psiTurk Access', 'psiturk_access_key_id'),
+                                 config.get('psiTurk Access', 'psiturk_secret_access_id'))
         shell = PsiturkNetworkShell(config, amt_services, aws_rds_services, web_services, server)
     shell.cmdloop()

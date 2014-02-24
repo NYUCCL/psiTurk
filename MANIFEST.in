@@ -1,2 +1,3 @@
 recursive-include psiturk/example *
 recursive-include psiturk/shell_help *
+recursive-include psiturk/default_configs *

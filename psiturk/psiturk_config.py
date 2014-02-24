@@ -1,95 +1,59 @@
 import os
+from distutils import file_util
 from ConfigParser import SafeConfigParser
 
 class PsiturkConfig(SafeConfigParser):
-    def __init__(self, filename="config.txt", **kwargs):
+    def __init__(self, localConfig="config.txt", globalConfig="~/.psiturkconfig", **kwargs):
         self.parent = SafeConfigParser
         self.parent.__init__(self, **kwargs)
-        self.filename = filename
+        self.localFile = localConfig
+        self.globalFile = os.path.expanduser(globalConfig)
+        # psiturkConfig contains two additional SafeConfigParser's holding the values
+        # of the local and global config files. This lets us write to the local or global file
+        # separately without writing all fields to both.
+        self.localParser = self.parent(**kwargs)
+        self.globalParser = self.parent(**kwargs)
 
     def load_config(self):
-        if not os.path.exists(self.filename):
+        defaults_folder = os.path.join(os.path.dirname(__file__), "default_configs")
+        local_defaults_file = os.path.join(defaults_folder, "local_config_defaults.txt")
+        global_defaults_file = os.path.join(defaults_folder, "global_config_defaults.txt")
+        if not os.path.exists(self.localFile):
             print "ERROR - no config.txt file in the current directory. \n\nAre you use this directory is a valid psiTurk experiment?  If you are starting a new project run 'psiturk-setup-example' in an empty directory."
             exit()
-        self.read(self.filename)
+        self.localParser.read( self.localFile)
+        if not os.path.exists(self.globalFile):
+            print "No '.psiturkconfig' file found in your home directory.\nCreating default '.psiturkconfig' file."
+            file_util.copy_file(global_defaults_file, self.globalFile)
+        self.globalParser.read(self.globalFile)
+        # read default global and local, then user's global and local. This way
+        # any field not in the user's files will be set to the default value.
+        self.read([global_defaults_file, local_defaults_file, self.globalFile, self.localFile])
 
-    def write(self):
-        with open(self.filename, 'w') as fp:
-            self.parent.write(self, fp)
-
-    def set(self, section, field, value,  *args, **kwargs):
+    def write(self, changeGlobal=False):
         """
-        Set the given field in the given section to the given value. 
+        write to the user's global or local config file.
+        """
+        filename = self.localFile
+        configObject = self.localParser
+        if changeGlobal:
+            filename = self.globalFile
+            configObject = self.globalParser
+        with open(filename, 'w') as fp:
+            configObject.write(fp)
+
+    def set(self, section, field, value, changeGlobal=False,  *args, **kwargs):
+        """
+        Set the given field in the given section to the given value.
         Return True if the server needs to be rebooted.
         """
         self.parent.set(self, section, field, str(value), *args, **kwargs)
-        self.write()
+        if changeGlobal:
+            self.globalParser.set(section, field, str(value), *args, **kwargs)
+        else:
+            self.localParser.set(section, field, str(value), *args, **kwargs)
+        self.write(changeGlobal)
         if section in ["Server Parameters","Task Parameters"]:
             return True
         else:
             return False
-
-    #def read(self):
-    #    super(ConfigParser, self).read(self.filename)
-
-    def get_serialized(self):
-        # Serializing data is necessary to communicate w/ backbone frontend.
-        return self._sections
-
-    def set_serialized(self, config_model):
-        restart_server = False
-        for section, fields in config_model.iteritems():
-            for field in fields:
-                if self.set(section, field, config_model[section][field]):
-                    restart_server = True
-        return restart_server
-
-
-    def write_default_config(self):
-        sections = ['AWS Access', 'Secure Ad Server', 'HIT Configuration', 'Database Parameters',
-                    'Server Parameters', 'Task Parameters']
-        map(self.add_section, sections)
-
-        # AWS Access Section
-        self.set('AWS Access', 'aws_access_key_id', 'YourAccessKeyId')
-        self.set('AWS Access', 'aws_secret_access_key', 'YourSecretAccessKey')
-        self.set('AWS Access', 'aws_region', 'us-east-1')
-
-        # Secure Ad Server
-        self.set('Secure Ad Server', 'location', 'https://psiturk.org')
-        self.set('Secure Ad Server', 'contact_email', 'gureckislab@gmail.com')
-
-        # HIT Configuration
-        self.set('HIT Configuration', 'title', 'Stroop task')
-        self.set('HIT Configuration', 'description', 'Judge the color of a series of words.')
-        self.set('HIT Configuration', 'keywords', 'Perception, Psychology')
-        self.set('HIT Configuration', 'max_assignments', '10')
-        self.set('HIT Configuration', 'lifetime', '24')
-        self.set('HIT Configuration', 'reward', '1')
-        self.set('HIT Configuration', 'duration', '2')
-        self.set('HIT Configuration', 'US_only', 'true')
-        self.set('HIT Configuration', 'Approve_Requirement', '95')
-        self.set('HIT Configuration', 'using_sandbox', 'true')
-
-        # Database Parameters
-        self.set('Database Parameters', 'database_url', 'sqlite:///participants.db')
-        self.set('Database Parameters', 'table_name', 'turkdemo')
-
-        #Server Parameters
-        self.set('Server Parameters', 'host', 'localhost')
-        self.set('Server Parameters', 'port', '22362')
-        self.set('Server Parameters', 'cutoff_time', '30')
-        self.set('Server Parameters', 'logfile', 'server.log')
-        self.set('Server Parameters', 'loglevel', '2')
-        self.set('Server Parameters', 'debug', 'true')
-        self.set('Server Parameters', 'login_username', 'examplename')
-        self.set('Server Parameters', 'login_pw', 'examplepassword')
-        self.set('Server Parameters', 'threads', 'auto')
-        
-        # Task Parameters
-        self.set('Task Parameters', 'experiment_code_version', '1.0')
-        self.set('Task Parameters', 'num_conds', '1')
-        self.set('Task Parameters', 'num_counters', '1')
-        self.set('Task Parameters', 'support_ie', 'true')
-
-
