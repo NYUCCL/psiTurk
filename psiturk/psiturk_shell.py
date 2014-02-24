@@ -624,10 +624,6 @@ class PsiturkNetworkShell(PsiturkShell):
         if int(duration) <= 0:
             print '*** duration must be greater than 0'
             return
-        self.config.set('HIT Configuration', 'max_assignments',
-                        numWorkers)
-        self.config.set('HIT Configuration', 'reward', reward)
-        self.config.set('HIT Configuration', 'duration', duration)
 
         # register with the ad server (psiturk.org/ad/register) using POST
         if os.path.exists('templates/ad.html'):
@@ -692,7 +688,7 @@ class PsiturkNetworkShell(PsiturkShell):
 
         if create_failed:
             print '*****************************'
-            print '  Sorry there was an error creating hit and registering ad.'
+            print '  Sorry, there was an error creating hit and registering ad.'
 
         else:
             if self.sandbox:
@@ -806,7 +802,7 @@ class PsiturkNetworkShell(PsiturkShell):
                     return
         self.db_services.set_region(region_name)
         print "Region updated to ", region_name
-        self.config.set('AWS Access', 'aws_region', region_name)
+        self.config.set('AWS Access', 'aws_region', region_name, True)
         if self.server.is_server_running() == 'yes':
             self.server_relaunch()
 
@@ -1134,13 +1130,11 @@ class PsiturkNetworkShell(PsiturkShell):
                 arg['<which>'] = 'sandbox'
         if arg['<which>'] == 'live':
             self.sandbox = False
-            self.config.set('HIT Configuration', 'using_sandbox', False)
             self.amt_services.set_sandbox(False)
             self.tally_hits()
             print 'Entered ' + colorize('live', 'bold') + ' mode'
         else:
             self.sandbox = True
-            self.config.set('HIT Configuration', 'using_sandbox', True)
             self.amt_services.set_sandbox(True)
             self.tally_hits()
             print 'Entered ' + colorize('sandbox', 'bold') + ' mode'
@@ -1290,7 +1284,7 @@ def run(cabinmode=False):
     else:
         amt_services = MTurkServices(config.get('AWS Access', 'aws_access_key_id'), \
                                  config.get('AWS Access', 'aws_secret_access_key'), \
-                                 config.getboolean('HIT Configuration','using_sandbox'))
+                                 config.getboolean('Shell Parameters','live_mode_at_launch'))
         aws_rds_services = RDSServices(config.get('AWS Access', 'aws_access_key_id'), \
                                  config.get('AWS Access', 'aws_secret_access_key'),
                                  config.get('AWS Access', 'aws_region'))

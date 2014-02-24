@@ -19,7 +19,7 @@ def setup_example():
 		os.rename('custom.py.txt', 'custom.py')
 		print "Creating default configuration file (config.txt)"
 		config = PsiturkConfig()
-		config.write_default_config()
+		config.write_default_local()
 
 if __name__=="__main__":
 	setup_example()
