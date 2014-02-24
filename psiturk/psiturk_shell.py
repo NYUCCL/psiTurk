@@ -404,9 +404,7 @@ class PsiturkNetworkShell(PsiturkShell):
         self.amt_services = amt_services
         self.web_services = web_services
         self.db_services = aws_rds_services
-        self.sandbox = self.config.getboolean('HIT Configuration', 
-                                              'using_sandbox')
-
+        self.sandbox = self.config.getboolean('HIT Configuration', 'using_sandbox')
 
         self.sandboxHITs = 0
         self.liveHITs = 0
@@ -1130,11 +1128,13 @@ class PsiturkNetworkShell(PsiturkShell):
                 arg['<which>'] = 'sandbox'
         if arg['<which>'] == 'live':
             self.sandbox = False
+            self.config.set('HIT Configuration', 'using_sandbox', False)
             self.amt_services.set_sandbox(False)
             self.tally_hits()
             print 'Entered ' + colorize('live', 'bold') + ' mode'
         else:
             self.sandbox = True
+            self.config.set('HIT Configuration', 'using_sandbox', True)
             self.amt_services.set_sandbox(True)
             self.tally_hits()
             print 'Entered ' + colorize('sandbox', 'bold') + ' mode'
@@ -1282,9 +1282,12 @@ def run(cabinmode=False):
         shell = PsiturkShell(config, server)
         shell.check_offline_configuration()
     else:
+        if config.getboolean("Shell Parameters", "always_launch_in_sandbox"):
+            config.set('HIT Configuration', 'using_sandbox', True)
+
         amt_services = MTurkServices(config.get('AWS Access', 'aws_access_key_id'), \
                                  config.get('AWS Access', 'aws_secret_access_key'), \
-                                 config.getboolean('Shell Parameters','live_mode_at_launch'))
+                                 config.getboolean('HIT Configuration','using_sandbox'))
         aws_rds_services = RDSServices(config.get('AWS Access', 'aws_access_key_id'), \
                                  config.get('AWS Access', 'aws_secret_access_key'),
                                  config.get('AWS Access', 'aws_region'))
