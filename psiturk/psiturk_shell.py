@@ -11,7 +11,7 @@ import datetime
 
 from cmd2 import Cmd
 from docopt import docopt, DocoptExit
-import readline
+import gnureadline as readline
 
 import webbrowser
 
@@ -293,7 +293,7 @@ class PsiturkShell(Cmd, object):
         Usage: open
                open <folder>
 
-        Opens folder or current directory using the local system's shell comamnd 'open'.
+        Opens folder or current directory using the local system's shell command 'open'.
         """
         if arg['<folder>'] is None:
             subprocess.call(["open"])
@@ -756,7 +756,7 @@ class PsiturkNetworkShell(PsiturkShell):
     db_commands = ('get_config', 'use_local_file', 'use_aws_instance', 'aws_list_regions', 'aws_get_region', 'aws_set_region', 'aws_list_instances', 'aws_create_instance', 'aws_delete_instance', 'help')
 
     def complete_db(self, text, line, begidx, endidx):
-        return  [i for i in PsiturkShell.db_commands if i.startswith(text)]
+        return  [i for i in PsiturkNetworkShell.db_commands if i.startswith(text)]
 
     def help_db(self):
         with open(self.helpPath + 'db.txt', 'r') as helpText:
@@ -1171,7 +1171,7 @@ class PsiturkNetworkShell(PsiturkShell):
     hit_commands = ('create', 'extend', 'expire', 'dispose', 'list')
 
     def complete_hit(self, text, line, begidx, endidx):
-        return  [i for i in PsiturkShell.hit_commands if i.startswith(text)]
+        return  [i for i in PsiturkNetworkShell.hit_commands if i.startswith(text)]
 
     def help_hit(self):
         with open(self.helpPath + 'hit.txt', 'r') as helpText:
@@ -1196,10 +1196,10 @@ class PsiturkNetworkShell(PsiturkShell):
         else:
             self.help_worker()
 
-    worker_commands = ('approve', 'reject', 'list', 'help')
+    worker_commands = ('approve', 'reject', 'bonus', 'list', 'help')
 
     def complete_worker(self, text, line, begidx, endidx):
-        return  [i for i in PsiturkShell.worker_commands if i.startswith(text)]
+        return  [i for i in PsiturkNetworkShell.worker_commands if i.startswith(text)]
 
     def help_worker(self):
         with open(self.helpPath + 'worker.txt', 'r') as helpText:
@@ -1220,7 +1220,7 @@ class PsiturkNetworkShell(PsiturkShell):
     amt_commands = ('balance', 'help')
 
     def complete_amt(self, text, line, begidx, endidx):
-        return [i for i in PsiturkShell.amt_commands if i.startswith(text)]
+        return [i for i in PsiturkNetworkShell.amt_commands if i.startswith(text)]
 
     def help_amt(self):
         with open(self.helpPath + 'amt.txt', 'r') as helpText:
