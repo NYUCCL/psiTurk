@@ -8,6 +8,9 @@ class PsiturkConfig(SafeConfigParser):
         self.parent.__init__(self, **kwargs)
         self.localFile = localConfig
         self.globalFile = os.path.expanduser(globalConfig)
+        # psiturkConfig contains two additional SafeConfigParser's holding the values
+        # of the local and global config files. This lets us write to the local or global file
+        # separately without writing all fields to both.
         self.localParser = self.parent(**kwargs)
         self.globalParser = self.parent(**kwargs)
 
@@ -23,9 +26,14 @@ class PsiturkConfig(SafeConfigParser):
             print "No '.psiturkconfig' file found in your home directory.\nCreating default '.psiturkconfig' file."
             file_util.copy_file(global_defaults_file, self.globalFile)
         self.globalParser.read(self.globalFile)
+        # read default global and local, then user's global and local. This way
+        # any field not in the user's files will be set to the default value.
         self.read([global_defaults_file, local_defaults_file, self.globalFile, self.localFile])
 
     def write(self, changeGlobal=False):
+        """
+        write to the user's global or local config file.
+        """
         filename = self.localFile
         configObject = self.localParser
         if changeGlobal:
