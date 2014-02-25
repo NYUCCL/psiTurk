@@ -11,7 +11,7 @@ import datetime
 
 from cmd2 import Cmd
 from docopt import docopt, DocoptExit
-import gnureadline as readline
+import readline
 
 import webbrowser
 
@@ -404,9 +404,7 @@ class PsiturkNetworkShell(PsiturkShell):
         self.amt_services = amt_services
         self.web_services = web_services
         self.db_services = aws_rds_services
-        self.sandbox = self.config.getboolean('HIT Configuration', 
-                                              'using_sandbox')
-
+        self.sandbox = self.config.getboolean('HIT Configuration', 'using_sandbox')
 
         self.sandboxHITs = 0
         self.liveHITs = 0
@@ -565,7 +563,7 @@ class PsiturkNetworkShell(PsiturkShell):
                 return
             else:
                 self.amt_services.dispose_hit(hit)
-                self.web_services.delete_ad(hit)  # also delete the ad
+                #self.web_services.delete_ad(hit)  # also delete the ad
                 if self.sandbox:
                     print "deleting sandbox HIT", hit
                 else:
@@ -624,10 +622,6 @@ class PsiturkNetworkShell(PsiturkShell):
         if int(duration) <= 0:
             print '*** duration must be greater than 0'
             return
-        self.config.set('HIT Configuration', 'max_assignments',
-                        numWorkers)
-        self.config.set('HIT Configuration', 'reward', reward)
-        self.config.set('HIT Configuration', 'duration', duration)
 
         # register with the ad server (psiturk.org/ad/register) using POST
         if os.path.exists('templates/ad.html'):
@@ -651,17 +645,22 @@ class PsiturkNetworkShell(PsiturkShell):
         # 3. support_ie?
         # 4. ad.html template
         # 5. contact_email in case an error happens
-
-        ad_content = {
-            "server": str(self.web_services.get_my_ip()),
-            "port": str(self.config.get('Server Parameters', 'port')),
-            "support_ie": str(self.config.get('Task Parameters', 'support_ie')),
-            "is_sandbox": str(self.sandbox),
-            "ad.html": ad_html,
-            "contact_email": str(self.config.get('Secure Ad Server', 'contact_email'))
+        ad_content = {'psiturk_external': True,
+              'server': str(self.web_services.get_my_ip()),
+              'port': str(self.config.get('Server Parameters', 'port')),
+              'browser_exclude_rule': str(self.config.get('HIT Configuration', 'browser_exclude_rule')),
+              'is_sandbox': bool(str(self.sandbox)),
+              'ad_html': ad_html,
+              # 'amt_hit_id': hitid, Don't know this yet
+              'organization_name': str(self.config.get('HIT Configuration', 'organization_name')),
+              'experiment_name': str(self.config.get('HIT Configuration', 'title')),
+              'contact_email_on_error': str(self.config.get('HIT Configuration', 'contact_email_on_error')),
+              'ad_group': str(self.config.get('HIT Configuration', 'ad_group')),
+              'keywords': str(self.config.get('HIT Configuration', 'psiturk_keywords'))
         }
 
         create_failed = False
+        fail_msg = None
         ad_id = self.web_services.create_ad(ad_content)
         if ad_id != False:
             ad_url = self.web_services.get_ad_url(ad_id)
@@ -670,25 +669,30 @@ class PsiturkNetworkShell(PsiturkShell):
                 "approve_requirement": self.config.get('HIT Configuration', 'Approve_Requirement'),
                 "us_only": self.config.getboolean('HIT Configuration', 'US_only'),
                 "lifetime": datetime.timedelta(hours=self.config.getfloat('HIT Configuration', 'lifetime')),
-                "max_assignments": self.config.getint('HIT Configuration', 'max_assignments'),
+                "max_assignments": numWorkers,
                 "title": self.config.get('HIT Configuration', 'title'),
                 "description": self.config.get('HIT Configuration', 'description'),
-                "keywords": self.config.get('HIT Configuration', 'keywords'),
-                "reward": self.config.getfloat('HIT Configuration', 'reward'),
-                "duration": datetime.timedelta(hours=self.config.getfloat('HIT Configuration', 'duration'))
+                "keywords": self.config.get('HIT Configuration', 'amt_keywords'),
+                "reward": reward,
+                "duration": datetime.timedelta(hours=int(duration))
             }
             hit_id = self.amt_services.create_hit(hit_config)
             if hit_id != False:
                 if not self.web_services.set_ad_hitid(ad_id, hit_id):
                     create_failed = True
+                    fail_msg = "  Unable to update Ad on http://ad.psiturk.org to point at HIT."
             else:
                 create_failed = True
+                fail_msg = "  Unable to create HIT on Amazon Mechanical Turk."
         else:
             create_failed = True
+            fail_msg = "  Unable to create Ad on http://ad.psiturk.org."
 
         if create_failed:
             print '*****************************'
-            print '  Sorry there was an error creating hit and registering ad.'
+            print '  Sorry, there was an error creating hit and registering ad.'
+            if fail_msg:
+                print fail_msg
 
         else:
             if self.sandbox:
@@ -713,7 +717,7 @@ class PsiturkNetworkShell(PsiturkShell):
             print '    Fee: $%.2f' % fee
             print '    ________________________'
             print '    Total: $%.2f' % total
-            print '  Ad for this HIT now hosted at: http://psiturk.org/ad/' + str(ad_id) + "?assignmentId=debug" + str(self.random_id_generator()) \
+            print '  Ad for this HIT now hosted at: https://ad.psiturk.org/view/' + str(ad_id) + "?assignmentId=debug" + str(self.random_id_generator()) \
                         + "&hitId=debug" + str(self.random_id_generator())
 
 
@@ -802,7 +806,7 @@ class PsiturkNetworkShell(PsiturkShell):
                     return
         self.db_services.set_region(region_name)
         print "Region updated to ", region_name
-        self.config.set('AWS Access', 'aws_region', region_name)
+        self.config.set('AWS Access', 'aws_region', region_name, True)
         if self.server.is_server_running() == 'yes':
             self.server_relaunch()
 
@@ -1275,6 +1279,14 @@ class PsiturkNetworkShell(PsiturkShell):
             self.print_topics(self.super_header, cmds_super, 15, 80)
 
 def run(cabinmode=False):
+    usingLibedit = 'libedit' in readline.__doc__
+    if usingLibedit:
+        print colorize('\n'.join(['libedit version of readline detected.',
+                                   'readline will not be well behaved, which may cause all sorts',
+                                   'of problems for the psiTurk shell. We highly recommend installing',
+                                   'the gnu version of readline by running "sudo easy_install -a readline".',
+                                   'Note: "pip install readline" will NOT work because of how the OSX',
+                                   'pythonpath is structured.']), 'red')
     sys.argv = [sys.argv[0]] # drop arguments which were already processed in command_line.py
     #opt = docopt(__doc__, sys.argv[1:])
     config = PsiturkConfig()
@@ -1284,12 +1296,16 @@ def run(cabinmode=False):
         shell = PsiturkShell(config, server)
         shell.check_offline_configuration()
     else:
+        if config.getboolean("Shell Parameters", "always_launch_in_sandbox"):
+            config.set('HIT Configuration', 'using_sandbox', True)
+
         amt_services = MTurkServices(config.get('AWS Access', 'aws_access_key_id'), \
                                  config.get('AWS Access', 'aws_secret_access_key'), \
                                  config.getboolean('HIT Configuration','using_sandbox'))
         aws_rds_services = RDSServices(config.get('AWS Access', 'aws_access_key_id'), \
                                  config.get('AWS Access', 'aws_secret_access_key'),
                                  config.get('AWS Access', 'aws_region'))
-        web_services = PsiturkOrgServices(config.get('Secure Ad Server', 'contact_email'))
+        web_services = PsiturkOrgServices(config.get('psiTurk Access', 'psiturk_access_key_id'),
+                                 config.get('psiTurk Access', 'psiturk_secret_access_id'))
         shell = PsiturkNetworkShell(config, amt_services, aws_rds_services, web_services, server)
     shell.cmdloop()
