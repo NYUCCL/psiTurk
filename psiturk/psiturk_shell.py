@@ -11,7 +11,7 @@ import datetime
 
 from cmd2 import Cmd
 from docopt import docopt, DocoptExit
-import gnureadline as readline
+import readline
 
 import webbrowser
 
@@ -702,6 +702,7 @@ class PsiturkNetworkShell(PsiturkShell):
         }
 
         create_failed = False
+        fail_msg = None
         ad_id = self.web_services.create_ad(ad_content)
         if ad_id != False:
             ad_url = self.web_services.get_ad_url(ad_id)
@@ -710,25 +711,30 @@ class PsiturkNetworkShell(PsiturkShell):
                 "approve_requirement": self.config.get('HIT Configuration', 'Approve_Requirement'),
                 "us_only": self.config.getboolean('HIT Configuration', 'US_only'),
                 "lifetime": datetime.timedelta(hours=self.config.getfloat('HIT Configuration', 'lifetime')),
-                "max_assignments": self.config.getint('HIT Configuration', 'max_assignments'),
+                "max_assignments": numWorkers,
                 "title": self.config.get('HIT Configuration', 'title'),
                 "description": self.config.get('HIT Configuration', 'description'),
                 "keywords": self.config.get('HIT Configuration', 'amt_keywords'),
-                "reward": self.config.getfloat('HIT Configuration', 'reward'),
-                "duration": datetime.timedelta(hours=self.config.getfloat('HIT Configuration', 'duration'))
+                "reward": reward,
+                "duration": datetime.timedelta(hours=int(duration))
             }
             hit_id = self.amt_services.create_hit(hit_config)
             if hit_id != False:
                 if not self.web_services.set_ad_hitid(ad_id, hit_id):
                     create_failed = True
+                    fail_msg = "  Unable to update Ad on http://ad.psiturk.org to point at HIT."
             else:
                 create_failed = True
+                fail_msg = "  Unable to create HIT on Amazon Mechanical Turk."
         else:
             create_failed = True
+            fail_msg = "  Unable to create Ad on http://ad.psiturk.org."
 
         if create_failed:
             print '*****************************'
             print '  Sorry, there was an error creating hit and registering ad.'
+            if fail_msg:
+                print fail_msg
 
         else:
             if self.sandbox:
@@ -753,7 +759,7 @@ class PsiturkNetworkShell(PsiturkShell):
             print '    Fee: $%.2f' % fee
             print '    ________________________'
             print '    Total: $%.2f' % total
-            print '  Ad for this HIT now hosted at: http://psiturk.org/ad/' + str(ad_id) + "?assignmentId=debug" + str(self.random_id_generator()) \
+            print '  Ad for this HIT now hosted at: https://ad.psiturk.org/view/' + str(ad_id) + "?assignmentId=debug" + str(self.random_id_generator()) \
                         + "&hitId=debug" + str(self.random_id_generator())
 
 
@@ -1318,6 +1324,14 @@ class PsiturkNetworkShell(PsiturkShell):
             self.print_topics(self.super_header, cmds_super, 15, 80)
 
 def run(cabinmode=False):
+    usingLibedit = 'libedit' in readline.__doc__
+    if usingLibedit:
+        print colorize('\n'.join(['libedit version of readline detected.',
+                                   'readline will not be well behaved, which may cause all sorts',
+                                   'of problems for the psiTurk shell. We highly recommend installing',
+                                   'the gnu version of readline by running "sudo easy_install -a readline".',
+                                   'Note: "pip install readline" will NOT work because of how the OSX',
+                                   'pythonpath is structured.']), 'red')
     sys.argv = [sys.argv[0]] # drop arguments which were already processed in command_line.py
     #opt = docopt(__doc__, sys.argv[1:])
     config = PsiturkConfig()

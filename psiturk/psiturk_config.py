@@ -57,3 +57,4 @@ class PsiturkConfig(SafeConfigParser):
             return True
         else:
             return False
+
