@@ -668,12 +668,12 @@ class PsiturkNetworkShell(PsiturkShell):
                 "approve_requirement": self.config.get('HIT Configuration', 'Approve_Requirement'),
                 "us_only": self.config.getboolean('HIT Configuration', 'US_only'),
                 "lifetime": datetime.timedelta(hours=self.config.getfloat('HIT Configuration', 'lifetime')),
-                "max_assignments": self.config.getint('HIT Configuration', 'max_assignments'),
+                "max_assignments": numWorkers,
                 "title": self.config.get('HIT Configuration', 'title'),
                 "description": self.config.get('HIT Configuration', 'description'),
                 "keywords": self.config.get('HIT Configuration', 'amt_keywords'),
-                "reward": self.config.getfloat('HIT Configuration', 'reward'),
-                "duration": datetime.timedelta(hours=self.config.getfloat('HIT Configuration', 'duration'))
+                "reward": reward,
+                "duration": duration
             }
             hit_id = self.amt_services.create_hit(hit_config)
             if hit_id != False:
