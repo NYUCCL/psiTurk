@@ -660,6 +660,7 @@ class PsiturkNetworkShell(PsiturkShell):
         }
 
         create_failed = False
+        fail_msg = None
         ad_id = self.web_services.create_ad(ad_content)
         if ad_id != False:
             ad_url = self.web_services.get_ad_url(ad_id)
@@ -673,20 +674,25 @@ class PsiturkNetworkShell(PsiturkShell):
                 "description": self.config.get('HIT Configuration', 'description'),
                 "keywords": self.config.get('HIT Configuration', 'amt_keywords'),
                 "reward": reward,
-                "duration": duration
+                "duration": datetime.timedelta(hours=int(duration))
             }
             hit_id = self.amt_services.create_hit(hit_config)
             if hit_id != False:
                 if not self.web_services.set_ad_hitid(ad_id, hit_id):
                     create_failed = True
+                    fail_msg = "  Unable to update Ad on http://ad.psiturk.org to point at HIT."
             else:
                 create_failed = True
+                fail_msg = "  Unable to create HIT on Amazon Mechanical Turk."
         else:
             create_failed = True
+            fail_msg = "  Unable to create Ad on http://ad.psiturk.org."
 
         if create_failed:
             print '*****************************'
             print '  Sorry, there was an error creating hit and registering ad.'
+            if fail_msg:
+                print fail_msg
 
         else:
             if self.sandbox:
@@ -711,7 +717,7 @@ class PsiturkNetworkShell(PsiturkShell):
             print '    Fee: $%.2f' % fee
             print '    ________________________'
             print '    Total: $%.2f' % total
-            print '  Ad for this HIT now hosted at: http://psiturk.org/ad/' + str(ad_id) + "?assignmentId=debug" + str(self.random_id_generator()) \
+            print '  Ad for this HIT now hosted at: https://ad.psiturk.org/view/' + str(ad_id) + "?assignmentId=debug" + str(self.random_id_generator()) \
                         + "&hitId=debug" + str(self.random_id_generator())
 
 
