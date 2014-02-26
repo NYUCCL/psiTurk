@@ -350,7 +350,7 @@ def start_exp():
         # if everything goes ok here relatively safe to assume we can lookup the ad
         ad_id = get_ad_via_hitid(hitId)
         if ad_id != "error":
-            ad_server_location = 'https://ad.psiturk.org/view/' + str(ad_id)
+            ad_server_location = 'https://ad.psiturk.org/complete/' + str(ad_id)
         else:
             raise ExperimentError('hit_not_registered_with_ad_server')
         
