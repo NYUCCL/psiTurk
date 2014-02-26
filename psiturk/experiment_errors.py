@@ -24,7 +24,7 @@ class ExperimentError(Exception):
             intermediate_save = 1012,
             improper_inputs = 1013,
             browser_type_not_allowed = 1014,
-            server_not_reachable = 1015,
+            api_server_not_reachable = 1015,
             ad_not_found = 1016,
             error_setting_worker_complete = 1017,
             hit_not_registered_with_ad_server = 1018,
