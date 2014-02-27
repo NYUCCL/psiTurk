@@ -7,6 +7,7 @@ from random import choice
 import json
 import user_agents
 import string
+import requests
 try:
     from collections import Counter
 except ImportError:
@@ -255,20 +256,24 @@ def give_consent():
     Serves up the consent in the popup window.
     """
     if not (request.args.has_key('hitId') and request.args.has_key('assignmentId') and request.args.has_key('workerId')):
-        raise ExperimentError('hit_assign_worker_id_not_set_in_consent')
+        raise ExperimentError( 'hit_assign_worker_id_not_set_in_consent' )
     hitId = request.args['hitId']
     assignmentId = request.args['assignmentId']
     workerId = request.args['workerId']
     return render_template('consent.html', hitid = hitId, assignmentid=assignmentId, workerid=workerId)
 
-def get_ad_via_hitid(server, hitId):
+def get_ad_via_hitid(hitId):
+    username = config.get('psiTurk Access', 'psiturk_access_key_id')               
+    password = config.get('psiTurk Access', 'psiturk_secret_access_id')
     try:
-        request_url = str(server) + "/ad/query?hitId=" + str(hitId)
-        response = urllib2.urlopen(request_url)
-        data = json.load(response)
+        r = requests.get('https://api.psiturk.org/api/ad/lookup/' + hitId, auth=(username,password))
     except:
-        raise ExperimentError('server_not_reachable')
-    return data['ad_id']
+        raise ExperimentError('api_server_not_reachable')
+    else:
+        if r.status_code == 200:
+            return r.json()['ad_id']
+        else:
+            return "error"
 
 @app.route('/exp', methods=['GET'])
 def start_exp():
@@ -344,13 +349,9 @@ def start_exp():
         ad_server_location = ''
     else:
         # if everything goes ok here relatively safe to assume we can lookup the ad
-        ad_server_base_url = config.get("Secure Ad Server", "location")
-        ad_id = get_ad_via_hitid(ad_server_base_url, hitId)
+        ad_id = get_ad_via_hitid(hitId)
         if ad_id != "error":
-            if ad_server_base_url[-1] == '/':
-                ad_server_location = ad_server_base_url + "ad/" + str(ad_id)
-            else:
-                ad_server_location = ad_server_base_url + "/ad/" + str(ad_id)
+            ad_server_location = 'https://ad.psiturk.org/complete/' + str(ad_id)
         else:
             raise ExperimentError('hit_not_registered_with_ad_server')
         

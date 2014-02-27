@@ -210,7 +210,7 @@ var Questionnaire = function() {
 
 var completeHIT = function() {
 	// save data one last time here?
-	window.location= adServerLoc + "/complete?uniqueId=" + psiTurk.taskdata.id;
+	window.location= adServerLoc + "?uniqueId=" + psiTurk.taskdata.id;
 }
 
 
