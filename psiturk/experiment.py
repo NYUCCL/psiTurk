@@ -135,6 +135,7 @@ def get_random_condcount():
 # routes
 #----------------------------------------------
 @app.route('/')
+@nocache
 def index():
     return render_template('default.html')
 
@@ -163,6 +164,7 @@ def check_worker_status():
 
 
 @app.route('/ad', methods=['GET'])
+@nocache
 def advertisement():
     """
     This is the url we give for the ad for our 'external question'.
@@ -253,6 +255,7 @@ def advertisement():
         raise ExperimentError('status_incorrectly_set')
 
 @app.route('/consent', methods=['GET'])
+@nocache
 def give_consent():
     """
     Serves up the consent in the popup window.
@@ -278,6 +281,7 @@ def get_ad_via_hitid(hitId):
             return "error"
 
 @app.route('/exp', methods=['GET'])
+@nocache
 def start_exp():
     """
     Serves up the experiment applet.
@@ -437,6 +441,7 @@ def quitter():
 
 # this route should only used when debugging
 @app.route('/complete', methods=['GET'])
+@nocache
 def debug_complete():
     if not request.args.has_key('uniqueId'):
         raise ExperimentError('improper_inputs')
