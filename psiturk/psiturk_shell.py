@@ -22,6 +22,7 @@ from psiturk_org_services import PsiturkOrgServices
 from version import version_number
 from psiturk_config import PsiturkConfig
 import experiment_server_controller as control
+from db import db_session, init_db
 from models import Participant
 
 # Escape sequences for display.
@@ -465,22 +466,30 @@ class PsiturkNetworkShell(PsiturkShell):
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #  worker management
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
-    def worker_list(self):
-        workers = self.amt_services.get_workers()
+    def worker_list(self, submitted, approved, rejected, allWorkers, chosenHit):
+        workers = None
+        if submitted:
+            workers = self.amt_services.get_workers("Submitted")
+        elif approved:
+            workers = self.amt_services.get_workers("Approved")
+        elif rejected:
+            workers = self.amt_services.get_workers("Rejected")
+        else:
+            workers = self.amt_services.get_workers()
         if workers==False:
             print colorize('*** failed to get workers', 'red')
-        elif not len(workers):
-            print "*** no submitted workers"
+        if chosenHit:
+            workers = [worker for worker in workers if worker['hitId']==chosenHit]
+            print 'listing workers for HIT', chosenHit
+        if not len(workers):
+            print "*** no workers match your request"
         else:
-            print json.dumps(self.amt_services.get_workers(), indent=4,
+            print json.dumps(workers, indent=4,
                              separators=(',', ': '))
 
-    def worker_approve(self, allWorkers, chosenHit, assignment_ids = []):
-        if allWorkers:
-            workers = self.amt_services.get_workers()
-            assignment_ids = [worker['assignmentId'] for worker in workers]
-        elif chosenHit:
-            workers = self.amt_services.get_workers()
+    def worker_approve(self, chosenHit, assignment_ids = None):
+        if chosenHit:
+            workers = self.amt_services.get_workers("Submitted")
             assignment_ids = [worker['assignmentId'] for worker in workers if worker['hitId']==chosenHit]
             print 'approving workers for HIT', chosenHit
         for assignmentID in assignment_ids:
@@ -490,12 +499,9 @@ class PsiturkNetworkShell(PsiturkShell):
             else:
                 print '*** failed to approve', assignmentID
 
-    def worker_reject(self, allWorkers, chosenHit, assignment_ids = None):
-        if allWorkers:
-            workers = self.amt_services.get_workers()
-            assignment_ids = [worker['assignmentId'] for worker in workers]
-        elif chosenHit:
-            workers = self.amt_services.get_workers()
+    def worker_reject(self, chosenHit, assignment_ids = None):
+        if chosenHit:
+            workers = self.amt_services.get_workers("Submitted")
             assignment_ids = [worker['assignmentId'] for worker in workers if worker['hitId']==chosenHit]
             print 'rejecting workers for HIT',chosenHit
         for assignmentID in assignment_ids:
@@ -504,7 +510,46 @@ class PsiturkNetworkShell(PsiturkShell):
                 print 'rejected', assignmentID
             else:
                 print '*** failed to reject', assignmentID
-
+    
+    def worker_bonus(self, chosenHit, auto, amount, reason, assignment_ids = None):
+        while not reason:
+            r = raw_input("Type the reason for the bonus. Workers will see this message: ")
+            reason = r
+        #bonus already-bonused workers if the user explicitly lists their worker IDs
+        overrideStatus = True
+        if chosenHit:        
+            overrideStatus = False
+            workers = self.amt_services.get_workers("Approved")
+            if workers==False:
+                print "No approved workers for HIT", chosenHit
+                return
+            assignment_ids = [worker['assignmentId'] for worker in workers if worker['hitId']==chosenHit]
+            print 'bonusing workers for HIT', chosenHit
+        for assignmentID in assignment_ids:
+            try:
+                init_db()
+                part = Participant.query.\
+                       filter(Participant.assignmentid == assignmentID).\
+                       one()
+                if auto:
+                    amount = part.bonus
+                status = part.status
+                if amount<=0:
+                    print "bonus amount <=$0, no bonus given to", assignmentID
+                elif status==6 and not overrideStatus:
+                    print "bonus already awarded to ", assignmentID
+                else:
+                    success = self.amt_services.bonus_worker(assignmentID, amount, reason)
+                    if success:
+                        print "gave bonus of $" + str(amount) + " to " + assignmentID
+                        part.status = 6
+                        db_session.add(part)
+                        db_session.commit()
+                        db_session.remove()
+                    else:
+                        print "*** failed to bonus", assignmentID
+            except:
+                print "*** failed to bonus", assignmentID
 
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #  hit management
@@ -1188,17 +1233,20 @@ class PsiturkNetworkShell(PsiturkShell):
     def do_worker(self, arg):
         """
         Usage:
-          worker approve (--all | --hit <hit_id> | <assignment_id> ...)
-          worker reject (--all | --hit <hit_id> | <assignment_id> ...)
-          worker list
+          worker approve (--hit <hit_id> | <assignment_id> ...)
+          worker reject (--hit <hit_id> | <assignment_id> ...)
+          worker bonus  (--amount <amount> | --auto) (--hit <hit_id> | <assignment_id> ...)
+          worker list (submitted | approved | rejected | all) [--hit <hit_id>]
           worker help
         """
         if arg['approve']:
-            self.worker_approve(arg['--all'], arg['<hit_id>'], arg['<assignment_id>'])
+            self.worker_approve(arg['<hit_id>'], arg['<assignment_id>'])
         elif arg['reject']:
-            self.worker_reject(arg['--all'], arg['<hit_id>'], arg['<assignment_id>'])
+            self.worker_reject(arg['<hit_id>'], arg['<assignment_id>'])
         elif arg['list']:
-            self.worker_list()
+            self.worker_list(arg['submitted'], arg['approved'], arg['rejected'], arg['all'], arg['<hit_id>'])
+        elif arg['bonus']:
+            self.worker_bonus(arg['<hit_id>'], arg['--auto'], arg['<amount>'], "", arg['<assignment_id>'])
         else:
             self.help_worker()
 

@@ -43,6 +43,7 @@ STARTED = 2
 COMPLETED = 3
 CREDITED = 4
 QUITEARLY = 5
+BONUSED = 6
 
 ###########################################################
 # let's start
