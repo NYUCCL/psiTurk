@@ -1,7 +1,7 @@
 psiTurk Documentation
 =====================
 
-.. toctree:: :maxdepth: 2
+
 
 --------------
 
@@ -18,66 +18,14 @@ setup a simple experiment with **psiTurk**, visit `Getting up and
 running with the basic Stroop task <Step-by-step-tutorials#getting-up-and-running-with-the-basic-stroop-task>`__.
 
 User's Guide
-============
-
--  `Forword <Forward.html>`__
-    -  `The psiTurk design philosophy: An analogy <Forword.html#understanding-the-psiturk-design-philosophy-an-analogy>`__
-    -  `What is Mechanical Turk? <Forword.html#what-is-mechanical-turk>`__
-    -  `What is psiTurk? <Forword.html#what-is-psiturk>`__
-    -  `How do I host a psiTurk experiment? <Forword.html#how-do-i-host-a-psiturk-experiment>`__
-    -  `Do I have to learn to code? <Forword.html#do-i-have-to-learn-to-code>`__
-    -  `What common issues arise? <Forword.html#what-common-issues-arise>`__
--  `Getting psiTurk installed on your computer <Getting-psiturk-installed-on-your-computer.html>`__
-    -  `Requirements <Getting-psiturk-installed-on-your-computer.html#requirements>`__
-    -  `Install steps <Getting-psiturk-installed-on-your-computer.html#installation-steps>`__
-    -  `System-specific notes <Getting-psiturk-installed-on-your-computer.html#system specific-notes>`__
-        -  `Mac <Getting-psiturk-installed-on-your-computer.html#mac-os-x>`__
-        -  `Linux <Getting-psiturk-installed-on-your-computer.html#linux>`__
-        -  `Windows <Getting-psiturk-installed-on-your-computer.html#windows>`__
-        -  `Cloud(Experimental) <Getting-psiturk-installed-on-your-computer.html#wiki-cloud>`__
--  `Getting setup with Amazon Mechanical Turk <Getting-setup-with-Amazon-Mechanical-Turk>`__
-    -  `Obtaining AWS credentials <Getting-setup-with-Amazon-Mechanical-Turk#obtaining-setup-with-amazon-mechanical-turk>`__
-    -  `Creating a AMT Requester account <Getting-setup-with-Amazon-Mechanical-Turk#creating-a-amt-requested-account>`__
-    -  `Linking funds <Getting-setup-with-Amazon-Mechanical-Turk#linking-funds>`__
--  `Quickstart <Quickstart.html>`__
--  `Step-by-step tutorials <Step-by-step-tutorials>`__
-    -  `Overview of the command line interface <Step-by-step-tutorials#overview-of-the-command-line-interface>`__
-    -  `Configuring databases <Step-by-step-tutorials#configuring-databases>`__
-    -  `Getting up and running with the basic Stroop task <Step-by-step-tutorials#getting-up-and-running-with-the-basic-stroop-task>`__
-    -  `Decomposing the Stroop task <Step-by-step-tutorials#decomposing-the-stroop-task>`__
--  `Anatomy of a project <Anatomy-of-a-project>`__
-    -  `config.txt <Anatomy-of-a-project#config.txt>`__
-    -  `participants.db <Anatomy-of-a-project#participants.db>`__
-    -  `server.log <Anatomy-of-a-project#server.log>`__
-    -  `exp.html <Anatomy-of-a-project#exp.html>`__
-    -  `task.css <Anatomy-of-a-project#task.css>`__
-    -  `psiturk.js <Anatomy-of-a-project#psiturk.js>`__
-    -  `task.js <Anatomy-of-a-project#task.js>`__
-    -  `utils.js <Anatomy-of-a-project#utils.js>`__
--  `Recording and saving data <Recording-and-saving-data.html>`__
--  `Crediting participants <Crediting-participants>`__
-    -  `Via interactive shell <Crediting-participants#via-interactive-shell>`__
-    -  `Via AMT site <Crediting-participants#via-amt-site>`__
-    -  `How much should I pay? <Crediting-participants#how-much-should-i-pay>`__
--  `Basics and/or references on external libraries <Basics-and-or-references-on-external-libraries>`__
-    -  `JQuery <Basics-and-or-references-on-external-libraries#jquery>`__
-    -  `Underscore <Basics-and-or-references-on-external-libraries#underscore>`__
-    -  `Backbone <Basics-and-or-references-on-external-libraries#backbone>`__
--  `FAQ <FAQ>`__
-    -  `Host your own SSL certificate <FAQ#host-your-own-ssl-certificate>`__
+------------------
+.. toctree::
+    forward
+    install
+    quickstart
+    recording
 
 API Reference
-=============
-
--  `psiTurk API <psiTurk-API.html>`__
-    -  `Creating the psiTurk object <psiTurk-API.html#creating-the-psiturk-object>`__
-    -  `psiturk.taskdata <psiTurk-API.html#psiturktaskdata>`__
-    -  `psiturk.preloadPages <psiTurk-API.html#psiturkpreloadpagespagelist>`__
-    -  `psiturk.getPage <psiTurk-API.html#psiturkgetpagepagename>`__
-    -  `psiturk.showPage <psiTurk-API.html#psiturkshowpagepagename>`__
-    -  `psiturk.preloadImages <psiTurk-API.html#psiturkpreloadimagesimagelist>`__
-    -  `psiturk.recordTrialData <psiTurk-API.html#psiturkrecordtrialdataarray>`__
-    -  `psiturk.recordUnstructuredData <psiTurk-API.html#psiturkrecordunstructureddatafield-value>`__
-    -  `psiturk.saveData <psiTurk-API.html#psiturksavedatacallbacks>`__
-    -  `psiturk.finishInstructions <psiTurk-API.html#psiturkfinishinstructions>`__
-    -  `psiturk.teardownTask <psiTurk-API.html#psiturkteardowntask>`__
+--------------
+.. toctree::
+    psiTurk-API
