@@ -1,6 +1,17 @@
-from functools import wraps
-from flask import Flask, render_template, request, Response, jsonify
+from functools import wraps, update_wrapper
+from flask import Flask, render_template, request, Response, jsonify, make_response
 
+
+#----------------------------------------------
+# decorator for turning off browser caching
+#----------------------------------------------
+def nocache(f):
+    """Stop caching for pages wrapped in nocache decorator."""
+    def new_func(*args, **kwargs):
+        resp = make_response(f(*args, **kwargs))
+        resp.cache_control.no_cache = True
+        return resp
+    return update_wrapper(new_func, f)
 
 #----------------------------------------------
 # class for adding for authentication decorator

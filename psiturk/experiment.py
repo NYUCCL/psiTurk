@@ -4,7 +4,6 @@ import datetime
 import logging
 import urllib2
 from random import choice
-from functools import update_wrapper
 import json
 import user_agents
 import string
@@ -15,7 +14,7 @@ except ImportError:
     from counter import Counter
 
 # Importing flask
-from flask import Flask, render_template, request, Response, jsonify, make_response
+from flask import Flask, render_template, request, Response, jsonify
 
 # Database setup
 from db import db_session, init_db
@@ -24,6 +23,7 @@ from sqlalchemy import or_
 
 from psiturk_config import PsiturkConfig
 from experiment_errors import ExperimentError
+from psiturk.user_utils import nocache
 
 config = PsiturkConfig()
 config.load_config()
@@ -51,6 +51,7 @@ BONUSED = 6
 ###########################################################
 app = Flask("Experiment_Server")
 init_db()
+app.config.update(SEND_FILE_MAX_AGE_DEFAULT=10) # set cache timeout to 10ms for static files
 
 ###########################################################
 #  serving warm, fresh, & sweet custom, user-provided routes

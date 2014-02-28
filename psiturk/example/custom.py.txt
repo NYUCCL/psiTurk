@@ -7,7 +7,7 @@ from sqlalchemy import or_
 
 from psiturk.psiturk_config import PsiturkConfig
 from psiturk.experiment_errors import ExperimentError
-from psiturk.user_utils import PsiTurkAuthorization
+from psiturk.user_utils import PsiTurkAuthorization, nocache
 
 # # Database setup
 from psiturk.db import db_session, init_db
