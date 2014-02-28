@@ -1,7 +1,11 @@
 psiTurk Documentation
 =====================
 
-.. toctree:: :maxdepth: 2
+.. toctree:: 
+    :maxdepth: 2
+    Forward
+    Quickstart
+    Recording-and-saving-data
 
 --------------
 
@@ -19,11 +23,7 @@ running with the basic Stroop task <Step-by-step-tutorials#getting-up-and-runnin
 
 User's Guide
 ============
-.. toctree:: 
-    :maxdepth: 2
-    Forward
-    Quickstart
-    Recording-and-saving-data
+
 
 -  `Forword <Forward.html>`__
     -  `The psiTurk design philosophy: An analogy <Forword.html#understanding-the-psiturk-design-philosophy-an-analogy>`__
