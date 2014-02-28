@@ -27,14 +27,14 @@ User's Guide
     -  `How do I host a psiTurk experiment? <Forword.html#how-do-i-host-a-psiturk-experiment>`__
     -  `Do I have to learn to code? <Forword.html#do-i-have-to-learn-to-code>`__
     -  `What common issues arise? <Forword.html#what-common-issues-arise>`__
--  `Getting psiTurk installed on your computer <Getting-psiTurk-installed-on-your-computer.html>`__
-    -  `Requirements <Getting-psiTurk-installed-on-your-computer.html#requirements>`__
-    -  `Install steps <Getting-psiTurk-installed-on-your-computer.html#installation-steps>`__
-    -  `System-specific notes <Getting-psiTurk-installed-on-your-computer.html#system specific-notes>`__
-        -  `Mac <Getting-psiTurk-installed-on-your-computer.html#mac-os-x>`__
-        -  `Linux <Getting-psiTurk-installed-on-your-computer.html#linux>`__
-        -  `Windows <Getting-psiTurk-installed-on-your-computer.html#windows>`__
-        -  `Cloud(Experimental) <Getting-psiTurk-installed-on-your-computer.html#wiki-cloud>`__
+-  `Getting psiTurk installed on your computer <Getting-psiturk-installed-on-your-computer.html>`__
+    -  `Requirements <Getting-psiturk-installed-on-your-computer.html#requirements>`__
+    -  `Install steps <Getting-psiturk-installed-on-your-computer.html#installation-steps>`__
+    -  `System-specific notes <Getting-psiturk-installed-on-your-computer.html#system specific-notes>`__
+        -  `Mac <Getting-psiturk-installed-on-your-computer.html#mac-os-x>`__
+        -  `Linux <Getting-psiturk-installed-on-your-computer.html#linux>`__
+        -  `Windows <Getting-psiturk-installed-on-your-computer.html#windows>`__
+        -  `Cloud(Experimental) <Getting-psiturk-installed-on-your-computer.html#wiki-cloud>`__
 -  `Getting setup with Amazon Mechanical Turk <Getting-setup-with-Amazon-Mechanical-Turk>`__
     -  `Obtaining AWS credentials <Getting-setup-with-Amazon-Mechanical-Turk#obtaining-setup-with-amazon-mechanical-turk>`__
     -  `Creating a AMT Requester account <Getting-setup-with-Amazon-Mechanical-Turk#creating-a-amt-requested-account>`__
@@ -54,7 +54,7 @@ User's Guide
     -  `psiturk.js <Anatomy-of-a-project#psiturk.js>`__
     -  `task.js <Anatomy-of-a-project#task.js>`__
     -  `utils.js <Anatomy-of-a-project#utils.js>`__
--  `Recording and saving data <Recording-and-saving-data>`__
+-  `Recording and saving data <Recording-and-saving-data.html>`__
 -  `Crediting participants <Crediting-participants>`__
     -  `Via interactive shell <Crediting-participants#via-interactive-shell>`__
     -  `Via AMT site <Crediting-participants#via-amt-site>`__
