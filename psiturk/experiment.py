@@ -4,6 +4,7 @@ import datetime
 import logging
 import urllib2
 from random import choice
+from functools import update_wrapper
 import json
 import user_agents
 import string
@@ -14,7 +15,7 @@ except ImportError:
     from counter import Counter
 
 # Importing flask
-from flask import Flask, render_template, request, Response, jsonify
+from flask import Flask, render_template, request, Response, jsonify, make_response
 
 # Database setup
 from db import db_session, init_db
@@ -49,7 +50,7 @@ BONUSED = 6
 # let's start
 ###########################################################
 app = Flask("Experiment_Server")
-init_db()  
+init_db()
 
 ###########################################################
 #  serving warm, fresh, & sweet custom, user-provided routes
@@ -60,7 +61,7 @@ try:
     from custom import custom_code
 except ImportError:
     app.logger.info( "Hmm... it seems no custom code (custom.py) assocated with this project.")
-    pass # do nothing if the 
+    pass # do nothing if the
 else:
     app.register_blueprint(custom_code)
 
@@ -99,19 +100,19 @@ def get_random_condcount():
     Our count should be based on the first two, so we count any tasks finished
     or any tasks not finished that were started in the last cutoff_time
     minutes, as specified in the cutoff_time variable in the config file.
-    
+
     Returns a tuple: (cond, condition)
     """
     cutofftime = datetime.timedelta(minutes=-config.getint('Server Parameters', 'cutoff_time'))
     starttime = datetime.datetime.now() + cutofftime
-    
+
     numconds = config.getint('Task Parameters', 'num_conds')
     numcounts = config.getint('Task Parameters', 'num_counters')
-    
+
     participants = Participant.query.\
                    filter(Participant.codeversion == config.get('Task Parameters', 'experiment_code_version')).\
-                   filter(or_(Participant.status == COMPLETED, 
-                              Participant.status == CREDITED, 
+                   filter(or_(Participant.status == COMPLETED,
+                              Participant.status == CREDITED,
                               Participant.beginhit > starttime)).\
                    all()
     counts = Counter()
@@ -126,7 +127,7 @@ def get_random_condcount():
     #conds += [ 0 for _ in range(1000) ]
     #conds += [ 1 for _ in range(1000) ]
     app.logger.info( "given %(a)s chose %(b)s" % {'a': counts, 'b': chosen})
-    
+
     return chosen
 
 #----------------------------------------------
@@ -166,7 +167,7 @@ def advertisement():
     This is the url we give for the ad for our 'external question'.
     The ad has to display two different things:
     This page will be called from within mechanical turk, with url arguments
-    hitId, assignmentId, and workerId. 
+    hitId, assignmentId, and workerId.
     If the worker has not yet accepted the hit:
       These arguments will have null values, we should just show an ad for the
       experiment.
@@ -196,7 +197,7 @@ def advertisement():
     if not (request.args.has_key('hitId') and request.args.has_key('assignmentId')):
         raise ExperimentError('hit_assign_worker_id_not_set_in_mturk')
     hitId = request.args['hitId']
-    assignmentId = request.args['assignmentId'] 
+    assignmentId = request.args['assignmentId']
     if hitId[:5] == "debug":
         debug_mode = True
     else:
@@ -209,7 +210,7 @@ def advertisement():
                    filter(Participant.assignmentid != assignmentId).\
                    filter(Participant.workerid == workerId).\
                    count()
-        
+
         if nrecords > 0:
             # already completed task
             already_in_db = True
@@ -225,7 +226,7 @@ def advertisement():
         status = part.status
     except:
         status = None
-    
+
     if status == STARTED and not debug_mode:
         # Once participants have finished the instructions, we do not allow
         # them to start the task again.
@@ -233,19 +234,19 @@ def advertisement():
     elif status == COMPLETED:
         # They've done the debriefing but perhaps haven't submitted the HIT yet..
         # Turn asignmentId into original assignment id before sending it back to AMT
-        return render_template('thanks.html', 
-                               is_sandbox=config.getboolean('HIT Configuration', 'using_sandbox'), 
-                               hitid = hitId, 
-                               assignmentid = assignmentId, 
+        return render_template('thanks.html',
+                               is_sandbox=config.getboolean('HIT Configuration', 'using_sandbox'),
+                               hitid = hitId,
+                               assignmentid = assignmentId,
                                workerid = workerId)
     elif already_in_db and not debug_mode:
         raise ExperimentError('already_did_exp_hit')
     elif status == ALLOCATED or not status:
         # Participant has not yet agreed to the consent. They might not
-        # even have accepted the HIT. 
-        return render_template('ad.html', 
-                               hitid = hitId, 
-                               assignmentid = assignmentId, 
+        # even have accepted the HIT.
+        return render_template('ad.html',
+                               hitid = hitId,
+                               assignmentid = assignmentId,
                                workerid = workerId)
     else:
         raise ExperimentError('status_incorrectly_set')
@@ -263,7 +264,7 @@ def give_consent():
     return render_template('consent.html', hitid = hitId, assignmentid=assignmentId, workerid=workerId)
 
 def get_ad_via_hitid(hitId):
-    username = config.get('psiTurk Access', 'psiturk_access_key_id')               
+    username = config.get('psiTurk Access', 'psiturk_access_key_id')
     password = config.get('psiTurk Access', 'psiturk_secret_access_id')
     try:
         r = requests.get('https://api.psiturk.org/api/ad/lookup/' + hitId, auth=(username,password))
@@ -299,12 +300,12 @@ def start_exp():
     if numrecs == 0:
         # Choose condition and counterbalance
         subj_cond, subj_counter = get_random_condcount()
-        
+
         ip = "UNKNOWN" if not request.remote_addr else request.remote_addr
         browser = "UNKNOWN" if not request.user_agent.browser else request.user_agent.browser
         platform = "UNKNOWN" if not request.user_agent.platform else request.user_agent.platform
         language = "UNKNOWN" if not request.user_agent.language else request.user_agent.language
-        
+
         # set condition here and insert into database
         participant_attributes = dict(
             assignmentid = assignmentId,
@@ -319,7 +320,7 @@ def start_exp():
         part = Participant(**participant_attributes)
         db_session.add(part)
         db_session.commit()
-    
+
     else:
         # A couple possible problems here:
         # 1: They've already done an assignment, then we should tell them they can't do another one
@@ -344,7 +345,7 @@ def start_exp():
                 raise ExperimentError('hit_assign_appears_in_database_more_than_once')
             if other_assignment:
                 raise ExperimentError('already_did_exp_hit')
-    
+
     if debug_mode:
         ad_server_location = ''
     else:
@@ -354,7 +355,7 @@ def start_exp():
             ad_server_location = 'https://ad.psiturk.org/complete/' + str(ad_id)
         else:
             raise ExperimentError('hit_not_registered_with_ad_server')
-        
+
     return render_template('exp.html', uniqueId=part.uniqueid, condition=part.cond, counterbalance=part.counterbalance, adServerLoc=ad_server_location)
 
 @app.route('/inexp', methods=['POST'])
@@ -385,32 +386,32 @@ def enterexp():
 # TODD SAYS: this the only route in the whole thing that uses <id> like this
 # where everything else uses POST!  This could be confusing but is forced
 # somewhat by Backbone?  take heed!
-@app.route('/sync/<id>', methods=['GET', 'PUT'])  
+@app.route('/sync/<id>', methods=['GET', 'PUT'])
 def update(id=None):
     """
     Save experiment data, which should be a JSON object and will be stored
     after converting to string.
     """
     app.logger.info("accessing the /sync route with id: %s" % id)
-    
+
     try:
         user = Participant.query.\
                 filter(Participant.uniqueid == id).\
                 one()
     except:
         app.logger.error( "DB error: Unique user not found.")
-    
+
     if hasattr(request, 'json'):
         user.datastring = request.data.decode('utf-8').encode('ascii', 'xmlcharrefreplace')
         db_session.add(user)
         db_session.commit()
-    
+
     resp = {"condition": user.cond,
             "counterbalance": user.counterbalance,
             "assignmentId": user.assignmentid,
             "workerId": user.workerid,
             "hitId": user.hitid}
-    
+
     return jsonify(**resp)
 
 @app.route('/quitter', methods=['POST'])
@@ -444,7 +445,7 @@ def debug_complete():
             user = Participant.query.\
                         filter(Participant.uniqueid == uniqueId).\
                         one()
-            user.status = COMPLETED 
+            user.status = COMPLETED
             db_session.add(user)
             db_session.commit()
         except:

@@ -242,7 +242,7 @@ class PsiturkShell(Cmd, object):
             for k in items:
                 print "%(a)s=%(b)s" % {'a': k, 'b': items[k]}
             print ''
-            
+
     def do_reload_config(self, arg):
         self.config.load_config()
 
@@ -265,7 +265,7 @@ class PsiturkShell(Cmd, object):
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     def db_get_config(self):
         print "Current database setting (database_url): \n\t", self.config.get("Database Parameters", "database_url")
-    
+
     def db_use_local_file(self, filename=None):
         interactive = False
         if filename is None:
@@ -321,7 +321,7 @@ class PsiturkShell(Cmd, object):
     @docopt_cmd
     def do_server(self, arg):
         """
-        Usage: 
+        Usage:
           server launch
           server shutdown
           server relaunch
@@ -510,14 +510,22 @@ class PsiturkNetworkShell(PsiturkShell):
                 print 'rejected', assignmentID
             else:
                 print '*** failed to reject', assignmentID
-    
+
+    def worker_unreject(self, assignment_ids):
+        for assignmentID in assignment_ids:
+            success = self.amt_services.unreject_worker(assignmentID)
+            if success:
+                print 'unrejected %s' % (assignmentID)
+            else:
+                print '*** failed to unreject', assignmentID
+
     def worker_bonus(self, chosenHit, auto, amount, reason, assignment_ids = None):
         while not reason:
             r = raw_input("Type the reason for the bonus. Workers will see this message: ")
             reason = r
         #bonus already-bonused workers if the user explicitly lists their worker IDs
         overrideStatus = True
-        if chosenHit:        
+        if chosenHit:
             overrideStatus = False
             workers = self.amt_services.get_workers("Approved")
             if workers==False:
@@ -1235,6 +1243,7 @@ class PsiturkNetworkShell(PsiturkShell):
         Usage:
           worker approve (--hit <hit_id> | <assignment_id> ...)
           worker reject (--hit <hit_id> | <assignment_id> ...)
+          worker unreject (<assignment_id> ...)
           worker bonus  (--amount <amount> | --auto) (--hit <hit_id> | <assignment_id> ...)
           worker list (submitted | approved | rejected | all) [--hit <hit_id>]
           worker help
@@ -1243,6 +1252,8 @@ class PsiturkNetworkShell(PsiturkShell):
             self.worker_approve(arg['<hit_id>'], arg['<assignment_id>'])
         elif arg['reject']:
             self.worker_reject(arg['<hit_id>'], arg['<assignment_id>'])
+        elif arg['unreject']:
+            self.worker_unreject(arg['<assignment_id>'])
         elif arg['list']:
             self.worker_list(arg['submitted'], arg['approved'], arg['rejected'], arg['all'], arg['<hit_id>'])
         elif arg['bonus']:
@@ -1250,7 +1261,7 @@ class PsiturkNetworkShell(PsiturkShell):
         else:
             self.help_worker()
 
-    worker_commands = ('approve', 'reject', 'bonus', 'list', 'help')
+    worker_commands = ('approve', 'reject', 'unreject', 'bonus', 'list', 'help')
 
     def complete_worker(self, text, line, begidx, endidx):
         return  [i for i in PsiturkNetworkShell.worker_commands if i.startswith(text)]
