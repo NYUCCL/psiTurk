@@ -44,10 +44,10 @@ class RDSServices:
         self.update_credentials(aws_access_key_id, aws_secret_access_key)
         self.set_region(region)
         self.validLogin = self.verify_aws_login()
-        if not self.validLogin:
-            print 'Sorry, AWS Credentials invalid.\nYou will only be able to '\
-                  + 'test experiments locally until you enter\nvalid '\
-                  + 'credentials in the AWS Access section of config.txt.'
+        # if not self.validLogin:
+        #     print 'Sorry, AWS Credentials invalid.\nYou will only be able to '\
+        #           + 'test experiments locally until you enter\nvalid '\
+        #           + 'credentials in the AWS Access section of config.txt.'
 
     def update_credentials(self, aws_access_key_id, aws_secret_access_key):
         self.aws_access_key_id = aws_access_key_id
@@ -217,7 +217,7 @@ class MTurkServices:
         if not self.validLogin:
             print 'Sorry, AWS Credentials invalid.\nYou will only be able to '\
                   + 'test experiments locally until you enter\nvalid '\
-                  + 'credentials in the AWS Access section of config.txt.'
+                  + 'credentials in the AWS Access section of ~/.psiturkconfig'
 
     def update_credentials(self, aws_access_key_id, aws_secret_access_key):
         self.aws_access_key_id = aws_access_key_id

@@ -18,6 +18,15 @@ class PsiturkOrgServices:
         self.apiServer = 'https://api.psiturk.org' # 'https://api.psiturk.org' # by default for now
         self.adServer = 'https://ad.psiturk.org'
         self.update_credentials(key,secret)
+        self.check_credentials()
+
+    def check_credentials(self):
+        r = requests.get(self.apiServer + '/api/ad', auth=(self.access_key,self.secret_key))
+        if r.status_code in [401, 403]:
+            print 'Sorry, psiTurk Credentials invalid.\nYou will only be able to '\
+                  + 'test experiments locally until you enter\nvalid '\
+                  + 'credentials in the psiTurk Access section of ~/.psiturkconfig.\nGet your ' \
+                  + 'credentials at www.psiturk.org/login.'
 
     def update_credentials(self, key, secret):
         self.access_key = key
