@@ -29,4 +29,4 @@ User's Guide
 API Reference
 --------------
 .. toctree::
-    psiTurk-API
+    api
