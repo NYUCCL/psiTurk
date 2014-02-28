@@ -1,0 +1,200 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Forward &mdash; psiturk 2.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '2.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="psiturk 2.0 documentation" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="index.html">psiturk 2.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="forward">
+<h1>Forward<a class="headerlink" href="#forward" title="Permalink to this headline">¶</a></h1>
+<p>Read this if you want to find out more about Amazon Mechanical Turk
+(AMT) and how <strong>psiTurk</strong> can help you run web-based experiments on AMT
+painlessly and quickly. This section will also tell you what problems
+<strong>psiTurk</strong> does and does not solve to help you gauge whether it will be
+useful to you.</p>
+<div class="section" id="understanding-the-psiturk-design-philosophy-an-analogy">
+<h2>Understanding the <strong>psiTurk</strong> design philosophy: An analogy<a class="headerlink" href="#understanding-the-psiturk-design-philosophy-an-analogy" title="Permalink to this headline">¶</a></h2>
+<p>Back before music was entirely digital people got their music on
+cassette tapes. To play the cassette you needed a player device (e.g.,
+walkman or boombox). People would trade tapes, make copies of tapes,
+make mixtapes of their favorite songs. It was awesome.</p>
+<div class="line-block">
+<div class="line"><strong>psiTurk</strong> is like a player but instead of playing music, it plays</div>
+</div>
+<p>(i.e., runs) experiments.
+| You download and install the psiTurk application to your computer.
+This installs a command line tool <tt class="docutils literal"><span class="pre">psiturk</span></tt> which serves as a
+multi-function &#8220;player.&#8221; It can (figuratively speaking) run, pause,
+eject, and configure a given experiment.</p>
+<div class="line-block">
+<div class="line">To make it useful though <strong>psiTurk</strong> needs something to play.</div>
+<div class="line">You can download from our <a class="reference external" href="http://psiturk.org/ee">experiment exchange</a> library an archive which contains all the files specific to a given experiment. You basically “play” the downloaded experiment using the <tt class="docutils literal"><span class="pre">psiturk</span></tt> command. You can easily switch experiments by downloading another experiment archive and “playing” it. Even better, you can make your own experiments by remixing others (borrowing code from projects in the experiment exchange) or building your own from scratch.</div>
+</div>
+<p>The goal of psiturk was to build the “player” so you can spend more of
+your time on the important part of your research… the experiment (i.e.,
+mix tape)!</p>
+<p>Oh, and in case you missed it, &#8220;playing&#8221; someone else&#8217;s experiment
+posted to the <a class="reference external" href="http://psiturk.org/ee">experiment exchange</a> basically
+means independently replicating it!</p>
+</div>
+<div class="section" id="what-is-mechanical-turk">
+<h2>What is Mechanical Turk?<a class="headerlink" href="#what-is-mechanical-turk" title="Permalink to this headline">¶</a></h2>
+<p>Amazon Mechanical Turk (AMT) is an online platform that lets you post a
+wide variety of tasks to a large pool of participants. Instead of
+spending weeks to run experiments in the lab, it lets you collect data
+of a large number of people within a couple of hours.</p>
+<p>Some key terminology for understanding the AMT model:</p>
+<ul class="simple">
+<li><strong>HIT (Human Intelligence Task)</strong></li>
+<li>A unit of work (e.g. a psychology experiment)</li>
+<li><strong>Requester</strong></li>
+<li>The person or entity that posts HITs (e.g. a researcher or lab)</li>
+<li><strong>Worker</strong></li>
+<li>The person that completes HITs (i.e. a participant in your study)</li>
+</ul>
+<p>Workers get paid a fixed amount for each HIT which is determined by the
+requester. Requesters can also make bonus payments to specific workers.
+Amazon collects a 10% fee for each payment.</p>
+</div>
+<div class="section" id="what-is-psiturk">
+<h2>What is psiTurk?<a class="headerlink" href="#what-is-psiturk" title="Permalink to this headline">¶</a></h2>
+<p>AMT provides some very basic templates that you can use to design HITs
+(particularly questionnaires), but these will most likely not serve your
+purposes as an experimenter. The <strong>psiTurk</strong> toolbox is designed to help
+you run fully-customized and dynamic web-experiments on AMT.
+Specifically, it allows you to:</p>
+<ol class="arabic simple">
+<li>Run a web server for your experiment</li>
+<li>Test your experiment</li>
+<li>Interact with AMT to recruit, post HITs, filter, and pay participants
+(AMT workers)</li>
+<li>Manage databases and export data</li>
+</ol>
+<p><strong>psiTurk</strong> also includes a powerful interactive command interface that
+lets you manage most of your AMT activity.</p>
+</div>
+<div class="section" id="how-do-i-host-a-psiturk-experiment">
+<h2>How do I host a <strong>psiTurk</strong> experiment?<a class="headerlink" href="#how-do-i-host-a-psiturk-experiment" title="Permalink to this headline">¶</a></h2>
+<p><strong>psiTurk</strong> experiments can be hosted on almost anything that has an
+internet connection and a public port, such as an office computer or
+laptop. You&#8217;ll need a static IP to prevent your experiment&#8217;s URL from
+changing. Users without one (e.g., most home users) can use a <a class="reference external" href="http://en.wikipedia.org/wiki/Dynamic_DNS">dynamic
+DNS</a> service to forward a
+URL to their dynamic IP. Here&#8217;s a list of <a class="reference external" href="http://dnslookup.me/dynamic-dns/">free DDNS
+providers</a>.</p>
+</div>
+<div class="section" id="do-i-have-to-learn-how-to-code">
+<h2>Do I have to learn how to code?<a class="headerlink" href="#do-i-have-to-learn-how-to-code" title="Permalink to this headline">¶</a></h2>
+<p>Yes. To run your experiment in a web browser you need to have at least
+some basic web programming skills (especially using HTML, CSS, and
+JavaScript).</p>
+<p>Fortunately there exist many resources and tutorials that can help get
+started. If you are completely new to web programming, you might want to
+check out <a class="reference external" href="http://www.codecademy.com/tracks/web">Codeacademy</a>, for
+example, for interactive tutorials on building websites.</p>
+<p>Once you mastered the basics, you can take advantage of the vast number
+of libraries and tools that can help you to build sharp and
+sophisticated experiments with the support of a large community of
+users. For specific questions, visit
+<a class="reference external" href="http://www.stackoverflow.com">stackoverflow.com</a>.</p>
+<p>To get you started, <strong>psiTurk</strong> provides a fully functioning example
+experiment ([[Getting up and running with the basic Stroop task]]) that
+you can use as a template for your own study. <strong>psiTurk</strong> also includes
+a library of basic Javascript functions ([[psiTurk API]]) that you can
+insert into your code to handle page transitions, load images, and
+record data.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Forward</a><ul>
+<li><a class="reference internal" href="#understanding-the-psiturk-design-philosophy-an-analogy">Understanding the <strong>psiTurk</strong> design philosophy: An analogy</a></li>
+<li><a class="reference internal" href="#what-is-mechanical-turk">What is Mechanical Turk?</a></li>
+<li><a class="reference internal" href="#what-is-psiturk">What is psiTurk?</a></li>
+<li><a class="reference internal" href="#how-do-i-host-a-psiturk-experiment">How do I host a <strong>psiTurk</strong> experiment?</a></li>
+<li><a class="reference internal" href="#do-i-have-to-learn-how-to-code">Do I have to learn how to code?</a></li>
+</ul>
+</li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/Forward.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="index.html">psiturk 2.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, McDonnell, J.V., Martin, J.B., Markant, D.B., Coenen, A., Rich, A.S., and Gureckis, T.M..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.1.
+    </div>
+  </body>
+</html>
