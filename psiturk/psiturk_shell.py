@@ -543,6 +543,9 @@ class PsiturkNetworkShell(PsiturkShell):
                     if success:
                         print "gave bonus of $" + str(amount) + " to " + assignmentID
                         part.status = 6
+                        db_session.add(part)
+                        db_session.commit()
+                        db_session.remove()
                     else:
                         print "*** failed to bonus", assignmentID
             except:
@@ -1232,7 +1235,7 @@ class PsiturkNetworkShell(PsiturkShell):
         Usage:
           worker approve (--hit <hit_id> | <assignment_id> ...)
           worker reject (--hit <hit_id> | <assignment_id> ...)
-          worker bonus (--hit <hit_id> | <assignment_id> ...) (--auto | <amount>)
+          worker bonus  (--amount <amount> | --auto) (--hit <hit_id> | <assignment_id> ...)
           worker list (submitted | approved | rejected | all) [--hit <hit_id>]
           worker help
         """
