@@ -1,3 +1,6 @@
+Recording
+==========
+
 There are three kinds of datasets that **psiTurk** will produce:
 
 1. Trial-by-trial log file

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Recording trial data &mdash; psiturk 2.0 documentation</title>
+    <title>Recording &mdash; psiturk 2.0 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -24,7 +24,9 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="psiturk 2.0 documentation" href="index.html" /> 
+    <link rel="top" title="psiturk 2.0 documentation" href="index.html" />
+    <link rel="next" title="API" href="api.html" />
+    <link rel="prev" title="Quickstart" href="quickstart.html" /> 
   </head>
   <body>
     <div class="related">
@@ -33,6 +35,12 @@
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="api.html" title="API"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="quickstart.html" title="Quickstart"
+             accesskey="P">previous</a> |</li>
         <li><a href="index.html">psiturk 2.0 documentation</a> &raquo;</li> 
       </ul>
     </div>  
@@ -42,14 +50,16 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <p>There are three kinds of datasets that <strong>psiTurk</strong> will produce:</p>
+  <div class="section" id="recording">
+<h1>Recording<a class="headerlink" href="#recording" title="Permalink to this headline">¶</a></h1>
+<p>There are three kinds of datasets that <strong>psiTurk</strong> will produce:</p>
 <ol class="arabic simple">
 <li>Trial-by-trial log file</li>
 <li>Unstructured (field, value) pairs</li>
 <li>Browser events</li>
 </ol>
 <div class="section" id="recording-trial-data">
-<h1>Recording trial data<a class="headerlink" href="#recording-trial-data" title="Permalink to this headline">¶</a></h1>
+<h2>Recording trial data<a class="headerlink" href="#recording-trial-data" title="Permalink to this headline">¶</a></h2>
 <p>The first dataset that will be produced by your experiment will be a
 simple log file, which you add to a single line at a time. In order to
 add a line of data to the log, use <tt class="docutils literal"><span class="pre">psiturk.recordTrialData</span></tt>:</p>
@@ -63,7 +73,7 @@ file that you will then have to parse as part of your analysis. You can
 export the CSV file using the [[Dashboard]]&#8217;s export data function.</p>
 </div>
 <div class="section" id="recording-unstructured-data">
-<h1>Recording unstructured data<a class="headerlink" href="#recording-unstructured-data" title="Permalink to this headline">¶</a></h1>
+<h2>Recording unstructured data<a class="headerlink" href="#recording-unstructured-data" title="Permalink to this headline">¶</a></h2>
 <p>In addition to trial by trial data, there is often a need to record
 information about a participant in the form of (field, value) pairs, for
 which you can use <tt class="docutils literal"><span class="pre">psiturk.recordUnstructuredData</span></tt>:</p>
@@ -78,7 +88,7 @@ added using <tt class="docutils literal"><span class="pre">psiturk.recordUnstruc
 a separate CSV file.</p>
 </div>
 <div class="section" id="saving-the-data">
-<h1>Saving the data<a class="headerlink" href="#saving-the-data" title="Permalink to this headline">¶</a></h1>
+<h2>Saving the data<a class="headerlink" href="#saving-the-data" title="Permalink to this headline">¶</a></h2>
 <p>It&#8217;s important to remember that <tt class="docutils literal"><span class="pre">psiturk.recordTrialData</span></tt> and
 <tt class="docutils literal"><span class="pre">psiturk.recordUnstructuredData</span></tt> only modify the <tt class="docutils literal"><span class="pre">psiturk</span></tt> object on
 the client side. If you want to save the data that has been accumulated
@@ -90,7 +100,7 @@ if the participant runs into an error, but keep in mind that it involves
 a new request to the server each time it is called.</p>
 </div>
 <div class="section" id="browser-event-data">
-<h1>Browser event data<a class="headerlink" href="#browser-event-data" title="Permalink to this headline">¶</a></h1>
+<h2>Browser event data<a class="headerlink" href="#browser-event-data" title="Permalink to this headline">¶</a></h2>
 <p>The third dataset is generated automatically without any input from the
 experiment, and is used to track special kinds of events that occur as a
 worker is interacting with the page. Currently, this includes:</p>
@@ -104,7 +114,8 @@ on&#8221; event is recorded.</li>
 </ol>
 </div>
 <div class="section" id="retrieving-datasets">
-<h1>Retrieving datasets<a class="headerlink" href="#retrieving-datasets" title="Permalink to this headline">¶</a></h1>
+<h2>Retrieving datasets<a class="headerlink" href="#retrieving-datasets" title="Permalink to this headline">¶</a></h2>
+</div>
 </div>
 
 
@@ -115,13 +126,22 @@ on&#8221; event is recorded.</li>
         <div class="sphinxsidebarwrapper">
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Recording trial data</a></li>
+<li><a class="reference internal" href="#">Recording</a><ul>
+<li><a class="reference internal" href="#recording-trial-data">Recording trial data</a></li>
 <li><a class="reference internal" href="#recording-unstructured-data">Recording unstructured data</a></li>
 <li><a class="reference internal" href="#saving-the-data">Saving the data</a></li>
 <li><a class="reference internal" href="#browser-event-data">Browser event data</a></li>
 <li><a class="reference internal" href="#retrieving-datasets">Retrieving datasets</a></li>
 </ul>
+</li>
+</ul>
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="quickstart.html"
+                        title="previous chapter">Quickstart</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="api.html"
+                        title="next chapter">API</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="_sources/recording.txt"
@@ -150,6 +170,12 @@ on&#8221; event is recorded.</li>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="api.html" title="API"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="quickstart.html" title="Quickstart"
+             >previous</a> |</li>
         <li><a href="index.html">psiturk 2.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
