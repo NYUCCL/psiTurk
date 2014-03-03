@@ -79,27 +79,47 @@ your name and email address match your git configuration.
 
 ## Contributing to the docs
 
-Our docs are currently hosted at [readthedocs](psiturk.readthedocs.org). Readthedocs uses [Sphinx](http://sphinx-doc.org/) as the backend for their documentation so in order to update the docs you will first have to install Sphinx simply by typing
-easy_install -U Sphinx
+Our docs are currently hosted at [readthedocs](psiturk.readthedocs.org). 
+Readthedocs uses [Sphinx](http://sphinx-doc.org/) as the backend for their
+documentation so in order to update the docs you will first have to install
+Sphinx simply by typing
+.. code::
+  easy_install -U Sphinx
+
 into the command line.
-All documentation files are in the docs folder and are formatted as reStructured Text. A good, detailed manual for the reStructured Text syntax can be found [here](http://docutils.sourceforge.net/docs/user/rst/quickstart.html). We'll cover some of the essentials here.
-The index page is the main page that users see will see when they open the docs. It is also how readthedocs generates the sidebar that contains all the names of individual pages in the documentary so it is important that this is formatted correctly.
+All documentation files are in the docs folder and are formatted as 
+reStructured Text. A good, detailed manual for the reStructured Text 
+syntax can be found [here](http://docutils.sourceforge.net/docs/user/rst/quickstart.html). 
+Some essentials:
+The index page is the main page that users see will see when they open the 
+docs. It is also how readthedocs generates the sidebar that contains all
+the names of individual pages in the documentary so it is important that 
+this is formatted correctly.
 The main important feature is the [toctree](http://sphinx-doc.org/markup/toctree.html).
 The toctree just looks like this: 
-.. toctree::
+..code::
+  .. toctree::
     forward
     install
     quickstart
     recording
 
-Sphinx will go through the pages listed in the toctree, search for subject headers and create both links for the index page and the sidebar in the correct format in the order that the pages are listed. For this reason, it is also very important that subjected headers be used correctly on the individual pages. For example, the forward page has a title that looks like this:
-Forward
-=======
+Sphinx will go through the pages listed in the toctree, search for subject
+headers and create both links for the index page and the sidebar in the 
+correct format in the order that the pages are listed. For this reason, 
+it is also very important that subjected headers be used correctly on
+the individual pages. For example, the forward page has a title that looks 
+like this:
+"Forward
+======="
 and subtitles that look like this:
-What is psiTurk?
-~~~~~~~~~~~~~~~~
+"What is psiTurk?
+~~~~~~~~~~~~~~~~"
 
-It actually doesn't matter what character you use for the underline, it can be any of = - ` : ' " ~ ^ _ * + # < > but it must be consistent since all headers with the same character will be at the same level. For convenience, we are using ===== to mean title and ~~~~~ to mean sub header.
+It actually doesn't matter what character you use for the underline, it can 
+be any of = - ` : ' " ~ ^ _ * + # < > but it must be consistent since all 
+headers with the same character will be at the same level. For convenience, 
+we are using ===== to mean title and ~~~~~ to mean sub header.
 Some other basic things in rST:
 Links look like this: `Getting psiTurk installed on your computer <install.html>`__
 with the actual page in angle brackets. If the link is to another page within the docs, 
