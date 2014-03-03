@@ -182,20 +182,20 @@ class PsiturkShell(Cmd, object):
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #  server management
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
-    def server_launch(self):
+    def server_on(self):
         self.server.startup()
         while self.server.is_server_running() != 'yes':
             time.sleep(0.5)
 
-    def server_shutdown(self):
+    def server_off(self):
         self.server.shutdown()
         print 'Please wait. This could take a few seconds.'
         while self.server.is_server_running() != 'no':
             time.sleep(0.5)
 
-    def server_relaunch(self):
-        self.server_shutdown()
-        self.server_launch()
+    def server_restart(self):
+        self.server_off()
+        self.server_on()
 
     def server_log(self):
         logfilename = self.config.get('Server Parameters', 'logfile')
@@ -214,7 +214,7 @@ class PsiturkShell(Cmd, object):
         -p, --print-only         just provides the URL, doesn't attempt to launch browser
         """
         if self.server.is_server_running() == 'no' or self.server.is_server_running()=='maybe':
-            print "Error: Sorry, you need to have the server running to debug your experiment.  Try 'server launch' first."
+            print "Error: Sorry, you need to have the server running to debug your experiment.  Try 'server on' first."
             return
 
         base_url = "http://" + self.config.get('Server Parameters', 'host') + ":" + self.config.get('Server Parameters', 'port') + "/ad"
@@ -277,7 +277,7 @@ class PsiturkShell(Cmd, object):
         self.config.set("Database Parameters", "database_url", base_url)
         print "Updated database setting (database_url): \n\t", self.config.get("Database Parameters", "database_url")
         if self.server.is_server_running() == 'yes':
-            self.server_relaunch()
+            self.server_restart()
 
     def do_download_datafiles(self, arg):
         contents = {"trialdata": lambda p: p.get_trial_data(), "eventdata": lambda p: p.get_event_data(), "questiondata": lambda p: p.get_question_data()}
@@ -313,7 +313,7 @@ class PsiturkShell(Cmd, object):
         if self.server.is_server_running() == 'yes' or self.server.is_server_running() == 'maybe':
             r = raw_input("Quitting shell will shut down experiment server. Really quit? y or n: ")
             if r == 'y':
-                self.server_shutdown()
+                self.server_off()
             else:
                 return
         return True
@@ -322,24 +322,24 @@ class PsiturkShell(Cmd, object):
     def do_server(self, arg):
         """
         Usage:
-          server launch
-          server shutdown
-          server relaunch
+          server on
+          server off
+          server restart
           server log
           server help
         """
-        if arg['launch']:
-            self.server_launch()
-        elif arg['shutdown']:
-            self.server_shutdown()
-        elif arg['relaunch']:
-            self.server_relaunch()
+        if arg['on']:
+            self.server_on()
+        elif arg['off']:
+            self.server_off()
+        elif arg['restart']:
+            self.server_restart()
         elif arg['log']:
             self.server_log()
         else:
             self.help_server()
 
-    server_commands = ('launch', 'shutdown', 'relaunch', 'log', 'help')
+    server_commands = ('on', 'off', 'restart', 'log', 'help')
 
     def complete_server(self, text, line, begidx, endidx):
         return  [i for i in PsiturkShell.server_commands if i.startswith(text)]
@@ -861,7 +861,7 @@ class PsiturkNetworkShell(PsiturkShell):
         print "Region updated to ", region_name
         self.config.set('AWS Access', 'aws_region', region_name, True)
         if self.server.is_server_running() == 'yes':
-            self.server_relaunch()
+            self.server_restart()
 
     def db_aws_list_instances(self):
         instances = self.db_services.get_db_instances()
