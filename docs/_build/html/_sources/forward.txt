@@ -15,15 +15,19 @@ cassette tapes. To play the cassette you needed a player device (e.g.,
 walkman or boombox). People would trade tapes, make copies of tapes,
 make mixtapes of their favorite songs. It was awesome.
 
-| **psiTurk** is like a player but instead of playing music, it plays
-(i.e., runs) experiments.
-| You download and install the psiTurk application to your computer.
-This installs a command line tool ``psiturk`` which serves as a
+**psiTurk** is like a player but instead of playing music, it plays
+(i.e., runs) experiments.  You download and install the psiTurk application 
+to your computer. This installs a command line tool ``psiturk`` which serves as a
 multi-function "player." It can (figuratively speaking) run, pause,
 eject, and configure a given experiment.
 
-| To make it useful though **psiTurk** needs something to play.
-| You can download from our `experiment exchange <http://psiturk.org/ee>`__ library an archive which contains all the files specific to a given experiment. You basically “play” the downloaded experiment using the ``psiturk`` command. You can easily switch experiments by downloading another experiment archive and “playing” it. Even better, you can make your own experiments by remixing others (borrowing code from projects in the experiment exchange) or building your own from scratch.
+To make it useful though **psiTurk** needs something to play. You can download 
+from our `experiment exchange <http://psiturk.org/ee>`__ library an archive 
+which contains all the files specific to a given experiment. You basically 
+“play” the downloaded experiment using the ``psiturk`` command. You can easily 
+switch experiments by downloading another experiment archive and “playing” it. 
+Even better, you can make your own experiments by remixing others (borrowing 
+code from projects in the experiment exchange) or building your own from scratch.
 
 The goal of psiturk was to build the “player” so you can spend more of
 your time on the important part of your research… the experiment (i.e.,
@@ -43,12 +47,9 @@ of a large number of people within a couple of hours.
 
 Some key terminology for understanding the AMT model:
 
--  **HIT (Human Intelligence Task)**
--  A unit of work (e.g. a psychology experiment)
--  **Requester**
--  The person or entity that posts HITs (e.g. a researcher or lab)
--  **Worker**
--  The person that completes HITs (i.e. a participant in your study)
+-  **HIT (Human Intelligence Task)** - A unit of work (e.g. a psychology experiment)
+-  **Requester** - The person or entity that posts HITs (e.g. a researcher or lab)
+-  **Worker** - The person that completes HITs (i.e. a participant in your study)
 
 Workers get paid a fixed amount for each HIT which is determined by the
 requester. Requesters can also make bonus payments to specific workers.

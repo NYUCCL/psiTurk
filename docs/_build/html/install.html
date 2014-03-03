@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -13,7 +15,7 @@
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
+        URL_ROOT:    '',
         VERSION:     '2.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -92,24 +94,20 @@ notes are provided below.</p>
 <p>The easiest way to install <strong>psiTurk</strong> is via <tt class="docutils literal"><span class="pre">pip</span></tt>. If you don&#8217;t
 already have <tt class="docutils literal"><span class="pre">pip</span></tt>, you can install it by typing the following in a
 terminal:</p>
-<div class="highlight-python"><div class="highlight"><pre>cd /tmp  # Just to put us in a directory that will be cleaned up periodically
+<div class="highlight-python"><pre>cd /tmp  # Just to put us in a directory that will be cleaned up periodically
 curl -O https://raw.github.com/pypa/pip/master/contrib/get-pip.py
-python get-pip.py  # If you get a permissions error, try typing sudo python get-pip.py
-</pre></div>
+python get-pip.py  # If you get a permissions error, try typing sudo python get-pip.py</pre>
 </div>
 <p>Once <tt class="docutils literal"><span class="pre">pip</span></tt> is installed, type into a terminal:</p>
-<div class="highlight-python"><div class="highlight"><pre>pip install psiturk
-</pre></div>
+<div class="highlight-python"><pre>pip install psiturk</pre>
 </div>
 <p>If this doesn&#8217;t work, try</p>
-<div class="highlight-python"><div class="highlight"><pre>sudo pip install psiturk
-</pre></div>
+<div class="highlight-python"><pre>sudo pip install psiturk</pre>
 </div>
 <p>If the install was successful you will have a new command <tt class="docutils literal"><span class="pre">psiturk</span></tt>
 available on your command line. You can check the location of this
 command by typing</p>
-<div class="highlight-python"><div class="highlight"><pre>which psiturk
-</pre></div>
+<div class="highlight-python"><pre>which psiturk</pre>
 </div>
 </div>
 <div class="section" id="install-directly-from-github">
@@ -117,18 +115,15 @@ command by typing</p>
 <p>You can also install the latest version directly from github using
 <tt class="docutils literal"><span class="pre">pip</span></tt>. To install the latest stable branch follow the instructions
 above to install <tt class="docutils literal"><span class="pre">pip</span></tt> and:</p>
-<div class="highlight-python"><div class="highlight"><pre>sudo pip install git+git://github.com/NYUCCL/psiTurk.git@master
-</pre></div>
+<div class="highlight-python"><pre>sudo pip install git+git://github.com/NYUCCL/psiTurk.git@master</pre>
 </div>
 <p>or</p>
-<div class="highlight-python"><div class="highlight"><pre>sudo pip install git+git://github.com/NYUCCL/psiTurk.git@dev
-</pre></div>
+<div class="highlight-python"><pre>sudo pip install git+git://github.com/NYUCCL/psiTurk.git@dev</pre>
 </div>
 <p>for the bleeding-edge development version. If the install was successful
 you will have a new command <tt class="docutils literal"><span class="pre">psiturk</span></tt> available on your command line.
 You can check the location of this command by typing</p>
-<div class="highlight-python"><div class="highlight"><pre>which psiturk
-</pre></div>
+<div class="highlight-python"><pre>which psiturk</pre>
 </div>
 </div>
 <div class="section" id="updating-from-a-previous-version">
@@ -136,12 +131,6 @@ You can check the location of this command by typing</p>
 <p>To avoid compatibility issues, if you upgrade from a previous version it
 can be useful to first uninstall then reinstall psiturk using the
 following sequence of commands:</p>
-<div class="code bash highlight-python"><div class="highlight"><pre>$ pip uninstall psiturk
-$ git clone git@github.com:NYUCCL/psiTurk.git
-$ cd psiTurk
-$ sudo python setup.py install
-</pre></div>
-</div>
 <p>To use the development tree, the second command should be
 <tt class="docutils literal"><span class="pre">git</span> <span class="pre">clone</span> <span class="pre">-b</span> <span class="pre">dev</span> <span class="pre">git&#64;github.com:NYUCCL/psiTurk.git</span></tt>.</p>
 </div>
@@ -182,31 +171,25 @@ at <a class="reference external" href="http://openshift.redhat.com/">http://open
 <a class="reference external" href="https://www.openshift.com/developers/rhc-client-tools-install">https://www.openshift.com/developers/rhc-client-tools-install</a></p>
 <p>Create a python-2.7 application and add a PostgreSQL cartridge to the
 app</p>
-<div class="highlight-python"><div class="highlight"><pre>rhc app create psiturk python-2.7 postgresql-8.4 --from-code git://github.com/jbmartin/psiturk-on-openshift.git
-</pre></div>
+<div class="highlight-python"><pre>rhc app create psiturk python-2.7 postgresql-8.4 --from-code git://github.com/jbmartin/psiturk-on-openshift.git</pre>
 </div>
 <p>or you can do this to watch the build</p>
-<div class="highlight-python"><div class="highlight"><pre>rhc app create -a psiturk -t python-2.7
-rhc cartridge add -a psiturk20 postgresql-8.4
-</pre></div>
+<div class="highlight-python"><pre>rhc app create -a psiturk -t python-2.7
+rhc cartridge add -a psiturk20 postgresql-8.4</pre>
 </div>
 <p>Add this upstream psiturk repo</p>
-<div class="highlight-python"><div class="highlight"><pre>cd psiturk
+<div class="highlight-python"><pre>cd psiturk
 git remote add upstream -m master https://github.com/jbmartin/psiturk-on-openshift.git
-git pull -s recursive -X theirs upstream master
-</pre></div>
+git pull -s recursive -X theirs upstream master</pre>
 </div>
 <p>Then push the repo upstream</p>
-<div class="highlight-python"><div class="highlight"><pre>git push
-</pre></div>
+<div class="highlight-python"><pre>git push</pre>
 </div>
 <p>That&#8217;s it, you can now checkout your application at</p>
-<div class="highlight-python"><div class="highlight"><pre>http://psiturk-$YOURNAMESPACE.rhcloud.com
-</pre></div>
+<div class="highlight-python"><pre>http://psiturk-$YOURNAMESPACE.rhcloud.com</pre>
 </div>
 <p>To access the your openshift hosted database run</p>
-<div class="highlight-python"><div class="highlight"><pre>rhc port forward -a psiturk
-</pre></div>
+<div class="highlight-python"><pre>rhc port forward -a psiturk</pre>
 </div>
 <p>Connect to the database using your favorite SQL app, the PostgreSQL
 Local specs, and your credentials.</p>
@@ -286,7 +269,7 @@ Local specs, and your credentials.</p>
     </div>
     <div class="footer">
         &copy; Copyright 2014, McDonnell, J.V., Martin, J.B., Markant, D.B., Coenen, A., Rich, A.S., and Gureckis, T.M..
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.1.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
     </div>
   </body>
 </html>
