@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -13,7 +15,7 @@
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
+        URL_ROOT:    '',
         VERSION:     '2.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -63,9 +65,6 @@
 <p>The first dataset that will be produced by your experiment will be a
 simple log file, which you add to a single line at a time. In order to
 add a line of data to the log, use <tt class="docutils literal"><span class="pre">psiturk.recordTrialData</span></tt>:</p>
-<div class="code javascript highlight-python"><div class="highlight"><pre><span class="n">psiturk</span><span class="o">.</span><span class="n">recordTrialData</span><span class="p">([</span><span class="s">&#39;this&#39;</span><span class="p">,</span> <span class="s">&#39;is&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&#39;line&#39;</span><span class="p">])</span>
-</pre></div>
-</div>
 <p>The list of values that you supply to <tt class="docutils literal"><span class="pre">recordTrialData</span></tt> will then be
 appended to the log. It is up to you how to structure those lists; when
 you are ready to analyze the data, the log will be provided as a CSV
@@ -77,10 +76,6 @@ export the CSV file using the [[Dashboard]]&#8217;s export data function.</p>
 <p>In addition to trial by trial data, there is often a need to record
 information about a participant in the form of (field, value) pairs, for
 which you can use <tt class="docutils literal"><span class="pre">psiturk.recordUnstructuredData</span></tt>:</p>
-<div class="code javascript highlight-python"><div class="highlight"><pre><span class="n">psiturk</span><span class="o">.</span><span class="n">recordUnstructuredData</span><span class="p">(</span><span class="s">&#39;age&#39;</span><span class="p">,</span> <span class="mi">24</span><span class="p">)</span>
-<span class="n">psiturk</span><span class="o">.</span><span class="n">recordUnstructuredData</span><span class="p">(</span><span class="s">&#39;response&#39;</span><span class="p">,</span> <span class="s">&#39;yes&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
 <p>Like the trial-by-trial data, it is up to you to decide whether or not
 to use this function. For some kinds of experiments (like simple
 surveys), this might be the only function you need. Whatever data is
@@ -181,7 +176,7 @@ on&#8221; event is recorded.</li>
     </div>
     <div class="footer">
         &copy; Copyright 2014, McDonnell, J.V., Martin, J.B., Markant, D.B., Coenen, A., Rich, A.S., and Gureckis, T.M..
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.1.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
     </div>
   </body>
 </html>

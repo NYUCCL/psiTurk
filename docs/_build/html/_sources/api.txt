@@ -19,6 +19,9 @@ the beginning of your experiment.
     psiturk.addUnstructuredData('age', 24)
     psiturk.saveData();
 
+The following documents the javascript API.
+
+
 ``psiturk.taskdata``
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -29,7 +32,6 @@ database.
 ``taskdata`` has the following fields with these default values:
 
 .. code:: javascript
-
     condition: 0
     counterbalance: 0
     assignmentId: 0
@@ -40,6 +42,7 @@ database.
     data: ""
     questiondata: {}
     eventdata: []
+
 
 These variables are either set during initialization or using the
 methods of the ``psiturk`` object. However, since ``taskdata`` is a
