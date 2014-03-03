@@ -1,3 +1,6 @@
+API
+=======
+
 Everything in the **psiTurk** API is scoped under the ``psiturk``
 namespace.
 
