@@ -25,7 +25,7 @@ class PsiturkOrgServices:
         if r.status_code in [401, 403]:
             print 'Sorry, psiTurk Credentials invalid.\nYou will only be able to '\
                   + 'test experiments locally until you enter\nvalid '\
-                  + 'credentials in the psiTurk Access section of ~/.psiturkconfig.\nGet your ' \
+                  + 'credentials in the psiTurk Access section of ~/.psiturkrc.\nGet your ' \
                   + 'credentials at www.psiturk.org/login.'
 
     def update_credentials(self, key, secret):

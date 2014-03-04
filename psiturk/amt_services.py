@@ -217,7 +217,7 @@ class MTurkServices:
         if not self.validLogin:
             print 'Sorry, AWS Credentials invalid.\nYou will only be able to '\
                   + 'test experiments locally until you enter\nvalid '\
-                  + 'credentials in the AWS Access section of ~/.psiturkconfig'
+                  + 'credentials in the AWS Access section of ~/.psiturkrc'
 
     def update_credentials(self, aws_access_key_id, aws_secret_access_key):
         self.aws_access_key_id = aws_access_key_id
