@@ -645,6 +645,18 @@ class PsiturkNetworkShell(PsiturkShell):
 
 
     def hit_create(self, numWorkers, reward, duration):
+
+        server_loc = str(self.config.get('Server Parameters', 'host'))
+        if server_loc in ['localhost', '127.0.0.1']:
+            print '*****************************'
+            print '  Sorry your server is set for local debugging only.  You cannot make public HITs or Ads.'
+            print '  Please edit the config.txt file inside your project folder and set the \'host\' variable'
+            print '  in the \'Server Parameters\' section to something other than \'localhost\' or \'127.0.0.1\'.'
+            print '  This will make your psiturk server process reachable by the external world.  Note: You will'
+            print '  need to restart the server for your changes to take effect.'
+            return
+
+
         interactive = False
         if numWorkers is None:
             interactive = True
@@ -682,15 +694,16 @@ class PsiturkNetworkShell(PsiturkShell):
         else:
             print '*****************************'
             print '  Sorry there was an error registering ad.'
-            print "  Both ad.html is required to be in the templates/ folder of your project so that these Ad can be served!"
+            print '  Both ad.html is required to be in the templates/ folder of your project so that these Ad can be served!'
             return
 
         size_of_ad = sys.getsizeof(ad_html)
         if size_of_ad >= 1048576:
             print '*****************************'
             print '  Sorry there was an error registering ad.'
-            print "  Your local ad.html is %s byes, but the maximum template size uploadable to the Ad server is 1048576 bytes!", size_of_ad
+            print '  Your local ad.html is %s byes, but the maximum template size uploadable to the Ad server is 1048576 bytes!', size_of_ad
             return
+
 
         # what all do we need to send to server?
         # 1. server
