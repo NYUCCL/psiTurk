@@ -656,6 +656,23 @@ class PsiturkNetworkShell(PsiturkShell):
             print '  need to restart the server for your changes to take effect.'
             return
 
+        if not self.web_services.check_credentials():
+            print '*****************************'
+            print '  Sorry your psiTurk Credentials are invalid.\n '
+            print '  You cannot create ads and hits until you enter valid credentials in '
+            print '  the \'psiTurk Access\' section of ~/.psiturkrc.  You can obtain your credentials'
+            print '  or sign up at https://www.psiturk.org/login.\n'
+            return
+
+
+        if not self.amt_services.verify_aws_login():
+            print '*****************************'
+            print '  Sorry your AWS Credentials are invalid.\n '
+            print '  You cannot create ads and hits until you enter valid credentials in '
+            print '  the \'AWS Access\' section of ~/.psiturkrc.  You can obtain your credentials '
+            print '  via the Amazon AMT requester website.\n'
+            return
+
 
         interactive = False
         if numWorkers is None:

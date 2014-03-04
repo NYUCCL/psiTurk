@@ -86,7 +86,7 @@ class RDSServices:
 
     def connect_to_aws_rds(self):
         if not self.validLogin:
-            print 'Sorry, AWS credentials invalid.'
+            print 'Sorry, unable to connect to Amazon\'s RDS database server.  AWS credentials invalid.'
             return False
         # rdsparams = dict(
         #     aws_access_key_id = self.aws_access_key_id,
@@ -215,9 +215,10 @@ class MTurkServices:
         self.set_sandbox(is_sandbox)
         self.validLogin = self.verify_aws_login()
         if not self.validLogin:
+            print 'WARNING *****************************'
             print 'Sorry, AWS Credentials invalid.\nYou will only be able to '\
                   + 'test experiments locally until you enter\nvalid '\
-                  + 'credentials in the AWS Access section of ~/.psiturkrc'
+                  + 'credentials in the AWS Access section of ~/.psiturkrc\n'
 
     def update_credentials(self, aws_access_key_id, aws_secret_access_key):
         self.aws_access_key_id = aws_access_key_id
@@ -374,7 +375,7 @@ class MTurkServices:
 
     def connect_to_turk(self):
         if not self.validLogin:
-            print 'Sorry, AWS credentials invalid.'
+            print 'Sorry, unable to connect to Amazon Mechanical Turk. AWS credentials invalid.'
             return False
         if self.is_sandbox:
             host = 'mechanicalturk.sandbox.amazonaws.com'
