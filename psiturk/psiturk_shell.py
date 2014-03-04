@@ -673,6 +673,14 @@ class PsiturkNetworkShell(PsiturkShell):
             print '  via the Amazon AMT requester website.\n'
             return
 
+        if self.server.is_server_running() != 'yes':
+            print '*****************************'
+            print '  Your server is currently not running but you are trying to create '
+            print '  an Ad/HIT.  This can cause problems for worker trying to access your '
+            print '  hit.  Please start the server by first typing \'server on\' then try this '
+            print '  command again.'
+            return
+
 
         interactive = False
         if numWorkers is None:
