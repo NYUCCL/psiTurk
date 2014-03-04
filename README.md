@@ -1,8 +1,10 @@
+
 <img src="https://www.psiturk.org/static/images/psiturk_logo.jpg">
 
+What is it?
+=======
 
-#### An open platform for science on Amazon's Mechanical Turk.
-
+**psiTurk** is an open platform for science on Amazon's Mechanical Turk.
 It is intended to provide most of the backend machinery necessary to run dynamic
 and interactive behavioral experiments on Amazon Mechanical Turk (AMT). As long 
 as you can turn your experiment into a dynamic webpage, you can run it with 
