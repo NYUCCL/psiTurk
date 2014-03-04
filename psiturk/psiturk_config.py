@@ -3,7 +3,7 @@ from distutils import file_util
 from ConfigParser import SafeConfigParser
 
 class PsiturkConfig(SafeConfigParser):
-    def __init__(self, localConfig="config.txt", globalConfig="~/.psiturkrc", **kwargs):
+    def __init__(self, localConfig="config.txt", globalConfig="~/.psiturkconfig", **kwargs):
         self.parent = SafeConfigParser
         self.parent.__init__(self, **kwargs)
         self.localFile = localConfig
@@ -23,7 +23,7 @@ class PsiturkConfig(SafeConfigParser):
             exit()
         self.localParser.read( self.localFile)
         if not os.path.exists(self.globalFile):
-            print "No '.psiturkrc' file found in your home directory.\nCreating default '~/.psiturkrc' file."
+            print "No '.psiturkconfig' file found in your home directory.\nCreating default '~/.psiturkconfig' file."
             file_util.copy_file(global_defaults_file, self.globalFile)
         self.globalParser.read(self.globalFile)
         # read default global and local, then user's global and local. This way

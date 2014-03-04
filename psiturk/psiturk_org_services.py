@@ -22,7 +22,7 @@ class PsiturkOrgServices:
             print 'WARNING *****************************'
             print 'Sorry, psiTurk Credentials invalid.\nYou will only be able to '\
                   + 'test experiments locally until you enter\nvalid '\
-                  + 'credentials in the psiTurk Access section of ~/.psiturkrc.\nGet your ' \
+                  + 'credentials in the psiTurk Access section of ~/.psiturkconfig.\nGet your ' \
                   + 'credentials at https://www.psiturk.org/login.\n'
 
     def check_credentials(self):

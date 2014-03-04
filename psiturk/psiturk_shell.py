@@ -660,7 +660,7 @@ class PsiturkNetworkShell(PsiturkShell):
             print '*****************************'
             print '  Sorry your psiTurk Credentials are invalid.\n '
             print '  You cannot create ads and hits until you enter valid credentials in '
-            print '  the \'psiTurk Access\' section of ~/.psiturkrc.  You can obtain your credentials'
+            print '  the \'psiTurk Access\' section of ~/.psiturkconfig.  You can obtain your credentials'
             print '  or sign up at https://www.psiturk.org/login.\n'
             return
 
@@ -669,7 +669,7 @@ class PsiturkNetworkShell(PsiturkShell):
             print '*****************************'
             print '  Sorry your AWS Credentials are invalid.\n '
             print '  You cannot create ads and hits until you enter valid credentials in '
-            print '  the \'AWS Access\' section of ~/.psiturkrc.  You can obtain your credentials '
+            print '  the \'AWS Access\' section of ~/.psiturkconfig.  You can obtain your credentials '
             print '  via the Amazon AMT requester website.\n'
             return
 
