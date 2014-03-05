@@ -58,3 +58,5 @@ nosetests.xml
 /server.log
 
 .DS_Store
+
+doc/_build
