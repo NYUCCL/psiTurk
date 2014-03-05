@@ -1375,7 +1375,7 @@ class PsiturkNetworkShell(PsiturkShell):
             self.print_topics(self.misc_header, help.keys(), 15, 80)
             self.print_topics(self.super_header, cmds_super, 15, 80)
 
-def run(cabinmode=False):
+def run(cabinmode=False, script=None):
     usingLibedit = 'libedit' in readline.__doc__
     if usingLibedit:
         print colorize('\n'.join(['libedit version of readline detected.',
@@ -1405,4 +1405,9 @@ def run(cabinmode=False):
         web_services = PsiturkOrgServices(config.get('psiTurk Access', 'psiturk_access_key_id'),
                                  config.get('psiTurk Access', 'psiturk_secret_access_id'))
         shell = PsiturkNetworkShell(config, amt_services, aws_rds_services, web_services, server)
-    shell.cmdloop()
+    if script:
+        with open(script, 'r') as f:
+            for line in f:
+                shell.onecmd_plus_hooks(line)
+    else:
+        shell.cmdloop()
