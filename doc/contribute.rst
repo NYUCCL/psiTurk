@@ -113,13 +113,13 @@ this is formatted correctly.
 The main important feature is the `toctree <http://sphinx-doc.org/markup/toctree.html>`__.
 
 The toctree just looks like this:
-```javascript
+````javascript
   .. toctree::
     forward
     install
     quickstart
     recording
-```
+````
 
 Sphinx will go through the pages listed in the toctree, search for subject
 headers and create both links for the index page and the sidebar in the 
