@@ -7,7 +7,7 @@ psiTurk Documentation
 WARNING!!!!!! **psiTurk** is currently undergoing a major update that
 will break compatibility with past versions. Documentation is now being
 updated to refer to the project version in the /dev branch. Sorry for
-confusion, but things will settle down shortly.
+confusion, but things will settle down shortly!
 
 --------------
 
