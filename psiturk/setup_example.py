@@ -4,6 +4,8 @@ from psiturk_config import PsiturkConfig
 
 example_dir = os.path.join(os.path.dirname(__file__), "example")
 default_config_file = os.path.join(os.path.dirname(__file__), "default_configs/local_config_defaults.txt")
+default_global_config_file = os.path.join(os.path.dirname(__file__), "default_configs/global_config_defaults.txt")
+global_config_file = os.path.expanduser("~/.psiturkconfig")
 example_target = os.path.join(os.curdir, "psiturk-example")
 config_target = os.path.join(example_target, "config.txt")
 
@@ -20,6 +22,11 @@ def setup_example():
                 file_util.copy_file(default_config_file , config_target)
 		os.chdir(example_target)
 		os.rename('custom.py.txt', 'custom.py')
+
+        if not os.path.exists(global_config_file):
+            print "No '.psiturkconfig' file found in your home directory.\nCreating default '~/.psiturkconfig' file."
+            file_util.copy_file(default_global_config_file, global_config_file)
+
 
 if __name__=="__main__":
 	setup_example()
