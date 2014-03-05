@@ -3,7 +3,7 @@ psiTurk Documentation
 =====================
 
 Welcome to **psiTurk**'s documentation. To learn more about the project
-please visit <a href="http://psiturk.org">http://psiturk.org</a>.
+please visit `http://psiturk.org http://psiturk.org`__.
 
 To actually use **psiTurk** you'll first need to install it on your local
 computer or server. Instructions can be found on the `Getting psiTurk installed on your computer <install.html>`__ page.
