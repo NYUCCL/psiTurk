@@ -1,13 +1,11 @@
 Contributing to psiTurk
 =======
 
-
------
 Note: This guide is copied more or less from the `contributors guidelines <https://github.com/gureckis/gunicorn/blob/master/CONTRIBUTING.md>`__
-of the ` gunicorn <https://github.com/benoitc/gunicorn>`__ project. Alternations
+of the `gunicorn <https://github.com/benoitc/gunicorn>`__ project. Alternations
 were made for the nature of this particular project.  An up to date copy of this guide
 always resides `here <https://github.com/NYUCCL/psiTurk/blob/master/CONTRIBUTING.md>`__.
-------
+
 
 Want to contributed to **psiTurk**? Awesome! Here are instructions to get you
 started. We want to improve these as we go, so please provide feedback.
@@ -34,7 +32,7 @@ that feature *on top of* **psiTurk**.
 Discuss your design on the mailing list
 -------------------------------------
 
-We recommend discussing your plans in our ` Google group <https://groups.google.com/d/forum/psiturk>`__
+We recommend discussing your plans in our `Google group <https://groups.google.com/d/forum/psiturk>`__
 before starting to code -
 especially for more ambitious contributions.  This gives other
 contributors a chance to point you in the right direction, give feedback
