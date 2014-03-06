@@ -14,18 +14,20 @@ between labs and research groups.  In other words, even if you
 wrote this software yourself it is possible that some bug could
 cost you money when getting started.
 
-We take no responsibility for you use of the software.  We use
+We take no responsibility for your use of the software. We make
+not claims that it is bug-free and any errors are not our 
+responsibility.  This is a community-run, community-supported
+system and not a company selling a product.  We use
 the software in our lab and, when used correctly, has never caused
 us to lose money on Mechanical Turk due to mistakes.  However, it is
-possible to mis-use the software in a costly way.
+always possible to mis-use the software in a costly way.
 
-In addition, while we strive to keep the psiturk.org Ad server running,
+In addition, while we strive to keep the psiturk.org Secure Ad Server running,
 crashes in that system could, in the short-term, affect your ability to
 collect data.  Again, using the system you must understand what the
 risks are.  The good news is that because the system is open source
 if there is a problem everyone can read the code themselves and make
 suggestions on how to fix things.
-
 
 Some suggestion to avoid costly mistakes from happening are
 
@@ -41,9 +43,10 @@ at any point in time.
 4. Exit the **psiTurk** server when you are not using it to collect data
 (i.e., do not leave **psiTurk** server running indefinitely).  This ensures
 that noone will be able to actually perform you task and then claim
-they are owed payment.
+they are owed payment.  This also limits the ability of bots and other
+scammers to reverse engineer your task.
 
-5. When testing, explain in the text of your Ad that this is a test and
+5. When testing "live", explain in the text of your Ad that this is a test and
 you are looking for feedback.  Workers get fustrated when you put bad
 or broken experiments online, but are often very helpful if you explain
-this is a test or demo.
+this is a test or demo and you are hoping to get feedback.

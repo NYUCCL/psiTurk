@@ -1,6 +1,6 @@
 .. image:: images/psiturk_logo_small_trans.png
 	:align: right
-
+	
 psiTurk Documentation
 =====================
 

@@ -31,7 +31,10 @@ This is **crazy**!
 What's worse is that many universities are not able to provide individuals with a signed SSL certificate.
 If that is the case, you can't really use the external HIT mechanism without getting an account on some web hosting site.
 
-However, the psiturk Secure Ad Servrer **solves this problem for all researchers**.
+However, the psiturk Secure Ad Server **solves this problem for all researchers**.
+
+.. image:: http://dev.psiturk.org/static/images/server_animation/frame-5.png
+	:align: left
 
 Rather than getting your own signed certificate (a technically challenging process), when you use 
 **psiTurk**, you can host your ad with us via `https://ad.psiturk.org <http://ad.psiturk.org/>`__
@@ -40,6 +43,13 @@ We have already gone through the steps of getting an official, signed SSL certif
 have to!  **psiTurk** posts your custom ad text with us, and then participants access your task 
 by first interacting with our secure server.  We show them the ad, then forward them to you.
 No hassle, more potential participants!  
+
+A full "visual explanation" of the Secure Ad Server is provided `here <http://psiturk.org/ad_server>`__.
+Basically, you post the HTML of you "ad" to the psiturk.org cloud.  Workers view the ad on the
+cloud server and decide if they want to accpet.  If so they are forwarded to your local server or
+computer to complete the task.
+
+
 
 Why use the **psiturk.org** Secure Ad Server?
 -------------------------------------------------------
