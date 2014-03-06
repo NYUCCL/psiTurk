@@ -446,7 +446,12 @@ class MTurkServices:
     def expire_hit(self, hitid):
         if not self.connect_to_turk():
             return False
-        self.mtc.expire_hit(hitid)
+        try:
+            self.mtc.expire_hit(hitid)
+            return True
+        except MTurkRequestError:
+            print "Failed to expire HIT. Please check the ID and try again."
+            return False
 
     def dispose_hit(self, hitid):
         if not self.connect_to_turk():
@@ -462,6 +467,7 @@ class MTurkServices:
             return True
         except Exception, e:
             print "HIT failed to extend. Please check the ID and try again."
+            return False
 
     def get_hit_status(self, hitid):
         if not self.connect_to_turk():

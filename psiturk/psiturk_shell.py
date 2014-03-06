@@ -624,19 +624,20 @@ class PsiturkNetworkShell(PsiturkShell):
                     print "deleting sandbox HIT", hit
                 else:
                     print "deleting live HIT", hit
+                self.tally_hits()
 
     def hit_expire(self, allHits, hitIDs=None):
         if allHits:
             hits_data = self.amt_services.get_active_hits()
             hitIDs = [hit.options['hitid'] for hit in hits_data]
         for hit in hitIDs:
-            self.amt_services.expire_hit(hit)
-            if self.sandbox:
-                print "expiring sandbox HIT", hit
-                self.sandboxHITs -= 1
-            else:
-                print "expiring live HIT", hit
-                self.liveHITs -= 1
+            success = self.amt_services.expire_hit(hit)
+            if success:
+                if self.sandbox:
+                    print "expiring sandbox HIT", hit
+                else:
+                    print "expiring live HIT", hit
+                self.tally_hits()
 
     def tally_hits(self):
         hits = self.amt_services.get_active_hits()
