@@ -16,7 +16,10 @@ User's Guide
 .. toctree::
     forward
     install
+    amt_setup
     quickstart
+    step_by_step
+    anatomy_of_project
     recording
 
 API Reference
