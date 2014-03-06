@@ -40,6 +40,7 @@ which is included in a default **psiTurk** installation.
 	     |- `list.html <file_desc/list_html.rst>`__
 	     |- `postquestionnaire.html <file_desc/postquestionnaire_html.rst>`__
 	     |- `test.html <file_desc/test_html.rst>`__
-	     |- `thanks.html <file_desc/thanks_html.rst>`__
+	     |- `thanks.html <file_desc/thanks_html.rst>`_
 
+That's the files.
 
