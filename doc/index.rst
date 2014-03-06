@@ -16,6 +16,7 @@ with **psiTurk**, visit `Getting up and running with the basic Stroop task <stro
 User's Guide
 ------------------
 .. toctree::
+	disclaimer
     forward
     install
     amt_setup
