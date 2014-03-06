@@ -1,3 +1,5 @@
+.. image:: images/psiturk_logo_small.jpg
+	:align: left
 
 psiTurk Documentation
 =====================
