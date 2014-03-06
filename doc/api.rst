@@ -10,7 +10,7 @@ Creating the psiTurk object
 To use the **psiTurk** library, a ``psiturk`` object must be created at
 the beginning of your experiment.
 
-.. code:: javascript
+.. code-block:: javascript
 
     // Create the psiturk object
     var psiturk = PsiTurk();
@@ -18,6 +18,7 @@ the beginning of your experiment.
     // Add some data and save
     psiturk.addUnstructuredData('age', 24)
     psiturk.saveData();
+
 
 The following documents the javascript API.
 
@@ -31,7 +32,8 @@ database.
 
 ``taskdata`` has the following fields with these default values:
 
-.. code:: javascript
+.. code-block:: javascript
+
     condition: 0
     counterbalance: 0
     assignmentId: 0
@@ -52,10 +54,11 @@ their values directly using the Backbone
 ```get`` <http://backbonejs.org/#Model-get>`__ methods, which may be
 useful for debugging. For example:
 
-.. code:: javascript
+.. code-block:: javascript
 
     psiturk.taskdata.set('condition', 2)
     psiturk.taskdata.get('condition')
+
 
 ``psiturk.preloadPages(pagelist)``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -66,13 +69,14 @@ the ``psiturk`` object. A given page can then be loaded later using
 
 Example:
 
-.. code:: javascript
+.. code-block:: javascript
 
     // Preload a set of HTML files
     psiturk.preLoadPages(['instructions.html', 'block1.html', 'block2.html'])
 
     // Set the content of the body tag to one of the pages
     $('body').html(psiturk.getPage('block1.html'))
+
 
 ``psiturk.getPage(pagename)``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -88,11 +92,11 @@ using ``psiturk.preloadPages``.
 
 Example:
 
-.. code:: javascript
+.. code-block:: javascript
 
     psiturk.preloadPages(['instructions.html', 'block1.html', 'block2.html');
-
     psiturk.showPage('instructions.html');
+
 
 ``psiturk.preloadImages(imagelist)``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -108,11 +112,12 @@ the server, for that you must still call ``psiturk.saveData()``.
 
 Example:
 
-.. code:: javascript
+.. code-block:: javascript
 
     // data comprised of some list of variables of varying types
     data = ['output', condition, trialnumber, response, rt]
     psiturk.recordTrialData(data)
+
 
 ``psiturk.recordUnstructuredData(field, value)``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -122,9 +127,10 @@ data object.
 
 Example:
 
-.. code:: javascript
+.. code-block:: javascript
 
     psiturk.recordUnstructuredData('age', 24)
+
 
 ``psiturk.savedata([callbacks])``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -134,7 +140,7 @@ Sync the current **psiTurk** task data to the database.
 An optional argument ``callbacks`` can provide functions to run upon
 success or failure of the saving.
 
-.. code:: javascript
+.. code-block:: javascript
 
     psiturk.saveData({
        success: function() { 
@@ -144,6 +150,7 @@ success or failure of the saving.
           // function to run if there was an error
        }
     });
+
 
 ``psiturk.finishInstructions``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -158,11 +165,12 @@ them to confirm that they want to leave the experiment.
 
 Example
 
-.. code:: javascript
+.. code-block:: javascript
 
     psiturk = new PsiTurk()
     ...
     psiturk.finishInstructions()
+
 
 ``psiturk.teardownTask()``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
