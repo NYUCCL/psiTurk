@@ -4,8 +4,7 @@ Getting help
 There are a number of ways to get help with **psiTurk** if you are
 stuck.  
 
-1. The `https://psiturk.org <https://psiturk.org>`__ website has a
-wealth of information about the system.
+1. The `https://psiturk.org <https://psiturk.org>`__ website has a wealth of information about the system.
 
 2. There is a Google Group devoted to psiTurk located `here <https://groups.google.com/forum/#!forum/psiturk>`__. Search for answers to common questions or post your own.  Chances are if you run into a problem someone else will as well.
 
