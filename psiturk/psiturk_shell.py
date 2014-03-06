@@ -652,28 +652,29 @@ class PsiturkNetworkShell(PsiturkShell):
         server_loc = str(self.config.get('Server Parameters', 'host'))
         if server_loc in ['localhost', '127.0.0.1']:
             print '*****************************'
-            print '  Sorry your server is set for local debugging only.  You cannot make public HITs or Ads.'
-            print '  Please edit the config.txt file inside your project folder and set the \'host\' variable'
-            print '  in the \'Server Parameters\' section to something other than \'localhost\' or \'127.0.0.1\'.'
-            print '  This will make your psiturk server process reachable by the external world.  Note: You will'
-            print '  need to restart the server for your changes to take effect.'
+            print '  Sorry, your server is set for local debugging only.  You cannot make public'
+            print '  HITs or Ads. Please edit the config.txt file inside your project folder and'
+            print '  set the \'host\' variable in the \'Server Parameters\' section to something'
+            print '  other than \'localhost\' or \'127.0.0.1\'. This will make your psiturk server'
+            print '  process reachable by the external world.  Note: You will need to restart the '
+            print '  server for your changes to take effect.'
             return
 
         if not self.web_services.check_credentials():
             print '*****************************'
-            print '  Sorry your psiTurk Credentials are invalid.\n '
+            print '  Sorry, your psiTurk Credentials are invalid.\n '
             print '  You cannot create ads and hits until you enter valid credentials in '
-            print '  the \'psiTurk Access\' section of ~/.psiturkconfig.  You can obtain your credentials'
-            print '  or sign up at https://www.psiturk.org/login.\n'
+            print '  the \'psiTurk Access\' section of ~/.psiturkconfig.  You can obtain your'
+            print '  credentials or sign up at https://www.psiturk.org/login.\n'
             return
 
 
         if not self.amt_services.verify_aws_login():
             print '*****************************'
-            print '  Sorry your AWS Credentials are invalid.\n '
+            print '  Sorry, your AWS Credentials are invalid.\n '
             print '  You cannot create ads and hits until you enter valid credentials in '
-            print '  the \'AWS Access\' section of ~/.psiturkconfig.  You can obtain your credentials '
-            print '  via the Amazon AMT requester website.\n'
+            print '  the \'AWS Access\' section of ~/.psiturkconfig.  You can obtain your '
+            print '  credentials via the Amazon AMT requester website.\n'
             return
 
         if self.server.is_server_running() != 'yes':
@@ -721,14 +722,14 @@ class PsiturkNetworkShell(PsiturkShell):
             ad_html = open('templates/ad.html').read()
         else:
             print '*****************************'
-            print '  Sorry there was an error registering ad.'
+            print '  Sorry, there was an error registering ad.'
             print '  Both ad.html is required to be in the templates/ folder of your project so that these Ad can be served!'
             return
 
         size_of_ad = sys.getsizeof(ad_html)
         if size_of_ad >= 1048576:
             print '*****************************'
-            print '  Sorry there was an error registering ad.'
+            print '  Sorry, there was an error registering ad.'
             print '  Your local ad.html is %s byes, but the maximum template size uploadable to the Ad server is 1048576 bytes!', size_of_ad
             return
 
@@ -1195,7 +1196,7 @@ class PsiturkNetworkShell(PsiturkShell):
         instance = self.db_services.create_db_instance(options)
         if not instance:
             print '*****************************'
-            print '  Sorry there was an error creating db instance.'
+            print '  Sorry, there was an error creating db instance.'
         else:
             print '*****************************'
             print '  Creating AWS RDS MySQL Instance'
