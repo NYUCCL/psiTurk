@@ -15,7 +15,10 @@ Documentation
 -----------------
 The documentation is greatly lagging behind progress on
 the **psiTurk** platform.  We need help with people debugging
-documentation, improving it, and making additions!
+documentation, improving it, and making additions!  Notice how
+all documentation pages (including this one!) include a link
+to "Edit on GitHub".  Make a pull request and help us
+improve these docs!
 
 Automated testing
 -----------------
@@ -93,4 +96,7 @@ and the psiturk.js library.  The emphasis in our
 initial development has been on advanced users/programmers
 but future version could emphasize novice web programmers
 who are new to online experiments (e.g., undergrads).
+
+If you have ideas about future directions for the project
+the Github `issues tracker <https://github.com/NYUCCL/psiTurk/issues?state=open>`__ is a great place to share them.
 

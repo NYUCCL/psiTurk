@@ -15,7 +15,7 @@ wrote this software yourself it is possible that some bug could
 cost you money when getting started.
 
 We take no responsibility for your use of the software. We make
-not claims that it is bug-free and any errors are not our 
+no claims that it is bug-free and any errors are not our 
 responsibility.  This is a community-run, community-supported
 system and not a company selling a product.  We use
 the software in our lab and, when used correctly, has never caused
@@ -49,4 +49,4 @@ scammers to reverse engineer your task.
 5. When testing "live", explain in the text of your Ad that this is a test and
 you are looking for feedback.  Workers get fustrated when you put bad
 or broken experiments online, but are often very helpful if you explain
-this is a test or demo and you are hoping to get feedback.
+that you are hoping to get feedback on an unfinished project.
