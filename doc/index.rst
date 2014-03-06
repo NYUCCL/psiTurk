@@ -1,4 +1,4 @@
-.. image:: images/psiturk_logo_small.jpg
+.. image:: images/psiturk_logo_small_trans.png
 	:align: right
 
 psiTurk Documentation
@@ -24,6 +24,8 @@ User's Guide
     step_by_step
     anatomy_of_project
     recording
+    faq
+    getting_help
 
 API Reference
 --------------
