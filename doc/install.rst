@@ -9,7 +9,7 @@ difficult.
 
 When **psiTurk** is successfully installed, you will simply have a new
 command line tool available called ``psiturk``. The ``psiturk`` command
-provides a number of functions to you including launching the [[Server]]
+provides a number of functions to you including launching the server
 and interacting with the Mechanical Turk and Amazon Web Services (AWS)
 systems.
 
@@ -102,15 +102,16 @@ Updating from a previous version
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To avoid compatibility issues, if you upgrade from a previous version it
-can be useful to first uninstall then reinstall psiturk using the
+can be useful to first uninstall then reinstall **psiTurk** using the
 following sequence of commands:
 
-.. code:: bash
+::
 
     $ pip uninstall psiturk
     $ git clone git@github.com:NYUCCL/psiTurk.git 
     $ cd psiTurk
     $ sudo python setup.py install
+
 
 To use the development tree, the second command should be
 ``git clone -b dev git@github.com:NYUCCL/psiTurk.git``.
@@ -135,8 +136,8 @@ Linux
 
 **psiTurk** is relatively painless to install on most Linux systems
 since all four of the requirements listed above come installed by
-default in most distributions. If you have specific issues please update
-the documentation!
+default in most distributions. If you have specific issues please help
+us update the documentation!
 
 Windows
 ~~~~~~~

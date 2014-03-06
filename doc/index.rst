@@ -17,6 +17,7 @@ User's Guide
     forward
     install
     amt_setup
+    psiturk_org_setup
     quickstart
     step_by_step
     anatomy_of_project

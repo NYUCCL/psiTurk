@@ -82,7 +82,9 @@ laptop. You'll need a static IP to prevent your experiment's URL from
 changing. Users without one (e.g., most home users) can use a `dynamic
 DNS <http://en.wikipedia.org/wiki/Dynamic_DNS>`__ service to forward a
 URL to their dynamic IP. Here's a list of `free DDNS
-providers <http://dnslookup.me/dynamic-dns/>`__.
+providers <http://dnslookup.me/dynamic-dns/>`__.  You also may need
+to `forward a port <http://www.howtogeek.com/66214/how-to-forward-ports-on-your-router/>`__
+from your home routers to you personal computer.
 
 Do I have to learn how to code?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -103,8 +105,8 @@ users. For specific questions, visit
 `stackoverflow.com <http://www.stackoverflow.com>`__.
 
 To get you started, **psiTurk** provides a fully functioning example
-experiment ([[Getting up and running with the basic Stroop task]]) that
+experiment (`Getting up and running with the basic Stroop task <step_by_step.html#getting-up-and-running-with-the-basic-stroop-task>`__) that
 you can use as a template for your own study. **psiTurk** also includes
-a library of basic Javascript functions ([[psiTurk API]]) that you can
+a library of basic Javascript functions (`psiTurk API <api.html>`__) that you can
 insert into your code to handle page transitions, load images, and
 record data.
