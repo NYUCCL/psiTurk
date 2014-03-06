@@ -1,4 +1,4 @@
-psiturk.org Secure Ad Server
+**psiturk.org** Secure Ad Server
 =============================
 
 
@@ -41,7 +41,7 @@ have to!  **psiTurk** posts your custom ad text with us, and then participants a
 by first interacting with our secure server.  We show them the ad, then forward them to you.
 No hassle, more potential participants!  
 
-Why use the **psiTurk** Secure Ad Server?
+Why use the **psiturk.org** Secure Ad Server?
 -------------------------------------------------------
 
 As should be obvious, **psiTurk** already gets around a major technical hurdle for many scientists.
