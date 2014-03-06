@@ -21,6 +21,7 @@ User's Guide
     install
     amt_setup
     psiturk_org_setup
+    secure_ad_server
     quickstart
     step_by_step
     anatomy_of_project
