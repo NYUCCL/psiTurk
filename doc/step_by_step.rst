@@ -6,7 +6,5 @@ the introduce key concepts in using **psiTurk**.
 
 
 .. toctree::
-    command_line_overview
-    configure_databases
     stroop
     decompose_stroop

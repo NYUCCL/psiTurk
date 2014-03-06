@@ -1,6 +1,6 @@
 .. image:: images/psiturk_logo_small_trans.png
 	:align: right
-	
+
 psiTurk Documentation
 =====================
 
@@ -22,6 +22,9 @@ User's Guide
     psiturk_org_setup
     secure_ad_server
     quickstart
+    configuration
+    command_line_overview
+    configure_databases
     step_by_step
     anatomy_of_project
     recording
