@@ -4,8 +4,8 @@ API
 Everything in the **psiTurk** API is scoped under the ``psiturk``
 namespace.
 
-Creating the psiTurk object
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Creating the **psiTurk** object
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To use the **psiTurk** library, a ``psiturk`` object must be created at
 the beginning of your experiment.

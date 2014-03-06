@@ -1,2 +1,2 @@
-Anatomy of a psiTurk project
+Anatomy of a **psiTurk** project
 ==========================================

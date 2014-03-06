@@ -1,5 +1,5 @@
-Contributing to psiTurk
-=======
+Contributing to **psiTurk**
+===========================
 
 Note: This guide is copied more or less from the `contributors guidelines <https://github.com/gureckis/gunicorn/blob/master/CONTRIBUTING.md>`__
 of the `gunicorn <https://github.com/benoitc/gunicorn>`__ project. Alternations

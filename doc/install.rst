@@ -1,5 +1,5 @@
-Getting psiTurk Installed on Your Computer
-==========================================
+Getting **psiTurk** Installed on Your Computer
+===============================================
 
 **psiTurk** can be installed on any modern computer which supports
 Python (<= 2.7). However, currently **psiTurk** is *not* supported on
