@@ -13,8 +13,8 @@ provides a number of functions to you including launching the server
 and interacting with the Mechanical Turk and Amazon Web Services (AWS)
 systems.
 
-Requirements
-------------
+Installation requirements
+-------------------------
 
 Installation of **psiTurk** requires:
 
