@@ -1,7 +1,7 @@
-API
+psiturk.js API
 =======
 
-Everything in the **psiTurk** API is scoped under the ``psiturk``
+Everything in the **psiturk.js** API is scoped under the ``psiturk``
 namespace.
 
 Creating the **psiTurk** object
