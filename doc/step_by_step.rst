@@ -1,6 +1,17 @@
 Step-by-step Tutorials
 ==========================================
 
+We have a number of helpful step-by-step tutorials
+the introduce key concepts in using **psiTurk**.
+
+
+.. toctree::
+    command_line_overview
+    configure_databases
+    stroop
+    decompose_stroop
+
+
 **psiTurk** is a system for interfacing with Amazon
 Mechanical Turk.  Thus, you need to create an account
 on Amazon's website in order to use it.
