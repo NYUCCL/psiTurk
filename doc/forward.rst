@@ -95,7 +95,7 @@ JavaScript).
 
 Fortunately there exist many resources and tutorials that can help get
 started. If you are completely new to web programming, you might want to
-check out `Codeacademy <http://www.codecademy.com/tracks/web>`__, for
+check out `Codecademy <http://www.codecademy.com/tracks/web>`__, for
 example, for interactive tutorials on building websites.
 
 Once you mastered the basics, you can take advantage of the vast number

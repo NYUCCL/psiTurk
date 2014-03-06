@@ -44,13 +44,13 @@ Why use the **psiTurk** Secure Ad Server?
 -------------------------------------------------------
 
 As should be obvious, **psiTurk** already gets around a major technical hurdle for many scientists.
-However, the **psiTurk** Secure Ad Server not only serves up your SSL-signed Ad, but it also 
+However, the **psiTurk** Secure Ad Server not only serves up your SSL-signed Ad, but also 
 provides you with some valuable data about people who view your HIT, people who accept it, and 
 what other task they have completed on the **psiTurk** meta-platform.
 This can be very useful data.  For example, when you use the **psiTurk** Ad server you can find 
 out if your participants have done a version of your experiment before!  
 
 The public API for this data is coming soon, but just know that when you host your Amazon Mechanical 
-Turk ads with us we are helping to build a valuable resource about which participants have done 
-which types of experiments which can be used to help filter your data or prevent certain partcipants 
+Turk ads with us you are helping to build a valuable resource about which participants have done 
+which types of experiments. This can be used to help filter your data or prevent certain participants
 from doing experiments for which they have already possibly been exposed to the important manipulation.

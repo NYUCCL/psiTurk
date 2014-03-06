@@ -24,7 +24,7 @@ psiturk.org, you access the psiturk.org API services
 using an API key (similar to how you interface with
 `Amazon Mechanical Turk <amt_setup.html>`__). To obtain your personal API keys
 login to psiturk.org (`https://psiturk.org/login <https://psiturk.org/login>`__).
-On the main dashbaord page, select the blue dropdown
+On the main dashboard page, select the blue dropdown
 menu on the top right hand side of the page (shows your
 email address) and select "API Keys".  
 Copy these keys into your ``~/.psiturkconfig`` file.
