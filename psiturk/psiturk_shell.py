@@ -511,7 +511,10 @@ class PsiturkNetworkShell(PsiturkShell):
             else:
                 print '*** failed to reject', assignmentID
 
-    def worker_unreject(self, assignment_ids):
+    def worker_unreject(self, chosenHit, assignment_ids = None):
+        if chosenHit:
+            workers = self.amt_services.get_workers("Rejected")
+            assignment_ids = [worker['assignmentId'] for worker in workers if worker['hitId']==chosenHit]
         for assignmentID in assignment_ids:
             success = self.amt_services.unreject_worker(assignmentID)
             if success:
@@ -1287,7 +1290,7 @@ class PsiturkNetworkShell(PsiturkShell):
         Usage:
           worker approve (--hit <hit_id> | <assignment_id> ...)
           worker reject (--hit <hit_id> | <assignment_id> ...)
-          worker unreject (<assignment_id> ...)
+          worker unreject (--hit <hit_id> | <assignment_id> ...)
           worker bonus  (--amount <amount> | --auto) (--hit <hit_id> | <assignment_id> ...)
           worker list (submitted | approved | rejected | all) [--hit <hit_id>]
           worker help
@@ -1297,7 +1300,7 @@ class PsiturkNetworkShell(PsiturkShell):
         elif arg['reject']:
             self.worker_reject(arg['<hit_id>'], arg['<assignment_id>'])
         elif arg['unreject']:
-            self.worker_unreject(arg['<assignment_id>'])
+            self.worker_unreject(arg['<hit_id>'], arg['<assignment_id>'])
         elif arg['list']:
             self.worker_list(arg['submitted'], arg['approved'], arg['rejected'], arg['all'], arg['<hit_id>'])
         elif arg['bonus']:

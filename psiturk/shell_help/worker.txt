@@ -1,6 +1,7 @@
 Usage:
   worker approve (--hit <hit_id> | <assignment_id> ...)
   worker reject (--hit <hit_id> | <assignment_id> ...)
+  worker unreject (--hit <hit_id> | <assignment_id> ...)
   worker bonus  (--amount <amount> | --auto) (--hit <hit_id> | <assignment_id> ...)
   worker list (submitted | approved | rejected | all) [--hit <hit_id>]
   worker help
@@ -10,6 +11,8 @@ Usage:
   	    use the '--hit' flag to approve all workers for a specific HIT.
   reject    Reject worker assignments for one or more assignment ID's, or use
             the '--hit' flag to reject all workers for a specific HIT.
+  unreject  Unreject worker assignments for one or more assignment ID's, or use
+            the '--hit' flag to unreject all rejected workers for a specific HIT.
   bonus     Grant bonuses to workers for one or more assignment ID's or, or use
             the '--hit' flag to bonus all workers for a specific HIT. Enter the
             bonus '--amount <amount>' in an X.XX format, or use the '--auto' flag
