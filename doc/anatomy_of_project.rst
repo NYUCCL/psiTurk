@@ -5,7 +5,7 @@ Every **psiTurk** compatible project should include a few basic files.
 As an example here is the file listing of the `Stroop example <stroop.html>`__
 which is included in a default **psiTurk** installation.
 
-.. code-block:: 
+:: 
 
 	|- `config.txt <file_desc/config_txt.rst>`__
 	|- `custom.py <file_desc/custom_py.rst>`__
