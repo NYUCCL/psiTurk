@@ -42,3 +42,8 @@ at any point in time.
 (i.e., do not leave **psiTurk** server running indefinitely).  This ensures
 that noone will be able to actually perform you task and then claim
 they are owed payment.
+
+5. When testing, explain in the text of your Ad that this is a test and
+you are looking for feedback.  Workers get fustrated when you put bad
+or broken experiments online, but are often very helpful if you explain
+this is a test or demo.
