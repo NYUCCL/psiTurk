@@ -111,14 +111,16 @@ this is formatted correctly.
 The main important feature is the `toctree <http://sphinx-doc.org/markup/toctree.html>`__.
 
 The toctree just looks like this:
-.. code:: javascript
-    ```javascript
+
+::
+
+    ``javascript
       .. toctree::
         forward
         install
         quickstart
         recording
-    ```
+    ``
 
 Sphinx will go through the pages listed in the toctree, search for subject
 headers and create both links for the index page and the sidebar in the 
@@ -127,10 +129,14 @@ it is also very important that subjected headers be used correctly on
 the individual pages. For example, the forward page has a title that looks 
 like this:
 
+::
+
     Forward
     =======
 
 and subtitles that look like this:
+
+::
 
     What is psiTurk?
     ~~~~~~~~~~~~~~~~
@@ -150,6 +156,8 @@ Links look like this:
 with the actual page in angle brackets. If the link is to another page within the docs, 
 you only need to include the name of the page.
 Whenever you include a code example, put this line before:
+
+::
 
     .. code:: javascript
 
