@@ -15,8 +15,8 @@ with **psiTurk**, visit `Getting up and running with the basic Stroop task <stro
 
 User's Guide
 ------------------
-.. toctree::
-	:maxdepth: 2
+.. toctree:: 
+	:maxdepth: 1
 
     forward
     install
