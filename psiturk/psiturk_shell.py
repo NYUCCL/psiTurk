@@ -141,7 +141,7 @@ class PsiturkShell(Cmd, object):
         elif server_status == 'no':
             serverString = colorize('off', 'red')
         elif server_status == 'maybe':
-            serverString = colorize('wait', 'yellow')
+            serverString = colorize('unknown', 'yellow')
         prompt += ' server:' + serverString
         prompt += ' mode:' + colorize('cabin', 'bold')
         prompt += ']$ '
@@ -253,7 +253,7 @@ class PsiturkShell(Cmd, object):
         elif server_status == 'no':
             print 'Server: ' + colorize('currently offline', 'red')
         elif server_status == 'maybe':
-            print 'Server: ' + colorize('please wait', 'yellow')
+            print 'Server: ' + colorize('status unknown', 'yellow')
 
     def do_setup_example(self, arg):
         import setup_example as se
@@ -440,7 +440,7 @@ class PsiturkNetworkShell(PsiturkShell):
         elif server_status == 'no':
             serverString = colorize('off', 'red')
         elif server_status == 'maybe':
-            serverString = colorize('wait', 'yellow')
+            serverString = colorize('unknown', 'yellow')
         prompt += ' server:' + serverString
         if self.sandbox:
             prompt += ' mode:' + colorize('sdbx', 'bold')
