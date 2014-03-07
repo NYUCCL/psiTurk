@@ -152,7 +152,7 @@ success or failure of the saving.
     });
 
 
-``psiturk.finishInstructions``
+``psiturk.finishInstructions()``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ``finishInstructions`` is used to change the participant's status code

@@ -65,7 +65,7 @@ Can you program my experiment for me?
 Nope, sorry.  Please check the `experiment exchange <https://psiturk.org/ee>`__ for 
 examples you might be able to draw insight from.
 
-I'm having Javascript error when designing my experiment.  Can you help?
+I'm having Javascript errors when designing my experiment.  Can you help?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Sorry, but probably not.  See the above about programming experiments.  There are many 

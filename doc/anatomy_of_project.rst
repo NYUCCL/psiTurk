@@ -6,7 +6,6 @@ Projects can include additional files as needed.
 As an example here is the file listing of the `Stroop example <stroop.html>`__
 which is included in a default **psiTurk** installation.
 
-:: 
 
 	|- `config.txt <file_desc/config_txt.rst>`__
 	|- `custom.py <file_desc/custom_py.rst>`__

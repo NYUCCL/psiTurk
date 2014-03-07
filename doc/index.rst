@@ -48,6 +48,8 @@ Contributing to **psiTurk**
 API Reference
 --------------
 .. toctree::
+	:maxdepth: 2
+    
     api
     psiturk_org_api
 
