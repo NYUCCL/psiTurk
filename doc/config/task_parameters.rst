@@ -1,5 +1,5 @@
 Task Parameters
-^^^^^^^^^^^^^^^^^^^
+===============
 
 The Task Parameters section contains details about
 your task.  An example looks like this:
@@ -12,7 +12,7 @@ your task.  An example looks like this:
 	num_counters = 1
 
 experiment_code_version  [ string ]
-"""""""""""""""""""""""""""""
+-----------------------------------
 Often you might a couple different versions
 of an experiment during a research project (e.g.,
 Experiment 1 and 2 of a papper).  
@@ -22,7 +22,7 @@ version of the code each participant was given.
 
 
 num_cond  [ integer ]
-"""""""""""""""""""""""""""""
+---------------------
 **psiTurk** includes a primitive system for counterbalancing
 participants to conditions.  If you specify a number of
 condition greater than 1, then **psiTurk** will attempt to
@@ -34,7 +34,7 @@ fairly assured that after running 100 subjects in two conditions
 each condition will have 50+/- completed participants.
 
 num_counters  [ integer ]
-"""""""""""""""""""""""""""""
+-------------------------
 `num_counters` is identical to `num_cond` but provides
 an additional counterbalancing factor beyond condition.
 If `num_counters` is greater than 1 then **psiTurk**

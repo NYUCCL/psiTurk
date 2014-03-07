@@ -1,5 +1,5 @@
 HIT Configuration
-^^^^^^^^^^^^^^^^^
+=================
 
 The HIT Configuration section contains details about
 your Human Intelligence Task.  An example looks
@@ -23,7 +23,7 @@ like this:
 
 
 title [string]
-""""""""""""""
+--------------
 The `title` is the title of the task that will appear on the AMT
 worker site.  Workers often use these fields to
 search for tasks.  Thus making them descriptive and
@@ -31,20 +31,20 @@ informative is helpful.
 
 
 description [string]
-""""""""""""""
+--------------------
 The `description` is the accompanying
 text that appears on the AMT site. Workers often use these fields to
 search for tasks.  Thus making them descriptive and
 informative is helpful.
 
 keywords [comma separated string]
-"""""""""""""""""""""""""""""""""
+---------------------------------
 `keywords` Workers often use these fields to
 search for tasks.  Thus making them descriptive and
 informative is helpful.
 
 lifetime [integer]
-"""""""""""""""""""""""""""""""""
+------------------
 The `lifetime` how long a worker can "hold on" to your
 HIT for.  Sometimes workers will "accept" a HIT which is worth
 a lot of money but come back and do the work later in the day.
@@ -52,13 +52,13 @@ The lifetime sets a limit on the length of time a worker
 can hold onto an assignment.  
 
 us_only [true | false]
-"""""""""""""""""""""""
+----------------------
 `us_only` controls
 if you want this HIT only to be available to US Workers.  This is
 not a failsafe restriction but works fairly well in practice.
 
 approve_requirement [integer]
-""""""""""""""""""""""""""""""
+-----------------------------
 `approve_requirement` sets a qualification for what type of workers
 you want to allow to perform your task.  It is expressed as a 
 percentage of past HITs from a worker which were approved.  Thus
@@ -68,7 +68,7 @@ expert workers.  This is desirable to avoid bots and scammers, but also
 may exclude new sign-ups to the system.
 
 contact_email_on_error [string - valid email address]
-"""""""""""""""""""""""""""""""""""""""""""""""""""""
+-----------------------------------------------------
 `contact_email_on_error`  is the email you would like to display to
 workers in case there is an error in the task.  Workers will often try
 to contact you to explain what when want and request partial or full
@@ -76,7 +76,7 @@ payment for their time.  Providing a email address that you monitor
 regularly is important to being a good member of the AMT community.
 
 ad_group [string]
-"""""""""""""""""
+-----------------
 `ad_group`  is a unique string that describes your experiment.
 All HITs and Ads with the same ad_group string will be grouped together
 in your psiturk.org dashboard.  To create a new group in your dashboard
@@ -88,7 +88,7 @@ account then they might use different `ad_group` identifiers to keep
 things organized.)
 
 psiturk_keywords [comma separated string]
-""""""""""""""""""""""""""""""""""""""""""
+-----------------------------------------
 `psiturk_keywords` [string, comma separated] are a list of key words
 that describe your task.  The purpose of these keywords (distinct from 
 the `keywords` described above) is to help other researchers know 
@@ -108,13 +108,13 @@ to exclude people who had done this study from a future study what
 keywords would I search for.)
 
 organization_name [string]
-""""""""""""""""""""""""""
+--------------------------
 `organization_name` [string] is just an identifier of your academic
 institution, business, or organization.  It is used internally
 by psiturk.org.
 
 browser_exclude_rule [comma separated string]
-""""""""""""""""""""""""""""""""""""""""""""""
+---------------------------------------------
 `browser_exclude_rule` is a set of rules you can apply to exclude
 particular web browsers from performing your task.  When a users
 contact the `Secure Ad Server <secure_ad_server>`__ the server checks
@@ -148,7 +148,7 @@ Finally `bot` tries to exclude web spiders and non-browser agents like
 the Unix curl command.
 
 using_sandbox [true | false]
-"""""""""""""""""""""""""""""
+----------------------------
 `using_sandbox` indicates if HITs for this task should be posted to
 the sandbox or "live" AMT site.  This variable can be modified while
 psiturk is running by typing `mode` at the `command line <command_line_overview>`__.

@@ -1,5 +1,5 @@
 Server Parameters
-^^^^^^^^^^^^^^^^^^^
+=================
 
 The Server Parameter section contains details about
 your local web server process that you launch from the
@@ -19,7 +19,7 @@ command line.  An example looks like this:
 	threads = auto
 
 host [ string]
-"""""""""""""""""""""""""""""
+--------------
 `host` specifies the hostname of your server.
 There are really only two meaningful values of this.
 If host is set to 'localhost' or '127.0.0.1' then your
@@ -34,17 +34,17 @@ or hostname of your current computer then your task
 will be available to the general internet.
 
 host [ integer ]
-"""""""""""""""""""""""""""""
+----------------
 This is the port that your server will run on.  Typically
 a number greater than 5000 will work.  If another process
 is already using a given port you will usually get an
 error message.
 
 cutoff_time [ integer ]
-"""""""""""""""""""""""""""""
+-----------------------
 
 logfile [ string ]
-"""""""""""""""""""""""""""""
+------------------
 The location of the server log file.  Error messages for
 the server process are not printed to the terminal or 
 command line.  To help in debugging they are stored in
@@ -53,13 +53,13 @@ in the top-level folder of your project.
 
 
 loglevel [ integer ]
-"""""""""""""""""""""""""""""
+--------------------
 Sets how "verbose" the log messages are.  See
 the python `logging <http://docs.python.org/2/library/logging.html#logging-levels>`__
 library.
 
 debug [ true | false ]
-"""""""""""""""""""""""""""""
+----------------------
 If debug is true, if there is an internal server error
 helpful debugging information will be printed into the webpage of
 people taking the experiment.  **IMPORANT** this should be 
@@ -67,7 +67,7 @@ set to false for live experiments to prevent possible security
 holes.
 
 login_username [ string ]
-"""""""""""""""""""""""""""""
+-------------------------
 If you want to have  custom-login section of your
 web application (e.g., see `customizing psiturk <customize.txt>`__)
 then you can set a login and password on certain
@@ -75,7 +75,7 @@ web pages urls/routes.  By default if you aren't
 using them, this is ignored.
 
 login_pw  [ string ]
-"""""""""""""""""""""""""""""
+--------------------
 If you want to have  custom-login section of your
 web application (e.g., see `customizing psiturk <customize.txt>`__)
 then you can set a login and password on certain
@@ -83,7 +83,7 @@ web pages urls/routes.  By default if you aren't
 using them, this is ignored.
 
 threads  [ auto | integer ]
-"""""""""""""""""""""""""""""
+---------------------------
 `threads` controls the number of process threads
 the the psiturk webserver will run.  This enables multiple
 simultanous connections from internet users.  If you select

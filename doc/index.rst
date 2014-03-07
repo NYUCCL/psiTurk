@@ -15,30 +15,34 @@ with **psiTurk**, visit `Getting up and running with the basic Stroop task <stro
 
 User's Guide
 ------------------
-.. toctree:: 
-	:maxdepth: 1
 
-    forward
-    install
-    amt_setup
-    psiturk_org_setup
-    secure_ad_server
-    quickstart
-    configuration
-    command_line_overview
-    configure_databases
-    step_by_step
-    anatomy_of_project
-    recording
-    faq
-    getting_help
-    disclaimer
+
+.. toctree::
+   :maxdepth: 2
+
+   forward
+   install
+   amt_setup
+   psiturk_org_setup
+   secure_ad_server
+   quickstart
+   configuration
+   command_line_overview
+   configure_databases
+   step_by_step
+   anatomy_of_project
+   recording
+   faq
+   getting_help
+   disclaimer
 
 Contributing to **psiTurk**
 ---------------------------
 .. toctree::
-	contribute
-	roadmap
+   :maxdepth: 2
+
+   contribute
+   roadmap
 
 API Reference
 --------------

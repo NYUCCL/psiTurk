@@ -1,5 +1,5 @@
 Database Parameters
-^^^^^^^^^^^^^^^^^^^
+===================
 
 The Database Parameter section contains details about
 your database.  An example looks like this:
@@ -11,7 +11,7 @@ your database.  An example looks like this:
 	table_name = turkdemo
 
 database_url [url string]
-"""""""""""""""""""""""""""""
+-------------------------
 `database_url` containes the location and access credentials
 for your database (i.e., where you want the data from your
 experiment to be saved).  
@@ -38,7 +38,7 @@ that you can connect to this url with a MySQL client prior to
 launching.
 
 table_name [ string]
-"""""""""""""""""""""""""""""
+--------------------
 `table_name` specifies the table of the database you would like
 to write to.  **IMPORTANT**: psiTurk prevents the same worker
 from performing as task by checking to see if the worker
