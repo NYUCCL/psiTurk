@@ -14,13 +14,15 @@ between labs and research groups.  In other words, even if you
 wrote this software yourself it is possible that some bug could
 cost you money when getting started.
 
-We take no responsibility for your use of the software. We make
-no claims that it is bug-free and any errors are not our 
-responsibility.  This is a community-run, community-supported
-system and not a company selling a product.  We use
-the software in our lab and, when used correctly, has never caused
-us to lose money on Mechanical Turk due to mistakes.  However, it is
-always possible to mis-use the software in a costly way.
+.. danger::
+
+	**We take no responsibility for your use of the software**. We make
+	no claims that it is bug-free and any errors are not our 
+	responsibility.  This is a community-run, community-supported
+	system and not a company selling a product.  We use
+	the software in our lab and, when used correctly, has never caused
+	us to lose money on Mechanical Turk due to mistakes.  However, it is
+	**always possible to mis-use the software in a costly way.**
 
 In addition, while we strive to keep the psiturk.org Secure Ad Server running,
 crashes in that system could, in the short-term, affect your ability to

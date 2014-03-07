@@ -30,8 +30,8 @@ important to have better tests of these features.  Testing
 isn't glamorous but writing tests improves your health,
 looks, and chances of getting in heaven.
 
-Database solutions
-------------------
+Alternative database solutions
+-------------------------------
 Currently **psiTurk** offers a variety of database solutions
 including local SQLite files, self-administered MySQL
 servers, and MySQL processes hosted on Amazon's Web
@@ -89,11 +89,12 @@ Version 3.0
 ~~~~~~~~~~~~~~~~~~
 
 We envision that eventually psiturk could move
-entirely into the cloud (i.e., not need for
+entirely into the cloud (i.e., no need for
 user to install command line tool).  This may be
-supported by changes to the psiturk.org API
+supported by changes and extensions to the psiturk.org API
 and the psiturk.js library.  The emphasis in our
 initial development has been on advanced users/programmers
+comfortable in a unix environment, 
 but future version could emphasize novice web programmers
 who are new to online experiments (e.g., undergrads).
 

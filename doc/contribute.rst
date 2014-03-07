@@ -88,14 +88,14 @@ your name and email address match your git configuration.
 Contributing to the docs
 -------------------------------------
 
-Our docs are currently hosted at `readthedocs <psiturk.readthedocs.org>`__. 
+Our docs are currently hosted at `readthedocs <http://psiturk.readthedocs.org>`__. 
 Readthedocs uses `Sphinx <http://sphinx-doc.org/>`__ as the backend for their
 documentation so in order to update the docs you will first have to install
 Sphinx simply by typing
 
     easy_install -U Sphinx
 
-into the command line.
+on the command line.
 
 All documentation files are in the docs folder and are formatted as 
 reStructured Text. A good, detailed manual for the reStructured Text 
@@ -113,14 +113,11 @@ The main important feature is the `toctree <http://sphinx-doc.org/markup/toctree
 The toctree just looks like this:
 
 ::
-
-    ``javascript
-      .. toctree::
+    .. toctree::
         forward
         install
         quickstart
         recording
-    ``
 
 Sphinx will go through the pages listed in the toctree, search for subject
 headers and create both links for the index page and the sidebar in the 
@@ -161,6 +158,9 @@ Whenever you include a code example, put this line before:
 
     .. code:: javascript
 
+All pages on readthedocs.org (including this one) have a link to "Edit on Github."
+This can be a great way to "steal" formatting ideas for your documentation
+edits.
 
 Decision process
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
