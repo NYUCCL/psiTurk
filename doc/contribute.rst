@@ -88,7 +88,7 @@ your name and email address match your git configuration.
 Contributing to the docs
 -------------------------------------
 
-Our docs are currently hosted at ` readthedocs <psiturk.readthedocs.org>`__. 
+Our docs are currently hosted at `readthedocs <psiturk.readthedocs.org>`__. 
 Readthedocs uses `Sphinx <http://sphinx-doc.org/>`__ as the backend for their
 documentation so in order to update the docs you will first have to install
 Sphinx simply by typing
