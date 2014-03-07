@@ -57,10 +57,9 @@ and contains several pieces of usefull information.
 
 The ``server`` field will generally be set to ``on`` or ``off`` and denotes
 whether the experiment server is running. If the ``server`` field says
-``unknown``, this likely means that a a server process is running from a
-previous psiTurk shell session. In this case, the process can be terminated
-using the `server off <command_line/server.html#server-off>`__ command and a new server
-process can then be started.
+``unknown``, this likely means that a server process is running from an
+improperly closed previous psiTurk shell session. In this case, you may need to
+manually kill the processes in the terminal or restart your terminal session.
 
 The ``mode`` field displays the current mode of the shell. In the full psiturk
 shell, the mode will be either ``sdbx`` (sandbox) or ``live``. While in
