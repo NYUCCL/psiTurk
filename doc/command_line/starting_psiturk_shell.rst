@@ -6,9 +6,9 @@ Starting the **psiTurk** shell
 Usage
 ******
 
- ::
+::
 
-    psiturk [options]
+   psiturk [options]
 
 Description
 ***********
@@ -19,19 +19,22 @@ psiTurk project folder (i.e., any folder with a `config.txt` file).
 options
 *******
 
- ::
-    -v, --version
+::
+
+   -v, --version
 
 Print the currently installed version of psiTurk and exit.
 
- ::
-    -c, --cabinmode
+::
+   
+   -c, --cabinmode
 
 Launch psiturk in cabin (offline) mode. This allows you to develop test
 experiments locally without an internet connection.
 
- ::
-    -s, --script <filename>
+::
+   
+   -s, --script <filename>
 
 Run a list of commands from a text file, then exit. Each line in the file is
 treated as a command.
