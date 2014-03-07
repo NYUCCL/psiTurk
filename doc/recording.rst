@@ -1,13 +1,14 @@
-Recording
-==========
+Recording data
+==============
 
-There are three kinds of datasets that **psiTurk** will produce:
+To record data in your task you make calls to the `psiturk.js Javascript API <api.html>`.
+There are three kinds of data that **psiTurk** will help you produce:
 
-1. Trial-by-trial log file
+1. `Trial-by-trial log file <recording.html#recording-trial-data>`__
 
-2. Unstructured (field, value) pairs
+2. `Unstructured (field, value) pairs <recording.html#recording-unstructured-data>`__
 
-3. Browser events
+3. `Browser events <recording.html#browser-event-data>`__
 
 Recording trial data
 ~~~~~~~~~~~~~~~~~~~~

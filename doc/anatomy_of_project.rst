@@ -1,7 +1,8 @@
-Anatomy of a **psiTurk** project
+Anatomy of a basic **psiTurk** project
 ==========================================
 
 Every **psiTurk** compatible project should include a few basic files.
+Projects can include additional files as needed.
 As an example here is the file listing of the `Stroop example <stroop.html>`__
 which is included in a default **psiTurk** installation.
 
