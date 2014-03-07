@@ -46,5 +46,5 @@ pressing the "Regenerate API Keys" button.
 	:align: center
 
 At that point any old keys will no longer work, and you will
-need to update you ``~/.psiturkconfig`` file again.  This
+need to update your ``~/.psiturkconfig`` file again.  This
 way 

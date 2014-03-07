@@ -6,10 +6,10 @@ to aid in research.  Because it helps you run paid experiments online
 using Amazon Mechanical Turk errors in the software, or in your
 use of the software, can lead to **loss of money**.  This is the very
 nature of online research (errors may mean someone will actually
-do you task and you need to pay them as a result).  
+do your task and you need to pay them as a result).  
 
 Our belief is that these types of errors can be best limited
-by having open, peer-reviewable software and the sharing bug reports
+by having open, peer-reviewable software and sharing bug reports
 between labs and research groups.  In other words, even if you
 wrote this software yourself it is possible that some bug could
 cost you money when getting started.
@@ -42,7 +42,7 @@ at any point in time.
 
 4. Exit the **psiTurk** server when you are not using it to collect data
 (i.e., do not leave **psiTurk** server running indefinitely).  This ensures
-that noone will be able to actually perform you task and then claim
+that no one will be able to actually perform your task and then claim
 they are owed payment.  This also limits the ability of bots and other
 scammers to reverse engineer your task.
 

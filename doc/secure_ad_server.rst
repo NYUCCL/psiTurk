@@ -22,7 +22,7 @@ Ads, Amazon Mechanical Turk, and the External HIT type
 Any task (or HIT) which you deploy on your own server is listed using the 
 "external HIT" type (a special name that Amazon uses for tasks which are hosted on 
 external webservers).  For these types of tasks, ads show up in users' browsers as a 
-HTML document.  Due to recent changes in browser security if your HTML is not encrypted and signed using 
+HTML document.  Due to recent changes in browser security, if your HTML is not encrypted and signed using 
 an "official" SSL certificate (e.g., **https**://myschool.edu/myad.html works 
 and the certificate signing authority is official) then the ad won't display to potential 
 participants at all!
@@ -41,6 +41,7 @@ However, the psiturk Secure Ad Server **solves this problem for all researchers*
 
 .. image:: http://dev.psiturk.org/static/images/server_animation/frame-5.png
 	:align: left
+
 
 Rather than getting your own signed certificate (a technically challenging process), when you use 
 **psiTurk**, you can host your ad with us via `https://ad.psiturk.org <http://ad.psiturk.org/>`__
@@ -74,11 +75,10 @@ from doing experiments for which they have already possibly been exposed to the 
 
 Sound great, how do I use it?
 -------------------------------------------------------
-It's like magic!
 When you create a HIT from the command line in **psiTurk** your ad is posted to our servers.
 We begin forwarding people to your website instantly.
 You ad is never deleted (unless you want to delete it).
-Soon, you will be able to access statistics about who view, accepted, and returned your HIT and what other tasks they have completed on **psiTurk**.  Also we have plans to enable alternative ways of
+Soon, you will be able to access statistics about who view, accepted, and returned your HIT and what other tasks they have completed on **psiTurk**.  We also have plans to enable alternative ways of
 posting Ads to **psiTurk** including through a simple web interface.  This would then
 allow researchers using survey-type (via Google Forms or Qualtrics) to take
 advantage of the features of the Secure Ad Server as well.
