@@ -100,7 +100,9 @@ project:
 	always_launch_in_sandbox = true
 
 This file is divided into a few sections which are
-described in detail:
+described in detail.  Each field is described by
+name and includes in brackets the type of data it
+expects.
 
 .. toctree::
 

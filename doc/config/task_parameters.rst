@@ -11,7 +11,7 @@ your task.  An example looks like this:
 	num_conds = 1
 	num_counters = 1
 
-experiment_code_version  [ string ]
+`experiment_code_version`  [ string ]
 -----------------------------------
 Often you might a couple different versions
 of an experiment during a research project (e.g.,
@@ -21,7 +21,7 @@ the database along with your data helping you remember which
 version of the code each participant was given.
 
 
-num_cond  [ integer ]
+`num_cond`  [ integer ]
 ---------------------
 **psiTurk** includes a primitive system for counterbalancing
 participants to conditions.  If you specify a number of
@@ -33,7 +33,7 @@ a condition (or possibly withdrawing).  Thus, you can be
 fairly assured that after running 100 subjects in two conditions
 each condition will have 50+/- completed participants.
 
-num_counters  [ integer ]
+`num_counters`  [ integer ]
 -------------------------
 `num_counters` is identical to `num_cond` but provides
 an additional counterbalancing factor beyond condition.

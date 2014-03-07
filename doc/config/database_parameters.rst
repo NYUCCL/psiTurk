@@ -10,12 +10,12 @@ your database.  An example looks like this:
 	database_url = sqlite:///participants.db
 	table_name = turkdemo
 
-database_url [url string]
+`database_url` [url string]
 -------------------------
 `database_url` containes the location and access credentials
 for your database (i.e., where you want the data from your
 experiment to be saved).  
-As described in the `database <configure_databases.html>`__
+As described in the `database <../configure_databases.html>`__
 section there are a variety of options.
 
 To use a SQLLite data base, simply type the name of the
@@ -37,7 +37,7 @@ is the name of the database on the server.  It is wise to test
 that you can connect to this url with a MySQL client prior to 
 launching.
 
-table_name [ string]
+`table_name` [string]
 --------------------
 `table_name` specifies the table of the database you would like
 to write to.  **IMPORTANT**: psiTurk prevents the same worker
