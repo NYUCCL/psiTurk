@@ -16,10 +16,15 @@ for all the experiments or projects you are working on).
 The "local" configuration file contains the unique settings for
 individual experiments.
 
-In general, changes to either the local and global file
-require restarting the server process as it may change
-the behavior.  Generally it is best to edit these files while
-psiturk is not running, and then restart the command shell.
+
+.. note::
+
+   In general, changes to either the local and global file
+   require restarting the server process as it may change
+   the behavior.  Generally it is best to edit these files while
+   psiturk is not running, and then restart the command shell.
+
+
 
 Global configuration file
 --------------------------
