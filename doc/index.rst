@@ -32,6 +32,7 @@ User's Guide
    step_by_step
    anatomy_of_project
    recording
+   customizing
    faq
    getting_help
    disclaimer
