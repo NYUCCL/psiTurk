@@ -113,7 +113,8 @@ The main important feature is the `toctree <http://sphinx-doc.org/markup/toctree
 The toctree just looks like this:
 
 ::
-    .. toctree::
+
+      .. toctree::
         forward
         install
         quickstart
