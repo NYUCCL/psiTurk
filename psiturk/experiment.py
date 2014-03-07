@@ -14,7 +14,7 @@ except ImportError:
     from counter import Counter
 
 # Importing flask
-from flask import Flask, render_template, request, Response, jsonify
+from flask import Flask, render_template, render_template_string, request, Response, jsonify
 
 # Database setup
 from db import db_session, init_db
@@ -66,6 +66,14 @@ except ImportError:
 else:
     app.register_blueprint(custom_code)
 
+# read psiturk.js file into memory 
+psiturk_js_file = os.path.join(os.path.dirname(__file__), "psiturk_js/psiturk.js")
+app.logger.error( psiturk_js_file )
+
+if os.path.exists(psiturk_js_file):
+    psiturk_js_code = open(psiturk_js_file).read()
+else:
+    psiturk_js_code = "alert('psiturk.js file not found!');"
 
 #----------------------------------------------
 # favicon
@@ -81,6 +89,10 @@ def favicon():
 def handleExpError(e):
     """Handle errors by sending an error page."""
     return e.error_page( request )
+
+@app.route('/static/js/psiturk.js')
+def psiturk_js():
+    return render_template_string(psiturk_js_code)
 
 #----------------------------------------------
 # DB setup
