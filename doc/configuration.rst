@@ -458,6 +458,7 @@ The Shell Parameters section contains details about
 the psiturk shell.
 
 ::
+
 	[Shell Parameters]
 	always_launch_in_sandbox = true
 
