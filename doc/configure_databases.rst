@@ -8,12 +8,12 @@ Databases are optimized for this type of environment and are thus very useful fo
 Databases can be configured via the command line or by editing the configuration files directly.
 See::
 
-	db help
+	[psiTurk server:off mode:sdbx #HITs:0]$ db help
 
 For a full list of database commands available in the **psiTurk** shell.  You can also view your current
 database settings by typing::
 
-	db get_config
+	[psiTurk server:off mode:sdbx #HITs:0]$ db get_config
 
 in the command line shell.
 
@@ -53,13 +53,18 @@ and verify the changes using::
 	[psiTurk server:off mode:sdbx #HITs:0]$ db get_config
 
 
+It is best to do this while the server is not running (note in this example the "server" status says "off").
+If you change this while the server is running you will need to type::
+
+	[psiTurk server:on mode:sdbx #HITs:0]$ server restart
+
 While great for debugging, SQLLite has a number of important downsides for deploying experiments. In particular SQLite does not allow concurrent access to the database, so if the locks work properly, simultaneous access (say, from multiple users submitting their data at the same time) could destabilize your database. In the worst scenario, the database could become corrupted, resulting in data loss.
 
 As a result, we recommend using a more robust database solution when actually running your experiment. Luckily, **psiTurk** can help you set up such a database (usually for free).
 
 However, SQLLite is a good solution particularly for initial testing.  It is also possible to try to "throttle" the
-rate of signups on Mechanical Turk (by only posting one assignment slot at a time) so that database error will be come
-less likely.
+rate of signups on Mechanical Turk (by only posting one assignment slot at a time) so that database errors are
+less likely using SQLLite.
 
 .. note::
 
@@ -105,7 +110,7 @@ the cloud. It provides cost-efficient and resizable capacity while managing
 time-consuming database administration tasks, freeing you up to focus on your 
 applications and business."
 
-.. note::
+.. danger::
 
 	If you use Amazon's RDS to host your MySQL database you may incur additional
 	charges.  At the present time a small RDS instance is free if you have
@@ -115,7 +120,7 @@ applications and business."
 	Mechanical Turk.  Thus launching a database server on the cloud and leaving
 	it running run up monthly charges.  You are responsible for launching
 	and shutting down your own database instances if you use this approach.
-	PROCEED WITH CAUTION.
+	**PROCEED WITH CAUTION.**
 
 The **psiTurk** `command line <command_line_overview.html>`__ provides a way to
 create a small MySQL database on Amazon's cloud using the RDS service.
@@ -147,7 +152,7 @@ You can also get the current region by typing::
 
 	[psiTurk server:off mode:sdbx #HITs:0]$ db aws_get_region
 
-To change your region simply type
+To change your region simply type::
 
 	[psiTurk server:off mode:sdbx #HITs:0]$ db aws_set_region [<region_name>]
 
@@ -160,8 +165,8 @@ started on (i.e., which data center).
 
 .. note::
 
-	In general it is probably fine to just keep the region set to a single value
-	perhaps geographically closer to your location.  This functionality it just
+	It is probably fine to just keep the region set to a single value
+	perhaps geographically closer to your location.  This functionality is just
 	provided in case the default region isn't working for you.
 
 
@@ -238,10 +243,11 @@ If you follow the rules correctly your command will execute successfully::
 	 You can run 'db aws_list_instances' to verify it was created (status
 	 will say 'available' when it is ready
 
-The instruction mention that it can take a few minutes for you database to
+The instructions mention that it can take a few minutes for you database to
 "spin up".  If you run `db aws_list_instances` after a few minutes you should
 now see your database in the cloud::
 
+	[psiTurk server:off mode:sdbx #HITs:0]$ db aws_list_instances
 	Here are the current DB instances associated with your AWS account in region  us-east-1
 		--------------------
 		Instance ID: mydb
@@ -255,16 +261,20 @@ have to do that from the AWS web console.)
 
 When your database is ready the message from `db aws_list_instances` should look like::
 
+	[psiTurk server:off mode:sdbx #HITs:0]$ db aws_list_instances
 	Here are the current DB instances associated with your AWS account in region  us-east-1
 		--------------------
 		Instance ID: mydb
 		Status: available
 
-If you have multiple instances they will also appear in this list.  Again, multiple
-instance increase the possible charges you'll incur to Amazon since you are charged
-per-instance.
+If you have multiple instances they will also appear in this list. 
 
-Once your instance is create and "available" if you type `db get_config` you'll
+.. danger::
+
+	Multiple instances increase the possible charges you'll incur to Amazon since you are charged
+	per-instance.
+
+Once your instance is created and "available" if you type `db get_config` you'll
 notice that your experiment is still configured to use whatever setting you had
 previously::
 
@@ -272,7 +282,7 @@ previously::
 	Current database setting (database_url): 
 		sqlite:///participants.db
 
-To actually **use** your instance you need to tell **psiTurk**::
+To actually **use** your instance you need to tell **psiTurk** which instance::
 
 	[psiTurk server:off mode:sdbx #HITs:0]$ db use_aws_instance mydb
 	Switching your DB settings to use this instance.  Are you sure you want to do this? y
@@ -285,12 +295,16 @@ To actually **use** your instance you need to tell **psiTurk**::
 		mysql://UsernameXXXXX:PasswordXXXXX@mydb.cdukgn44bkrv.us-east-1.rds.amazonaws.com:3306/myexp
 
 And now your experiment will save data to this MySQL database in the Amazon cloud!
-Notice that Amazon has assigned your computer a weight looking hostname/ip (mydb.cdukgn44bkrv.us-east-1.rds.amazonaws.com).
+Notice that Amazon has assigned your computer a random looking hostname/ip (mydb.cdukgn44bkrv.us-east-1.rds.amazonaws.com).
 You can connect using any standard MySQL client (e.g., `Sequel Pro <http://www.sequelpro.com/>`__) 
-which is running on the same computer as you **psiTurk** process (because **psiTurk** automatically made 
-it so that only the current computer's ip address can access the database).  To modify that 
-you can use the Amazon Web Services control panel or simple delete and spin up a new
-database instance.
+which is running on the same computer as you **psiTurk** process
+
+.. note::
+
+	**psiTurk** automatically makes instances so that only the current computer's ip address 
+	can access the database for security reasons.  To modify that you can use the Amazon Web 
+	Services control panel or simple delete and spin up a new database instance.
+
 
 To switch back to a local SQLLite file::
 
@@ -327,7 +341,7 @@ After waiting a bit verify that you instance actually has been deleted::
 
 Overall we think this is pretty cool and nicely leverages the fact that you already
 got a Amazon Web Services account when you signed up to use Amazon Mechanical Turk!
-However, remember, this can incur hosting charges.  We have set things up so that this
+However, remember, this **can incur hosting charges**.  We have set things up so that this
 process creates very small, very simple RDS instances (which are the cheapest kind).
 However, leaving an instance running -- or multiple instances -- for a really long
 time can incur service charges which will be billed to your account by Amazon at the
