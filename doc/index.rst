@@ -32,13 +32,15 @@ User's Guide
     getting_help
     disclaimer
 
-API Reference
---------------
-.. toctree::
-    api
-
 Contributing to **psiTurk**
 ---------------------------
 .. toctree::
 	contribute
 	roadmap
+
+API Reference
+--------------
+.. toctree::
+    api
+    psiturk_org_api
+
