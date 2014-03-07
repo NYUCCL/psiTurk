@@ -618,13 +618,14 @@ class PsiturkNetworkShell(PsiturkShell):
                 print "*** This hit is not 'Reviewable' and so can not be disposed of"
                 return
             else:
-                self.amt_services.dispose_hit(hit)
+                success = self.amt_services.dispose_hit(hit)
                 #self.web_services.delete_ad(hit)  # also delete the ad
-                if self.sandbox:
-                    print "deleting sandbox HIT", hit
-                else:
-                    print "deleting live HIT", hit
-                self.tally_hits()
+                if success:
+                    if self.sandbox:
+                        print "deleting sandbox HIT", hit
+                    else:
+                        print "deleting live HIT", hit
+        self.tally_hits()
 
     def hit_expire(self, allHits, hitIDs=None):
         if allHits:
@@ -637,15 +638,17 @@ class PsiturkNetworkShell(PsiturkShell):
                     print "expiring sandbox HIT", hit
                 else:
                     print "expiring live HIT", hit
-                self.tally_hits()
+        self.tally_hits()
 
     def tally_hits(self):
         hits = self.amt_services.get_active_hits()
+        numHits = 0
         if hits:
-            if self.sandbox:
-                self.sandboxHITs = len(hits)
-            else:
-                self.liveHITs = len(hits)
+            numHits = len(hits)
+        if self.sandbox:
+            self.sandboxHITs = numHits
+        else:
+            self.liveHITs = numHits
 
 
     def hit_create(self, numWorkers, reward, duration):
