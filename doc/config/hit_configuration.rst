@@ -67,6 +67,18 @@ to be careful with this as it tends to select more seasoned and
 expert workers.  This is desirable to avoid bots and scammers, but also
 may exclude new sign-ups to the system.
 
+
+.. seealso::
+
+   The following options help configure the psiturk.org Secure Ad Server.
+
+   `Getting setup with psiturk.org <../psiturk_org_setup.html>`__
+   	  How to get an account on psiturk.org.
+
+   `psiturk.org Secure Ad Server <../secure_ad_server.html>`__
+   	  An overview of the purpose and features of the Secure Ad Server.
+
+
 `contact_email_on_error` [string - valid email address]
 -----------------------------------------------------
 `contact_email_on_error`  is the email you would like to display to
@@ -153,4 +165,8 @@ the Unix curl command.
 the sandbox or "live" AMT site.  This variable can be modified while
 psiturk is running by typing `mode` at the `command line <../command_line_overview.html>`__.
 
+.. seealso::
+
+   `Overview of the command-line interface <../command_line_overview.html>`__
+   	  The basic features of the **psiTurk** command line.
 

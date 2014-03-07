@@ -18,3 +18,9 @@ This means you interact with the live AMT site you
 must manually switch the mode each time.  Otherwise
 psiturk will use the setting of the `using_sandbox`
 described `here <hit_configuration.html#using-sandbox-true-false>`__.
+
+
+.. seealso::
+
+   `Overview of the command-line interface <../command_line_overview.html>`__
+   	  The basic features of the **psiTurk** command line.

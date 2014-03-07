@@ -1,7 +1,6 @@
 **psiturk.org** Secure Ad Server
 =============================
 
-
 Participants recruited via Mechanical Turk first interact with your task via **ads**.
 Ads are simply the digital version of hanging a poster or flyer around your university
 building in order to recruit participants.
@@ -9,6 +8,13 @@ Technically, **ads** are snippets of HTML code that describe what your task is a
 and what you're offering for compensation.  As a result, they are the front line for any 
 subject recruitment online.  It's easy to overlook the importance of a good ad, and making 
 that ad visible to as many participants as possible.
+
+
+.. seealso::
+
+   `Getting setup with psiturk.org <psiturk_org_setup.html>`__
+   	  Use of the Secure Ad Server requires an account on psiturk.org.
+
 
 Ads, Amazon Mechanical Turk, and the External HIT type
 -------------------------------------------------------

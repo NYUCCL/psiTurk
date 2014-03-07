@@ -8,6 +8,13 @@ provides a SSL-signed secure Ad server (ensuring that
 the majority of Workers can access your task).  It is
 offered as a free service to anyone who uses **psiTurk**.
 
+.. note::
+
+  To do anything beyond local testing a psiturk.org
+  account is currently required.
+
+
+
 Creating a psiturk.org account
 ----------------------------------
 
