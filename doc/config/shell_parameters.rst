@@ -11,13 +11,14 @@ the psiturk shell.
 
 `always_launch_in_sandbox` [ true | false]
 -----------------------------------------
+
 If set to `true` this option will cause the psiturk shell
-to always launch in sandbox mode.  This is to avoid
-errors where the user "forgets" that they are "live".
-This means you interact with the live AMT site you
-must manually switch the mode each time.  Otherwise
-psiturk will use the setting of the `using_sandbox`
-described `here <hit_configuration.html#using-sandbox-true-false>`__.
+to always launch in sandbox mode, automatically changing the `using_sandbox <hit_configuration.html#using-sandbox-true-false>`__  option to true. 
+This is to avoid errors where the user "forgets" that they are "live".
+This means to interact with the live AMT site you
+must manually switch the mode after launching the shell.
+If set to `false`, the shell will launch in the mode indicated by the 
+`using_sandbox` option.
 
 
 .. seealso::

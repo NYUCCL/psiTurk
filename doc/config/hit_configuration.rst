@@ -163,7 +163,7 @@ the Unix curl command.
 ----------------------------
 `using_sandbox` indicates if HITs for this task should be posted to
 the sandbox or "live" AMT site.  This variable can be modified while
-psiturk is running by typing `mode` at the `command line <../command_line_overview.html>`__.
+psiturk is running by using the `mode command <../command_line/mode.html>`__.
 
 .. seealso::
 
