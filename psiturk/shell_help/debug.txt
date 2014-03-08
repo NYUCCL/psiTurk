@@ -8,4 +8,4 @@ options:
 Mechanical Turk servers. Type 'debug' to launch your experiment in a browser
 window, or use the '--print-only' flag to create a URL to the experiment
 without launching a browser. The server must be running to debug your
-experiment (try 'server launch').
+experiment (try 'server on').
