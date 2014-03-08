@@ -13,7 +13,7 @@ Usage:
             the '--hit' flag to reject all workers for a specific HIT.
   unreject  Unreject worker assignments for one or more assignment ID's, or use
             the '--hit' flag to unreject all rejected workers for a specific HIT.
-  bonus     Grant bonuses to workers for one or more assignment ID's or, or use
+  bonus     Grant bonuses to workers for one or more assignment ID's, or use
             the '--hit' flag to bonus all workers for a specific HIT. Enter the
             bonus '--amount <amount>' in an X.XX format, or use the '--auto' flag
             to bonus each worker according to the 'bonus' field in the database
