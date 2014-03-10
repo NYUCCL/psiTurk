@@ -109,6 +109,17 @@ described in detail.  Each field is described by
 name and includes in brackets the type of data it
 expects.
 
+.. note:: Any configuration option can actually be placed in either
+   the global or local configuration file. For example, if you
+   wanted to run different project from different AWS accounts, you
+   could add an ``[AWS access]`` section to move the local `config.txt` files and
+   have different values in different folders. Likewise, if you wanted
+   to have the same `organization_name` in all your experiments, you
+   could add a ``[HIT Configuration]`` section with an
+   `organization_name` field to your `~/.psiturkconfig` file. Keep in
+   mind that **settings in the local `config.txt` file always override
+   settings in the global `~/.psiturkconfig` file**.
+
 .. toctree::
 
 	config/hit_configuration.rst

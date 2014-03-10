@@ -11,9 +11,11 @@ own experiment servers.
 
    command_line/starting.rst
    command_line/prompt.rst
+   command_line/db.rst
    command_line/debug.rst
    command_line/help.rst
    command_line/hit.rst
+   command_line/quit.rst
    command_line/server.rst
    command_line/mode.rst
    command_line/worker.rst

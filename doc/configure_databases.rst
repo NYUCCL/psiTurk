@@ -6,11 +6,7 @@ people can complete your experiment at the same time, you need a system which ca
 Databases are optimized for this type of environment and are thus very useful for experiments.
 
 Databases can be configured via the command line or by editing the configuration files directly.
-See::
-
-	[psiTurk server:off mode:sdbx #HITs:0]$ db help
-
-For a full list of database commands available in the **psiTurk** shell.  You can also view your current
+See the `db command documentation <command_line/db.html>`__ for a full list of database commands available in the **psiTurk** shell.  You can also view your current
 database settings by typing::
 
 	[psiTurk server:off mode:sdbx #HITs:0]$ db get_config
