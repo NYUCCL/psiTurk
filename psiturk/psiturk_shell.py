@@ -244,7 +244,17 @@ class PsiturkShell(Cmd, object):
             print ''
 
     def do_reload_config(self, arg):
+        restartServer = False
+        if self.server.is_server_running() == 'yes' or self.server.is_server_running() == 'maybe':
+            r = raw_input("Reloading configuration requires the server to restart. Really reload? y or n: ")
+            if r != 'y':
+                return
+            restartServer = True
         self.config.load_config()
+        if restartServer:
+            self.server_restart()
+
+
 
     def do_status(self, arg):
         server_status = self.server.is_server_running()
