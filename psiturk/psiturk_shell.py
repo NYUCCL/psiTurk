@@ -129,7 +129,7 @@ class PsiturkShell(Cmd, object):
         return server_msg + colorize('psiTurk version ' + version_number +
                               '\nType "help" for more information.', 'green')
 
-    def do_system_status(self, args):
+    def do_psiturk_status(self, args):
         print self.get_intro_prompt()
 
     def color_prompt(self):

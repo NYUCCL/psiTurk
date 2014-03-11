@@ -16,7 +16,9 @@ own experiment servers.
    command_line/debug.rst
    command_line/help.rst
    command_line/hit.rst
+   command_line/psiturk_status.rst
    command_line/quit.rst
    command_line/server.rst
+   command_line/status.rst
    command_line/mode.rst
    command_line/worker.rst
