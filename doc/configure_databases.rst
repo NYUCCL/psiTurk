@@ -23,12 +23,12 @@ in the command line shell.
       For details on the local configuration file `config.txt`.
 
 
-Using SQLLite
+Using SQLite
 --------------
 
-Perhaps the simplest solution is to use SQLLite.  This is a simple, easy to use database solution that is written to a local file on the same computer as is running the psiTurk shell/server.  By default **psiTurk** will use a local `SQLLite <http://www.sqlite.org/>`__ database.
+Perhaps the simplest solution is to use SQLite.  This is a simple, easy to use database solution that is written to a local file on the same computer as is running the psiTurk shell/server.  By default **psiTurk** will use a local `SQLite <http://www.sqlite.org/>`__ database.
 
-To use a SQLLite data base, simply set the `database_url` field in your `local configuration file <configuration.html#local-configuration-file>`__ (`config.txt`)::
+To use a SQLite data base, simply set the `database_url` field in your `local configuration file <configuration.html#local-configuration-file>`__ (`config.txt`)::
 
 	database_url = sqlite:///FILENAME.db
 
@@ -36,7 +36,7 @@ where FILENAME is of your choosing.  By default, **psiTurk** sets this like this
 
 	database_url = sqlite:///participants.db
 
-This will make a SQLLite database file in the top-level folder of your project.  If you change the `database_url`
+This will make a SQLite database file in the top-level folder of your project.  If you change the `database_url`
 and restart **psiTurk** a new database corresponding to the new filename will be created.  If you set it to an
 existing file name, **psiTurk** will attempt to connect to this database.
 
@@ -54,23 +54,23 @@ If you change this while the server is running you will need to type::
 
 	[psiTurk server:on mode:sdbx #HITs:0]$ server restart
 
-While great for debugging, SQLLite has a number of important downsides for deploying experiments. In particular SQLite does not allow concurrent access to the database, so if the locks work properly, simultaneous access (say, from multiple users submitting their data at the same time) could destabilize your database. In the worst scenario, the database could become corrupted, resulting in data loss.
+While great for debugging, SQLite has a number of important downsides for deploying experiments. In particular SQLite does not allow concurrent access to the database, so if the locks work properly, simultaneous access (say, from multiple users submitting their data at the same time) could destabilize your database. In the worst scenario, the database could become corrupted, resulting in data loss.
 
 As a result, we recommend using a more robust database solution when actually running your experiment. Luckily, **psiTurk** can help you set up such a database (usually for free).
 
-However, SQLLite is a good solution particularly for initial testing.  It is also possible to try to "throttle" the
+However, SQLite is a good solution particularly for initial testing.  It is also possible to try to "throttle" the
 rate of signups on Mechanical Turk (by only posting one assignment slot at a time) so that database errors are
-less likely using SQLLite.
+less likely using SQLite.
 
 .. note::
 
-	SQLLite database are fine for local testing but more robust databases like MySQL are recommended especially
+	SQLite database are fine for local testing but more robust databases like MySQL are recommended especially
 	if you plan to run many participants simultaneously.
 
 Using a self-hosted MySQL database (recommended)
 -------------------------------------------------
 
-A more robust solution is to set up a `MySQL <http://www.mysql.com/>`__ database.  **psiTurk** relies on `SQLAlchemy <http://www.sqlalchemy.org/>`__ for interfacing with database which means it is easy to switch between MySQL, PostgreSQL, or SQLLite.  We recommend
+A more robust solution is to set up a `MySQL <http://www.mysql.com/>`__ database.  **psiTurk** relies on `SQLAlchemy <http://www.sqlalchemy.org/>`__ for interfacing with database which means it is easy to switch between MySQL, PostgreSQL, or SQLite.  We recommend
 MySQL because we have tested it, but other relational database engines may works as well.
 
 To use an existing MySQL database::
@@ -302,7 +302,7 @@ which is running on the same computer as you **psiTurk** process
 	Services control panel or simple delete and spin up a new database instance.
 
 
-To switch back to a local SQLLite file::
+To switch back to a local SQLite file::
 
 	[psiTurk server:off mode:sdbx #HITs:0]$ db use_local_file FILENAME.db
 	Updated database setting (database_url): 
