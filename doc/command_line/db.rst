@@ -45,7 +45,8 @@ Usage
    db use_local_file [<filename>]
 
 Switch the current database to a local SQLite file with name `<filename>`
-(default is `participants.db`)
+(default is `participants.db`), or enter without filename and provide
+name when prompted.
 
 Example
 ~~~~~~~~
@@ -71,7 +72,9 @@ Usage
 
    db use_aws_instance [<instance_id>]
 
-Switch the current database to a given instance on AWS RDS.
+Switch the current database to a given instance `<instance_id>` on AWS
+RDS. Enter without an argument to display a list of instances from
+which to choose.
 
 Example
 ~~~~~~~~
@@ -149,7 +152,8 @@ Usage
 
    db aws_set_region [<region_name>]
 
-Sets the AWS region you are currently using to `<region-name>`.
+Sets the AWS region you are currently using to `<region-name>`. Enter
+without an argument to display a list of regions from which to choose.
 
 Example
 ~~~~~~~
@@ -266,7 +270,8 @@ Usage
 
      db aws_delete_instance [<instance_id>]
 
-Delete the RDS instance with id `<instance_id>`.
+Delete the RDS instance with id `<instance_id>`. Enter without an
+argument to display a list of instances from which to choose.
 
 Example
 ~~~~~~~~
