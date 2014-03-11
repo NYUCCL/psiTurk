@@ -565,9 +565,11 @@ class PsiturkNetworkShell(PsiturkShell):
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #  hit management
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
-    def amt_balance(self):
+    def do_amt_balance(self, arg):
         print self.amt_services.check_balance()
-
+    def help_amt_balance(self):
+        with open(self.helpPath + 'amt.txt', 'r') as helpText:
+            print helpText.read()
 
     def hit_list(self, allHits, activeHits, reviewableHits):
         hits_data = []
@@ -1321,27 +1323,6 @@ class PsiturkNetworkShell(PsiturkShell):
 
     def help_worker(self):
         with open(self.helpPath + 'worker.txt', 'r') as helpText:
-            print helpText.read()
-
-    @docopt_cmd
-    def do_amt(self, arg):
-        """
-        Usage:
-          amt balance
-          amt help
-        """
-        if arg['balance']:
-            self.amt_balance()
-        else:
-            self.help_amt()
-
-    amt_commands = ('balance', 'help')
-
-    def complete_amt(self, text, line, begidx, endidx):
-        return [i for i in PsiturkNetworkShell.amt_commands if i.startswith(text)]
-
-    def help_amt(self):
-        with open(self.helpPath + 'amt.txt', 'r') as helpText:
             print helpText.read()
 
     # modified version of standard cmd help which lists psiturk commands first

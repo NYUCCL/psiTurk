@@ -1,7 +1,4 @@
 Usage:
-  amt balance
-  amt help
+  amt_balance
 
-'amt' is used with the following subcommands:
-  balance     Display current Amazon Mechanical Turk or Worker Sandbox balance.
-  help	      Display this screen.
+Display current Amazon Mechanical Turk or Worker Sandbox balance.
