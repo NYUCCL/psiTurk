@@ -1,5 +1,5 @@
-``hit`` command
-===============
+``hit`` command + subcommands
+=============================
 
 .. contents::
 

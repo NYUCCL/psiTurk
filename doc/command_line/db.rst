@@ -1,5 +1,7 @@
-``db`` command
-===============
+``db`` command + subcommands
+============================
+
+.. contents::
 
 
 ``db get_config``

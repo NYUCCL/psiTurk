@@ -1,5 +1,5 @@
-``server`` command
-==================
+``server`` command + subcommands
+==================================
 
 .. contents::
 

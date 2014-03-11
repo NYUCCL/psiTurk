@@ -1,5 +1,5 @@
-``worker`` command
-==================
+``worker`` command + subcommands
+================================
 
 .. contents::
 
