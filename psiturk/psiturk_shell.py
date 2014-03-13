@@ -673,8 +673,13 @@ class PsiturkNetworkShell(PsiturkShell):
                              '  set the \'host\' variable in the \'Server Parameters\' section to something',
                              '  other than \'localhost\' or \'127.0.0.1\'. This will make your psiturk server',
                              '  process reachable by the external world.  Note: You will need to restart the ',
-                             '  server for your changes to take effect.'])
-            return
+                             '  server for your changes to take effect.',
+                             ''])
+
+            r = raw_input('\n'.join(['  If you are using an external server process, press `y` to continue.',
+                                     '  Otherwise, press `n` to cancel:']))
+            if r!='y':
+                return
 
         if not self.web_services.check_credentials():
             print '\n'.join(['*****************************',
@@ -695,12 +700,15 @@ class PsiturkNetworkShell(PsiturkShell):
 
         if self.server.is_server_running() != 'yes':
             print '\n'.join(['*****************************',
-                             '  Your server is currently not running but you are trying to create ',
+                             '  Your psiTurk server is currently not running but you are trying to create ',
                              '  an Ad/HIT.  This can cause problems for worker trying to access your ',
                              '  hit.  Please start the server by first typing \'server on\' then try this ',
-                             '  command again.'])
-            return
-
+                             '  command again.',
+                             ''])
+            r = raw_input('\n'.join(['  If you are using an external server process, press `y` to continue.',
+                                      '  Otherwise, press `n` to cancel:']))
+            if r!='y':
+                return
 
         interactive = False
         if numWorkers is None:
