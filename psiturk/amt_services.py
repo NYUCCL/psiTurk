@@ -87,7 +87,7 @@ class RDSServices:
                 print "Unable to establish connection to AWS."
                 print "While your keys may be valid, your AWS account needs a "
                 print "subscription to certain services.  If you haven't been asked"
-                print "to provide a credit card and verified your login phone the "
+                print "to provide a credit card and verified your account using your "
                 print "phone, it means your keys are not completely set up yet"
                 print "\n"
                 print "Please refer to "
