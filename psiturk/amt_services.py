@@ -79,7 +79,20 @@ class RDSServices:
                 print(e.error_message)
                 return False
             except AttributeError:
-                print "*** Unable to establish connection to AWS region %s using your accesskey/secrete key", self.region
+                print "*** Unable to establish connection to AWS region %s using your access key/secret key", self.region
+                return False
+            except boto.exception.BotoServerError:
+                print "***********************************************************"
+                print "WARNING"
+                print "Unable to establish connection to AWS."
+                print "While your keys may be valid, your AWS account needs a "
+                print "subscription to certain services.  If you haven't been asked"
+                print "to provide a credit card and verified your login phone the "
+                print "phone, it means your keys are not completely set up yet"
+                print "\n"
+                print "Please refer to "
+                print "\thttp://psiturk.readthedocs.org/en/latest/amt_setup.html"
+                print "***********************************************************"
                 return False
             else:
                 return True
