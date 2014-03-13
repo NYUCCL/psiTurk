@@ -667,38 +667,38 @@ class PsiturkNetworkShell(PsiturkShell):
 
         server_loc = str(self.config.get('Server Parameters', 'host'))
         if server_loc in ['localhost', '127.0.0.1']:
-            print '*****************************'
-            print '  Sorry, your server is set for local debugging only.  You cannot make public'
-            print '  HITs or Ads. Please edit the config.txt file inside your project folder and'
-            print '  set the \'host\' variable in the \'Server Parameters\' section to something'
-            print '  other than \'localhost\' or \'127.0.0.1\'. This will make your psiturk server'
-            print '  process reachable by the external world.  Note: You will need to restart the '
-            print '  server for your changes to take effect.'
+            print '\n'.join(['*****************************',
+                             '  Sorry, your server is set for local debugging only.  You cannot make public',
+                             '  HITs or Ads. Please edit the config.txt file inside your project folder and',
+                             '  set the \'host\' variable in the \'Server Parameters\' section to something',
+                             '  other than \'localhost\' or \'127.0.0.1\'. This will make your psiturk server',
+                             '  process reachable by the external world.  Note: You will need to restart the ',
+                             '  server for your changes to take effect.'])
             return
 
         if not self.web_services.check_credentials():
-            print '*****************************'
-            print '  Sorry, your psiTurk Credentials are invalid.\n '
-            print '  You cannot create ads and hits until you enter valid credentials in '
-            print '  the \'psiTurk Access\' section of ~/.psiturkconfig.  You can obtain your'
-            print '  credentials or sign up at https://www.psiturk.org/login.\n'
+            print '\n'.join(['*****************************',
+                            '  Sorry, your psiTurk Credentials are invalid.\n ',
+                            '  You cannot create ads and hits until you enter valid credentials in ',
+                            '  the \'psiTurk Access\' section of ~/.psiturkconfig.  You can obtain your',
+                            '  credentials or sign up at https://www.psiturk.org/login.\n'])
             return
 
 
         if not self.amt_services.verify_aws_login():
-            print '*****************************'
-            print '  Sorry, your AWS Credentials are invalid.\n '
-            print '  You cannot create ads and hits until you enter valid credentials in '
-            print '  the \'AWS Access\' section of ~/.psiturkconfig.  You can obtain your '
-            print '  credentials via the Amazon AMT requester website.\n'
+            print '\n'.join(['*****************************',
+                             '  Sorry, your AWS Credentials are invalid.\n ',
+                             '  You cannot create ads and hits until you enter valid credentials in ',
+                             '  the \'AWS Access\' section of ~/.psiturkconfig.  You can obtain your ',
+                             '  credentials via the Amazon AMT requester website.\n'])
             return
 
         if self.server.is_server_running() != 'yes':
-            print '*****************************'
-            print '  Your server is currently not running but you are trying to create '
-            print '  an Ad/HIT.  This can cause problems for worker trying to access your '
-            print '  hit.  Please start the server by first typing \'server on\' then try this '
-            print '  command again.'
+            print '\n'.join(['*****************************',
+                             '  Your server is currently not running but you are trying to create ',
+                             '  an Ad/HIT.  This can cause problems for worker trying to access your ',
+                             '  hit.  Please start the server by first typing \'server on\' then try this ',
+                             '  command again.'])
             return
 
 
@@ -737,16 +737,16 @@ class PsiturkNetworkShell(PsiturkShell):
         if os.path.exists('templates/ad.html'):
             ad_html = open('templates/ad.html').read()
         else:
-            print '*****************************'
-            print '  Sorry, there was an error registering ad.'
-            print '  Both ad.html is required to be in the templates/ folder of your project so that these Ad can be served!'
+            print '\n'.join(['*****************************',
+                             '  Sorry, there was an error registering ad.',
+                             '  Both ad.html is required to be in the templates/ folder of your project so that these Ad can be served!'])
             return
 
         size_of_ad = sys.getsizeof(ad_html)
         if size_of_ad >= 1048576:
-            print '*****************************'
-            print '  Sorry, there was an error registering ad.'
-            print '  Your local ad.html is %s byes, but the maximum template size uploadable to the Ad server is 1048576 bytes!', size_of_ad
+            print '\n'.join(['*****************************',
+                             '  Sorry, there was an error registering ad.',
+                             '  Your local ad.html is %s byes, but the maximum template size uploadable to the Ad server is 1048576 bytes!' % size_of_ad])
             return
 
 
@@ -800,8 +800,8 @@ class PsiturkNetworkShell(PsiturkShell):
             fail_msg = "  Unable to create Ad on http://ad.psiturk.org."
 
         if create_failed:
-            print '*****************************'
-            print '  Sorry, there was an error creating hit and registering ad.'
+            print '\n'.join(['*****************************',
+                             '  Sorry, there was an error creating hit and registering ad.'])
             if fail_msg:
                 print fail_msg
 
@@ -819,17 +819,17 @@ class PsiturkNetworkShell(PsiturkShell):
                 location = 'sandbox'
             else:
                 location = 'live'
-            print '*****************************'
-            print '  Creating %s HIT' % colorize(location, 'bold')
-            print '    HITid: ', str(hit_id)
-            print '    Max workers: ' + numWorkers
-            print '    Reward: $' + reward
-            print '    Duration: ' + duration + ' hours'
-            print '    Fee: $%.2f' % fee
-            print '    ________________________'
-            print '    Total: $%.2f' % total
-            print '  Ad for this HIT now hosted at: https://ad.psiturk.org/view/' + str(ad_id) + "?assignmentId=debug" + str(self.random_id_generator()) \
-                        + "&hitId=debug" + str(self.random_id_generator())
+            print '\n'.join(['*****************************',
+                             '  Creating %s HIT' % colorize(location, 'bold'),
+                             '    HITid: %s' % str(hit_id),
+                             '    Max workers: %s' % numWorkers,
+                             '    Reward: $%s' %reward,
+                             '    Duration: %s hours' % duration,
+                             '    Fee: $%.2f' % fee,
+                             '    ________________________',
+                             '    Total: $%.2f' % total])
+            print('  Ad for this HIT now hosted at: https://ad.psiturk.org/view/%s?assignmentId=debug%s&hitId=debug%s'
+                  % (str(ad_id), str(self.random_id_generator()), str(self.random_id_generator())))
 
 
 
@@ -1089,7 +1089,9 @@ class PsiturkNetworkShell(PsiturkShell):
                 if self.server.is_server_running()=='maybe' or self.server.is_server_running()=='yes':
                     self.do_restart_server('')
             else:
-                print "*** Error selecting database instance " + arg['<id>'] + ". Run `list_db_instances` for current status of instances, only `available` instances can be used.  Also your password may be incorrect."
+                print '\n'.join(["*** Error selecting database instance %s." % arg['<id>'],
+                                 "Run `db list_db_instances` for current status of instances, only `available`",
+                                 "instances can be used.  Also, your password may be incorrect."])
         else:
             return
 
@@ -1100,32 +1102,32 @@ class PsiturkNetworkShell(PsiturkShell):
             interactive = True
 
         if interactive:
-            print '*************************************************'
-            print 'Ok, here are the rules on creating instances:'
-            print ''
-            print 'instance id:'
-            print '  Each instance needs an identifier.  This is the name'
-            print '  of the virtual machine created for you on AWS.'
-            print '  Rules are 1-63 alphanumeric characters, first must'
-            print '  be a letter, must be unique to this AWS account.'
-            print ''
-            print 'size:'
-            print '  The maximum size of you database in GB.  Enter an'
-            print '  integer between 5-1024'
-            print ''
-            print 'master username:'
-            print '  The username you will use to connect.  Rules are'
-            print '  1-16 alphanumeric characters, first must be a letter,'
-            print '  cannot be a reserved MySQL word/phrase'
-            print ''
-            print 'master password:'
-            print '  Rules are 8-41 alphanumeric characters'
-            print ''
-            print 'database name:'
-            print '  The name for the first database on this instance.  Rules are'
-            print '  1-64 alphanumeric characters, cannot be a reserved MySQL word'
-            print '*************************************************'
-            print ''
+            print '\n'.join(['*************************************************',
+                             'Ok, here are the rules on creating instances:',
+                             '',
+                             'instance id:',
+                             '  Each instance needs an identifier.  This is the name',
+                             '  of the virtual machine created for you on AWS.',
+                             '  Rules are 1-63 alphanumeric characters, first must',
+                             '  be a letter, must be unique to this AWS account.',
+                             '',
+                             'size:',
+                             '  The maximum size of you database in GB.  Enter an',
+                             '  integer between 5-1024',
+                             '',
+                             'master username:',
+                             '  The username you will use to connect.  Rules are',
+                             '  1-16 alphanumeric characters, first must be a letter,',
+                             '  cannot be a reserved MySQL word/phrase',
+                             '',
+                             'master password:',
+                             '  Rules are 8-41 alphanumeric characters',
+                             '',
+                             'database name:',
+                             '  The name for the first database on this instance.  Rules are',
+                             '  1-64 alphanumeric characters, cannot be a reserved MySQL word',
+                             '*************************************************',
+                             ''])
 
         if interactive:
             valid = False
@@ -1211,22 +1213,22 @@ class PsiturkNetworkShell(PsiturkShell):
         }
         instance = self.db_services.create_db_instance(options)
         if not instance:
-            print '*****************************'
-            print '  Sorry, there was an error creating db instance.'
+            print '\n'.join(['*****************************',
+                             '  Sorry, there was an error creating db instance.'])
         else:
-            print '*****************************'
-            print '  Creating AWS RDS MySQL Instance'
-            print '    id: ', str(options['id'])
-            print '    size: ', str(options['size']), " GB"
-            print '    username: ', str(options['username'])
-            print '    password: ', str(options['password'])
-            print '    dbname: ',  str(options['dbname'])
-            print '    type: MySQL/db.t1.micro'
-            print '    ________________________'
-            print ' Be sure to store this information in a safe place.'
-            print ' Please wait 5-10 minutes while your database is created in the cloud.'
-            print ' You can run \'db aws_list_instances\' to verify it was created (status'
-            print ' will say \'available\' when it is ready'
+            print '\n'.join(['*****************************',
+                             '  Creating AWS RDS MySQL Instance',
+                             '    id: ', str(options['id']),
+                             '    size: ', str(options['size']), " GB",
+                             '    username: ', str(options['username']),
+                             '    password: ', str(options['password']),
+                             '    dbname: ',  str(options['dbname']),
+                             '    type: MySQL/db.t1.micro',
+                             '    ________________________',
+                             ' Be sure to store this information in a safe place.',
+                             ' Please wait 5-10 minutes while your database is created in the cloud.',
+                             ' You can run \'db aws_list_instances\' to verify it was created (status',
+                             ' will say \'available\' when it is ready'])
 
 
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
@@ -1254,13 +1256,13 @@ class PsiturkNetworkShell(PsiturkShell):
             self.config.set('HIT Configuration', 'using_sandbox', False)
             self.amt_services.set_sandbox(False)
             self.tally_hits()
-            print 'Entered ' + colorize('live', 'bold') + ' mode'
+            print 'Entered %s mode' % colorize('live', 'bold')
         else:
             self.sandbox = True
             self.config.set('HIT Configuration', 'using_sandbox', True)
             self.amt_services.set_sandbox(True)
             self.tally_hits()
-            print 'Entered ' + colorize('sandbox', 'bold') + ' mode'
+            print 'Entered %s mode' % colorize('sandbox', 'bold')
         if restartServer:
             self.server_restart()
     def help_mode(self):
