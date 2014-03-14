@@ -1,0 +1,65 @@
+exp.html
+===============
+
+This is the main "experiment".  It is where the experiment
+"begins" for the subject.
+
+**Important** this file MUST include the following code
+snippet
+
+::
+
+	<script src="static/lib/raphael-min.js" type="text/javascript"> </script>
+	<script src="static/lib/jquery-min.js" type="text/javascript"> </script>
+	<script src="static/lib/underscore-min.js" type="text/javascript"> </script>
+	<script src="static/lib/backbone-min.js" type="text/javascript"> </script>
+	
+	<script type="text/javascript">
+	// Subject info, including condition and counterbalance codes.
+	var uniqueId = "{{ uniqueId }}";
+	var condition = "{{ condition }}";
+	var counterbalance = "{{ counterbalance }}";
+	var adServerLoc = "{{ adServerLoc }}"
+	</script>
+			
+	<script src="static/js/psiturk.js" type="text/javascript"> </script>
+
+In the header of the file.  This sets up the necessary variables for
+communication with the **psiTurk** experiment server.
+
+Here is a default example experiment::
+
+	<!doctype html>
+
+	<html>
+		<head>
+			<title>Experiment</title>
+			<meta charset="utf-8">
+			<link rel="Favicon" href="static/favicon.ico" />
+			<script src="static/lib/raphael-min.js" type="text/javascript"> </script>
+			<script src="static/lib/jquery-min.js" type="text/javascript"> </script>
+			<script src="static/lib/underscore-min.js" type="text/javascript"> </script>
+			<script src="static/lib/backbone-min.js" type="text/javascript"> </script>
+			
+			<script type="text/javascript">
+			// Subject info, including condition and counterbalance codes.
+			var uniqueId = "{{ uniqueId }}";
+			var condition = "{{ condition }}";
+			var counterbalance = "{{ counterbalance }}";
+			var adServerLoc = "{{ adServerLoc }}"
+			</script>
+					
+			<script src="static/js/utils.js" type="text/javascript"> </script>
+			<script src="static/js/psiturk.js" type="text/javascript"> </script>
+			<script src="static/js/task.js" type="text/javascript"> </script>
+			<link rel=stylesheet href="static/css/task.css" type="text/css" media="screen">
+		</head>
+	<body>
+		<noscript>
+			<h1>Warning: Javascript seems to be disabled</h1>
+			<p>This website requires that Javascript be enabled on your browser.</p>
+			<p>Instructions for enabling Javascript in your browser can be found 
+			<a href="http://support.google.com/bin/answer.py?hl=en&answer=23852">here</a><p>
+		</noscript>
+	</body>
+	</html>
