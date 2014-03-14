@@ -53,7 +53,7 @@ class PsiturkConfig(SafeConfigParser):
         else:
             self.localParser.set(section, field, str(value), *args, **kwargs)
         self.write(changeGlobal)
-        if section in ["Server Parameters","Task Parameters"]:
+        if section in ["Server Parameters","Task Parameters","Database Parameters"]:
             return True
         else:
             return False
