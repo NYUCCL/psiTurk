@@ -1,5 +1,8 @@
 <img src="https://www.psiturk.org/static/images/psiturk_logo.jpg">
 
+[![Build Status](https://travis-ci.org/NYUCCL/psiTurk.png?branch=dev)](https://travis-ci.org/NYUCCL/psiTurk)
+[![Downloads](https://pypip.in/d/psiturk/badge.png)](https://pypi.python.org/pypi/psiturk/)
+[![Latest Version](https://pypip.in/v/psiturk/badge.png)](https://pypi.python.org/pypi/psiturk/)
 
 Please visit [psiturk.org](https://psiturk.org) for more information.
 
