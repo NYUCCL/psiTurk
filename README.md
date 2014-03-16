@@ -1,3 +1,8 @@
+[![Build Status](https://travis-ci.org/NYUCCL/psiTurk.png)](https://travis-ci.org/NYUCCL/psiTurk)
+[![Coverage Status](https://coveralls.io/repos/NYUCCL/psiTurk/badge.png)](https://coveralls.io/r/NYUCCL/psiTurk)
+[![Downloads](https://pypip.in/d/PsiTurk/badge.png)](https://pypi.python.org/pypi/PsiTurk/) 
+
+
 What is this?
 ============
 
