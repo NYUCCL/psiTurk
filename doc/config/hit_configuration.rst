@@ -45,11 +45,15 @@ informative is helpful.
 
 `lifetime` [integer]
 ------------------
-The `lifetime` how long a worker can "hold on" to your
-HIT for.  Sometimes workers will "accept" a HIT which is worth
-a lot of money but come back and do the work later in the day.
-The lifetime sets a limit on the length of time a worker
-can hold onto an assignment.  
+The `lifetime` is how long your HIT remains visible to workers (in
+hours). After the lifetime of the HIT elapses, the HIT no longer
+appears in HIT searches, even if not all of the assignments for the
+HIT have been accepted.
+
+This is in contrast to the HIT `duration`, which specifies how long
+workers have to complete your task, and which you provide at HIT
+creation time. See the documentation on `hit create <../command_line/hit.html#hit-create>`__ for more details.
+
 
 `us_only` [true | false]
 ----------------------
