@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/NYUCCL/psiTurk.png)](https://travis-ci.org/NYUCCL/psiTurk)
-[![Coverage Status](https://coveralls.io/repos/NYUCCL/psiTurk/badge.png)](https://coveralls.io/r/NYUCCL/psiTurk)
+[![Coverage Status](http://coveralls.io/repos/NYUCCL/psiTurk/badge.png?branch=master)](http://coveralls.io/r/NYUCCL/psiTurk?branch=master)
 [![Downloads](https://pypip.in/d/PsiTurk/badge.png)](https://pypi.python.org/pypi/PsiTurk/) 
 
 
