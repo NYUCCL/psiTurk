@@ -1,7 +1,7 @@
 <img src="https://www.psiturk.org/static/images/psiturk_logo.jpg">
 
 [![Build Status](https://travis-ci.org/NYUCCL/psiTurk.png?branch=dev)](https://travis-ci.org/NYUCCL/psiTurk)
-[![Coverage Status](https://coveralls.io/repos/NYUCCL/psiTurk/badge.png?branch=dev)](https://coveralls.io/r/NYUCCL/psiTurk?branch=dev)
+[![Coverage Status](http://coveralls.io/repos/NYUCCL/psiTurk/badge.png?branch=dev)](http://coveralls.io/r/NYUCCL/psiTurk?branch=dev)
 [![Downloads](https://pypip.in/d/PsiTurk/badge.png)](https://pypi.python.org/pypi/PsiTurk/)
 
 Please visit [psiturk.org](https://psiturk.org) for more information.
