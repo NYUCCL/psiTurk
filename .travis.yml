@@ -9,9 +9,9 @@ branches:
 install:
   - pip install -r requirements.txt
   - pip install coveralls
-after_script: 
-  - psiturk-setup-example
 script:
-  coverage run --source=psiturk setup.py test
+  - python setup.py install
+  - psiturk-setup-example
+  - coverage run --source=psiturk setup.py test
 after_success:
   coveralls
