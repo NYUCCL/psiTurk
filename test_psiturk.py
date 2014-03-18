@@ -24,8 +24,6 @@ class PsiTurkTestCase(unittest.TestCase):
 
     def setUp(self):
         '''Build up fixtures'''
-        # initialize_psiturk = sh.Command('psiturk-setup-example')  # Initialize psiTurk
-        # initialize_psiturk()
         os.chdir('psiturk-example')
         import psiturk.db
         import psiturk.experiment
@@ -58,7 +56,6 @@ class PsiTurkTestCase(unittest.TestCase):
         '''Tear down fixtures'''
         os.close(self.db_fd)
         os.chdir('..')
-        shutil.rmtree('psiturk-example')
         os.unlink(psiturk.experiment.app.config['DATABASE'])
 
 
