@@ -25,6 +25,7 @@ User's Guide
    amt_setup
    psiturk_org_setup
    secure_ad_server
+   experiment_exchange
    quickstart
    configuration
    command_line_overview
