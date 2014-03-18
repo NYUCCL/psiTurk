@@ -6,12 +6,6 @@ branches:
   only:
     - master
     - dev
-notifications:
-  email:
-    recipients:
-      - authors@psiturk.org
-    on_success: change
-    on_failure: always
 install:
   - pip install -r requirements.txt
   - pip install coveralls
