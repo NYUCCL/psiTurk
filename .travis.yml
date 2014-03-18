@@ -11,12 +11,12 @@ notifications:
   on_success: change
   on_failure: always
 install:
-  - pip install -r requirements.txt --use-mirrors 
-  - pip install coverage coveralls --use-mirrors
+  - pip install -r requirements.txt 
+  - pip install coverage coveralls
 script:
   - python setup.py install
   - psiturk-setup-example
   - coverage run --source=psiturk setup.py test
-  - coverage report -m
+  - coverage report
 after_success:
-  coveralls --verbose
+  - coveralls --verbose
