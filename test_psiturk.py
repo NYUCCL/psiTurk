@@ -24,8 +24,8 @@ class PsiTurkTestCase(unittest.TestCase):
 
     def setUp(self):
         '''Build up fixtures'''
-        initialize_psiturk = sh.Command('psiturk-setup-example')  # Initialize psiTurk
-        initialize_psiturk()
+        # initialize_psiturk = sh.Command('psiturk-setup-example')  # Initialize psiTurk
+        # initialize_psiturk()
         os.chdir('psiturk-example')
         import psiturk.db
         import psiturk.experiment
