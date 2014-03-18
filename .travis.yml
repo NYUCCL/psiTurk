@@ -15,7 +15,7 @@ notifications:
 install:
   - pip install -r requirements.txt
   - pip install coveralls
-before_script: 
+after_script: 
   - psiturk-setup-example
 script:
   coverage run --source=psiturk setup.py test
