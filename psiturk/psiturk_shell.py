@@ -25,31 +25,37 @@ import experiment_server_controller as control
 from db import db_session, init_db
 from models import Participant
 
-# Escape sequences for display.
-def colorize(target, color):
-    colored = ''
+#  colorize target string. Set useEscape to false when text will not be 
+# interpreted by readline, such as in intro message.
+def colorize(target, color, useEscape=True):
+    def escape(code):
+        return '\001%s\002' % code
     if color == 'purple':
-        colored = '\001\033[95m\002' + target
+        colorCode = '\033[95m'
     elif color == 'cyan':
-        colored = '\001\033[96m\002' + target
+        colorCode = '\033[96m'
     elif color == 'darkcyan':
-        colored = '\001\033[36m\002' + target
+        colorCode = '\033[36m'
     elif color == 'blue':
-        colored = '\001\033[93m\002' + target
+        colorCode = '\033[93m'
     elif color == 'green':
-        colored = '\001\033[92m\002' + target
+        colorCode = '\033[92m'
     elif color == 'yellow':
-        colored = '\001\033[93m\002' + target
+        colorCode = '\033[93m'
     elif color == 'red':
-        colored = '\001\033[91m\002' + target
+        colorCode = '\033[91m'
     elif color == 'white':
-        colored = '\001\033[37m\002' + target
+        colorCode = '\033[37m'
     elif color == 'bold':
-        colored = '\001\033[1m\002' + target
+        colorCode = '\033[1m'
     elif color == 'underline':
-        colored = '\001\033[4m\002' + target
-    return colored + '\001\033[0m\002'
-
+        colorCode = '\033[4m'
+    else:
+        colorCode = ''
+    if useEscape:
+        return escape(colorCode) + target + escape('\033[0m')
+    else:
+        return colorCode + target + '\033[m'
 
 # Decorator function borrowed from docopt.
 def docopt_cmd(func):
@@ -127,7 +133,7 @@ class PsiturkShell(Cmd, object):
         sysStatus = open(self.helpPath + 'cabin.txt', 'r')
         server_msg = sysStatus.read()
         return server_msg + colorize('psiTurk version ' + version_number +
-                              '\nType "help" for more information.', 'green')
+                                     '\nType "help" for more information.', 'green', False)
 
     def do_psiturk_status(self, args):
         print self.get_intro_prompt()
@@ -439,7 +445,7 @@ class PsiturkNetworkShell(PsiturkShell):
         # message
         server_msg = self.web_services.get_system_status()
         return server_msg + colorize('psiTurk version ' + version_number +
-                              '\nType "help" for more information.', 'green')
+                                     '\nType "help" for more information.', 'green', False)
 
     def color_prompt(self):  # overloads prompt with network info
         prompt = '[' + colorize('psiTurk', 'bold')
@@ -1399,7 +1405,7 @@ def run(cabinmode=False, script=None):
                                    'of problems for the psiTurk shell. We highly recommend installing',
                                    'the gnu version of readline by running "sudo easy_install -a readline".',
                                    'Note: "pip install readline" will NOT work because of how the OSX',
-                                   'pythonpath is structured.']), 'red')
+                                   'pythonpath is structured.']), 'red', False)
     sys.argv = [sys.argv[0]] # drop arguments which were already processed in command_line.py
     #opt = docopt(__doc__, sys.argv[1:])
     config = PsiturkConfig()
