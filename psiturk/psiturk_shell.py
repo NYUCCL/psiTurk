@@ -25,37 +25,37 @@ import experiment_server_controller as control
 from db import db_session, init_db
 from models import Participant
 
-#  colorize target string. Set useEscape to false when text will not be 
+#  colorize target string. Set use_escape to false when text will not be
 # interpreted by readline, such as in intro message.
-def colorize(target, color, useEscape=True):
+def colorize(target, color, use_escape=True):
     def escape(code):
         return '\001%s\002' % code
     if color == 'purple':
-        colorCode = '\033[95m'
+        color_code = '\033[95m'
     elif color == 'cyan':
-        colorCode = '\033[96m'
+        color_code = '\033[96m'
     elif color == 'darkcyan':
-        colorCode = '\033[36m'
+        color_code = '\033[36m'
     elif color == 'blue':
-        colorCode = '\033[93m'
+        color_code = '\033[93m'
     elif color == 'green':
-        colorCode = '\033[92m'
+        color_code = '\033[92m'
     elif color == 'yellow':
-        colorCode = '\033[93m'
+        color_code = '\033[93m'
     elif color == 'red':
-        colorCode = '\033[91m'
+        color_code = '\033[91m'
     elif color == 'white':
-        colorCode = '\033[37m'
+        color_code = '\033[37m'
     elif color == 'bold':
-        colorCode = '\033[1m'
+        color_code = '\033[1m'
     elif color == 'underline':
-        colorCode = '\033[4m'
+        color_code = '\033[4m'
     else:
-        colorCode = ''
-    if useEscape:
-        return escape(colorCode) + target + escape('\033[0m')
+        color_code = ''
+    if use_escape:
+        return escape(color_code) + target + escape('\033[0m')
     else:
-        return colorCode + target + '\033[m'
+        return color_code + target + '\033[m'
 
 # Decorator function borrowed from docopt.
 def docopt_cmd(func):
