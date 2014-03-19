@@ -1,21 +1,16 @@
 language: python
 python:
-  - 2.7
-# whitelist
+  - "2.7"
 branches:
   only:
-    - master
     - dev
-notifications:
-  email:
-    recipients:
-      - authors@psiturk.org
-    on_success: change
-    on_failure: always
 install:
-  - pip install -r requirements.txt
+  - pip install -r requirements.txt 
+  - pip install coverage
   - pip install coveralls
 script:
-  coverage run --source=psiturk setup.py test
-after_success:
-  coveralls 
+  - python setup.py install
+  - psiturk-setup-example
+  - coverage run --source=psiturk setup.py test
+  - coverage report
+after_success: coveralls
