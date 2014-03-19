@@ -53,10 +53,26 @@ class Participant(Base):
     
     def get_trial_data(self):
         try:
-            return(json.loads(self.datastring)["data"])
+            trialdata = json.loads(self.datastring)["data"]
         except:
             # There was no data to return.
             print("No trial data found in record:", self)
+            return("")
+
+        try:
+            ret = []
+            with io.BytesIO() as outstring:
+                csvwriter = csv.writer(outstring)
+                for trial in trialdata:
+                    csvwriter.writerow((
+                        self.uniqueid,
+                        trial["current_trial"],
+                        trial["dateTime"],
+                        json.dumps(trial["trialdata"])))
+                ret = outstring.getvalue()
+            return ret
+        except:
+            print("Error reading record:", self)
             return("")
     
     def get_event_data(self):
