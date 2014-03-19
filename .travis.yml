@@ -4,6 +4,7 @@ python:
 branches:
   only:
     - dev
+    - master
 install:
   - pip install -r requirements.txt 
   - pip install coverage
