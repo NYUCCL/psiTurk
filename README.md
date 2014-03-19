@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/NYUCCL/psiTurk.png?branch=dev)](https://travis-ci.org/NYUCCL/psiTurk)
 [![Coverage Status](http://coveralls.io/repos/NYUCCL/psiTurk/badge.png?branch=dev)](http://coveralls.io/r/NYUCCL/psiTurk?branch=dev)
+[![Code Health](https://landscape.io/github/NYUCCL/psiTurk/dev/landscape.png)](https://landscape.io/github/NYUCCL/psiTurk/dev)
 [![Downloads](https://pypip.in/d/PsiTurk/badge.png)](https://pypi.python.org/pypi/PsiTurk/)
 
 Please visit [psiturk.org](https://psiturk.org) for more information.
