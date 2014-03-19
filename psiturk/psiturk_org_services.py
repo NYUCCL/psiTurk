@@ -4,6 +4,7 @@ import json
 import datetime
 import requests
 from flask import jsonify
+from version import version_number
 
 class PsiturkOrgServices:
     """
@@ -50,7 +51,7 @@ class PsiturkOrgServices:
             get_system_status:
         """
         try:
-            api_server_status_link = self.apiServer + '/status_msg'
+            api_server_status_link = self.apiServer + '/status_msg?version=' + version_number
             response=urllib2.urlopen(api_server_status_link,timeout=1)
             status_msg = json.load(response)['status']
         except:
