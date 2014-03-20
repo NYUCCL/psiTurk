@@ -33,6 +33,7 @@ User's Guide
    step_by_step
    anatomy_of_project
    recording
+   retrieving
    customizing
    faq
    getting_help

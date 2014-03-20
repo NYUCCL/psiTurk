@@ -22,10 +22,9 @@ add a line of data to the log, use ``psiturk.recordTrialData``:
     psiturk.recordTrialData(['this', 'is', 1, 'line'])
 
 The list of values that you supply to ``recordTrialData`` will then be
-appended to the log. It is up to you how to structure those lists; when
-you are ready to analyze the data, the log will be provided as a CSV
-file that you will then have to parse as part of your analysis. You can
-export the CSV file using the [[Dashboard]]'s export data function.
+appended to the log. It is up to you how to structure those lists; you
+will have to parse them as part of your analysis.
+
 
 Recording unstructured data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -41,9 +40,7 @@ which you can use ``psiturk.recordUnstructuredData``:
 
 Like the trial-by-trial data, it is up to you to decide whether or not
 to use this function. For some kinds of experiments (like simple
-surveys), this might be the only function you need. Whatever data is
-added using ``psiturk.recordUnstructuredData`` can then be downloaded as
-a separate CSV file.
+surveys), this might be the only function you need.
 
 Saving the data
 ~~~~~~~~~~~~~~~
@@ -74,5 +71,6 @@ worker is interacting with the page. Currently, this includes:
    window, a "focus off" event is recorded; when they return a "focus
    on" event is recorded.
 
-Retrieving datasets
-~~~~~~~~~~~~~~~~~~~
+.. note::
+   Information about how to retrieve recorded data sets can be found
+   `here <./retrieving.html>`__.

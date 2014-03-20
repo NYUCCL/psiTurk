@@ -52,3 +52,7 @@ column 1          column 2      column 3    column 4
 ===============   ===========   ==========  ===========
 unique user ID    trial #       time        trial data
 ===============   ===========   ==========  ===========
+
+.. note::
+   More information about how to record different types of data in an
+   experiment can be found `<here <../recording.html>`__.
