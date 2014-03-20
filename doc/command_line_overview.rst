@@ -14,6 +14,7 @@ own experiment servers.
    command_line/amt_balance.rst
    command_line/db.rst
    command_line/debug.rst
+   command_line/download_datafiles.rst
    command_line/help.rst
    command_line/hit.rst
    command_line/psiturk_status.rst
