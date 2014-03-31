@@ -17,7 +17,6 @@ so be sure to review the documentation for those.
    :maxdepth: 2
 
    ad_html
-   closepopup_html
    complete_html
    consent_html
    custom_html
@@ -25,9 +24,8 @@ so be sure to review the documentation for those.
    default_html
    error_html
    exp_html
-   instruct_html
+   instructions_folder
    list_html
    postquestionnaire_html
-   test_html
-   thanks_html
+   stage_html
 

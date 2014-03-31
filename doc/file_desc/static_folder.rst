@@ -23,6 +23,7 @@ In addition, there are typically four sub-directories:
    static_css_folder
    static_js_folder
    static_lib_folder
+   static_fonts_folder
 
 
 
