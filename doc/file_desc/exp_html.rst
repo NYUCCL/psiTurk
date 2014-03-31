@@ -27,6 +27,10 @@ snippet
 In the header of the file.  This sets up the necessary variables for
 communication with the **psiTurk** experiment server.
 
+The last function that should be called in this file is
+`psiturk.completeHIT() <../api.html#psiturk-completehit>`__
+which will finalize the task.
+
 Here is a default example experiment::
 
 	<!doctype html>

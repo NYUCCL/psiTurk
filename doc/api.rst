@@ -8,12 +8,17 @@ Creating the **psiTurk** object
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To use the **psiTurk** library, a ``psiturk`` object must be created at
-the beginning of your experiment.
+the beginning of your experiment.  It takes two key arguments ``uniqueId``
+and ``adServerLoc``.  These two variables are first created in 
+`exp.html <file_desc/exp_html.html>`.  They tell **psiTurk** which unique
+number/code corresponds to the current participant (allowing updating
+of data as the task progresses) and the location of the `ad <secure_ad_server.html>`__
+where users should be sent when the task is complete.
 
 .. code-block:: javascript
 
     // Create the psiturk object
-    var psiturk = PsiTurk();
+    var psiTurk = PsiTurk(uniqueId, adServerLoc);
 
     // Add some data and save
     psiturk.addUnstructuredData('age', 24)
@@ -56,8 +61,8 @@ useful for debugging. For example:
 
 .. code-block:: javascript
 
-    psiturk.taskdata.set('condition', 2)
-    psiturk.taskdata.get('condition')
+    psiturk.taskdata.set('condition', 2);
+    psiturk.taskdata.get('condition');
 
 
 ``psiturk.preloadPages(pagelist)``
@@ -72,10 +77,10 @@ Example:
 .. code-block:: javascript
 
     // Preload a set of HTML files
-    psiturk.preLoadPages(['instructions.html', 'block1.html', 'block2.html'])
+    psiturk.preLoadPages(['instructions.html', 'block1.html', 'block2.html']);
 
     // Set the content of the body tag to one of the pages
-    $('body').html(psiturk.getPage('block1.html'))
+    $('body').html(psiturk.getPage('block1.html'));
 
 
 ``psiturk.getPage(pagename)``
@@ -115,8 +120,8 @@ Example:
 .. code-block:: javascript
 
     // data comprised of some list of variables of varying types
-    data = ['output', condition, trialnumber, response, rt]
-    psiturk.recordTrialData(data)
+    data = ['output', condition, trialnumber, response, rt];
+    psiturk.recordTrialData(data);
 
 
 ``psiturk.recordUnstructuredData(field, value)``
@@ -129,7 +134,7 @@ Example:
 
 .. code-block:: javascript
 
-    psiturk.recordUnstructuredData('age', 24)
+    psiturk.recordUnstructuredData('age', 24);
 
 
 ``psiturk.savedata([callbacks])``
@@ -152,6 +157,87 @@ success or failure of the saving.
     });
 
 
+
+``psiturk.completeHIT()``
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This finishes the task by passing control of the experiment back
+to the `Secure Ad Server <secure_ad_server.html>`.  When in
+``debug`` mode this just cleans up the task.  When running live
+on the sandbox or live site this passes control of the browser
+back to the Ad Server so that the subject can be marked as complete
+and the user's browser will correctly finish the HIT on Amazon's
+site.
+
+
+
+``psiturk.doInstructions(pages, callback)``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**psiTurk** includes a basic method for showing a sequence of
+instructions.  You are always free to write your own instructions
+code (and may need to).  However, this provides a basic template
+for a pretty simple typical type of instructions composed of
+a sequence of multiple pages of text and graphics along with
+a "next" and (optionally) "previous" button.
+
+The ``doInstructions()`` method takes two arguments.
+The first is a list of HTML pages that you would like
+to display.  These should appear in the order you would
+like them to be displayed to participants.  The instructions
+method uses the `showPage() <api.html#psiturk-showpage-pagename>`__
+method to display the HTML of the page.
+
+Prior to calling ``doInstructions()`` all the instruction
+pages you plan to display should be preloaded using
+the `preloadPages() <api.html#psiturk-preloadpages-pagelist>`__
+method.
+
+Within each HTML page there should be a button or other HTML
+element with class equal to ``continue`` which the user
+can click to move to the next screen.
+
+
+An `Bootstrap <http://getbootstrap.com>`__ example is::
+
+    <button type="button" id="next" value="next" class="btn btn-primary btn-lg continue">
+        Next <span class="glyphicon glyphicon-arrow-right"></span>
+    </button>
+
+In addition, if the HTML document includes an element
+with class ``previous`` it will, when clicked, go to the previous
+page.  As a result you should not include a previous button on the
+first HTML page.
+
+An example previous button using `Bootstrap <http://getbootstrap.com>`__ is:
+
+    <button type="button" id="next" value="next" class="btn btn-primary btn-lg previous">
+        <span class="glyphicon glyphicon-arrow-left"></span> Previous
+    </button>
+
+The final argument to the instructions object is the method to be called
+when the "continue" button on the last page of the instructions is called.
+
+Example
+
+.. code-block:: javascript
+
+    psiturk = new PsiTurk(uniqueId, adServerLoc);
+    var pages = [
+        "instructions/instruct-1.html",
+        "instructions/instruct-2.html",
+        "instructions/instruct-3.html"];
+    psiTurk.preloadPages(pages); // preload the pages
+    var instructionPages = [ // any file here should be preloaded first
+        "instructions/instruct-1.html",
+        "instructions/instruct-2.html",
+        "instructions/instruct-3.html"]; // however, you can have as many as you like
+    psiturk.doInstructions(instructionPages, 
+                            function() { currentview = new StroopExperiment(); });
+
+The last line in this example uses an anonymous function
+to launch the `Stroop Experiment <stroop.html>`__.
+
+
 ``psiturk.finishInstructions()``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -159,21 +245,18 @@ success or failure of the saving.
 to ``2`` in the database, indicating that they have begun the actual
 task.
 
-In addition, this adds a ``beforeunload`` handler such that if people
+In addition, this removes the ``beforeunload`` handler such that if people
 attempt to close (or reload) the page, they will get an alert asking
 them to confirm that they want to leave the experiment.
+
+You do not have to use ``doInstructions()`` in order to call
+``finishInstructions()``.  In the example above you would
+want to call ``psiturk.finishInstructions()`` in the ``StroopExperiment()`` class.
 
 Example
 
 .. code-block:: javascript
 
-    psiturk = new PsiTurk()
+    psiturk = new PsiTurk(uniqueId, adServerLoc);
     ...
-    psiturk.finishInstructions()
-
-
-``psiturk.teardownTask()``
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Removes the ``beforeunload`` handler that is set using
-``psiturk.finishInstructions``.
+    psiturk.finishInstructions();
