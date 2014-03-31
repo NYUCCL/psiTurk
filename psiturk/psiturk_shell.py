@@ -678,8 +678,8 @@ class PsiturkNetworkShell(PsiturkShell):
                              '  HITs or Ads. Please edit the config.txt file inside your project folder and',
                              '  set the \'host\' variable in the \'Server Parameters\' section to something',
                              '  other than \'localhost\' or \'127.0.0.1\'. This will make your psiturk server',
-                             '  process reachable by the external world.  Note: You will need to restart the ',
-                             '  server for your changes to take effect.',
+                             '  process reachable by the external world.  The most useful option is \'0.0.0.0\'',
+                             '  Note: You will need to restart the server for your changes to take effect.',
                              ''])
 
             r = raw_input('\n'.join(['  If you are using an external server process, press `y` to continue.',
