@@ -5,32 +5,39 @@
  */
 
 // Initalize psiturk object
-var psiTurk = PsiTurk();
+var psiTurk = PsiTurk(uniqueId, adServerLoc);
 
 // All pages to be loaded
 var pages = [
+	"instructions/instruct-1.html",
+	"instructions/instruct-2.html",
+	"instructions/instruct-3.html",
+	"instructions/instruct-ready.html",
 	"instruct.html",
-	"test.html",
+	"stage.html",
 	"postquestionnaire.html"
 ];
 
 psiTurk.preloadPages(pages);
 
 var instructionPages = [ // add as a list as many pages as you like
-	"instruct.html"
+	"instructions/instruct-1.html",
+	"instructions/instruct-2.html",
+	"instructions/instruct-3.html",
+	"instructions/instruct-ready.html"
 ];
 
 // Stimuli for a basic Stroop experiment
 var stims = [
-	["SHIP", "red", "unrelated"],
-	["MONKEY", "green", "unrelated"],
-	["ZAMBONI", "blue", "unrelated"],
-	["RED", "red", "congruent"],
-	["GREEN", "green", "congruent"],
-	["BLUE", "blue", "congruent"],
-	["GREEN", "red", "incongruent"],
-	["BLUE", "green", "incongruent"],
-	["RED", "blue", "incongruent"]
+		["SHIP", "red", "unrelated"],
+		["MONKEY", "green", "unrelated"],
+		["ZAMBONI", "blue", "unrelated"],
+		["RED", "red", "congruent"],
+		["GREEN", "green", "congruent"],
+		["BLUE", "blue", "congruent"],
+		["GREEN", "red", "incongruent"],
+		["BLUE", "green", "incongruent"],
+		["RED", "blue", "incongruent"]
 	];
 _.shuffle(stims);
 
@@ -51,11 +58,11 @@ var currentview;
 /********************
 * STROOP TEST       *
 ********************/
-var TestPhase = function() {
+var StroopExperiment = function() {
 
 	var wordon, // time word is presented
 	    listening = false,
-	    resp_prompt = '<p id="prompt">Type<br> "R" for Red<br>"B" for blue<br>"G" for green.';
+	    resp_prompt = '<p id="prompt">Type "R" for Red, "B" for blue, "G" for green.</p>';
 	
 	var next = function() {
 		if (stims.length===0) {
@@ -99,16 +106,13 @@ var TestPhase = function() {
 			var rt = new Date().getTime() - wordon;
 
 			psiTurk.recordTrialData({'phase':"TEST",
-                                                 'word':stim[0],
-                                                 'color':stim[1],
-                                                 'relation':stim[2],
-                                                 'response':response,
-                                                 'hit':hit,
-                                                 'rt':rt}
-                                               );
-// ["TEST", stim[0], stim[1], stim[2],
-//                                                  response, hit, rt]);
-
+                                     'word':stim[0],
+                                     'color':stim[1],
+                                     'relation':stim[2],
+                                     'response':response,
+                                     'hit':hit,
+                                     'rt':rt}
+                                   );
 
 			
 			remove_word();
@@ -122,20 +126,31 @@ var TestPhase = function() {
 	};
 	
 	
-	// Load the test.html snippet into the body of the page
-	psiTurk.showPage('test.html');
+	// Load the stage.html snippet into the body of the page
+	psiTurk.showPage('stage.html');
 	
 	// This uses the Raphael library to create the stimulus. Note that when
 	// this is created the first argument is the id of an element in the
 	// HTML page (a div with id 'stim')
+	/*
 	var R = Raphael("stim", 500, 200),
 		font = "100px Helvetica";
-	
+	*/
+
 	var show_word = function(text, color) {
-		R.text( 250, 100, text ).attr({font: font, fill: color});
+		d3.select("#stim")
+			.append("div")
+			.attr("id","word")
+			.style("color",color)
+			.style("text-align","center")
+			.style("font-size","150px")
+			.style("font-weight","400")
+			.style("margin","20px")
+			.text(text);
 	};
 	var remove_word = function(text, color) {
-		R.clear();
+		//R.clear();
+		d3.select("#word").remove();
 	};
 
 	// Register the response handler that is defined above to handle any
@@ -167,11 +182,7 @@ var Questionnaire = function() {
 		});
 
 	};
-	
-	finish = function() {
-		completeHIT();
-	};
-	
+
 	prompt_resubmit = function() {
 		replaceBody(error_message);
 		$("#resubmit").click(resubmit);
@@ -194,24 +205,17 @@ var Questionnaire = function() {
 	psiTurk.showPage('postquestionnaire.html');
 	psiTurk.recordTrialData({'phase':'postquestionnaire', 'status':'begin'});
 	
-	$("#continue").click(function () {
+	$("#next").click(function () {
 	    record_responses();
-	    psiTurk.teardownTask();
-    	    psiTurk.saveData({
-                success: function(){
-                    psiTurk.computeBonus('compute_bonus', function(){finish()}); 
-                }, 
-                error: prompt_resubmit});
+	    psiTurk.saveData({
+            success: function(){
+                psiTurk.computeBonus('compute_bonus', function() { psiTurk.completeHIT(); }); // when finished saving quit
+            }, 
+            error: prompt_resubmit});
 	});
     
 	
 };
-
-
-var completeHIT = function() {
-	// save data one last time here?
-	window.location= adServerLoc + "?uniqueId=" + psiTurk.taskdata.id;
-}
 
 
 /*******************
@@ -220,7 +224,7 @@ var completeHIT = function() {
 $(window).load( function(){
     psiTurk.doInstructions(
     	instructionPages, // a list of pages you want to display in sequence
-    	function() { currentview = new TestPhase(); } // what you want to do when you are done with instructions
+    	function() { currentview = new StroopExperiment(); } // what you want to do when you are done with instructions
     );
 });
 

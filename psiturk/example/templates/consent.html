@@ -1,69 +1,59 @@
 <!doctype html>
+<!-- 
+  The consent.html displays the text of your IRB-approved
+  consent form.  Even if you are not required to provide
+  a consent form, it is helpful to use this form to 
+  describe what people can do if an error comes up, etc...
 
+-->
 <html>
     <head>
-      <title>Consent Form</title>
-      <script src="static/jquery-min.js" type="text/lib/javascript"> </script>
-      <script src="static/cardtask.js" type="text/js/javascript"> </script>
-      <link rel=stylesheet href="static/css/task.css" type="text/css" media="screen">
-      <script type="text/javascript">
-          function onexit() {
-            self.close()
-          }
-      </script>
+        <title>Psychology Experiment - Informed Consent Form</title>
+        <link rel=stylesheet href="static/css/bootstrap.min.css" type="text/css">
+        <link rel=stylesheet href="static/css/style.css" type="text/css">
+        <script type="text/javascript">
+            function onexit() {
+              self.close(); // no harm, no foul here
+            }
+        </script>
     </head>
     <body>
-      <div class="instruct" id="main">
-          <h1>Consent title.</h1>
-            <p class="warm">Hello there! Thank you for taking the time to
-            participate in this experiment. Below is a consent form that
-            describes the nature of the experiment, what to expect, and how you
-            will be measured. Please take the time to read this over before
-            deciding to participate in this experiment.</p>
-          <div class="legal">
-            <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed
-            diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam
-            erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci
-            tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo
-            consequat. Duis autem vel eum iriure dolor in hendrerit in
-            vulputate velit esse molestie consequat, vel illum dolore eu
-            feugiat nulla facilisis at vero eros et accumsan et iusto odio
-            dignissim qui blandit praesent luptatum zzril delenit augue duis
-            dolore te feugait nulla facilisi. Nam liber tempor cum soluta nobis
-            eleifend option congue nihil imperdiet doming id quod mazim
-            placerat facer possim assum. Typi non habent claritatem insitam;
-            est usus legentis in iis qui facit eorum claritatem.
-            Investigationes demonstraverunt lectores legere me lius quod ii
-            legunt saepius. Claritas est etiam processus dynamicus, qui
-            sequitur mutationem consuetudium lectorum. Mirum est notare quam
-            littera gothica, quam nunc putamus parum claram, anteposuerit
-            litterarum formas humanitatis per seacula quarta decima et quinta
-            decima. Eodem modo typi, qui nunc nobis videntur parum clari, fiant
-            sollemnes in futurum.</p>
-            <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed
-            diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam
-            erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci
-            tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo
-            consequat. Duis autem vel eum iriure dolor in hendrerit in
-            vulputate velit esse molestie consequat, vel illum dolore eu
-            feugiat nulla facilisis at vero eros et accumsan et iusto odio
-            dignissim qui blandit praesent luptatum zzril delenit augue duis
-            dolore te feugait nulla facilisi. Nam liber tempor cum soluta nobis
-            eleifend option congue nihil imperdiet doming id quod mazim
-            placerat facer possim assum. Typi non habent claritatem insitam;
-            est usus legentis in iis qui facit eorum claritatem.
-            Investigationes demonstraverunt lectores legere me lius quod ii
-            legunt saepius. Claritas est etiam processus dynamicus, qui
-            sequitur mutationem consuetudium lectorum. Mirum est notare quam
-            littera gothica, quam nunc putamus parum claram, anteposuerit
-            litterarum formas humanitatis per seacula quarta decima et quinta
-            decima. Eodem modo typi, qui nunc nobis videntur parum clari, fiant
-            sollemnes in futurum.</p>
-          <p><a href="javascript:window.print()">Please print a copy of this consent document to keep.</a></p>
-          </div>
-          <div class="instructions warm">Do you understand and consent to the terms of the experiment explained above?</div>
-          <input type="button" class="continue" id="IAgree" value="I Agree" onClick="window.location='/exp?hitId={{ hitid }}&assignmentId={{ assignmentid }}&workerId={{ workerid }}'">
-          <input type="button" id="NoThanks" value="No Thanks" onclick="onexit()">
-      </div>
+        <div id="container-consent">
+            <div id="consent">
+                <h1>We need your consent to proceed</h1>
+                <hr>
+                <div class="legal well">
+                    <p>
+                    You have been invited to take part in a research study named BLAH BLAH
+                    </p>
+                    <p>
+                    Put your consent form here.  If you are a worker and are viewing this
+                    please decline the HIT.  This requester doesn't know what they are doing.
+                    </p>
+
+                    <button type="button" class="btn btn-default btn-sm" onClick="window.print();">
+                    <span class="glyphicon glyphicon-print"></span> Print a copy of this
+                    </button>
+                </div>
+
+                <hr>
+                <h4>Do you understand and consent to these terms?</h4>
+                <br>
+
+                <center>
+                    <button type="button" class="btn btn-primary btn-lg" onClick="window.location='/exp?hitId={{ hitid }}&assignmentId={{ assignmentid }}&workerId={{ workerid }}'">
+                    <span class="glyphicon glyphicon-ok"></span> I agree 
+                    </button>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <button type="button" class="btn btn-danger btn-lg" onClick="onexit()">
+                    <span class="glyphicon glyphicon-ban-circle"></span> No thanks, I do not want to do this HIT
+                    </button>
+                </center>
+
+            </div>
+        </div>
     </body>
 </html>
+

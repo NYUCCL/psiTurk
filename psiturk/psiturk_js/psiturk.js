@@ -19,7 +19,7 @@ _.extend(Backbone.Notifications, Backbone.Events);
 /*******
  * API *
  ******/
-var PsiTurk = function() {
+var PsiTurk = function(uniqueId, adServerLoc) {
 	var self = this;
 	
 	/****************
@@ -28,6 +28,7 @@ var PsiTurk = function() {
 	var TaskData = Backbone.Model.extend({
 		urlRoot: "/sync", // Save will PUT to /data, with mimetype 'application/JSON'
 		id: uniqueId,
+		adServerLoc: adServerLoc,
 		
 		defaults: {
 			condition: 0,
@@ -103,13 +104,13 @@ var PsiTurk = function() {
 
 			// connect event handler to previous button
 			if(currentscreen != 0) {  // can't do this if first page
-				$('.previous').bind('click.psiturk.instructions.prev', function() {
+				$('.previous').bind('click.psiturk.instructionsnav.prev', function() {
 					prevPageButtonPress();
 				});
 			}
 
 			// connect event handler to continue button
-			$('.continue').bind('click.psiturk.instructions.next', function() {
+			$('.continue').bind('click.psiturk.instructionsnav.next', function() {
 				nextPageButtonPress();
 			});
 			
@@ -153,8 +154,8 @@ var PsiTurk = function() {
 		var finish = function() {
 
 			// unbind all instruction related events
-			$('.continue').unbind('click.psiturk.instructions.next');
-			$('.previous').unbind('click.psiturk.instructions.prev');
+			$('.continue').unbind('click.psiturk.instructionsnav.next');
+			$('.previous').unbind('click.psiturk.instructionsnav.prev');
 
 			// Record that the user has finished the instructions and 
 			// moved on to the experiment. This changes their status code
@@ -217,10 +218,10 @@ var PsiTurk = function() {
 	};
 
 	// Add bonus to task data
-	this.computeBonus = function(url, callback) {
+	self.computeBonus = function(url, callback) {
 		$.ajax(url, {
                     type: "GET",
-                    data: {uniqueId: uniqueId},
+                    data: {uniqueId: self.taskdata.id},
                     success: callback
                 });
 	};
@@ -235,7 +236,7 @@ var PsiTurk = function() {
 		
 		$.ajax("inexp", {
 				type: "POST",
-				data: {uniqueId: uniqueId}
+				data: {uniqueId: self.taskdata.id}
 		});
 		
 		// Provide opt-out 
@@ -244,7 +245,7 @@ var PsiTurk = function() {
 			
 			$.ajax("quitter", {
 					type: "POST",
-					data: {uniqueId: uniqueId}
+					data: {uniqueId: self.taskdata.id}
 			});
 			//var optoutmessage = "By leaving this page, you opt out of the experiment.";
 			//alert(optoutmessage);
@@ -261,6 +262,12 @@ var PsiTurk = function() {
 	self.teardownTask = function(optmessage) {
 		Backbone.Notifications.trigger('_psiturk_finishedtask', optmessage);
 	};
+
+	self.completeHIT = function() {
+		self.teardownTask();
+		// save data one last time here?
+		window.location= self.taskdata.adServerLoc + "?uniqueId=" + self.taskdata.id;
+	}
 
 	self.doInstructions = function(pages, callback) {
 		instructionController = new Instructions(self, pages, callback);

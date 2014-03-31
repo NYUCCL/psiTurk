@@ -1,62 +1,107 @@
 <!doctype html>
+<!-- 
+	The ad.html has a very specific format.
 
+	Really there are two "ads" contained within this file.
+
+	The first ad displays to participants who are browsing
+	the Amazon Mechanical Turk site but have not yet accepted
+	your hit.  
+
+	The second part of the ad display after the person selected
+	"Accept HIT" on the Amazon website.  This will reload the
+	ad and will display a button which, when clicked, will pop
+	open a new browser window pointed at your local psiTurk
+	server (assuming it is running and accessible to the Internet).
+
+	See comments throughout for hints
+
+-->
 <html>
 	<head>
-		<title>CompCog Psychology Experiment</title>
-		<style type="text/css">
-			body {
-				margin: 20px;
-				width: 600px;
-				font-family: verdana, helvetica, sans-serif;
-				background-color: black;
-				color: white;
-			}
-			p {
-				width: 450px;;
-				text-align: left;
-			}
-			#logo {
-				float: right;
-				width: 120px;
-			}
-			a {
-				color: purple;
-			}
-		</style>
+		<title>Psychology Experiment</title>
+		<link rel=stylesheet href="static/css/bootstrap.min.css" type="text/css">
+		<link rel=stylesheet href="static/css/style.css" type="text/css">
 	</head>
 	<body>
-		<img id="logo" src="{{ server_location }}/static/images/nyu-logo.png" alt="New York University Logo" />
-		{% if assignmentid != "ASSIGNMENT_ID_NOT_AVAILABLE" %}
-		<h1>Thank you for accepting this HIT!</h1>
-		<p>By clicking the following URL link, you will be taken to the experiment,
-				including complete instructions and an informed consent agreement.</p>
-		
-		<script>
-			function openwindow() {
-				popup = window.open('{{ server_location }}/consent?hitId={{ hitid }}&assignmentId={{ assignmentid }}&workerId={{ workerid }}','Popup','toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=no,width='+screen.availWidth+',height='+screen.availHeight+'');
-				popup.onunload = function() { location.reload(true) }
-			}
-		</script>
-		<p>
-		Please disable pop-up blockers before continuing.
-		</p>
-		<p><a href="#" onClick="openwindow()">Ok, I understand, I'm read to start.</a></p>
+		<div id="container-ad">
 
-		{% else %}
-		<h1> Call for participants</h1>
-		<p>The Cognition and Computation Lab at New York University (NYU)
-		is looking for online participants for a brief experiment on how
-		people learn. The only requirements are that you are at least 18
-		years old and are a fluent English speaker.
-		</p>
-		<p>Example example, herp derp.
-		</p>
-                <p>This task can only be completed once. If you have already
-                completed this task before the system will not allow you to run
-                again. If this looks familiar please release the hit so someone
-                else can participate.</p>
+			<div id="ad">
+				<div class="row">
+					<div class="col-xs-2">
+						<!-- REPLACE THE LOGO HERE WITH YOUR  UNIVERSITY, LAB, or COMPANY -->
+						<img id="adlogo" src="static/images/university.png" alt="Lab Logo" />
+					</div>
+					<div class="col-xs-10">
 
-		Otherwise, please click the "Accept Hit" button on the Amazon site above to begin the task.
-		{% endif %}
+							<!-- 
+								If assignmentid is not "ASSIGNMENT_ID_NOT_AVAILABLE"
+								it means the participant has accepted your hit. 
+								You should thus show them instructions to begin the 
+								experiment ... usually a button to launch a new browser
+								window pointed at your server.
+
+								It is important you do not change the code for the
+								openwindow() function below if you want you experiment
+								to work.
+							-->
+							{% if assignmentid != "ASSIGNMENT_ID_NOT_AVAILABLE" %}
+
+							    <h1>Thank you for accepting this HIT!</h1>
+							    <p>
+							    	By clicking the following URL link, you will be taken to the experiment,
+							        including complete instructions and an informed consent agreement.
+							    </p>
+							    <script>
+									function openwindow() {
+							    		popup = window.open('{{ server_location }}/consent?hitId={{ hitid }}&assignmentId={{ assignmentid }}&workerId={{ workerid }}','Popup','toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=no,width='+1024+',height='+768+'');
+							    		popup.onunload = function() { location.reload(true) }
+							  		}
+							    </script>
+							    <div class="alert alert-warning">
+							    	<b>Warning</b>: Please disable pop-up blockers before continuing.
+							    </div>
+							    
+						    	<button type="button" class="btn btn-primary btn-lg" onClick="openwindow();">
+								  Begin Experiment
+								</button>
+							    
+
+							{% else %}
+
+							<!-- 
+								OTHERWISE
+								If assignmentid is "ASSIGNMENT_ID_NOT_AVAILABLE"
+								it means the participant has NOT accepted your hit. 
+								This should display the typical advertisement about
+								your experiment: who can participate, what the
+								payment is, the time, etc...
+							-->
+
+							    <h1>Call for participants</h1>
+							    <p>
+									The XXX Lab at XXXXX University is looking for online participants 
+									for a brief psychology experiment. The only requirements 
+									are that you are at least 18 years old and are a fluent English 
+									speaker.  The task will that XXXXX minutes and will pay XXXXX.
+							    </p>
+							    <div class="alert alert-danger">
+									<strong>This task can only be completed once.</strong> 
+									If you have already completed this task before the system will not 
+									allow you to run again. If this looks familiar please return the 
+									HIT so someone else can participate.
+							    </div>
+							    <p>
+								    Otherwise, please click the "Accept HIT" button on the Amazon site 
+								    above to begin the task.
+								</p>
+
+							{% endif %}
+							<!-- 
+								endif
+							-->
+					</div>
+			</div>
+		</div>
 	</body>
 </html>
