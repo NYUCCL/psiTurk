@@ -35,7 +35,7 @@ User's Guide
    recording
    retrieving
    customizing
-   errors
+   error
    faq
    getting_help
    disclaimer
