@@ -364,7 +364,7 @@ def start_exp():
                 raise ExperimentError('already_did_exp_hit')
 
     if debug_mode:
-        ad_server_location = ''
+        ad_server_location = '/complete'
     else:
         # if everything goes ok here relatively safe to assume we can lookup the ad
         ad_id = get_ad_via_hitid(hitId)
