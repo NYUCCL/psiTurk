@@ -389,7 +389,7 @@ def enterexp():
         raise ExperimentError('improper_inputs')
     uniqueId = request.form['uniqueId']
 
-    if uniqueId[:5]!='debug':  # do not set "started" field if debugging
+    try:
         user = Participant.query.\
                 filter(Participant.uniqueid == uniqueId).\
                 one()
@@ -397,7 +397,10 @@ def enterexp():
         user.beginexp = datetime.datetime.now()
         db_session.add(user)
         db_session.commit()
-    resp = {"status": "success"}
+        resp = {"status": "success"}
+    except:
+        app.logger.error( "DB error: Unique user not found.")
+        resp = {"status": "error, uniqueId not found"}
     return jsonify(**resp)
 
 # TODD SAYS: this the only route in the whole thing that uses <id> like this

@@ -116,6 +116,23 @@ or approving workers, are issued through the `psiTurk command-line shell <comman
 colorized on your display)::
 
 	$ psiturk
+
+	http://psiturk.org
+	 ______   ______     __     ______   __  __     ______     __  __
+	/\  == \ /\  ___\   /\ \   /\__  _\ /\ \/\ \   /\  == \   /\ \/ /
+	\ \  _-/ \ \___  \  \ \ \  \/_/\ \/ \ \ \_\ \  \ \  __<   \ \  _"-.
+	 \ \_\    \/\_____\  \ \_\    \ \_\  \ \_____\  \ \_\ \_\  \ \_\ \_\
+	  \/_/     \/_____/   \/_/     \/_/   \/_____/   \/_/ /_/   \/_/\/_/
+
+	             an open platform for science on Amazon Mechanical Turk
+
+	--------------------------------------------------------------------
+	System status:
+	Hi all, You need to be running psiTurk version >= 1.0.5dev to use the
+	Ad Server feature!
+
+	Check https://github.com/NYUCCL/psiTurk or http://psiturk.org for
+	latest info.
 	psiTurk version 1.0.10dev
 	Type "help" for more information.
 	[psiTurk server:off mode:sdbx #HITs:0]$
@@ -162,7 +179,7 @@ will look something like this::
 
 The ``http://localhost:22362/`` part is set in the configuration options under 
 ``Server Parameters`` in the fields "host" and "port". The default value, 
-``http://localhost:22362/`` is a special term that refer to your own computer. 
+``http://localhost:22362/`` is a special term that refers to your own computer. 
 As mentioned above, if you wanted to run this experiment publically you would want 
 to change the host option to ``0.0.0.0``. 
 
@@ -171,6 +188,15 @@ for the values that Amazon provides identifying the user, hit, etc... Since by d
 **psiTurk** does not allow individuals to take the same experiment more than once (it 
 checks for you to see if the worker has already completed the task or read too far into 
 the instructions) these random values are helpful during debugging.
+
+.. important::
+
+	When running in debug mode (i.e., when the ``assignmentId``, ``hitId``, and ``workerId``
+	variables are prefixed with the word "debug") everything proceeds as usual.  However,
+	the server will not block the same user from restarting the experiment 
+	after finishing the instructions (as is true normally).  This helps debugging
+	since you don't have to keep inventing new fake ``workerId``.  However, good to
+	keep in mind this difference.
 
 The first page that you see in the experiment looks something like this:
 
@@ -315,6 +341,8 @@ your current balance::
 	[psiTurk server:on mode:live #HITs:0]$ amt_balance
 	$178.70
 
-Remember to switch back to "sandbox" mode when you are finished
-collecting data so that the command you type will not accidently
-create tasks that will charge you account money!
+.. danger::
+	
+	Remember to switch back to "sandbox" mode when you are finished
+	collecting data so that the command you type will not accidently
+	create tasks that will charge you account money!
