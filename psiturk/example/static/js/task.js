@@ -13,7 +13,6 @@ var pages = [
 	"instructions/instruct-2.html",
 	"instructions/instruct-3.html",
 	"instructions/instruct-ready.html",
-	"instruct.html",
 	"stage.html",
 	"postquestionnaire.html"
 ];
