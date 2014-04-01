@@ -216,6 +216,32 @@ browser window and let you repeat the process.
 	and test them.  This way the development environment is the same as the
 	one in which you will eventually deploy your experiment on Mechanical Turk.
 
+Experiment Structure
+-----------------------------------------
+
+The basic stroop demo lays out a pretty standard experiment sequence.
+
+First the users view an "ad" for the study (that is what is displayed above).
+
+Then they view a consent form and are asked to verify that they read
+and understood the consent.  
+
+Next they are given a sequence of instruction
+screens.  The experiment logs how long they look at the each instruction
+screen as well as if they shift back and forth using the next/previous
+buttons.  
+
+Then the main experiment begins which dynamically re-draws
+the browser window using Javascript.  The `psiturk.js API <api.html>`__
+records the data and synchronizes it with your server from time to time.
+
+After the experiment finishes the user is given a simple questionaire about
+their experiences in the task.  Finally control is returned to Amazon
+(or if debugging a stand-in message is displayed).
+
+While all this is going on the `psiturk.js API <api.html>`__ records
+if the user is changing windows and prevent them from reloading the 
+browser mid-way into the task to start over.
 
 Launch in AMT sandbox
 -----------------------------------------
