@@ -219,7 +219,8 @@ browser window and let you repeat the process.
 Experiment Structure
 -----------------------------------------
 
-The basic stroop demo lays out a pretty standard experiment sequence.
+The basic stroop demo lays out a pretty standard experiment sequence.  It is
+perhaps most helpful to step through this sequence yourself, but conceptually:
 
 First the users view an "ad" for the study (that is what is displayed above).
 
@@ -341,14 +342,20 @@ the data in the ``participants.db`` file in your project folder.
 If you set your database to use MySQL then you maybe able to connect and export
 the data using `Sequel Pro <http://www.sequelpro.com/>`__.
 
+Automatically computing a bonus
+-----------------------------------------
+
 Approve/Reject Workers
+-----------------------------------------
+
+Assigning bonuses
 -----------------------------------------
 
 Launch "live" experiment
 -----------------------------------------
 
 To launch an experiment "live" you follow the same steps as launching
-in the sandbox but first the the "mode" of the command line to live::
+in the sandbox but first set the "mode" of the command line to "live"::
 
 	[psiTurk server:on mode:sdbx #HITs:1]$ mode
 	Switching modes requires the server to restart. Really switch modes? y or n: y
@@ -359,10 +366,10 @@ in the sandbox but first the the "mode" of the command line to live::
 	Now serving on http://0.0.0.0:22362
 	[psiTurk server:on mode:live #HITs:0]$
 
-Now you you run ``hit create`` it will post a hit on the live website.
+Now if you run ``hit create`` it will post a hit on the live website.
 You must have enough money in your AMT account to pay for the HITs you
-are requestions.  The ``amt_balance`` command will let you check
-your current balance::
+are requesting, otherwise an error message will be displayed. 
+The ``amt_balance`` command will let you check your current balance::
 	
 	[psiTurk server:on mode:live #HITs:0]$ amt_balance
 	$178.70
@@ -372,3 +379,12 @@ your current balance::
 	Remember to switch back to "sandbox" mode when you are finished
 	collecting data so that the command you type will not accidently
 	create tasks that will charge you account money!
+
+Further learning...
+-----------------------------------------
+
+This concludes the conceptual overview of the Stroop example that
+ships with **psiTurk**.  Continue reading the `decomposing the
+Stroop task <decompose_stroop.html>` section to learn more about
+the gritty details.
+This concludes the conceptual 
