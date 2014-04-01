@@ -256,7 +256,7 @@ def advertisement():
                                workerid = workerId)
     elif already_in_db and not debug_mode:
         raise ExperimentError('already_did_exp_hit')
-    elif status == ALLOCATED or not status:
+    elif status == ALLOCATED or not status or debug_mode:
         # Participant has not yet agreed to the consent. They might not
         # even have accepted the HIT.
         return render_template('ad.html',
@@ -439,20 +439,30 @@ def quitter():
     """
     Mark quitter as such.
     """
-    try:
-        uniqueId = request.form['uniqueId']
-        app.logger.info( "Marking quitter %s" % uniqueId)
-        user = Participant.query.\
-                filter(Participant.uniqueid == uniqueId).\
-                one()
-        user.status = QUITEARLY
-        db_session.add(user)
-        db_session.commit()
-    except:
-        raise ExperimentError('tried_to_quit')
+    uniqueId = request.form['uniqueId']
+    if uniqueId[:5] == "debug":
+        debug_mode = True
     else:
-        resp = {"status": "marked as quitter"}
+        debug_mode = False
+
+    if debug_mode:
+        resp = {"status": "didn't mark as quitter since this is debugging"}
         return jsonify(**resp)
+    else:
+        try:
+            uniqueId = request.form['uniqueId']
+            app.logger.info( "Marking quitter %s" % uniqueId)
+            user = Participant.query.\
+                    filter(Participant.uniqueid == uniqueId).\
+                    one()
+            user.status = QUITEARLY
+            db_session.add(user)
+            db_session.commit()
+        except:
+            raise ExperimentError('tried_to_quit')
+        else:
+            resp = {"status": "marked as quitter"}
+            return jsonify(**resp)
 
 # this route should only used when debugging
 @app.route('/complete', methods=['GET'])
