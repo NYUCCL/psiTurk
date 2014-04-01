@@ -58,6 +58,14 @@ the wireless router that came with your internet service to forward particular i
 ports to your device (i.e., to you laptop instead of you phone or tablet).  There are
 many excellent tutorials about this `online <http://www.howtogeek.com/66214/how-to-forward-ports-on-your-router/>`__.
 
+I'm having trouble with my AWS/AMT credentials
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In order to use your credentials you must create a requester account
+on Amazon Web Services.  This usually involves providing a credit card
+number as well as a phone verification step.  Finally, some users report
+having to log into `http://requester.mturk.com <http://requester.mturk.com>`__ 
+at least once to agree to the software terms.
 
 Can you program my experiment for me?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

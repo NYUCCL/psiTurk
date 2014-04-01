@@ -46,6 +46,12 @@ The basic structure is:
 			
 	{% endif %}
 
+.. important::
+
+	If you want to access your own style sheets you ad
+	needs to reference them like this: href="{{ server_location }}/static/css/bootstrap.min.css"
+
+
 For example, here is an example template that comes
 with the default `stroop example <../stroop.html>`__.
 
@@ -74,8 +80,8 @@ with the default `stroop example <../stroop.html>`__.
 	<html>
 		<head>
 			<title>Psychology Experiment</title>
-			<link rel=stylesheet href="static/css/bootstrap.min.css" type="text/css">
-			<link rel=stylesheet href="static/css/style.css" type="text/css">
+			<link rel=stylesheet href="{{ server_location }}/static/css/bootstrap.min.css" type="text/css">
+			<link rel=stylesheet href="{{ server_location }}/static/css/style.css" type="text/css">
 		</head>
 		<body>
 			<div id="container-ad">
@@ -84,7 +90,7 @@ with the default `stroop example <../stroop.html>`__.
 					<div class="row">
 						<div class="col-xs-2">
 							<!-- REPLACE THE LOGO HERE WITH YOUR  UNIVERSITY, LAB, or COMPANY -->
-							<img id="adlogo" src="static/images/university.png" alt="Lab Logo" />
+							<img id="adlogo" src="{{ server_location }}/static/images/university.png" alt="Lab Logo" />
 						</div>
 						<div class="col-xs-10">
 
