@@ -36,27 +36,29 @@ The basic structure is:
 
 ::
 
-	{% if assignmentid != "ASSIGNMENT_ID_NOT_AVAILABLE" %}
+	{% if assignmentid == "ASSIGNMENT_ID_NOT_AVAILABLE" %}
 
-		HTML/CSS FOR AD AFTER ACCEPTING
+		HTML/CSS FOR AD BEFORE ACCEPTING
 
 	{% else %}
 
-		HTML/CSS FOR AD BEFORE ACCEPTING
+		HTML/CSS FOR AD AFTER ACCEPTING
 			
 	{% endif %}
 
 .. important::
 
-	If you want to access your own style sheets you ad
-	needs to reference them like this: href="{{ server_location }}/static/css/bootstrap.min.css"
-
+	You cannot directly reference addition CSS or JS files
+	in the ad since the ad server will host the ad
+	using https://.  As a result you need to include all
+	CSS styles you want applied to your ad directly in the
+	file.  boostrap.min.css is provided for free by
+	the ad server.
 
 For example, here is an example template that comes
 with the default `stroop example <../stroop.html>`__.
 
 ::
-
 
 	<!doctype html>
 	<!-- 
@@ -80,8 +82,38 @@ with the default `stroop example <../stroop.html>`__.
 	<html>
 		<head>
 			<title>Psychology Experiment</title>
-			<link rel=stylesheet href="{{ server_location }}/static/css/bootstrap.min.css" type="text/css">
-			<link rel=stylesheet href="{{ server_location }}/static/css/style.css" type="text/css">
+			<link rel=stylesheet href="/static/css/bootstrap.min.css" type="text/css">
+			<style>
+				/* these tyles need to be defined locally */
+				body {
+				    padding:0px;
+				    margin: 0px;
+				    background-color: white;
+				    color: black;
+				    font-weight: 300; 
+				    font-size: 13pt;
+				}
+
+				/* ad.html  - the ad that people view first */
+				#adlogo {
+				    float: right;
+				    width: 140px;
+				    padding: 2px;
+				    border: 1px solid #ccc;
+				}
+
+				#container-ad {
+				    position: absolute;
+				    top: 0px; /* Header Height */
+				    bottom: 0px; /* Footer Height */
+				    left: 0px;
+				    right: 0px;
+				    padding: 100px;
+				    padding-top: 5%;
+				    border: 18px solid #f3f3f3;
+				    background: white;
+				}
+			</style>
 		</head>
 		<body>
 			<div id="container-ad">
@@ -95,48 +127,14 @@ with the default `stroop example <../stroop.html>`__.
 						<div class="col-xs-10">
 
 								<!-- 
-									If assignmentid is not "ASSIGNMENT_ID_NOT_AVAILABLE"
-									it means the participant has accepted your hit. 
-									You should thus show them instructions to begin the 
-									experiment ... usually a button to launch a new browser
-									window pointed at your server.
-
-									It is important you do not change the code for the
-									openwindow() function below if you want you experiment
-									to work.
-								-->
-								{% if assignmentid != "ASSIGNMENT_ID_NOT_AVAILABLE" %}
-
-								    <h1>Thank you for accepting this HIT!</h1>
-								    <p>
-								    	By clicking the following URL link, you will be taken to the experiment,
-								        including complete instructions and an informed consent agreement.
-								    </p>
-								    <script>
-										function openwindow() {
-								    		popup = window.open('{{ server_location }}/consent?hitId={{ hitid }}&assignmentId={{ assignmentid }}&workerId={{ workerid }}','Popup','toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=no,width='+1024+',height='+768+'');
-								    		popup.onunload = function() { location.reload(true) }
-								  		}
-								    </script>
-								    <div class="alert alert-warning">
-								    	<b>Warning</b>: Please disable pop-up blockers before continuing.
-								    </div>
-								    
-							    	<button type="button" class="btn btn-primary btn-lg" onClick="openwindow();">
-									  Begin Experiment
-									</button>
-								    
-
-								{% else %}
-
-								<!-- 
-									OTHERWISE
 									If assignmentid is "ASSIGNMENT_ID_NOT_AVAILABLE"
 									it means the participant has NOT accepted your hit. 
 									This should display the typical advertisement about
 									your experiment: who can participate, what the
 									payment is, the time, etc...
+
 								-->
+								{% if assignmentid == "ASSIGNMENT_ID_NOT_AVAILABLE" %}
 
 								    <h1>Call for participants</h1>
 								    <p>
@@ -155,6 +153,41 @@ with the default `stroop example <../stroop.html>`__.
 									    Otherwise, please click the "Accept HIT" button on the Amazon site 
 									    above to begin the task.
 									</p>
+								    
+
+								{% else %}
+
+									<!-- 
+										OTHERWISE
+										If assignmentid is NOT "ASSIGNMENT_ID_NOT_AVAILABLE"
+										it means the participant has accepted your hit. 
+										You should thus show them instructions to begin the 
+										experiment ... usually a button to launch a new browser
+										window pointed at your server.
+
+										It is important you do not change the code for the
+										openwindow() function below if you want you experiment
+										to work.
+									-->
+								    <h1>Thank you for accepting this HIT!</h1>
+								    <p>
+								    	By clicking the following URL link, you will be taken to the experiment,
+								        including complete instructions and an informed consent agreement.
+								    </p>
+								    <script>
+										function openwindow() {
+								    		popup = window.open('{{ server_location }}/consent?hitId={{ hitid }}&assignmentId={{ assignmentid }}&workerId={{ workerid }}','Popup','toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=no,width='+1024+',height='+768+'');
+								    		popup.onunload = function() { location.reload(true) }
+								  		}
+								    </script>
+								    <div class="alert alert-warning">
+								    	<b>Warning</b>: Please disable pop-up blockers before continuing.
+								    </div>
+								    
+							    	<button type="button" class="btn btn-primary btn-lg" onClick="openwindow();">
+									  Begin Experiment
+									</button>
+
 
 								{% endif %}
 								<!-- 
@@ -165,5 +198,4 @@ with the default `stroop example <../stroop.html>`__.
 			</div>
 		</body>
 	</html>
-
 
