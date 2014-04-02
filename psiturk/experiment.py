@@ -2,9 +2,7 @@ import os
 import sys
 import datetime
 import logging
-import urllib2
 from random import choice
-import json
 import user_agents
 import string
 import requests
@@ -14,7 +12,7 @@ except ImportError:
     from counter import Counter
 
 # Importing flask
-from flask import Flask, render_template, render_template_string, request, Response, jsonify
+from flask import Flask, render_template, render_template_string, request, jsonify
 
 # Database setup
 from db import db_session, init_db
@@ -62,7 +60,6 @@ try:
     from custom import custom_code
 except ImportError:
     app.logger.info( "Hmm... it seems no custom code (custom.py) assocated with this project.")
-    pass # do nothing if the
 else:
     app.register_blueprint(custom_code)
 
@@ -135,7 +132,7 @@ def get_random_condcount():
     for p in participants:
         counts[(p.cond, p.counterbalance)] += 1
     mincount = min( counts.values() )
-    minima = [hash for hash, count in counts.iteritems() if count == mincount]
+    minima = [hsh for hsh, count in counts.iteritems() if count == mincount]
     chosen = choice(minima)
     #conds += [ 0 for _ in range(1000) ]
     #conds += [ 1 for _ in range(1000) ]
@@ -153,9 +150,9 @@ def index():
 
 @app.route('/check_worker_status', methods=['GET'])
 def check_worker_status():
-    if not (request.args.has_key('hitId') and \
-            request.args.has_key('assignmentId') and \
-            request.args.has_key('workerId')):
+    if not ('hitId' in request.args and \
+            'assignmentId' in request.args and \
+            'workerId' in request.args):
         resp = {"status": "bad request"}
         return jsonify(**resp)
     else:
@@ -207,9 +204,9 @@ def advertisement():
 
     if not browser_ok:
         # Handler for IE users if IE is not supported.
-        raise ExperimentError('browser_type_not_allowed', config.get('HIT Configuration', 'contact_email_on_error'))
+        raise ExperimentError('browser_type_not_allowed')
 
-    if not (request.args.has_key('hitId') and request.args.has_key('assignmentId')):
+    if not ('hitId' in request.args and 'assignmentId' in request.args):
         raise ExperimentError('hit_assign_worker_id_not_set_in_mturk')
     hitId = request.args['hitId']
     assignmentId = request.args['assignmentId']
@@ -218,7 +215,7 @@ def advertisement():
     else:
         debug_mode = False
     already_in_db = False
-    if request.args.has_key('workerId'):
+    if 'workerId' in request.args:
         workerId = request.args['workerId']
         # first check if this workerId has completed the task before (v1)
         nrecords = Participant.query.\
@@ -272,8 +269,8 @@ def give_consent():
     """
     Serves up the consent in the popup window.
     """
-    if not (request.args.has_key('hitId') and request.args.has_key('assignmentId') and request.args.has_key('workerId')):
-        raise ExperimentError( 'hit_assign_worker_id_not_set_in_consent' )
+    if not ('hitId' in request.args and 'assignmentId' in request.args and 'workerId' in request.args):
+        raise ExperimentError( 'hit_assign_worker_id_not_set_in_consent')
     hitId = request.args['hitId']
     assignmentId = request.args['assignmentId']
     workerId = request.args['workerId']
@@ -298,8 +295,8 @@ def start_exp():
     """
     Serves up the experiment applet.
     """
-    if not (request.args.has_key('hitId') and request.args.has_key('assignmentId') and request.args.has_key('workerId')):
-        raise ExperimentError( 'hit_assign_worker_id_not_set_in_exp' )
+    if not ('hitId' in request.args and 'assignmentId' in request.args and 'workerId' in request.args):
+        raise ExperimentError( 'hit_assign_worker_id_not_set_in_exp')
     hitId = request.args['hitId']
     assignmentId = request.args['assignmentId']
     workerId = request.args['workerId']
@@ -344,7 +341,6 @@ def start_exp():
         # 2: They've already worked on this assignment, and got too far to start over.
         # 3: They're in the database twice for the same assignment, that should never happen.
         # 4: They're returning and all is well.
-        already_entered = False
         nrecords = 0
         for record in matches:
             other_assignment = False
@@ -385,7 +381,7 @@ def enterexp():
     referesh to start over).
     """
     app.logger.info( "Accessing /inexp")
-    if not request.form.has_key('uniqueId'):
+    if not 'uniqueId' in request.form:
         raise ExperimentError('improper_inputs')
     uniqueId = request.form['uniqueId']
 
@@ -406,17 +402,17 @@ def enterexp():
 # TODD SAYS: this the only route in the whole thing that uses <id> like this
 # where everything else uses POST!  This could be confusing but is forced
 # somewhat by Backbone?  take heed!
-@app.route('/sync/<id>', methods=['GET', 'PUT'])
-def update(id=None):
+@app.route('/sync/<uid>', methods=['GET', 'PUT'])
+def update(uid=None):
     """
     Save experiment data, which should be a JSON object and will be stored
     after converting to string.
     """
-    app.logger.info("accessing the /sync route with id: %s" % id)
+    app.logger.info("accessing the /sync route with id: %s" % uid)
 
     try:
         user = Participant.query.\
-                filter(Participant.uniqueid == id).\
+                filter(Participant.uniqueid == uid).\
                 one()
     except:
         app.logger.error( "DB error: Unique user not found.")
@@ -468,7 +464,7 @@ def quitter():
 @app.route('/complete', methods=['GET'])
 @nocache
 def debug_complete():
-    if not request.args.has_key('uniqueId'):
+    if not 'uniqueId' in request.args:
         raise ExperimentError('improper_inputs')
     else:
         uniqueId = request.args['uniqueId']
@@ -486,7 +482,7 @@ def debug_complete():
 
 @app.route('/worker_complete', methods=['GET'])
 def worker_complete():
-    if not request.args.has_key('uniqueId'):
+    if not 'uniqueId' in request.args:
         resp = {"status": "bad request"}
         return jsonify(**resp)
     else:
@@ -521,9 +517,9 @@ def regularpage(foldername=None,pagename=None):
     """
     Route not found by the other routes above. May point to a static template.
     """
-    if foldername==None and pagename==None:
+    if foldername is None and pagename is None:
         raise ExperimentError('page_not_found')
-    if foldername==None and pagename!=None:
+    if foldername is None and pagename is not None:
         return render_template(pagename)
     else:
         return render_template(foldername+"/"+pagename)
