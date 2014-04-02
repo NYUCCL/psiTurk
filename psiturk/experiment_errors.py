@@ -36,9 +36,11 @@ class ExperimentError(Exception):
         self.value = value
         self.errornum = experiment_errors[self.value]
         self.template = "error.html"
+
     def __str__(self):
         return repr(self.value)
-    def error_page(self, request):
+    def error_page(self, request, contact_on_error):
         return render_template(self.template, 
-                               errornum=self.errornum, 
+                               errornum = self.errornum, 
+                               contact_address = contact_on_error,
                                **request.args)

@@ -88,7 +88,7 @@ def favicon():
 @app.errorhandler(ExperimentError)
 def handleExpError(e):
     """Handle errors by sending an error page."""
-    return e.error_page( request )
+    return e.error_page( request, config.get('HIT Configuration', 'contact_email_on_error') )
 
 @app.route('/static/js/psiturk.js')
 def psiturk_js():
