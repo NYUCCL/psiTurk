@@ -56,14 +56,14 @@ var PsiTurk = function(uniqueId, adServerLoc) {
 
 		addTrialData: function(trialdata) {
 			trialdata = {"uniqueid":this.id, "current_trial":this.get("currenttrial"), "dateTime":(new Date().getTime()), "trialdata":trialdata};
-			data = this.get('data');
+			var data = this.get('data');
 			data.push(trialdata);
 			this.set('data', data);
 			this.set({"currenttrial": this.get("currenttrial")+1});
 		},
 		
 		addUnstructuredData: function(field, response) {
-			qd = this.get("questiondata");
+			var qd = this.get("questiondata");
 			qd[field] = response;
 			this.set("questiondata", qd);
 		},
