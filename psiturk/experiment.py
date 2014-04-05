@@ -473,6 +473,7 @@ def debug_complete():
                         filter(Participant.uniqueid == uniqueId).\
                         one()
             user.status = COMPLETED
+            user.endhit = datetime.datetime.now()
             db_session.add(user)
             db_session.commit()
         except:
