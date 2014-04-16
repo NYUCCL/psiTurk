@@ -58,7 +58,7 @@ var StroopExperiment = function() {
 			["RED", "blue", "incongruent"]
 		];
 
-	_.shuffle(stims);
+	stims = _.shuffle(stims);
 
 	var next = function() {
 		if (stims.length===0) {
