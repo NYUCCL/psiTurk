@@ -67,6 +67,17 @@ number as well as a phone verification step.  Finally, some users report
 having to log into `http://requester.mturk.com <http://requester.mturk.com>`__ 
 at least once to agree to the software terms.
 
+What do I need to know about running **psiTurk** on a remote server?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The **psiTurk** command line process and server generally works great over a `ssh` connection.
+Perhaps the only thing to be aware of are that you set the `host` field
+of your project's local configuration file to the ip address of the remote machine
+if you want to be able to easily access it.  In addition, while the standard 
+`debug` command automatically launches your web-browser, you usually don't 
+want this behavior on the remove machine.  Instead use `debug -p` to simply 
+print the correct URL and copy/paste it into a browser on your local computer.
+
+
 Can you program my experiment for me?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
