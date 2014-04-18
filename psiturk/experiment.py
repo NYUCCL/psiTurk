@@ -56,7 +56,7 @@ app.config.update(SEND_FILE_MAX_AGE_DEFAULT=10) # set cache timeout to 10ms for 
 
 try:
     sys.path.append(os.getcwd())
-    from custom import custom_code, define_custom_models
+    from custom import custom_code
 except ImportError:
     app.logger.info( "Hmm... it seems no custom code (custom.py) assocated with this project.")
 else:
