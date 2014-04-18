@@ -5,15 +5,15 @@ import datetime
 import requests
 from flask import jsonify
 from version import version_number
+import git
 
 class PsiturkOrgServices:
     """
         PsiturkOrgServices
         this class provides an interface to the API provided
         by the psiturk_org website.  the two main features
-        of this API are registering secure ads and
-        interfacing with the experiment exchange
-        see: https://github.com/NYUCCL/psiTurk_website
+        of this API are registering secure ads
+        see: https://github.com/NYUCCL/api-psiturk-org
     """
     def __init__(self, key, secret):
         self.apiServer = 'https://api.psiturk.org' # 'https://api.psiturk.org' # by default for now
@@ -115,4 +115,63 @@ class PsiturkOrgServices:
         if r.status_code == 201:
             return r.json()['ad_id']
         else:
-            return False        
+            return False    
+
+    def download_experiment(self, experiment_id):
+        """
+            download_experiment:
+        """
+        r = self.query_records('experiment', self.access_key, self.secret_key, query='download/'+experiment_id)
+        print r.text
+        return
+
+
+class ExperimentExchangeServices:
+    """
+        ExperimentExchangeServices
+        this class provides a non-authenticated interface to the API provided
+        by the psiturk_org website.  the feature is
+        interfacing with the experiment exchange
+        see: https://github.com/NYUCCL/api-psiturk-org
+    """
+    def __init__(self):
+        self.apiServer = 'https://api.psiturk.org' # 'https://api.psiturk.org' # by default for now
+
+    def query_records_no_auth(self, name, query=''):
+        #headers = {'key': username, 'secret': password}
+        r = requests.get(self.apiServer + '/api/' + name + "/" + query)
+        return r
+
+    def download_experiment(self, experiment_id):
+        """
+            download_experiment:
+        """
+        r = self.query_records_no_auth('experiment', query='download/'+experiment_id)
+        if r.status_code == 404:
+            print "Sorry, no experiment matching id # " + experiment_id
+            print "Please double check the code you obtained on the http://psiturk.org/ee"
+        else:
+            # check if folder with same name already exists.
+            expinfo = r.json()
+            gitr = requests.get(expinfo['git_url']).json()
+            if os.path.exists('./'+gitr['name']):
+                print "*"*20
+                print "Sorry, you already have a file or folder named "+gitr['name']+". Please rename or delete it before trying to download this experiment.  You can do this by typing `rm -rf " + gitr['name'] + "`" 
+                print "*"*20
+                return
+            if "clone_url" in gitr:
+                git.Git().clone(gitr["clone_url"])
+                print "="*20
+                print "Downloading..."
+                print "Name: " + expinfo['name']
+                print "Downloads: " + str(expinfo['downloads'])
+                print "Keywords: " + expinfo['keywords']
+                print "psiTurk Version: " + str(expinfo['psiturk_version_string'])
+                print "URL: http://psiturk.org/ee/"+experiment_id
+                print "\n"
+                print "Experiment downloaded into the `" + gitr['name'] + "` folder of the current directory"
+                print "Type 'cd " + gitr['name'] + "` then run the `psiturk` command."
+                print "="*20
+            else:
+                print "Sorry, experiment not located on github.  You might contact the author of this experiment.  Experiment NOT downloaded."
+            return

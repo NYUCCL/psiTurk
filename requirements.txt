@@ -10,3 +10,4 @@ requests==2.2.1
 user-agents==0.2.0
 sh==1.09 
 fake-factory==0.3.2
+gitpython==0.1.7
