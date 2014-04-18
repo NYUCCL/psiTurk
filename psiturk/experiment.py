@@ -48,7 +48,6 @@ BONUSED = 6
 # let's start
 ###########################################################
 app = Flask("Experiment_Server")
-init_db()
 app.config.update(SEND_FILE_MAX_AGE_DEFAULT=10) # set cache timeout to 10ms for static files
 
 ###########################################################
@@ -57,11 +56,19 @@ app.config.update(SEND_FILE_MAX_AGE_DEFAULT=10) # set cache timeout to 10ms for 
 
 try:
     sys.path.append(os.getcwd())
-    from custom import custom_code
+    from custom import custom_code, define_custom_models
 except ImportError:
     app.logger.info( "Hmm... it seems no custom code (custom.py) assocated with this project.")
 else:
     app.register_blueprint(custom_code)
+
+try:
+    sys.path.append(os.getcwd())
+    from custom_models import *
+except ImportError:
+    app.logger.info( "Hmm... it seems no custom model code (custom_models.py) assocated with this project.")
+
+init_db()
 
 # read psiturk.js file into memory 
 psiturk_js_file = os.path.join(os.path.dirname(__file__), "psiturk_js/psiturk.js")
