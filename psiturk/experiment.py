@@ -40,9 +40,10 @@ NOT_ACCEPTED = 0
 ALLOCATED = 1
 STARTED = 2
 COMPLETED = 3
-CREDITED = 4
-QUITEARLY = 5
-BONUSED = 6
+SUBMITTED = 4
+CREDITED = 5
+QUITEARLY = 6
+BONUSED = 7
 
 ###########################################################
 # let's start
@@ -157,19 +158,13 @@ def index():
 
 @app.route('/check_worker_status', methods=['GET'])
 def check_worker_status():
-    if not ('hitId' in request.args and \
-            'assignmentId' in request.args and \
-            'workerId' in request.args):
+    if 'workerId' not in request.args:
         resp = {"status": "bad request"}
         return jsonify(**resp)
     else:
         workerId = request.args['workerId']
-        assignmentId = request.args['assignmentId']
-        hitId = request.args['hitId']
         try:
             part = Participant.query.\
-                   filter(Participant.hitid == hitId).\
-                   filter(Participant.assignmentid == assignmentId).\
                    filter(Participant.workerid == workerId).\
                    one()
             status = part.status
@@ -508,6 +503,27 @@ def worker_complete():
                         one()
             user.status = COMPLETED
             user.endhit = datetime.datetime.now()
+            db_session.add(user)
+            db_session.commit()
+            status = "success"
+        except:
+            status = "database error"
+        resp = {"status" : status}
+        return jsonify(**resp)
+
+@app.route('/worker_submitted', methods=['GET'])
+def worker_submitted():
+    if not 'uniqueId' in request.args:
+        resp = {"status": "bad request"}
+        return jsonify(**resp)
+    else:
+        uniqueId = request.args['uniqueId']
+        app.logger.info( "Submitted experiment for %s" % uniqueId)
+        try:
+            user = Participant.query.\
+                        filter(Participant.uniqueid == uniqueId).\
+                        one()
+            user.status = SUBMITTED
             db_session.add(user)
             db_session.commit()
             status = "success"
