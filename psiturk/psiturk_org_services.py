@@ -96,12 +96,15 @@ class PsiturkOrgServices:
         """
         return self.adServer + '/view/' + str(adId)
 
-    def set_ad_hitid(self, adId, hitId):
+    def set_ad_hitid(self, adId, hitId, sandbox):
         """
             get_ad_hitid:
             updates the ad with the corresponding hitid
         """
-        r = self.update_record('ad', adId, {'amt_hit_id':hitId}, self.access_key, self.secret_key)
+        if sandbox:
+            r = self.update_record('sandboxad', adId, {'amt_hit_id':hitId}, self.access_key, self.secret_key)
+        else:    
+            r = self.update_record('ad', adId, {'amt_hit_id':hitId}, self.access_key, self.secret_key)
         if r.status_code == 201:
             return True
         else:
@@ -111,11 +114,17 @@ class PsiturkOrgServices:
         """
             create_ad:
         """
-        r = self.create_record('ad', ad_content, self.access_key, self.secret_key)
-        if r.status_code == 201:
-            return r.json()['ad_id']
+        if not 'is_sandbox' in ad_content:
+            return False
         else:
-            return False    
+            if ad_content['is_sandbox']:
+                r = self.create_record('sandboxad', ad_content, self.access_key, self.secret_key)
+            else:
+                r = self.create_record('ad', ad_content, self.access_key, self.secret_key)
+            if r.status_code == 201:
+                return r.json()['ad_id']
+            else:
+                return False    
 
     def download_experiment(self, experiment_id):
         """

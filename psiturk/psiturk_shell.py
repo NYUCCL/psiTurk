@@ -803,7 +803,7 @@ class PsiturkNetworkShell(PsiturkShell):
             }
             hit_id = self.amt_services.create_hit(hit_config)
             if hit_id != False:
-                if not self.web_services.set_ad_hitid(ad_id, hit_id):
+                if not self.web_services.set_ad_hitid(ad_id, hit_id, int(self.sandbox)):
                     create_failed = True
                     fail_msg = "  Unable to update Ad on http://ad.psiturk.org to point at HIT."
             else:
@@ -842,9 +842,13 @@ class PsiturkNetworkShell(PsiturkShell):
                              '    Fee: $%.2f' % fee,
                              '    ________________________',
                              '    Total: $%.2f' % total])
-            print('  Ad for this HIT now hosted at: https://ad.psiturk.org/view/%s?assignmentId=debug%s&hitId=debug%s'
-                  % (str(ad_id), str(self.random_id_generator()), str(self.random_id_generator())))
-
+            if self.sandbox:
+                print('  Ad for this HIT now hosted at: https://sandbox.ad.psiturk.org/view/%s?assignmentId=debug%s&hitId=debug%s'
+                      % (str(ad_id), str(self.random_id_generator()), str(self.random_id_generator())))
+                print "Note: This sandboxed ad will expire from the server in 15 days."
+            else:
+                print('  Ad for this HIT now hosted at: https://ad.psiturk.org/view/%s?assignmentId=debug%s&hitId=debug%s'
+                      % (str(ad_id), str(self.random_id_generator()), str(self.random_id_generator())))
 
 
     @docopt_cmd
