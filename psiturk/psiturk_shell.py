@@ -788,7 +788,7 @@ class PsiturkNetworkShell(PsiturkShell):
         fail_msg = None
         ad_id = self.web_services.create_ad(ad_content)
         if ad_id != False:
-            ad_url = self.web_services.get_ad_url(ad_id)
+            ad_url = self.web_services.get_ad_url(ad_id, int(self.sandbox))
             hit_config = {
                 "ad_location": ad_url,
                 "approve_requirement": self.config.get('HIT Configuration', 'Approve_Requirement'),

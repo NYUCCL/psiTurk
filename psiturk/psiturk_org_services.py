@@ -18,6 +18,7 @@ class PsiturkOrgServices:
     def __init__(self, key, secret):
         self.apiServer = 'https://api.psiturk.org' # 'https://api.psiturk.org' # by default for now
         self.adServer = 'https://ad.psiturk.org'
+        self.sandboxAdServer = 'https://sandbox.ad.psiturk.org'
         self.update_credentials(key,secret)
         if not self.check_credentials():
             print 'WARNING *****************************'
@@ -89,12 +90,15 @@ class PsiturkOrgServices:
         return r
 
 
-    def get_ad_url(self, adId):
+    def get_ad_url(self, adId, sandbox):
         """
             get_ad_url:
             gets ad server thing
         """
-        return self.adServer + '/view/' + str(adId)
+        if sandbox:
+            return self.sandboxAdServer + '/view/' + str(adId)
+        else:
+            return self.adServer + '/view/' + str(adId)
 
     def set_ad_hitid(self, adId, hitId, sandbox):
         """
