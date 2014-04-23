@@ -15,7 +15,7 @@ to switch to the opposite mode. The current mode affects almost every psiturk
 shell command. For example, running ``hit create`` while in sandbox mode will
 create a HIT in the sandbox, while running it in live mode will create a HIT on
 the live AMT site. Similarly, commands like ``worker list all`` or ``hit list
-all`` will list assignments and HITs from wither the live site or the sandbox,
+all`` will list assignments and HITs from either the live site or the sandbox,
 depending on your mode.
 
 .. note::
