@@ -7,6 +7,10 @@
 // Initalize psiturk object
 var psiTurk = PsiTurk(uniqueId, adServerLoc);
 
+var mycondition = condition;  // these two variables are passed by the psiturk server process
+var mycounterbalance = counterbalance;  // they tell you which condition you have been assigned to
+// they are not used in the stroop code but may be useful to you
+
 // All pages to be loaded
 var pages = [
 	"instructions/instruct-1.html",
@@ -131,7 +135,7 @@ var StroopExperiment = function() {
 			.text(text);
 	};
 
-	var remove_word = function(text, color) {
+	var remove_word = function() {
 		d3.select("#word").remove();
 	};
 
@@ -181,10 +185,10 @@ var Questionnaire = function() {
 		psiTurk.saveData({
 			success: function() {
 			    clearInterval(reprompt); 
-                            psiTurk.computeBonus('compute_bonus', function(){finish()}); 
+                psiTurk.computeBonus('compute_bonus', function(){finish()}); 
 			}, 
-			error: prompt_resubmit}
-		);
+			error: prompt_resubmit
+		});
 	};
 
 	// Load the questionnaire snippet 

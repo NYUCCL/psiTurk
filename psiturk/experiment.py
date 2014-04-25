@@ -282,10 +282,7 @@ def get_ad_via_hitid(hitId):
     username = config.get('psiTurk Access', 'psiturk_access_key_id')
     password = config.get('psiTurk Access', 'psiturk_secret_access_id')
     try:
-        if config.getboolean('HIT Configuration', 'using_sandbox'):
-            r = requests.get('https://api.psiturk.org/api/sandboxad/lookup/' + hitId, auth=(username,password))
-        else:
-            r = requests.get('https://api.psiturk.org/api/ad/lookup/' + hitId, auth=(username,password))
+        r = requests.get('https://api.psiturk.org/api/ad/lookup/' + hitId, auth=(username,password))
     except:
         raise ExperimentError('api_server_not_reachable')
     else:
