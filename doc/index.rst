@@ -39,6 +39,7 @@ User's Guide
    faq
    getting_help
    disclaimer
+   openshift
 
 Contributing to **psiTurk**
 ---------------------------
