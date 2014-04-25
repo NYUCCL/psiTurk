@@ -5,6 +5,13 @@ from psiturk_config import PsiturkConfig
 example_dir = os.path.join(os.path.dirname(__file__), "example")
 default_config_file = os.path.join(os.path.dirname(__file__), "default_configs/local_config_defaults.txt")
 default_global_config_file = os.path.join(os.path.dirname(__file__), "default_configs/global_config_defaults.txt")
+
+# If working in OpenShift, move global config file in data directory (has access rights)
+if 'OPENSHIFT_SECRET_TOKEN' in os.environ:
+    globalConfigPath = os.environ['OPENSHIFT_DATA_DIR'] + PsiturkConfig.globalConfigName
+else:
+    globalConfigPath = "~/" + PsiturkConfig.globalConfigName
+
 global_config_file = os.path.expanduser("~/.psiturkconfig")
 example_target = os.path.join(os.curdir, "psiturk-example")
 config_target = os.path.join(example_target, "config.txt")
