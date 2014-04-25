@@ -223,7 +223,11 @@ class PsiturkShell(Cmd, object):
             print "Error: Sorry, you need to have the server running to debug your experiment.  Try 'server on' first."
             return
 
-        base_url = "http://" + self.config.get('Server Parameters', 'host') + ":" + self.config.get('Server Parameters', 'port') + "/ad"
+        if 'OPENSHIFT_SECRET_TOKEN' in os.environ:
+            base_url = "http://" + self.config.get('Server Parameters', 'host') + "/ad"
+        else:
+            base_url = "http://" + self.config.get('Server Parameters', 'host') + ":" + self.config.get('Server Parameters', 'port') + "/ad"
+        
         launchurl = base_url + "?assignmentId=debug" + str(self.random_id_generator()) \
                     + "&hitId=debug" + str(self.random_id_generator()) \
                     + "&workerId=debug" + str(self.random_id_generator())
@@ -762,7 +766,6 @@ class PsiturkNetworkShell(PsiturkShell):
                              '  Sorry, there was an error registering ad.',
                              '  Your local ad.html is %s byes, but the maximum template size uploadable to the Ad server is 1048576 bytes!' % size_of_ad])
             return
-
 
         # what all do we need to send to server?
         # 1. server

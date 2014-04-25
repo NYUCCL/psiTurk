@@ -67,7 +67,11 @@ class PsiturkOrgServices:
             Of course, incoming port to the router must be
             forwarded correctly.
         """
-        return json.load(urllib2.urlopen('http://httpbin.org/ip'))['origin']
+        if 'OPENSHIFT_SECRET_TOKEN' in os.environ:
+            ip = os.environ['OPENSHIFT_APP_DNS']
+        else:
+            ip = json.load(urllib2.urlopen('http://httpbin.org/ip'))['origin']
+        return ip
 
     def create_record(self, name, content, username, password):
         #headers = {'key': username, 'secret': password}
