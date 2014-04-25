@@ -41,15 +41,15 @@ def launch_browser_when_online(ip, port, route):
 
 
 #----------------------------------------------------------------
-# handles waiting for processes which we don't control (e.g., 
+# handles waiting for processes which we don't control (e.g.,
 # browser requests)
 #----------------------------------------------------------------
 class Wait_For_State(Thread):
     """
     Waits for a state-checking function to return True, then runs a given
     function. For example, this is used to launch the browser once the server is
-    started up.  
-    
+    started up.
+
     Example:
     t = Wait_For_State(lambda: server.check_port_state(), lambda: print "Server has started!")
     t.start()
@@ -65,7 +65,7 @@ class Wait_For_State(Thread):
 
     def cancel(self):
         self.finished.set()
-    
+
     def run(self):
         while not self.finished.is_set():
             if self.state_function():
@@ -84,7 +84,7 @@ class ExperimentServerControllerException(Exception):
         return repr(self.value)
 
 #----------------------------------------------
-# simple wrapper class to control the 
+# simple wrapper class to control the
 # starting/stopping of experiment server
 #----------------------------------------------
 class ExperimentServerController:
@@ -100,7 +100,7 @@ class ExperimentServerController:
             return ppid
         else:
             raise ExperimentServerControllerException("Cannot shut down experiment server, server not online")
-    
+
     def restart(self):
         self.shutdown()
         self.startup()
@@ -116,7 +116,7 @@ class ExperimentServerController:
             print ExperimentServerControllerException
         else:
             self.server_running = False
-    
+
     def is_server_running(self):
         portopen = self.is_port_available()
         #print self.server_running, " ", portopen
@@ -132,10 +132,11 @@ class ExperimentServerController:
     def is_port_available(self):
         return is_port_available(self.config.get("Server Parameters", "host"), self.config.getint("Server Parameters", "port"))
 
-    def startup(self):
-        server_command = "{python_exec} '{server_script}'".format(
+    def startup(self, useSandbox):
+        server_command = "{python_exec} '{server_script}' {sandbox}".format(
             python_exec = sys.executable,
-            server_script = os.path.join(os.path.dirname(__file__), "experiment_server.py")
+            server_script = os.path.join(os.path.dirname(__file__), "experiment_server.py"),
+            sandbox = useSandbox
         )
         if self.is_port_available() and not self.server_running:
             #print "Running experiment server with command:", server_command

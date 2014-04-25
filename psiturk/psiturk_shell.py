@@ -189,7 +189,7 @@ class PsiturkShell(Cmd, object):
     #  server management
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     def server_on(self):
-        self.server.startup()
+        self.server.startup('True')
         while self.server.is_server_running() != 'yes':
             time.sleep(0.5)
 
@@ -421,7 +421,7 @@ class PsiturkNetworkShell(PsiturkShell):
         self.amt_services = amt_services
         self.web_services = web_services
         self.db_services = aws_rds_services
-        self.sandbox = self.config.getboolean('HIT Configuration', 'using_sandbox')
+        self.sandbox = True
 
         self.sandboxHITs = 0
         self.liveHITs = 0
@@ -468,6 +468,12 @@ class PsiturkNetworkShell(PsiturkShell):
             prompt += ' #HITs:' + str(self.liveHITs)
         prompt += ']$ '
         self.prompt = prompt
+
+    def server_on(self):
+        self.server.startup(str(self.sandbox))
+        while self.server.is_server_running() != 'yes':
+            time.sleep(0.5)
+
 
     def do_status(self, arg): # overloads do_status with AMT info
         super(PsiturkNetworkShell, self).do_status(arg)
@@ -1271,13 +1277,11 @@ class PsiturkNetworkShell(PsiturkShell):
                 arg['<which>'] = 'sandbox'
         if arg['<which>'] == 'live':
             self.sandbox = False
-            self.config.set('HIT Configuration', 'using_sandbox', False)
             self.amt_services.set_sandbox(False)
             self.tally_hits()
             print 'Entered %s mode' % colorize('live', 'bold')
         else:
             self.sandbox = True
-            self.config.set('HIT Configuration', 'using_sandbox', True)
             self.amt_services.set_sandbox(True)
             self.tally_hits()
             print 'Entered %s mode' % colorize('sandbox', 'bold')
@@ -1419,12 +1423,9 @@ def run(cabinmode=False, script=None):
         shell = PsiturkShell(config, server)
         shell.check_offline_configuration()
     else:
-        if config.getboolean("Shell Parameters", "always_launch_in_sandbox"):
-            config.set('HIT Configuration', 'using_sandbox', True)
-
         amt_services = MTurkServices(config.get('AWS Access', 'aws_access_key_id'), \
-                                 config.get('AWS Access', 'aws_secret_access_key'), \
-                                 config.getboolean('HIT Configuration','using_sandbox'))
+                                     config.get('AWS Access', 'aws_secret_access_key'),
+                                     True) #assumming always starting in sandbox for now
         aws_rds_services = RDSServices(config.get('AWS Access', 'aws_access_key_id'), \
                                  config.get('AWS Access', 'aws_secret_access_key'),
                                  config.get('AWS Access', 'aws_region'))
