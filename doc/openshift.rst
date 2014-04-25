@@ -1,4 +1,3 @@
-
 Using psiTurk on OpenShift
 ===================
 
@@ -49,7 +48,7 @@ There are some idiosyncrasies involved in running psiTurk using OpenShift that y
 
 
 
-Step 3: Customize a new project
+Customize a new project
 --------------------------
 
 To run a psiTurk experiment (like the example Stroop task) you need to make two changes to the config.txt file, without which your experiment won't run on OpenShift:
