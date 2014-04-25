@@ -12,7 +12,7 @@ if 'OPENSHIFT_SECRET_TOKEN' in os.environ:
 else:
     globalConfigPath = "~/.psiturkconfig"
 
-global_config_file = os.path.expanduser("~/.psiturkconfig")
+global_config_file = os.path.expanduser(globalConfigPath)
 example_target = os.path.join(os.curdir, "psiturk-example")
 config_target = os.path.join(example_target, "config.txt")
 
