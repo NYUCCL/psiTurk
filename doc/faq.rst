@@ -48,7 +48,7 @@ server processes.  Examples would be a lab server that has a static ip
 address and allows users-lavel access to particular ports.  Alternative
 there are a number of (free) services which will give you a unix
 command line "in the cloud" including Red Hat's `OpenShift <https://www.openshift.com/>`__.
-
+Detailed instruction on how to do this are available `here <openshift.rst>`__.
 
 I'm trying to run **psiTurk** at home using a cable modem or other connection.  Will it work?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
