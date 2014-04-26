@@ -227,7 +227,7 @@ class PsiturkShell(Cmd, object):
             base_url = "http://" + self.config.get('Server Parameters', 'host') + "/ad"
         else:
             base_url = "http://" + self.config.get('Server Parameters', 'host') + ":" + self.config.get('Server Parameters', 'port') + "/ad"
-        
+
         launchurl = base_url + "?assignmentId=debug" + str(self.random_id_generator()) \
                     + "&hitId=debug" + str(self.random_id_generator()) \
                     + "&workerId=debug" + str(self.random_id_generator())
@@ -486,7 +486,7 @@ class PsiturkNetworkShell(PsiturkShell):
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #  worker management
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
-    def worker_list(self, submitted, approved, rejected, allWorkers, chosenHit):
+    def worker_list(self, submitted, approved, rejected, chosenHit):
         workers = None
         if submitted:
             workers = self.amt_services.get_workers("Submitted")
@@ -591,14 +591,14 @@ class PsiturkNetworkShell(PsiturkShell):
         with open(self.helpPath + 'amt.txt', 'r') as helpText:
             print helpText.read()
 
-    def hit_list(self, allHits, activeHits, reviewableHits):
+    def hit_list(self, activeHits, reviewableHits):
         hits_data = []
-        if allHits:
-            hits_data = self.amt_services.get_all_hits()
-        elif activeHits:
+        if activeHits:
             hits_data = self.amt_services.get_active_hits()
         elif reviewableHits:
             hits_data = self.amt_services.get_reviewable_hits()
+        else:
+            hits_data = self.amt_services.get_all_hits()
         if not hits_data:
             print '*** no hits retrieved'
         else:
@@ -1298,7 +1298,7 @@ class PsiturkNetworkShell(PsiturkShell):
           hit extend <HITid> [--assignments <number>] [--expiration <minutes>]
           hit expire (--all | <HITid> ...)
           hit dispose (--all | <HITid> ...)
-          hit list (all | active | reviewable)
+          hit list [--active | --reviewable]
           hit help
         """
 
@@ -1311,7 +1311,7 @@ class PsiturkNetworkShell(PsiturkShell):
         elif arg['dispose']:
             self.hit_dispose(arg['--all'], arg['<HITid>'])
         elif arg['list']:
-            self.hit_list(arg['all'], arg['active'], arg['reviewable'])
+            self.hit_list(arg['--active'], arg['--reviewable'])
         else:
             self.help_hit()
 
@@ -1333,7 +1333,7 @@ class PsiturkNetworkShell(PsiturkShell):
           worker reject (--hit <hit_id> | <assignment_id> ...)
           worker unreject (--hit <hit_id> | <assignment_id> ...)
           worker bonus  (--amount <amount> | --auto) (--hit <hit_id> | <assignment_id> ...)
-          worker list (submitted | approved | rejected | all) [--hit <hit_id>]
+          worker list [--submitted | --approved | --rejected] [--hit <hit_id>]
           worker help
         """
         if arg['approve']:
@@ -1343,7 +1343,7 @@ class PsiturkNetworkShell(PsiturkShell):
         elif arg['unreject']:
             self.worker_unreject(arg['<hit_id>'], arg['<assignment_id>'])
         elif arg['list']:
-            self.worker_list(arg['submitted'], arg['approved'], arg['rejected'], arg['all'], arg['<hit_id>'])
+            self.worker_list(arg['--submitted'], arg['--approved'], arg['--rejected'], arg['<hit_id>'])
         elif arg['bonus']:
             self.worker_bonus(arg['<hit_id>'], arg['--auto'], arg['<amount>'], "", arg['<assignment_id>'])
         else:

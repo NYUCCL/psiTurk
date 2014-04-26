@@ -25,7 +25,7 @@ Approve worker assignments for one or more assignment ID's, or use the
 Example
 ~~~~~~~~
 1. Approve a single assignment::
-     
+
      [psiTurk server:on mode:sdbx #HITs:0]$ worker approve 21A8IUB2YU98ZV9C5BUL3FBJB5B8K7
      approved 21A8IUB2YU98ZV9C5BUL3FBJB5B8K7
 
@@ -64,7 +64,7 @@ Usage
 ~~~~~
 
 ::
-   
+
      worker unreject (--hit <hit_id> | <assignment_id> ...)
 
 Unreject worker assignments for one or more assignment ID's, or use the
@@ -163,9 +163,10 @@ Usage
 
 ::
 
-   worker list (submitted | approved | rejected | all) [--hit <hit_id>]
+   worker list [--submitted | --approved | --rejected] [--hit <hit_id>]
 
-List worker assignments fitting a given condition. Use the ``--hit`` flag to
+List all worker assignments, or list worker assignments fitting a
+given condition using the provided flags. Use the ``--hit`` flag to
 list workers for a specific HIT.
 
 Examples
@@ -173,7 +174,7 @@ Examples
 
 1. Listing all submitted workers::
 
-     [psiTurk server:on mode:sdbx #HITs:0]$ worker list submitted
+     [psiTurk server:on mode:sdbx #HITs:0]$ worker list --submitted
      [
          {
              "status": "Submitted",
@@ -193,9 +194,9 @@ Examples
          }
      ]
 
-2. listing approved workers for a specific HIT::
+2. Listing approved workers for a specific HIT::
 
-    [psiTurk server:on mode:sdbx #HITs:0]$ worker list all --hit 2ECYT3DHJHP4RRU304P8USX9BCXU1O
+    [psiTurk server:on mode:sdbx #HITs:0]$ worker list --approved  --hit 2ECYT3DHJHP4RRU304P8USX9BCXU1O
     listing workers for HIT 2ECYT3DHJHP4RRU304P8USX9BCXU1O
     [
         {

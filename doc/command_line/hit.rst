@@ -68,7 +68,7 @@ Example
 ~~~~~~~
 Adding both time and assignments to a HIT::
 
-  psiTurk server:on mode:sdbx #HITs:1]$ hit list active
+  psiTurk server:on mode:sdbx #HITs:1]$ hit list --active
   Stroop task
 	Status: Assignable
 	HITid: 2776AUC26DG6NRIGNVRFN0COYO0B4R
@@ -78,7 +78,7 @@ Adding both time and assignments to a HIT::
 
   [psiTurk server:on mode:sdbx #HITs:1]$ hit extend 2776AUC26DG6NRIGNVRFN0COYO0B4R --assignments 10 --expiration 12
   HIT extended.
-  [psiTurk server:on mode:sdbx #HITs:1]$ hit list active
+  [psiTurk server:on mode:sdbx #HITs:1]$ hit list --active
   Stroop task
 	Status: Assignable
 	HITid: 2776AUC26DG6NRIGNVRFN0COYO0B4R
@@ -152,16 +152,16 @@ Usage
 
 ::
 
-  hit list (all | active | reviewable)
+  hit list [--active | --reviewable]
 
-List all HITs, all active HITs, or all reviewable HITs.
+List all HITs, or list all active or reviewable HITs using the provided flags.
 
 Examples
 ~~~~~~~~
 
 1. List all active HITs::
 
-     [psiTurk server:on mode:sdbx #HITs:1]$ hit list active
+     [psiTurk server:on mode:sdbx #HITs:1]$ hit list --active
      Stroop task
         Status: Assignable
 	HITid: 2ZFKO2L92HECCONGNYFCFF0C3R2FG1
@@ -173,7 +173,7 @@ Examples
 
 2. List all HITs::
 
-     [psiTurk server:on mode:sdbx #HITs:1]$ hit list all
+     [psiTurk server:on mode:sdbx #HITs:1]$ hit list
      Face Discrimination (5 - 10 minutes, up to $1.0 bonus!!)
 	Status: Reviewable
 	HITid: 2ZRNZW6HEZ6OUI7FRTZ6CGUMGIQPZ0

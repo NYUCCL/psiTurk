@@ -3,12 +3,12 @@ Usage:
   hit extend <HITid> [--assignments <number>] [--expiration <time>]
   hit expire (--all | <HITid> ...)
   hit dispose (--all | <HITid> ...)
-  hit list (all | active | reviewable)
+  hit list [--active | --reviewable]
   hit help
 
 'hit' is used with the following subcommands:
   create      Post a new HIT with the given number of
-  	      assignments, reward amount, and duration. Will be posted either 
+  	      assignments, reward amount, and duration. Will be posted either
 	      live to Amazon Mechanical Turk or to the Worker Sandbox depending
   	      upon your current mode. 'hit create' can also be run
   	      interactively by entering the command without parameters.
@@ -18,5 +18,6 @@ Usage:
   	      the '--all' flag.
   dispose     Dispose of one or more existing HITs, or dispose of all HITs
     	      using the '--all' flag.
-  list	      List all hits, all active hits, or all reviewable hits.
+  list	      List all HITs, or list all active or reviewable HITs using the
+              provided flags.
   help	      Display this screen.
