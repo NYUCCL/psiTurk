@@ -7,19 +7,14 @@ the psiturk shell.
 ::
 
 	[Shell Parameters]
-	always_launch_in_sandbox = true
+	launch_in_sandbox_mode = true
 
-`always_launch_in_sandbox` [ true | false]
+`launch_in_sandbox_mode` [ true | false]
 -----------------------------------------
 
-If set to `true` this option will cause the psiturk shell
-to always launch in sandbox mode, automatically changing the `using_sandbox <hit_configuration.html#using-sandbox-true-false>`__  option to true. 
-This is to avoid errors where the user "forgets" that they are "live".
-This means to interact with the live AMT site you
-must manually switch the mode after launching the shell.
-If set to `false`, the shell will launch in whatever mode
-was last set.
-
+If set to `true`, the psiturk shell will launch in sandbox mode. if set to
+`false`, the shell will launch in live mode. We recommend leaving this option
+to `true` to lessen the chance of accidentally posting a live HIT to mTurk.
 
 .. seealso::
 
