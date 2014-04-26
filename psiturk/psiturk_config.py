@@ -3,7 +3,14 @@ from distutils import file_util
 from ConfigParser import SafeConfigParser
 
 class PsiturkConfig(SafeConfigParser):
-    def __init__(self, localConfig="config.txt", globalConfig="~/.psiturkconfig", **kwargs):
+    def __init__(self, localConfig="config.txt", globalConfigName=".psiturkconfig", **kwargs):
+
+        # If working in OpenShift, move global config file in data directory (has access rights)
+        if 'OPENSHIFT_SECRET_TOKEN' in os.environ:
+            globalConfig = os.environ['OPENSHIFT_DATA_DIR'] + globalConfigName
+        else:
+            globalConfig = "~/" + globalConfigName
+
         self.parent = SafeConfigParser
         self.parent.__init__(self, **kwargs)
         self.localFile = localConfig
