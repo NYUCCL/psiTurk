@@ -32,4 +32,4 @@ num_conds = 1
 num_counters = 1
 
 [Shell Parameters]
-always_launch_in_sandbox = true
+launch_in_sandbox_mode = true

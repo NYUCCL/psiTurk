@@ -227,7 +227,7 @@ class PsiturkShell(Cmd, object):
             base_url = "http://" + self.config.get('Server Parameters', 'host') + "/ad"
         else:
             base_url = "http://" + self.config.get('Server Parameters', 'host') + ":" + self.config.get('Server Parameters', 'port') + "/ad"
-        
+
         launchurl = base_url + "?assignmentId=debug" + str(self.random_id_generator()) \
                     + "&hitId=debug" + str(self.random_id_generator()) \
                     + "&workerId=debug" + str(self.random_id_generator())
@@ -420,12 +420,12 @@ class PsiturkShell(Cmd, object):
 
 class PsiturkNetworkShell(PsiturkShell):
 
-    def __init__(self, config, amt_services, aws_rds_services, web_services, server):
+    def __init__(self, config, amt_services, aws_rds_services, web_services, server, sandbox):
         self.config = config
         self.amt_services = amt_services
         self.web_services = web_services
         self.db_services = aws_rds_services
-        self.sandbox = True
+        self.sandbox = sandbox
 
         self.sandboxHITs = 0
         self.liveHITs = 0
@@ -1428,13 +1428,14 @@ def run(cabinmode=False, script=None):
     else:
         amt_services = MTurkServices(config.get('AWS Access', 'aws_access_key_id'), \
                                      config.get('AWS Access', 'aws_secret_access_key'),
-                                     True) #assumming always starting in sandbox for now
+                                     config.getboolean('Shell Parameters', 'launch_in_sandbox_mode'))
         aws_rds_services = RDSServices(config.get('AWS Access', 'aws_access_key_id'), \
                                  config.get('AWS Access', 'aws_secret_access_key'),
                                  config.get('AWS Access', 'aws_region'))
         web_services = PsiturkOrgServices(config.get('psiTurk Access', 'psiturk_access_key_id'),
                                  config.get('psiTurk Access', 'psiturk_secret_access_id'))
-        shell = PsiturkNetworkShell(config, amt_services, aws_rds_services, web_services, server)
+        shell = PsiturkNetworkShell(config, amt_services, aws_rds_services, web_services, server, \
+                                    config.getboolean('Shell Parameters', 'launch_in_sandbox_mode'))
     if script:
         with open(script, 'r') as f:
             for line in f:
