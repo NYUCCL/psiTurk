@@ -17,8 +17,8 @@ to always launch in sandbox mode, automatically changing the `using_sandbox <hit
 This is to avoid errors where the user "forgets" that they are "live".
 This means to interact with the live AMT site you
 must manually switch the mode after launching the shell.
-If set to `false`, the shell will launch in the mode indicated by the 
-`using_sandbox` option.
+If set to `false`, the shell will launch in whatever mode
+was last set.
 
 
 .. seealso::

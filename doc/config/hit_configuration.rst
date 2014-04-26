@@ -19,7 +19,6 @@ like this:
 	psiturk_keywords = stroop
 	organization_name = New Great University
 	browser_exclude_rule = MSIE, mobile, tablet
-	using_sandbox = False
 
 
 `title` [string]
@@ -162,15 +161,4 @@ try to exclude computers or browser with gesture or touch capabilities
 standard computers (sort of the opposite to the `mobile` and `tablet` exclusions).
 Finally `bot` tries to exclude web spiders and non-browser agents like
 the Unix curl command.
-
-`using_sandbox` [true | false]
-----------------------------
-`using_sandbox` indicates if HITs for this task should be posted to
-the sandbox or "live" AMT site.  This variable can be modified while
-psiturk is running by using the `mode command <../command_line/mode.html>`__.
-
-.. seealso::
-
-   `Overview of the command-line interface <../command_line_overview.html>`__
-   	  The basic features of the **psiTurk** command line.
 
