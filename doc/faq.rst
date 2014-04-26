@@ -48,7 +48,7 @@ server processes.  Examples would be a lab server that has a static ip
 address and allows users-lavel access to particular ports.  Alternative
 there are a number of (free) services which will give you a unix
 command line "in the cloud" including Red Hat's `OpenShift <https://www.openshift.com/>`__.
-Detailed instruction on how to do this are available `here <openshift.rst>`__.
+Detailed instruction on how to do this are available `here <openshift.html>`__.
 
 I'm trying to run **psiTurk** at home using a cable modem or other connection.  Will it work?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -88,6 +88,6 @@ I'm having Javascript errors when designing my experiment.  Can you help?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Sorry, but probably not.  See the above about programming experiments.  There are many 
-ways of `getting help <getting_help.rst>`__ with **psiTurk** specifically and many
+ways of `getting help <getting_help.html>`__ with **psiTurk** specifically and many
 excellent tutorials online for developing web applications using Javascript.  A good
 example is `CodeAcademy's Javascript lessons <http://www.codecademy.com/tracks/javascript>`__.
