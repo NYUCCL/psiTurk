@@ -39,7 +39,7 @@ If that is the case, you can't really use the external HIT mechanism without get
 
 However, the psiturk Secure Ad Server **solves this problem for all researchers**.
 
-.. image:: http://dev.psiturk.org/static/images/server_animation/frame-5.png
+.. image:: https://psiturk.org/static/images/server_animation/server_animation_frame5.png
 	:align: left
 
 

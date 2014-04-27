@@ -1,4 +1,4 @@
-<img src="http://dev.psiturk.org/static/images/psiturk_logo_README.png">
+<img src="https://psiturk.org/static/images/psiturk_logo_README.png">
 
 [![Build Status](https://travis-ci.org/NYUCCL/psiTurk.png?branch=dev)](https://travis-ci.org/NYUCCL/psiTurk)
 [![Coverage Status](http://coveralls.io/repos/NYUCCL/psiTurk/badge.png?branch=dev)](http://coveralls.io/r/NYUCCL/psiTurk?branch=dev)
