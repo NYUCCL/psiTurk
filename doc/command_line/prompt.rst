@@ -5,7 +5,7 @@ The psiTurk shell prompt looks something like this::
 
   [psiTurk server:off mode:sdbx #HITs:0]$
 
-and contains several pieces of usefull information. 
+and contains several pieces of useful information.
 
 Server field
 --------------
@@ -22,7 +22,7 @@ Mode field
 The ``mode`` field displays the current mode of the shell. In the full psiturk
 shell, the mode will be either ``sdbx`` (sandbox) or ``live``. While in
 cabin mode, the mode will be listed as ``cabin``. More about the psiturk shell
-mode can be found `here <command_line/mode.html>`__.
+mode can be found `here <./mode.html>`__.
 
 #HITs field
 ------------
