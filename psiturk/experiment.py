@@ -49,6 +49,10 @@ BONUSED = 7
 # let's start
 ###########################################################
 app = Flask("Experiment_Server")
+def start_app(sandbox):
+    global sandbox_bool
+    sandbox_bool = sandbox
+    return app
 app.config.update(SEND_FILE_MAX_AGE_DEFAULT=10) # set cache timeout to 10ms for static files
 
 ###########################################################
@@ -71,7 +75,7 @@ except ImportError:
 
 init_db()
 
-# read psiturk.js file into memory 
+# read psiturk.js file into memory
 psiturk_js_file = os.path.join(os.path.dirname(__file__), "psiturk_js/psiturk.js")
 app.logger.error( psiturk_js_file )
 
@@ -249,7 +253,7 @@ def advertisement():
         # They've done the debriefing but perhaps haven't submitted the HIT yet..
         # Turn asignmentId into original assignment id before sending it back to AMT
         return render_template('thanks.html',
-                               is_sandbox=config.getboolean('HIT Configuration', 'using_sandbox'),
+                               is_sandbox = sandbox_bool,
                                hitid = hitId,
                                assignmentid = assignmentId,
                                workerid = workerId)
@@ -367,7 +371,7 @@ def start_exp():
         # if everything goes ok here relatively safe to assume we can lookup the ad
         ad_id = get_ad_via_hitid(hitId)
         if ad_id != "error":
-            if config.getboolean('HIT Configuration', 'using_sandbox'):
+            if sandbox_bool:
                 ad_server_location = 'https://sandbox.ad.psiturk.org/complete/' + str(ad_id)
             else:
                 ad_server_location = 'https://ad.psiturk.org/complete/' + str(ad_id)
@@ -560,4 +564,3 @@ def run_webserver():
 
 if __name__ == '__main__':
     run_webserver()
-

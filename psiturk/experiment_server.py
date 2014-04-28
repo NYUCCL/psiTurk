@@ -3,6 +3,7 @@ from gunicorn.app.base import Application
 from gunicorn import util
 import multiprocessing
 from psiturk_config import PsiturkConfig
+import sys
 
 config = PsiturkConfig()
 config.load_config()
@@ -12,10 +13,11 @@ class ExperimentServer(Application):
     Custom Gunicorn Server Application that serves up the Experiment application
     '''
 
-    def __init__(self):
+    def __init__(self, sandbox):
         '''__init__ method
         Load the base config and assign some core attributes.
         '''
+        self.sandbox = sandbox
         self.load_user_config()
         self.usage = None
         self.callable = None
@@ -39,7 +41,7 @@ class ExperimentServer(Application):
         '''load method
         Imports our application and returns it to be run.
         '''
-        return util.import_app("psiturk.experiment:app")
+        return util.import_app("psiturk.experiment:start_app(%s)" % self.sandbox)
 
     def load_user_config(self):
         workers = config.get("Server Parameters", "threads")  # config calls these threads to avoid confusing with workers
@@ -57,8 +59,8 @@ class ExperimentServer(Application):
             'errorlog': config.get("Server Parameters", "logfile")
         }
 
-def launch():
-    ExperimentServer().run()
+def launch(sandbox):
+    ExperimentServer(sandbox).run()
 
 if __name__ == "__main__":
-    launch()
+    launch(sys.argv[1])

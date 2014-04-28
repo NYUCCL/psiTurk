@@ -189,7 +189,7 @@ class PsiturkShell(Cmd, object):
     #  server management
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     def server_on(self):
-        self.server.startup()
+        self.server.startup('True')
         while self.server.is_server_running() != 'yes':
             time.sleep(0.5)
 
@@ -420,12 +420,12 @@ class PsiturkShell(Cmd, object):
 
 class PsiturkNetworkShell(PsiturkShell):
 
-    def __init__(self, config, amt_services, aws_rds_services, web_services, server):
+    def __init__(self, config, amt_services, aws_rds_services, web_services, server, sandbox):
         self.config = config
         self.amt_services = amt_services
         self.web_services = web_services
         self.db_services = aws_rds_services
-        self.sandbox = self.config.getboolean('HIT Configuration', 'using_sandbox')
+        self.sandbox = sandbox
 
         self.sandboxHITs = 0
         self.liveHITs = 0
@@ -472,6 +472,12 @@ class PsiturkNetworkShell(PsiturkShell):
             prompt += ' #HITs:' + str(self.liveHITs)
         prompt += ']$ '
         self.prompt = prompt
+
+    def server_on(self):
+        self.server.startup(str(self.sandbox))
+        while self.server.is_server_running() != 'yes':
+            time.sleep(0.5)
+
 
     def do_status(self, arg): # overloads do_status with AMT info
         super(PsiturkNetworkShell, self).do_status(arg)
@@ -1274,13 +1280,11 @@ class PsiturkNetworkShell(PsiturkShell):
                 arg['<which>'] = 'sandbox'
         if arg['<which>'] == 'live':
             self.sandbox = False
-            self.config.set('HIT Configuration', 'using_sandbox', False)
             self.amt_services.set_sandbox(False)
             self.tally_hits()
             print 'Entered %s mode' % colorize('live', 'bold')
         else:
             self.sandbox = True
-            self.config.set('HIT Configuration', 'using_sandbox', True)
             self.amt_services.set_sandbox(True)
             self.tally_hits()
             print 'Entered %s mode' % colorize('sandbox', 'bold')
@@ -1422,18 +1426,16 @@ def run(cabinmode=False, script=None):
         shell = PsiturkShell(config, server)
         shell.check_offline_configuration()
     else:
-        if config.getboolean("Shell Parameters", "always_launch_in_sandbox"):
-            config.set('HIT Configuration', 'using_sandbox', True)
-
         amt_services = MTurkServices(config.get('AWS Access', 'aws_access_key_id'), \
-                                 config.get('AWS Access', 'aws_secret_access_key'), \
-                                 config.getboolean('HIT Configuration','using_sandbox'))
+                                     config.get('AWS Access', 'aws_secret_access_key'),
+                                     config.getboolean('Shell Parameters', 'launch_in_sandbox_mode'))
         aws_rds_services = RDSServices(config.get('AWS Access', 'aws_access_key_id'), \
                                  config.get('AWS Access', 'aws_secret_access_key'),
                                  config.get('AWS Access', 'aws_region'))
         web_services = PsiturkOrgServices(config.get('psiTurk Access', 'psiturk_access_key_id'),
                                  config.get('psiTurk Access', 'psiturk_secret_access_id'))
-        shell = PsiturkNetworkShell(config, amt_services, aws_rds_services, web_services, server)
+        shell = PsiturkNetworkShell(config, amt_services, aws_rds_services, web_services, server, \
+                                    config.getboolean('Shell Parameters', 'launch_in_sandbox_mode'))
     if script:
         with open(script, 'r') as f:
             for line in f:
