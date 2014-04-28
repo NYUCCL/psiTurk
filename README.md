@@ -6,8 +6,9 @@
 [![Downloads](https://pypip.in/d/PsiTurk/badge.png)](https://pypi.python.org/pypi/PsiTurk/)
 [![License](http://img.shields.io/badge/license-MIT-red.svg)](http://en.wikipedia.org/wiki/MIT_License)
 
-Please visit [psiturk.org](https://psiturk.org) for more information.
+The current stable version is 2.0.
 
+Please visit [psiturk.org](https://psiturk.org) for more information.
 
 You are welcome to use this code for personal or academic uses. If you fork,
 or use this in an academic paper please cite as follows:
