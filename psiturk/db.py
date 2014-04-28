@@ -6,6 +6,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from psiturk_config import PsiturkConfig
 
 config = PsiturkConfig()
+config.load_config()
 
 DATABASE = config.get('Database Parameters', 'database_url')
 
@@ -18,5 +19,5 @@ Base = declarative_base()
 Base.query = db_session.query_property()
 
 def init_db():
-    print "Initalizing db if necessary."
+    #print "Initalizing db if necessary."
     Base.metadata.create_all(bind=engine)

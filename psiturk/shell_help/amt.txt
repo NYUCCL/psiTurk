@@ -1,0 +1,4 @@
+Usage:
+  amt_balance
+
+Display current Amazon Mechanical Turk or Worker Sandbox balance.

@@ -1,0 +1,13 @@
+Usage:
+  server on
+  server off
+  server restart
+  server log
+  server help
+
+'server' is used with the following subcommands:
+  on        Start server. Will not work if server is already running.
+  off       Stop server. May take several seconds.
+  restart   Run 'server off', followed by 'server on'.
+  log	    Open live server log in a separate window.
+  help	    Display this screen.

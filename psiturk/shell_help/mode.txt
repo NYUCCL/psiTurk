@@ -1,0 +1,16 @@
+Usage:
+  mode
+  mode <which>
+
+The 'mode' command controls the current mode of the psiTurk
+shell. Type 'mode live' or 'mode sandbox' to switch to either mode, or
+simply 'mode' to switch to the opposite mode. Changing mode has no
+effect on existing HITs, but controls whether future commands operate
+live or in the Worker Sandbox. For example, if you create a HIT while
+in 'sandbox' mode, and then switch to 'live' mode, the created HIT
+will remain in the Worker Sandbox. But if you now create a second HIT,
+it will appear on mTurk for live workers to complete. Similarly,
+commands like 'worker list' or 'hit list all' will list sandbox
+workers and HITs while in sandbox mode, and will list live workers and
+HITs while in live mode.
+

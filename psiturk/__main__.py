@@ -1,4 +1,4 @@
 
 if __name__ == '__main__':
-    import psiturk
-    psiturk.run_webserver()
+    import experiment
+    experiment.run_webserver()

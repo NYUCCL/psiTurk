@@ -1,0 +1,137 @@
+<!doctype html>
+<!-- 
+	The ad.html has a very specific format.
+
+	Really there are two "ads" contained within this file.
+
+	The first ad displays to participants who are browsing
+	the Amazon Mechanical Turk site but have not yet accepted
+	your hit.  
+
+	The second part of the ad display after the person selected
+	"Accept HIT" on the Amazon website.  This will reload the
+	ad and will display a button which, when clicked, will pop
+	open a new browser window pointed at your local psiTurk
+	server (assuming it is running and accessible to the Internet).
+
+	See comments throughout for hints
+
+-->
+<html>
+	<head>
+		<title>Psychology Experiment</title>
+		<link rel=stylesheet href="/static/css/bootstrap.min.css" type="text/css">
+		<style>
+			/* these tyles need to be defined locally */
+			body {
+			    padding:0px;
+			    margin: 0px;
+			    background-color: white;
+			    color: black;
+			    font-weight: 300; 
+			    font-size: 13pt;
+			}
+
+			/* ad.html  - the ad that people view first */
+			#adlogo {
+			    float: right;
+			    width: 140px;
+			    padding: 2px;
+			    border: 1px solid #ccc;
+			}
+
+			#container-ad {
+			    position: absolute;
+			    top: 0px; /* Header Height */
+			    bottom: 0px; /* Footer Height */
+			    left: 0px;
+			    right: 0px;
+			    padding: 100px;
+			    padding-top: 5%;
+			    border: 18px solid #f3f3f3;
+			    background: white;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="container-ad">
+
+			<div id="ad">
+				<div class="row">
+					<div class="col-xs-2">
+						<!-- REPLACE THE LOGO HERE WITH YOUR  UNIVERSITY, LAB, or COMPANY -->
+						<img id="adlogo" src="{{ server_location }}/static/images/university.png" alt="Lab Logo" />
+					</div>
+					<div class="col-xs-10">
+
+							<!-- 
+								If assignmentid is "ASSIGNMENT_ID_NOT_AVAILABLE"
+								it means the participant has NOT accepted your hit. 
+								This should display the typical advertisement about
+								your experiment: who can participate, what the
+								payment is, the time, etc...
+
+							-->
+							{% if assignmentid == "ASSIGNMENT_ID_NOT_AVAILABLE" %}
+
+							    <h1>Call for participants</h1>
+							    <p>
+									The XXX Lab at XXXXX University is looking for online participants 
+									for a brief psychology experiment. The only requirements 
+									are that you are at least 18 years old and are a fluent English 
+									speaker.  The task will that XXXXX minutes and will pay XXXXX.
+							    </p>
+							    <div class="alert alert-danger">
+									<strong>This task can only be completed once.</strong> 
+									If you have already completed this task before the system will not 
+									allow you to run again. If this looks familiar please return the 
+									HIT so someone else can participate.
+							    </div>
+							    <p>
+								    Otherwise, please click the "Accept HIT" button on the Amazon site 
+								    above to begin the task.
+								</p>
+							    
+
+							{% else %}
+
+								<!-- 
+									OTHERWISE
+									If assignmentid is NOT "ASSIGNMENT_ID_NOT_AVAILABLE"
+									it means the participant has accepted your hit. 
+									You should thus show them instructions to begin the 
+									experiment ... usually a button to launch a new browser
+									window pointed at your server.
+
+									It is important you do not change the code for the
+									openwindow() function below if you want you experiment
+									to work.
+								-->
+							    <h1>Thank you for accepting this HIT!</h1>
+							    <p>
+							    	By clicking the following URL link, you will be taken to the experiment,
+							        including complete instructions and an informed consent agreement.
+							    </p>
+							    <script>
+									function openwindow() {
+							    		popup = window.open('{{ server_location }}/consent?hitId={{ hitid }}&assignmentId={{ assignmentid }}&workerId={{ workerid }}','Popup','toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=no,width='+1024+',height='+768+'');
+							  		}
+							    </script>
+							    <div class="alert alert-warning">
+							    	<b>Warning</b>: Please disable pop-up blockers before continuing.
+							    </div>
+							    
+						    	<button type="button" class="btn btn-primary btn-lg" onClick="openwindow();">
+								  Begin Experiment
+								</button>
+
+
+							{% endif %}
+							<!-- 
+								endif
+							-->
+					</div>
+			</div>
+		</div>
+	</body>
+</html>

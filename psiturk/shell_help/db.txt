@@ -1,0 +1,34 @@
+Usage:
+  db get_config
+  db use_local_file [<filename>]
+  db use_aws_instance [<instance_id>]
+
+  db aws_list_regions
+  db aws_get_region
+  db aws_set_region [<region_name>]
+  db aws_list_instances
+  db aws_create_instance [<instance_id> <size> <username> <password> <dbname>]
+  db aws_delete_instance [<instance_id>]
+
+  db help
+
+Note: the 'aws_' sub commands are used to interact with the Amazon Web Services 
+Relational Database Server (RDS) cloud service
+
+
+'db' is used with the following subcommands:
+  
+  get_config            Displays the current setting of the DB (database_url)
+  use_local_file        Switches the current DB to a local SQLite file 
+                        (default is 'participants.db')
+  use_aws_instance      Switch current database to given instance on AWS RDS
+
+  aws_list_regions      Lists available AWS regions
+  aws_get_region        Displays the current AWS regions you are communicating 
+                        with
+  aws_set_region        Sets the AWS region you are currently using
+  aws_list_instances    Lists instances and statuses on this region/AWS account
+  aws_create_instance   Creates an RDS instance using MySQL on the AWS Cloud
+  aws_delete_instance   Delete an RDS instance
+  help                  Display this screen.
+

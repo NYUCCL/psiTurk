@@ -1,15 +1,16 @@
 
 import datetime
 import io, csv, json
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, Float, Text
 
 from db import Base
 from psiturk_config import PsiturkConfig
 
 config = PsiturkConfig()
+config.load_config()
 
 TABLENAME = config.get('Database Parameters', 'table_name')
-CODE_VERSION = config.get('Task Parameters', 'code_version')
+CODE_VERSION = config.get('Task Parameters', 'experiment_code_version')
 
 class Participant(Base):
     """
@@ -31,9 +32,9 @@ class Participant(Base):
     beginhit = Column(DateTime)
     beginexp = Column(DateTime)
     endhit = Column(DateTime)
+    bonus = Column(Float, default = 0)
     status = Column(Integer, default = 1)
-    debriefed = Column(Boolean)
-    datastring = Column(Text)
+    datastring = Column(Text(4294967295))
     
     def __init__(self, **kwargs):
         self.uniqueid = "{workerid}:{assignmentid}".format(**kwargs)
@@ -41,7 +42,6 @@ class Participant(Base):
             setattr(self, key, kwargs[key])
         self.status = 1
         self.codeversion = CODE_VERSION
-        self.debriefed = False
         self.beginhit = datetime.datetime.now()
     
     def __repr__(self):
@@ -53,10 +53,26 @@ class Participant(Base):
     
     def get_trial_data(self):
         try:
-            return(json.loads(self.datastring)["data"])
+            trialdata = json.loads(self.datastring)["data"]
         except:
             # There was no data to return.
             print("No trial data found in record:", self)
+            return("")
+
+        try:
+            ret = []
+            with io.BytesIO() as outstring:
+                csvwriter = csv.writer(outstring)
+                for trial in trialdata:
+                    csvwriter.writerow((
+                        self.uniqueid,
+                        trial["current_trial"],
+                        trial["dateTime"],
+                        json.dumps(trial["trialdata"])))
+                ret = outstring.getvalue()
+            return ret
+        except:
+            print("Error reading record:", self)
             return("")
     
     def get_event_data(self):

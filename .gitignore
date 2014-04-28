@@ -2,6 +2,8 @@
 config.txt
 participants.db
 server.log
+psiturk-example
+.psiturk_history
 
 *.py[cod]
 
@@ -33,6 +35,7 @@ sdist
 develop-eggs
 .installed.cfg
 lib
+!psiturk/example/static/lib/
 lib64
 __pycache__
 
@@ -51,7 +54,9 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
-static/dashboard/js/templates/screen_off.r
-static/dashboard/js/templates/explain_way.py
 
 /server.log
+
+.DS_Store
+
+doc/_build

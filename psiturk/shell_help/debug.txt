@@ -1,0 +1,11 @@
+Usage: 
+  debug [options]
+options:
+  -p, --print-only         just provides the URL, doesn't attempt to launch
+  			   browser
+
+'debug' makes it possible to locally test your experiment without contacting
+Mechanical Turk servers. Type 'debug' to launch your experiment in a browser
+window, or use the '--print-only' flag to create a URL to the experiment
+without launching a browser. The server must be running to debug your
+experiment (try 'server on').
