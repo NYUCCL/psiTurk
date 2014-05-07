@@ -45,9 +45,36 @@ Your Amazon Web Service account should be set up now.
 Obtaining AWS credentials
 ------------
 
-An AWS key is required for posting new HITs to mechanical turk as well as monitoring existing HITs. You receive your key when you open an Amazon Web Services account. If you already have an AWS account, your key can be retrieved 
-`here <http://aws-portal.amazon.com/gp/aws/developer/account/index.html?action=access-key>`__.
-The values of these keys need to be placed in you ``~/.psiturkconfig`` file.
+An AWS access key id and secret access key is required for posting new HITs to Mechanical Turk as well as monitoring existing HITs. If you created an AWS access key and did not save your secret access key, you will need to create a new access key. After April 21, 2014, AWS no longer allows users to retrieve their secret access key. Follow the steps below to create a new key. 
+
+You can create your keys after you open an Amazon Web Services account. Your keys can be generated in the `AWS Management Console <https://console.aws.amazon.com/iam/home?#security_credential>`__.
+
+Click on the "Access Keys" tab. Your screen should look like this: 
+
+.. image:: images/docs_AWS_credentials_page.png
+	:align: center 
+
+Press the "Create New Access Key" button to generate a set of access keys.
+ 
+.. image:: images/docs_AWS_credentials_create_button.png
+	:align: center
+
+A popup window should appear on the screen to tell you that your access key has been created. Your access keys will appear in the popup box. 
+
+.. image:: images/docs_AWS_credentials_created_popup.png
+	:align: center
+
+If you do not see your access key, click the "Show Access Key" link in the popup box. 
+
+.. image:: images/docs_AWS_credentials_show_button.png
+	:align: center
+
+We recommend that you also download your access keys just in case. The "Download Key File" button will download the keys onto your computer in a CSV file.
+ 
+.. image:: images/docs_AWS_credentials_download_button.png
+	:align: center
+
+The values of these keys need to be placed in you ``~/.psiturkconfig`` file. The file is located in your home directory
 
 Creating an AMT Requester account
 ----------------------------------

@@ -189,7 +189,7 @@ class PsiturkShell(Cmd, object):
     #  server management
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     def server_on(self):
-        self.server.startup()
+        self.server.startup('True')
         while self.server.is_server_running() != 'yes':
             time.sleep(0.5)
 
@@ -227,7 +227,7 @@ class PsiturkShell(Cmd, object):
             base_url = "http://" + self.config.get('Server Parameters', 'host') + "/ad"
         else:
             base_url = "http://" + self.config.get('Server Parameters', 'host') + ":" + self.config.get('Server Parameters', 'port') + "/ad"
-        
+
         launchurl = base_url + "?assignmentId=debug" + str(self.random_id_generator()) \
                     + "&hitId=debug" + str(self.random_id_generator()) \
                     + "&workerId=debug" + str(self.random_id_generator())
@@ -420,12 +420,12 @@ class PsiturkShell(Cmd, object):
 
 class PsiturkNetworkShell(PsiturkShell):
 
-    def __init__(self, config, amt_services, aws_rds_services, web_services, server):
+    def __init__(self, config, amt_services, aws_rds_services, web_services, server, sandbox):
         self.config = config
         self.amt_services = amt_services
         self.web_services = web_services
         self.db_services = aws_rds_services
-        self.sandbox = self.config.getboolean('HIT Configuration', 'using_sandbox')
+        self.sandbox = sandbox
 
         self.sandboxHITs = 0
         self.liveHITs = 0
@@ -473,6 +473,12 @@ class PsiturkNetworkShell(PsiturkShell):
         prompt += ']$ '
         self.prompt = prompt
 
+    def server_on(self):
+        self.server.startup(str(self.sandbox))
+        while self.server.is_server_running() != 'yes':
+            time.sleep(0.5)
+
+
     def do_status(self, arg): # overloads do_status with AMT info
         super(PsiturkNetworkShell, self).do_status(arg)
         server_status = self.server.is_server_running()
@@ -486,7 +492,7 @@ class PsiturkNetworkShell(PsiturkShell):
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #  worker management
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
-    def worker_list(self, submitted, approved, rejected, allWorkers, chosenHit):
+    def worker_list(self, submitted, approved, rejected, chosenHit):
         workers = None
         if submitted:
             workers = self.amt_services.get_workers("Submitted")
@@ -591,14 +597,14 @@ class PsiturkNetworkShell(PsiturkShell):
         with open(self.helpPath + 'amt.txt', 'r') as helpText:
             print helpText.read()
 
-    def hit_list(self, allHits, activeHits, reviewableHits):
+    def hit_list(self, activeHits, reviewableHits):
         hits_data = []
-        if allHits:
-            hits_data = self.amt_services.get_all_hits()
-        elif activeHits:
+        if activeHits:
             hits_data = self.amt_services.get_active_hits()
         elif reviewableHits:
             hits_data = self.amt_services.get_reviewable_hits()
+        else:
+            hits_data = self.amt_services.get_all_hits()
         if not hits_data:
             print '*** no hits retrieved'
         else:
@@ -1274,13 +1280,11 @@ class PsiturkNetworkShell(PsiturkShell):
                 arg['<which>'] = 'sandbox'
         if arg['<which>'] == 'live':
             self.sandbox = False
-            self.config.set('HIT Configuration', 'using_sandbox', False)
             self.amt_services.set_sandbox(False)
             self.tally_hits()
             print 'Entered %s mode' % colorize('live', 'bold')
         else:
             self.sandbox = True
-            self.config.set('HIT Configuration', 'using_sandbox', True)
             self.amt_services.set_sandbox(True)
             self.tally_hits()
             print 'Entered %s mode' % colorize('sandbox', 'bold')
@@ -1298,7 +1302,7 @@ class PsiturkNetworkShell(PsiturkShell):
           hit extend <HITid> [--assignments <number>] [--expiration <minutes>]
           hit expire (--all | <HITid> ...)
           hit dispose (--all | <HITid> ...)
-          hit list (all | active | reviewable)
+          hit list [--active | --reviewable]
           hit help
         """
 
@@ -1311,7 +1315,7 @@ class PsiturkNetworkShell(PsiturkShell):
         elif arg['dispose']:
             self.hit_dispose(arg['--all'], arg['<HITid>'])
         elif arg['list']:
-            self.hit_list(arg['all'], arg['active'], arg['reviewable'])
+            self.hit_list(arg['--active'], arg['--reviewable'])
         else:
             self.help_hit()
 
@@ -1333,7 +1337,7 @@ class PsiturkNetworkShell(PsiturkShell):
           worker reject (--hit <hit_id> | <assignment_id> ...)
           worker unreject (--hit <hit_id> | <assignment_id> ...)
           worker bonus  (--amount <amount> | --auto) (--hit <hit_id> | <assignment_id> ...)
-          worker list (submitted | approved | rejected | all) [--hit <hit_id>]
+          worker list [--submitted | --approved | --rejected] [--hit <hit_id>]
           worker help
         """
         if arg['approve']:
@@ -1343,7 +1347,7 @@ class PsiturkNetworkShell(PsiturkShell):
         elif arg['unreject']:
             self.worker_unreject(arg['<hit_id>'], arg['<assignment_id>'])
         elif arg['list']:
-            self.worker_list(arg['submitted'], arg['approved'], arg['rejected'], arg['all'], arg['<hit_id>'])
+            self.worker_list(arg['--submitted'], arg['--approved'], arg['--rejected'], arg['<hit_id>'])
         elif arg['bonus']:
             self.worker_bonus(arg['<hit_id>'], arg['--auto'], arg['<amount>'], "", arg['<assignment_id>'])
         else:
@@ -1422,18 +1426,16 @@ def run(cabinmode=False, script=None):
         shell = PsiturkShell(config, server)
         shell.check_offline_configuration()
     else:
-        if config.getboolean("Shell Parameters", "always_launch_in_sandbox"):
-            config.set('HIT Configuration', 'using_sandbox', True)
-
         amt_services = MTurkServices(config.get('AWS Access', 'aws_access_key_id'), \
-                                 config.get('AWS Access', 'aws_secret_access_key'), \
-                                 config.getboolean('HIT Configuration','using_sandbox'))
+                                     config.get('AWS Access', 'aws_secret_access_key'),
+                                     config.getboolean('Shell Parameters', 'launch_in_sandbox_mode'))
         aws_rds_services = RDSServices(config.get('AWS Access', 'aws_access_key_id'), \
                                  config.get('AWS Access', 'aws_secret_access_key'),
                                  config.get('AWS Access', 'aws_region'))
         web_services = PsiturkOrgServices(config.get('psiTurk Access', 'psiturk_access_key_id'),
                                  config.get('psiTurk Access', 'psiturk_secret_access_id'))
-        shell = PsiturkNetworkShell(config, amt_services, aws_rds_services, web_services, server)
+        shell = PsiturkNetworkShell(config, amt_services, aws_rds_services, web_services, server, \
+                                    config.getboolean('Shell Parameters', 'launch_in_sandbox_mode'))
     if script:
         with open(script, 'r') as f:
             for line in f:

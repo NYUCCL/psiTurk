@@ -3,7 +3,7 @@ Usage:
   worker reject (--hit <hit_id> | <assignment_id> ...)
   worker unreject (--hit <hit_id> | <assignment_id> ...)
   worker bonus  (--amount <amount> | --auto) (--hit <hit_id> | <assignment_id> ...)
-  worker list (submitted | approved | rejected | all) [--hit <hit_id>]
+  worker list [--submitted | --approved | --rejected] [--hit <hit_id>]
   worker help
 
 'worker' is used with the following subcommands:
@@ -22,6 +22,7 @@ Usage:
             workers who have not already been bonused for the HIT, but bonuses
             given to specific assignment ID's will be given regardless of
             whether the worker has already been bonused.
-  list      List worker assignments fitting a given condition. Use the '--hit'
-            flag to list workers for a specific HIT.
+  list      List all workers, or list workers fitting a specific status using.
+            the provided flags.  Use the '--hit' flag to list workers for a
+            specific HIT.
   help	    Display this screen.

@@ -1,13 +1,14 @@
-<img src="http://dev.psiturk.org/static/images/psiturk_logo_README.png">
+<img src="https://psiturk.org/static/images/psiturk_logo_README.png">
 
-[![Build Status](https://travis-ci.org/NYUCCL/psiTurk.png?branch=dev)](https://travis-ci.org/NYUCCL/psiTurk)
-[![Coverage Status](http://coveralls.io/repos/NYUCCL/psiTurk/badge.png?branch=dev)](http://coveralls.io/r/NYUCCL/psiTurk?branch=dev)
-[![Code Health](https://landscape.io/github/NYUCCL/psiTurk/dev/landscape.png)](https://landscape.io/github/NYUCCL/psiTurk/dev)
+[![Build Status](https://travis-ci.org/NYUCCL/psiTurk.png?branch=master)](https://travis-ci.org/NYUCCL/psiTurk)
+[![Coverage Status](http://coveralls.io/repos/NYUCCL/psiTurk/badge.png?branch=master)](http://coveralls.io/r/NYUCCL/psiTurk?branch=dev)
+[![Code Health](https://landscape.io/github/NYUCCL/psiTurk/master/landscape.png)](https://landscape.io/github/NYUCCL/psiTurk/dev)
 [![Downloads](https://pypip.in/d/PsiTurk/badge.png)](https://pypi.python.org/pypi/PsiTurk/)
 [![License](http://img.shields.io/badge/license-MIT-red.svg)](http://en.wikipedia.org/wiki/MIT_License)
 
-Please visit [psiturk.org](https://psiturk.org) for more information.
+The current stable version is 2.0.
 
+Please visit [psiturk.org](https://psiturk.org) for more information.
 
 You are welcome to use this code for personal or academic uses. If you fork,
 or use this in an academic paper please cite as follows:

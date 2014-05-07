@@ -7,7 +7,7 @@ as well as options which control how **psiTurk** behaves.
 
 The first file is a "global" configuration file and resides
 in your home folder (`~/.psiturkconfig`).  The second file is
-a "local" configuration file and resides in the folder of 
+a "local" configuration file and resides in the folder of
 each experiment.
 
 In general the "global" configuration file sets project-wide
@@ -50,8 +50,8 @@ like this:
 
 Other options can be added if you would like those
 to be global to all your projects.  The default options
-include your access credentials/API keys for 
-`Amazon Web Services <amt_setup.html>`__ (and Mechanical Turk) 
+include your access credentials/API keys for
+`Amazon Web Services <amt_setup.html>`__ (and Mechanical Turk)
 as well as `psiturk.org <psiturk_org_setup.html>`__.
 You can learn how to obtain proper values for these
 settings by following those links.
@@ -62,7 +62,7 @@ Local configuration file
 The local configuration file is specific to each
 project and resides in a file called `config.txt` in the
 top level of the project.  Here is what `config.txt`
-looks like for the default **psiTurk** `stroop <stroop.html>`__ 
+looks like for the default **psiTurk** `stroop <stroop.html>`__
 project:
 
 ::
@@ -79,7 +79,6 @@ project:
 	psiturk_keywords = stroop
 	organization_name = New Great University
 	browser_exclude_rule = MSIE, mobile, tablet
-	using_sandbox = False
 
 	[Database Parameters]
 	database_url = sqlite:///participants.db
@@ -102,7 +101,7 @@ project:
 	num_counters = 1
 
 	[Shell Parameters]
-	always_launch_in_sandbox = true
+	launch_in_sandbox_mode = true
 
 This file is divided into a few sections which are
 described in detail.  Each field is described by
@@ -127,4 +126,3 @@ expects.
 	config/server_parameters.rst
 	config/task_parameters.rst
 	config/shell_parameters.rst
-

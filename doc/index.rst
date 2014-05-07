@@ -35,11 +35,12 @@ User's Guide
    recording
    retrieving
    customizing
+   openshift
    error
    faq
    getting_help
    disclaimer
-   openshift
+   
 
 Contributing to **psiTurk**
 ---------------------------
