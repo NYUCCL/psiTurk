@@ -573,7 +573,7 @@ class PsiturkNetworkShell(PsiturkShell):
                     success = self.amt_services.bonus_worker(assignmentID, amount, reason)
                     if success:
                         print "gave bonus of $" + str(amount) + " to " + assignmentID
-                        part.status = 6
+                        part.status = 7
                         db_session.add(part)
                         db_session.commit()
                         db_session.remove()
