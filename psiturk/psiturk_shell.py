@@ -573,7 +573,7 @@ class PsiturkNetworkShell(PsiturkShell):
                 status = part.status
                 if amount<=0:
                     print "bonus amount <=$0, no bonus given to", assignmentID
-                elif status==6 and not overrideStatus:
+                elif status==7 and not overrideStatus:
                     print "bonus already awarded to ", assignmentID
                 else:
                     success = self.amt_services.bonus_worker(assignmentID, amount, reason)
