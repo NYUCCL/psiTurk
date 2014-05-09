@@ -1299,7 +1299,7 @@ class PsiturkNetworkShell(PsiturkShell):
         """
         Usage:
           hit create [<numWorkers> <reward> <duration>]
-          hit extend <HITid> [--assignments <number>] [--expiration <minutes>]
+          hit extend <HITid> [(--assignments <number>)] [(--expiration <minutes>)]
           hit expire (--all | <HITid> ...)
           hit dispose (--all | <HITid> ...)
           hit list [--active | --reviewable]
@@ -1337,7 +1337,7 @@ class PsiturkNetworkShell(PsiturkShell):
           worker reject (--hit <hit_id> | <assignment_id> ...)
           worker unreject (--hit <hit_id> | <assignment_id> ...)
           worker bonus  (--amount <amount> | --auto) (--hit <hit_id> | <assignment_id> ...)
-          worker list [--submitted | --approved | --rejected] [--hit <hit_id>]
+          worker list [--submitted | --approved | --rejected] [(--hit <hit_id>)]
           worker help
         """
         if arg['approve']:
