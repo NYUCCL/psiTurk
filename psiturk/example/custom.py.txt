@@ -34,7 +34,6 @@ custom_code = Blueprint('custom_code', __name__, template_folder='templates', st
 #----------------------------------------------
 @custom_code.route('/my_custom_view')
 def my_custom_view():
-	current_app.logger.info("Reached /my_custom_view")  # Print message to server.log for debugging 
 	try:
 		return render_template('custom.html')
 	except TemplateNotFound:
