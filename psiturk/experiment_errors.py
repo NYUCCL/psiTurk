@@ -29,6 +29,7 @@ class ExperimentError(Exception):
             error_setting_worker_complete = 1017,
             hit_not_registered_with_ad_server = 1018,
             template_unsafe = 1019,
+            insert_mode_failed = 1020,
             page_not_found = 404,
             in_debug = 2005,
             unknown_error = 9999
@@ -40,7 +41,7 @@ class ExperimentError(Exception):
     def __str__(self):
         return repr(self.value)
     def error_page(self, request, contact_on_error):
-        return render_template(self.template, 
-                               errornum = self.errornum, 
+        return render_template(self.template,
+                               errornum = self.errornum,
                                contact_address = contact_on_error,
                                **request.args)

@@ -189,7 +189,7 @@ class PsiturkShell(Cmd, object):
     #  server management
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     def server_on(self):
-        self.server.startup('True')
+        self.server.startup()
         while self.server.is_server_running() != 'yes':
             time.sleep(0.5)
 
@@ -230,7 +230,8 @@ class PsiturkShell(Cmd, object):
 
         launchurl = base_url + "?assignmentId=debug" + str(self.random_id_generator()) \
                     + "&hitId=debug" + str(self.random_id_generator()) \
-                    + "&workerId=debug" + str(self.random_id_generator())
+                    + "&workerId=debug" + str(self.random_id_generator()
+                    + "&mode=debug")
 
         if arg['--print-only']:
             print "Here's your randomized debug link, feel free to request another:\n\t", launchurl
@@ -472,12 +473,6 @@ class PsiturkNetworkShell(PsiturkShell):
             prompt += ' #HITs:' + str(self.liveHITs)
         prompt += ']$ '
         self.prompt = prompt
-
-    def server_on(self):
-        self.server.startup(str(self.sandbox))
-        while self.server.is_server_running() != 'yes':
-            time.sleep(0.5)
-
 
     def do_status(self, arg): # overloads do_status with AMT info
         super(PsiturkNetworkShell, self).do_status(arg)
