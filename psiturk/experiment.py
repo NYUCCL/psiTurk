@@ -376,18 +376,18 @@ def start_exp():
             if other_assignment:
                 raise ExperimentError('already_did_exp_hit')
 
-    if mode=='debug':
-        ad_server_location = '/complete'
-    else:
+    if mode=='sandbox' or mode=='live':
         # if everything goes ok here relatively safe to assume we can lookup the ad
         ad_id = get_ad_via_hitid(hitId)
         if ad_id != "error":
             if mode=="sandbox":
                 ad_server_location = 'https://sandbox.ad.psiturk.org/complete/' + str(ad_id)
-            else:
+            elif mode=="live":
                 ad_server_location = 'https://ad.psiturk.org/complete/' + str(ad_id)
         else:
             raise ExperimentError('hit_not_registered_with_ad_server')
+    else:
+        ad_server_location = '/complete'
 
     return render_template('exp.html', uniqueId=part.uniqueid, condition=part.cond, counterbalance=part.counterbalance, adServerLoc=ad_server_location)
 
