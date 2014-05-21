@@ -1263,12 +1263,6 @@ class PsiturkNetworkShell(PsiturkShell):
         Usage: mode
                mode <which>
         """
-        restartServer = False
-        if self.server.is_server_running() == 'yes' or self.server.is_server_running() == 'maybe':
-            r = raw_input("Switching modes requires the server to restart. Really switch modes? y or n: ")
-            if r != 'y':
-                return
-            restartServer = True
         if arg['<which>'] is None:
             if self.sandbox:
                 arg['<which>'] = 'live'
@@ -1284,8 +1278,6 @@ class PsiturkNetworkShell(PsiturkShell):
             self.amt_services.set_sandbox(True)
             self.tally_hits()
             print 'Entered %s mode' % colorize('sandbox', 'bold')
-        if restartServer:
-            self.server_restart()
     def help_mode(self):
         with open(self.helpPath + 'mode.txt', 'r') as helpText:
             print helpText.read()
