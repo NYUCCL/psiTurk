@@ -561,7 +561,7 @@ def insert_mode(page_html, mode):
         match_found = True
         pass
     if match_found:
-        new_html = page_html[1:m.end()] + "&mode=" + mode + page_html[m.end():]
+        new_html = page_html[:m.end()] + "&mode=" + mode + page_html[m.end():]
         return new_html
     else:
         raise ExperimentError("insert_mode_failed")
