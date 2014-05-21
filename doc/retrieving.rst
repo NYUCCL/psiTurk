@@ -25,8 +25,8 @@ always complete and up-to-date.
 
 .. code-block:: python
 
-   import sqlalchemy
-   from json import loads
+   from sqlalchemy import create_engine, MetaData, Table
+   import json
    import pandas as pd
 
    db_url = "mysql://username:password@host.org/database_name"
@@ -36,7 +36,7 @@ always complete and up-to-date.
    engine = create_engine(db_url)
    metadata = MetaData()
    metadata.bind = engine
-   table = Table(tablename, metadata, autoload=True)
+   table = Table(table_name, metadata, autoload=True)
    # make a query and loop through
    s = table.select()
    rows = s.execute()
@@ -49,7 +49,7 @@ always complete and up-to-date.
    for row in rows:
        # only use subjects who completed experiment and aren't excluded
        if row['status'] in statuses and row['uniqueid'] not in exclude:
-           workers.append(row[data_column_name])
+           data.append(row[data_column_name])
 
    # Now we have all participant datastrings in a list.
    # Let's make it a bit easier to work with:
