@@ -381,9 +381,9 @@ def start_exp():
         ad_id = get_ad_via_hitid(hitId)
         if ad_id != "error":
             if mode=="sandbox":
-                ad_server_location = 'https://sandbox.ad.psiturk.org/complete/' + str(ad_id)
+                ad_server_location = config.get('Dev Parameters', 'sandbox_ad_server') + '/complete/' + str(ad_id)
             elif mode=="live":
-                ad_server_location = 'https://ad.psiturk.org/complete/' + str(ad_id)
+                ad_server_location = config.get('Dev Parameters', 'ad_server') + '/complete/' + str(ad_id)
         else:
             raise ExperimentError('hit_not_registered_with_ad_server')
     else:

@@ -33,3 +33,8 @@ num_counters = 1
 
 [Shell Parameters]
 launch_in_sandbox_mode = true
+
+[Dev Parameters]
+ad_server = https://ad.psiturk.org
+sandbox_ad_server = https://sandbox.ad.psiturk.org
+api_server = api.psiturk.org

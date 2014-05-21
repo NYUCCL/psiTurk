@@ -7,6 +7,12 @@ from flask import jsonify
 from version import version_number
 import git
 
+# Load user config options
+from psiturk_config import PsiturkConfig
+config = PsiturkConfig()
+config.load_config()
+
+
 class PsiturkOrgServices:
     """
         PsiturkOrgServices
@@ -16,9 +22,9 @@ class PsiturkOrgServices:
         see: https://github.com/NYUCCL/api-psiturk-org
     """
     def __init__(self, key, secret):
-        self.apiServer = 'https://api.psiturk.org' # 'https://api.psiturk.org' # by default for now
-        self.adServer = 'https://ad.psiturk.org'
-        self.sandboxAdServer = 'https://sandbox.ad.psiturk.org'
+        self.apiServer = config.get('Dev Parameters', 'api_server')  # 'https://api.psiturk.org' # by default for now
+        self.adServer = config.get('Dev Parameters', 'ad_server')
+        self.sandboxAdServer = config.get('Dev Parameters', 'sandbox_ad_server')
         self.update_credentials(key,secret)
         if not self.check_credentials():
             print 'WARNING *****************************'
@@ -36,7 +42,7 @@ class PsiturkOrgServices:
 
     def update_credentials(self, key, secret):
         self.access_key = key
-        self.secret_key = secret 
+        self.secret_key = secret
 
     def connect(self, server):
         """
@@ -58,7 +64,7 @@ class PsiturkOrgServices:
         except:
             status_msg = "Sorry, can't connect to psiturk.org, please check your internet connection.\nYou will not be able to create new hits, but testing locally should work.\n"
         return status_msg
-        
+
     def get_my_ip(self):
         """
             get_my_ip:
@@ -111,12 +117,12 @@ class PsiturkOrgServices:
         """
         if sandbox:
             r = self.update_record('sandboxad', adId, {'amt_hit_id':hitId}, self.access_key, self.secret_key)
-        else:    
+        else:
             r = self.update_record('ad', adId, {'amt_hit_id':hitId}, self.access_key, self.secret_key)
         if r.status_code == 201:
             return True
         else:
-            return False        
+            return False
 
     def create_ad(self, ad_content):
         """
@@ -132,7 +138,7 @@ class PsiturkOrgServices:
             if r.status_code == 201:
                 return r.json()['ad_id']
             else:
-                return False    
+                return False
 
     def download_experiment(self, experiment_id):
         """
@@ -152,7 +158,7 @@ class ExperimentExchangeServices:
         see: https://github.com/NYUCCL/api-psiturk-org
     """
     def __init__(self):
-        self.apiServer = 'https://api.psiturk.org' # 'https://api.psiturk.org' # by default for now
+        self.apiServer = config.get('Dev Parameters', 'api_server')  # 'https://api.psiturk.org' # by default for now
 
     def query_records_no_auth(self, name, query=''):
         #headers = {'key': username, 'secret': password}
@@ -173,7 +179,7 @@ class ExperimentExchangeServices:
             gitr = requests.get(expinfo['git_url']).json()
             if os.path.exists('./'+gitr['name']):
                 print "*"*20
-                print "Sorry, you already have a file or folder named "+gitr['name']+". Please rename or delete it before trying to download this experiment.  You can do this by typing `rm -rf " + gitr['name'] + "`" 
+                print "Sorry, you already have a file or folder named "+gitr['name']+". Please rename or delete it before trying to download this experiment.  You can do this by typing `rm -rf " + gitr['name'] + "`"
                 print "*"*20
                 return
             if "clone_url" in gitr:
