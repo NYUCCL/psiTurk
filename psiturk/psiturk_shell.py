@@ -8,6 +8,7 @@ import os
 import string
 import random
 import datetime
+import urllib
 
 from cmd2 import Cmd
 from docopt import docopt, DocoptExit
@@ -860,12 +861,18 @@ class PsiturkNetworkShell(PsiturkShell):
                              '    ________________________',
                              '    Total: $%.2f' % total])
             if self.sandbox:
-                print('  Ad for this HIT now hosted at: https://sandbox.ad.psiturk.org/view/%s?assignmentId=debug%s&hitId=debug%s'
+                print('  Ad URL: https://sandbox.ad.psiturk.org/view/%s?assignmentId=debug%s&hitId=debug%s'
                       % (str(ad_id), str(self.random_id_generator()), str(self.random_id_generator())))
-                print "Note: This sandboxed ad will expire from the server in 15 days."
+                print('  Sandbox URL: https://workersandbox.mturk.com/mturk/searchbar?selectedSearchType=hitgroups&searchWords=%s'
+                      % (urllib.quote_plus(str(self.config.get('HIT Configuration', 'title')))))
+                print "Hint: In OSX, you can open a terminal link using cmd + click"
+                print "Note: This sandboxed ad will expire from the server in 16 days."
             else:
-                print('  Ad for this HIT now hosted at: https://ad.psiturk.org/view/%s?assignmentId=debug%s&hitId=debug%s'
+                print('  Ad URL: https://ad.psiturk.org/view/%s?assignmentId=debug%s&hitId=debug%s'
                       % (str(ad_id), str(self.random_id_generator()), str(self.random_id_generator())))
+                print('  MTurk URL: https://www.mturk.com/mturk/searchbar?selectedSearchType=hitgroups&searchWords=%s'
+                        % (urllib.quote_plus(str(self.config.get('HIT Configuration', 'title')))))
+                print "Hint: In OSX, you can open a terminal link using cmd + click"
 
 
     @docopt_cmd
