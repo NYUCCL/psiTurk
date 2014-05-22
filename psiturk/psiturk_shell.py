@@ -1415,7 +1415,7 @@ def run(cabinmode=False, script=None):
         print colorize('\n'.join(['libedit version of readline detected.',
                                    'readline will not be well behaved, which may cause all sorts',
                                    'of problems for the psiTurk shell. We highly recommend installing',
-                                   'the gnu version of readline by running "sudo easy_install -a readline".',
+                                   'the gnu version of readline by running "sudo pip install gnureadline".',
                                    'Note: "pip install readline" will NOT work because of how the OSX',
                                    'pythonpath is structured.']), 'red', False)
     sys.argv = [sys.argv[0]] # drop arguments which were already processed in command_line.py
