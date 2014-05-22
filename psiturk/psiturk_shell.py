@@ -229,13 +229,21 @@ class PsiturkShell(Cmd, object):
         else:
             base_url = "http://" + self.config.get('Server Parameters', 'host') + ":" + self.config.get('Server Parameters', 'port') + "/ad"
 
+        my_ip = self.web_services.get_my_ip()
+        remote_url = "http://" + my_ip + ":" + self.config.get('Server Parameters', 'port') + "/ad"
+
         launchurl = base_url + "?assignmentId=debug" + str(self.random_id_generator()) \
                     + "&hitId=debug" + str(self.random_id_generator()) \
                     + "&workerId=debug" + str(self.random_id_generator()
                     + "&mode=debug")
 
+        remote_launchurl = remote_url + "?assignmentId=debug" + str(self.random_id_generator()) \
+                    + "&hitId=debug" + str(self.random_id_generator()) \
+                    + "&workerId=debug" + str(self.random_id_generator()
+                    + "&mode=debug")
+
         if arg['--print-only']:
-            print "Here's your randomized debug link, feel free to request another:\n\t", launchurl
+            print "Here's your randomized debug link, feel free to request another:\n\t", remote_launchurl
         else:
             print "Launching browser pointed at your randomized debug link, feel free to request another.\n\t", launchurl
             webbrowser.open(launchurl, new=1, autoraise=True)
