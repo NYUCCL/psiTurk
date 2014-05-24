@@ -198,7 +198,12 @@ class PsiturkShell(Cmd, object):
             print "Error: Sorry, you need to have the server running to open a tunnel.  Try 'server on' first."
         else:
             tunnel.open()
-            print("Tunnel URL: %s" % t.url())
+            print "Tunnel URL: %s" % tunnel.url
+            print "Hint: In OSX, you can open a terminal link using cmd + click"
+
+    def tunnel_status(self):
+        print "For tunnel status, navigate to http://127.0.0.1:4040"
+        print "Hint: In OSX, you can open a terminal link using cmd + click"
 
     def tunnel_close(self):
         tunnel.close()
@@ -1330,11 +1335,14 @@ class PsiturkNetworkShell(PsiturkShell):
         """
         Usage: tunnel open
                tunnel close
+               tunnel status
         """
         if arg['open']:
-            tunnel.open()
+            self.tunnel_open()
         elif arg['close']:
-            tunnel.close()
+            self.tunnel_close()
+        elif arg['status']:
+            self.tunnel_status()
 
     # def help_tunnel(self):
     #     with open(self.helpPath + 'tunnel.txt', 'r') as helpText:
