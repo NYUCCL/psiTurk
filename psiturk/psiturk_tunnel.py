@@ -34,8 +34,6 @@ class Tunnel():
         cmd = '%s -subdomain=%s -config=%s -log=stdout %s 2>&1 > server.log &' %(self.tunnel_server, self.unique_id, self.tunnel_config, self.port)
         self.tunnel = subprocess.Popen(cmd, shell=True, preexec_fn=os.setsid)
         self.url = 'http://%s.%s:8000' %(self.unique_id, self.tunnel_host)
-        print(self.url)
-        print('Hint: On OSX, you can follow a web link using cmd + click.')
 
     def close(self):
         os.killpg(self.tunnel.pid, signal.SIGTERM)
