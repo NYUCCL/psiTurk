@@ -9,6 +9,7 @@ import string
 import random
 import datetime
 import urllib
+import psiturk_tunnel
 
 from cmd2 import Cmd
 from docopt import docopt, DocoptExit
@@ -25,6 +26,10 @@ from psiturk_config import PsiturkConfig
 import experiment_server_controller as control
 from db import db_session, init_db
 from models import Participant
+
+
+# Initialize tunnel
+tunnel = psiturk_tunnel.Tunnel()
 
 #  colorize target string. Set use_escape to false when text will not be
 # interpreted by readline, such as in intro message.
@@ -185,6 +190,18 @@ class PsiturkShell(Cmd, object):
     def complete(self, text, state):
         return Cmd.complete(self, text, state) + ' '
 
+    #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
+    #  tunnel
+    #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
+    def tunnel_open(self):
+        if self.server.is_server_running() == 'no' or self.server.is_server_running()=='maybe':
+            print "Error: Sorry, you need to have the server running to open a tunnel.  Try 'server on' first."
+        else:
+            tunnel.open()
+            print("Tunnel URL: %s" % t.url())
+
+    def tunnel_close(self):
+        tunnel.close()
 
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #  server management
@@ -353,7 +370,6 @@ class PsiturkShell(Cmd, object):
         Usage:
           server on
           server off
-          server restart
           server log
           server help
         """
@@ -1308,6 +1324,21 @@ class PsiturkNetworkShell(PsiturkShell):
     def help_mode(self):
         with open(self.helpPath + 'mode.txt', 'r') as helpText:
             print helpText.read()
+
+    @docopt_cmd
+    def do_tunnel(self, arg):
+        """
+        Usage: tunnel open
+               tunnel close
+        """
+        if arg['open']:
+            tunnel.open()
+        elif arg['close']:
+            tunnel.close()
+
+    # def help_tunnel(self):
+    #     with open(self.helpPath + 'tunnel.txt', 'r') as helpText:
+    #         print helpText.read()
 
     @docopt_cmd
     def do_hit(self, arg):
