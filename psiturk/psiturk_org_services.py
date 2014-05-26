@@ -216,7 +216,6 @@ class TunnelServices():
         self.tunnel_server = os.path.join(os.path.dirname(__file__), "tunnel/ngrok")
         st = os.stat(self.tunnel_server)
         self.tunnel_config = os.path.join(os.path.dirname(__file__), "tunnel/ngrok-config")
-        os.chmod(self.tunnel_server, st.st_mode | stat.S_IEXEC)  # Ensure ngrok is executable
         self.is_open = False
 
     def check_os(self):
