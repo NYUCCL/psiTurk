@@ -9,6 +9,7 @@ import string
 import random
 import datetime
 import urllib
+from fuzzywuzzy import process
 
 from cmd2 import Cmd
 from docopt import docopt, DocoptExit
@@ -111,6 +112,13 @@ class PsiturkShell(Cmd, object):
 
         self.color_prompt()
         self.intro = self.get_intro_prompt()
+
+    def default(self, cmd):
+        choices = ["help", "mode", "psiturk_status", "server", "shortcuts", "worker", "db", "edit",
+                   "open", "reload_config", "show debug", "setup_example", "status", "amt_balance", "download_datafiles",
+                   "exit", "hit", "load", "quit", "save", "shell", "version"]
+        print "%sis not a psiTurk command. See 'help'." %(cmd)
+        print "Did you mean this?\n      %s" %(process.extractOne(cmd, choices)[0])
 
 
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
@@ -272,8 +280,6 @@ class PsiturkShell(Cmd, object):
         self.config.load_config()
         if restartServer:
             self.server_restart()
-
-
 
     def do_status(self, arg):
         server_status = self.server.is_server_running()

@@ -11,3 +11,4 @@ user-agents==0.2.0
 sh==1.09 
 fake-factory==0.3.2
 gitpython==0.1.7
+fuzzywuzzy==0.2

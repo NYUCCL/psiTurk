@@ -31,7 +31,7 @@ if __name__ == "__main__":
             ]
         },
         setup_requires = [],
-        install_requires = ["argparse", "Flask", "SQLAlchemy", "gunicorn", "boto>=2.9","cmd2","docopt","gnureadline","requests>=2.2.1","user_agents", "sh", "fake-factory", "gitpython"],
+        install_requires = ["argparse", "Flask", "SQLAlchemy", "gunicorn", "boto>=2.9","cmd2","docopt","gnureadline","requests>=2.2.1","user_agents", "sh", "fake-factory", "gitpython", "fuzzywuzzy"],
         author = "NYU Computation and Cognition Lab",
         author_email = "authors@psiturk.org",
         description = "An open platform for science on Amazon Mechanical Turk",
