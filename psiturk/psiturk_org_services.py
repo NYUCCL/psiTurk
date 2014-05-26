@@ -212,7 +212,7 @@ class TunnelServices():
         self.unique_id = str(uuid.uuid4())
         self.local_port = config.getint('Server Parameters', 'port')
         self.tunnel_port = 8000  # Set by tunnel server
-        self.tunnel_host = 'jaymartin.org'  # Eventually port this to tunnel.psiturk.org
+        self.tunnel_host = 'tunnel.psiturk.org'  # Eventually port this to tunnel.psiturk.org
         self.tunnel_server = os.path.join(os.path.dirname(__file__), "tunnel/ngrok")
         st = os.stat(self.tunnel_server)
         self.tunnel_config = os.path.join(os.path.dirname(__file__), "tunnel/ngrok-config")
