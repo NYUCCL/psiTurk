@@ -116,7 +116,8 @@ class PsiturkShell(Cmd, object):
 
     def default(self, cmd):
         choices = ["help", "mode", "psiturk_status", "server", "shortcuts", "worker", "db", "edit",
-                   "open", "reload_config", "show debug", "setup_example", "status", "amt_balance", "download_datafiles",
+                   "open", "reload_config", "show debug", "setup_example",
+                   "status", "tunnel", "amt_balance", "download_datafiles",
                    "exit", "hit", "load", "quit", "save", "shell", "version"]
         print "%sis not a psiTurk command. See 'help'." %(cmd)
         print "Did you mean this?\n      %s" %(process.extractOne(cmd, choices)[0])
