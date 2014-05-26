@@ -20,12 +20,13 @@ import webbrowser
 import sqlalchemy as sa
 
 from amt_services import MTurkServices, RDSServices
-from psiturk_org_services import PsiturkOrgServices
+from psiturk_org_services import PsiturkOrgServices, TunnelServices
 from version import version_number
 from psiturk_config import PsiturkConfig
 import experiment_server_controller as control
 from db import db_session, init_db
 from models import Participant
+
 
 #  colorize target string. Set use_escape to false when text will not be
 # interpreted by readline, such as in intro message.
@@ -195,6 +196,26 @@ class PsiturkShell(Cmd, object):
 
 
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
+    #  tunnel
+    #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
+
+    def tunnel_open(self):
+        if self.server.is_server_running() == 'no' or self.server.is_server_running()=='maybe':
+            print "Error: Sorry, you need to have the server running to open a tunnel. Try 'server on' first."
+        else:
+            self.tunnel.open()
+            print "Tunnel URL: %s" % self.tunnel.full_url
+            print "Hint: In OSX, you can open a terminal link using cmd + click"
+
+    def tunnel_status(self):
+        print "For tunnel status, navigate to http://127.0.0.1:4040"
+        print "Hint: In OSX, you can open a terminal link using cmd + click"
+
+    def tunnel_close(self):
+        self.tunnel.close()
+
+
+    #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #  server management
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     def server_on(self):
@@ -359,7 +380,6 @@ class PsiturkShell(Cmd, object):
         Usage:
           server on
           server off
-          server restart
           server log
           server help
         """
@@ -441,6 +461,7 @@ class PsiturkNetworkShell(PsiturkShell):
         self.web_services = web_services
         self.db_services = aws_rds_services
         self.sandbox = sandbox
+        self.tunnel = TunnelServices()
 
         self.sandboxHITs = 0
         self.liveHITs = 0
@@ -453,7 +474,6 @@ class PsiturkNetworkShell(PsiturkShell):
         self.helpPath = os.path.join(os.path.dirname(__file__), "shell_help/")
         self.psiTurk_header = 'psiTurk command help:'
         self.super_header = 'basic CMD command help:'
-
 
 
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
@@ -492,7 +512,6 @@ class PsiturkNetworkShell(PsiturkShell):
         self.server.startup(str(self.sandbox))
         while self.server.is_server_running() != 'yes':
             time.sleep(0.5)
-
 
     def do_status(self, arg): # overloads do_status with AMT info
         super(PsiturkNetworkShell, self).do_status(arg)
@@ -794,27 +813,34 @@ class PsiturkNetworkShell(PsiturkShell):
         # 3. support_ie?
         # 4. ad.html template
         # 5. contact_email in case an error happens
+
+        if self.tunnel.is_open:
+            ip = self.tunnel.url
+            port = str(self.tunnel.tunnel_port)  # Set by tunnel server.
+        else:
+            ip = str(self.web_services.get_my_ip())
+            port = str(self.config.get('Server Parameters', 'port'))
         ad_content = {'psiturk_external': True,
-              'server': str(self.web_services.get_my_ip()),
-              'port': str(self.config.get('Server Parameters', 'port')),
-              'browser_exclude_rule': str(self.config.get('HIT Configuration', 'browser_exclude_rule')),
-              'is_sandbox': int(self.sandbox),
-              'ad_html': ad_html,
-              # 'amt_hit_id': hitid, Don't know this yet
-              'organization_name': str(self.config.get('HIT Configuration', 'organization_name')),
-              'experiment_name': str(self.config.get('HIT Configuration', 'title')),
-              'contact_email_on_error': str(self.config.get('HIT Configuration', 'contact_email_on_error')),
-              'ad_group': str(self.config.get('HIT Configuration', 'ad_group')),
-              'keywords': str(self.config.get('HIT Configuration', 'psiturk_keywords'))
+                      'server': ip,
+                      'port': port,
+                      'browser_exclude_rule': str(self.config.get('HIT Configuration', 'browser_exclude_rule')),
+                      'is_sandbox': int(self.sandbox),
+                      'ad_html': ad_html,
+                      # 'amt_hit_id': hitid, Don't know this yet
+                      'organization_name': str(self.config.get('HIT Configuration', 'organization_name')),
+                      'experiment_name': str(self.config.get('HIT Configuration', 'title')),
+                      'contact_email_on_error': str(self.config.get('HIT Configuration', 'contact_email_on_error')),
+                      'ad_group': str(self.config.get('HIT Configuration', 'ad_group')),
+                      'keywords': str(self.config.get('HIT Configuration', 'psiturk_keywords'))
         }
 
         create_failed = False
         fail_msg = None
         ad_id = self.web_services.create_ad(ad_content)
         if ad_id != False:
-            ad_url = self.web_services.get_ad_url(ad_id, int(self.sandbox))
+
             hit_config = {
-                "ad_location": ad_url,
+                "ad_location": self.web_services.get_ad_url(ad_id, int(self.sandbox)),
                 "approve_requirement": self.config.get('HIT Configuration', 'Approve_Requirement'),
                 "us_only": self.config.getboolean('HIT Configuration', 'US_only'),
                 "lifetime": datetime.timedelta(hours=self.config.getfloat('HIT Configuration', 'lifetime')),
@@ -1316,6 +1342,24 @@ class PsiturkNetworkShell(PsiturkShell):
             print helpText.read()
 
     @docopt_cmd
+    def do_tunnel(self, arg):
+        """
+        Usage: tunnel open
+               tunnel close
+               tunnel status
+        """
+        if arg['open']:
+            self.tunnel_open()
+        elif arg['close']:
+            self.tunnel_close()
+        elif arg['status']:
+            self.tunnel_status()
+
+    # def help_tunnel(self):
+    #     with open(self.helpPath + 'tunnel.txt', 'r') as helpText:
+    #         print helpText.read()
+
+    @docopt_cmd
     def do_hit(self, arg):
         """
         Usage:
@@ -1383,7 +1427,7 @@ class PsiturkNetworkShell(PsiturkShell):
         with open(self.helpPath + 'worker.txt', 'r') as helpText:
             print helpText.read()
 
-    # modified version of standard cmd help which lists psiturk commands first
+    # Modified version of standard cmd help which lists psiturk commands first.
     def do_help(self, arg):
         if arg:
             try:
@@ -1463,3 +1507,4 @@ def run(cabinmode=False, script=None):
                 shell.onecmd_plus_hooks(line)
     else:
         shell.cmdloop()
+
