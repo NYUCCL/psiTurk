@@ -12,3 +12,5 @@ sh==1.09
 fake-factory==0.3.2
 gitpython==0.1.7
 fuzzywuzzy==0.2
+setproctitle==1.1.8
+psutil==1.2.1
