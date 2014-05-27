@@ -203,7 +203,7 @@ class PsiturkShell(Cmd, object):
     #  server management
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     def server_on(self):
-        self.server.startup('True')
+        self.server.startup()
         time.sleep(0.5)
 
     def server_off(self):
@@ -537,7 +537,7 @@ class PsiturkNetworkShell(PsiturkShell):
         self.prompt = prompt
 
     def server_on(self):
-        self.server.startup(str(self.sandbox))
+        self.server.startup()
         time.sleep(0.5)
 
     def do_status(self, arg): # overloads do_status with AMT info
