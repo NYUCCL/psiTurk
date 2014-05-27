@@ -10,6 +10,7 @@ import random
 import datetime
 import urllib
 from fuzzywuzzy import process
+import atexit
 
 from cmd2 import Cmd
 from docopt import docopt, DocoptExit
@@ -475,6 +476,25 @@ class PsiturkNetworkShell(PsiturkShell):
         self.helpPath = os.path.join(os.path.dirname(__file__), "shell_help/")
         self.psiTurk_header = 'psiTurk command help:'
         self.super_header = 'basic CMD command help:'
+
+    def do_quit(self, arg):
+        '''Override do_quit for network clean up.'''
+        if self.server.is_server_running() == 'yes' or self.server.is_server_running() == 'maybe':
+            r = raw_input("Quitting shell will shut down experiment server. Really quit? y or n: ")
+            if r == 'y':
+                self.server_off()
+                self.clean_up()
+            else:
+                return
+        return True
+
+    def clean_up(self):
+        if self.tunnel.is_open:
+            print 'Closing tunnel...'
+            self.tunnel.close()
+            print 'Done.'
+        else:
+            pass
 
 
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
@@ -1508,4 +1528,15 @@ def run(cabinmode=False, script=None):
                 shell.onecmd_plus_hooks(line)
     else:
         shell.cmdloop()
+
+    # Catch abrupt keyboard interrupts
+    @atexit.register
+    def clean_up():
+        try:
+            if shell.server.is_server_running() == 'yes' or shell.server.is_server_running() == 'maybe':
+               shell.server_off()
+            if not cabinmode:
+                shell.tunnel.close()
+        except:
+            pass
 
