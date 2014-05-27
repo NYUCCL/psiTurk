@@ -7,7 +7,6 @@ from flask import jsonify
 from version import version_number
 import git
 import subprocess
-import stat
 import signal
 import uuid
 import struct
@@ -214,7 +213,6 @@ class TunnelServices():
         self.tunnel_port = 8000  # Set by tunnel server
         self.tunnel_host = 'tunnel.psiturk.org'  # Eventually port this to tunnel.psiturk.org
         self.tunnel_server = os.path.join(os.path.dirname(__file__), "tunnel/ngrok")
-        st = os.stat(self.tunnel_server)
         self.tunnel_config = os.path.join(os.path.dirname(__file__), "tunnel/ngrok-config")
         self.is_open = False
 
