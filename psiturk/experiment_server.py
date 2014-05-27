@@ -14,11 +14,10 @@ class ExperimentServer(Application):
     Custom Gunicorn Server Application that serves up the Experiment application
     '''
 
-    def __init__(self, sandbox):
+    def __init__(self):
         '''__init__ method
         Load the base config and assign some core attributes.
         '''
-        self.sandbox = sandbox
         self.load_user_config()
         self.usage = None
         self.callable = None
@@ -42,7 +41,7 @@ class ExperimentServer(Application):
         '''load method
         Imports our application and returns it to be run.
         '''
-        return util.import_app("psiturk.experiment:start_app(%s)" % self.sandbox)
+        return util.import_app("psiturk.experiment:app")
 
     def load_user_config(self):
         workers = config.get("Server Parameters", "threads")  # config calls these threads to avoid confusing with workers
@@ -61,8 +60,8 @@ class ExperimentServer(Application):
             'proc_name': 'psiturk_experiment_server'
         }
 
-def launch(sandbox):
-    ExperimentServer(sandbox).run()
+def launch():
+    ExperimentServer().run()
 
 if __name__ == "__main__":
-    launch(sys.argv[1])
+    launch()

@@ -147,11 +147,10 @@ class ExperimentServerController:
     def is_port_available(self):
         return is_port_available(self.config.get("Server Parameters", "host"), self.config.getint("Server Parameters", "port"))
 
-    def startup(self, useSandbox):
-        server_command = "{python_exec} '{server_script}' {sandbox}".format(
+    def startup(self):
+        server_command = "{python_exec} '{server_script}'".format(
             python_exec = sys.executable,
-            server_script = os.path.join(os.path.dirname(__file__), "experiment_server.py"),
-            sandbox = useSandbox
+            server_script = os.path.join(os.path.dirname(__file__), "experiment_server.py")
         )
         server_status = self.is_server_running()
         if server_status == 'no':

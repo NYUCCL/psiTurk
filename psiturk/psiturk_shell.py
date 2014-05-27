@@ -203,7 +203,7 @@ class PsiturkShell(Cmd, object):
     #  server management
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     def server_on(self):
-        self.server.startup('True')
+        self.server.startup()
         time.sleep(0.5)
 
     def server_off(self):
@@ -246,7 +246,8 @@ class PsiturkShell(Cmd, object):
 
         launchurl = base_url + "?assignmentId=debug" + str(self.random_id_generator()) \
                     + "&hitId=debug" + str(self.random_id_generator()) \
-                    + "&workerId=debug" + str(self.random_id_generator())
+                    + "&workerId=debug" + str(self.random_id_generator()
+                    + "&mode=debug")
 
         remote_launchurl = remote_url + "?assignmentId=debug" + str(self.random_id_generator()) \
                     + "&hitId=debug" + str(self.random_id_generator()) \
@@ -536,7 +537,7 @@ class PsiturkNetworkShell(PsiturkShell):
         self.prompt = prompt
 
     def server_on(self):
-        self.server.startup(str(self.sandbox))
+        self.server.startup()
         time.sleep(0.5)
 
     def do_status(self, arg): # overloads do_status with AMT info

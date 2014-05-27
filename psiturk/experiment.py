@@ -6,6 +6,7 @@ from random import choice
 import user_agents
 import string
 import requests
+import re
 try:
     from collections import Counter
 except ImportError:
@@ -49,10 +50,6 @@ BONUSED = 7
 # let's start
 ###########################################################
 app = Flask("Experiment_Server")
-def start_app(sandbox):
-    global sandbox_bool
-    sandbox_bool = sandbox
-    return app
 app.config.update(SEND_FILE_MAX_AGE_DEFAULT=10) # set cache timeout to 10ms for static files
 
 ###########################################################
@@ -69,7 +66,7 @@ else:
 
 try:
     sys.path.append(os.getcwd())
-    from custom_models import *
+
 except ImportError:
     app.logger.info( "Hmm... it seems no custom model code (custom_models.py) assocated with this project.")
 
@@ -218,6 +215,7 @@ def advertisement():
         raise ExperimentError('hit_assign_worker_id_not_set_in_mturk')
     hitId = request.args['hitId']
     assignmentId = request.args['assignmentId']
+    mode = request.args['mode']
     if hitId[:5] == "debug":
         debug_mode = True
     else:
@@ -255,7 +253,7 @@ def advertisement():
         # They've done the debriefing but perhaps haven't submitted the HIT yet..
         # Turn asignmentId into original assignment id before sending it back to AMT
         return render_template('thanks.html',
-                               is_sandbox = sandbox_bool,
+                               is_sandbox=(mode=="sandbox"),
                                hitid = hitId,
                                assignmentid = assignmentId,
                                workerid = workerId)
@@ -264,7 +262,10 @@ def advertisement():
     elif status == ALLOCATED or not status or debug_mode:
         # Participant has not yet agreed to the consent. They might not
         # even have accepted the HIT.
-        return render_template('ad.html',
+        with open('templates/ad.html', 'r') as f:
+            ad_string = f.read()
+        ad_string = insert_mode(ad_string, mode)
+        return render_template_string(ad_string,
                                hitid = hitId,
                                assignmentid = assignmentId,
                                workerid = workerId)
@@ -282,7 +283,14 @@ def give_consent():
     hitId = request.args['hitId']
     assignmentId = request.args['assignmentId']
     workerId = request.args['workerId']
-    return render_template('consent.html', hitid = hitId, assignmentid=assignmentId, workerid=workerId)
+    mode = request.args['mode']
+    with open('templates/consent.html', 'r') as f:
+        consent_string = f.read()
+    consent_string = insert_mode(consent_string, mode)
+    return render_template_string(consent_string,
+                                  hitid=hitId,
+                                  assignmentid=assignmentId,
+                                  workerid=workerId)
 
 def get_ad_via_hitid(hitId):
     username = config.get('psiTurk Access', 'psiturk_access_key_id')
@@ -308,6 +316,7 @@ def start_exp():
     hitId = request.args['hitId']
     assignmentId = request.args['assignmentId']
     workerId = request.args['workerId']
+    mode = request.args['mode']
     app.logger.info( "Accessing /exp: %(h)s %(a)s %(w)s " % {"h" : hitId, "a": assignmentId, "w": workerId})
     if hitId[:5] == "debug":
         debug_mode = True
@@ -367,18 +376,18 @@ def start_exp():
             if other_assignment:
                 raise ExperimentError('already_did_exp_hit')
 
-    if debug_mode:
-        ad_server_location = '/complete'
-    else:
+    if mode=='sandbox' or mode=='live':
         # if everything goes ok here relatively safe to assume we can lookup the ad
         ad_id = get_ad_via_hitid(hitId)
         if ad_id != "error":
-            if sandbox_bool:
+            if mode=="sandbox":
                 ad_server_location = 'https://sandbox.ad.psiturk.org/complete/' + str(ad_id)
-            else:
+            elif mode=="live":
                 ad_server_location = 'https://ad.psiturk.org/complete/' + str(ad_id)
         else:
             raise ExperimentError('hit_not_registered_with_ad_server')
+    else:
+        ad_server_location = '/complete'
 
     return render_template('exp.html', uniqueId=part.uniqueid, condition=part.cond, counterbalance=part.counterbalance, adServerLoc=ad_server_location)
 
@@ -540,6 +549,22 @@ def worker_submitted():
 def ppid():
     ppid = os.getppid()
     return str(ppid)
+
+# insert "mode" into pages so it's carried from page to page
+# done server-side to avoid breaking backwards compatibility
+# with old templates
+def insert_mode(page_html, mode):
+    match_found = False
+    matches = re.finditer('workerId={{ workerid }}', page_html)
+    m = None
+    for m in matches:
+        match_found = True
+        pass
+    if match_found:
+        new_html = page_html[:m.end()] + "&mode=" + mode + page_html[m.end():]
+        return new_html
+    else:
+        raise ExperimentError("insert_mode_failed")
 
 #----------------------------------------------
 # generic route
