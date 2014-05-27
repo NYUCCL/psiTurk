@@ -208,10 +208,11 @@ class PsiturkShell(Cmd, object):
             time.sleep(0.5)
 
     def server_off(self):
-        self.server.shutdown()
-        print 'Please wait. This could take a few seconds.'
-        while self.server.is_server_running() != 'no':
-            time.sleep(0.5)
+        if self.server.is_server_running() == 'yes' or self.server.is_server_running() == 'maybe':
+            self.server.shutdown()
+            print 'Please wait. This could take a few seconds.'
+            while self.server.is_server_running() != 'no':
+                time.sleep(0.5)
 
     def server_restart(self):
         self.server_off()
@@ -474,11 +475,14 @@ class PsiturkNetworkShell(PsiturkShell):
         return True
 
     def server_off(self):
-        self.server.shutdown()
-        print 'Please wait. This could take a few seconds.'
-        self.clean_up()
-        while self.server.is_server_running() != 'no':
-            time.sleep(0.5)
+        if self.server.is_server_running() == 'yes' or self.server.is_server_running() == 'maybe':
+            self.server.shutdown()
+            print 'Please wait. This could take a few seconds.'
+            self.clean_up()
+            while self.server.is_server_running() != 'no':
+                time.sleep(0.5)
+        else:
+            print 'Your server is already off.'
 
     def server_restart(self):
         self.server_off()
