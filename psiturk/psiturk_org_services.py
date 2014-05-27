@@ -12,6 +12,7 @@ import uuid
 import struct
 from sys import platform as _platform
 from psiturk_config import PsiturkConfig
+import psutil
 
 
 class PsiturkOrgServices:
@@ -211,7 +212,7 @@ class TunnelServices():
         self.unique_id = str(uuid.uuid4())
         self.local_port = config.getint('Server Parameters', 'port')
         self.tunnel_port = 8000  # Set by tunnel server
-        self.tunnel_host = 'tunnel.psiturk.org'  # Eventually port this to tunnel.psiturk.org
+        self.tunnel_host = 'tunnel.psiturk.org'
         self.tunnel_server = os.path.join(os.path.dirname(__file__), "tunnel/ngrok")
         self.tunnel_config = os.path.join(os.path.dirname(__file__), "tunnel/ngrok-config")
         self.is_open = False
@@ -223,15 +224,18 @@ class TunnelServices():
             Exception('Your OS is currently unsupported.')
 
     def open(self):
-        cmd = '%s -subdomain=%s -config=%s -log=stdout %s 2>&1 > server.log &' \
+        cmd = '%s -subdomain=%s -config=%s -log=stdout %s 2>&1 > server.log' \
                   %(self.tunnel_server, self.unique_id, self.tunnel_config,
                     self.local_port)
-        self.tunnel = subprocess.Popen(cmd, shell=True, preexec_fn=os.setsid)
+        self.tunnel = subprocess.Popen(cmd, shell=True)
         self.url = '%s.%s' %(self.unique_id, self.tunnel_host)
         self.full_url = 'http://%s.%s:%s' %(self.unique_id, self.tunnel_host,
                                             self.tunnel_port)
         self.is_open = True
 
     def close(self):
-        os.killpg(self.tunnel.pid, signal.SIGTERM)
+        p = psutil.Process(self.tunnel.pid)
+        child_pid = p.get_children(recursive=True)
+        for pid in child_pid:
+            pid.send_signal(signal.SIGTERM)
         self.is_open = False
