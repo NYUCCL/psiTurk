@@ -204,15 +204,13 @@ class PsiturkShell(Cmd, object):
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     def server_on(self):
         self.server.startup('True')
-        while self.server.is_server_running() != 'yes':
-            time.sleep(0.5)
+        time.sleep(0.5)
 
     def server_off(self):
         if self.server.is_server_running() == 'yes' or self.server.is_server_running() == 'maybe':
             self.server.shutdown()
             print 'Please wait. This could take a few seconds.'
-            while self.server.is_server_running() != 'no':
-                time.sleep(0.5)
+            time.sleep(0.5)
 
     def server_restart(self):
         self.server_off()
@@ -539,8 +537,7 @@ class PsiturkNetworkShell(PsiturkShell):
 
     def server_on(self):
         self.server.startup(str(self.sandbox))
-        while self.server.is_server_running() != 'yes':
-            time.sleep(0.5)
+        time.sleep(0.5)
 
     def do_status(self, arg): # overloads do_status with AMT info
         super(PsiturkNetworkShell, self).do_status(arg)

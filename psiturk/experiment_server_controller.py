@@ -153,10 +153,16 @@ class ExperimentServerController:
             server_script = os.path.join(os.path.dirname(__file__), "experiment_server.py"),
             sandbox = useSandbox
         )
-        if self.is_port_available() and not self.server_running:
+        server_status = self.is_server_running()
+        if server_status == 'no':
             #print "Running experiment server with command:", server_command
             subprocess.Popen(server_command, shell=True, close_fds=True)
             print "Experiment server launching..."
             self.server_running = True
-        else:
+        elif server_status == 'maybe':
+            print "Error: Not sure what to tell you..."
+        elif server_status == 'yes':
             print "Experiment server may be already running..."
+        elif server_status == 'blocked':
+            print "Another process is running on the desired port. Try using a different port number."
+
