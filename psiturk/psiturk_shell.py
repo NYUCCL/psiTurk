@@ -25,7 +25,6 @@ import experiment_server_controller as control
 from db import db_session, init_db
 from models import Participant
 
-
 #  colorize target string. Set use_escape to false when text will not be
 # interpreted by readline, such as in intro message.
 def colorize(target, color, use_escape=True):
@@ -818,13 +817,13 @@ class PsiturkNetworkShell(PsiturkShell):
             if hit_id != False:
                 if not self.web_services.set_ad_hitid(ad_id, hit_id, int(self.sandbox)):
                     create_failed = True
-                    fail_msg = "  Unable to update Ad on " + self.config.get('Dev Parameters', 'ad_server') + " to point at HIT."
+                    fail_msg = "  Unable to update Ad on http://ad.psiturk.org to point at HIT."
             else:
                 create_failed = True
                 fail_msg = "  Unable to create HIT on Amazon Mechanical Turk."
         else:
             create_failed = True
-            fail_msg = "  Unable to create Ad on " + self.config.get('Dev Parameters', 'ad_server') + "."
+            fail_msg = "  Unable to create Ad on http://ad.psiturk.org."
 
         if create_failed:
             print '\n'.join(['*****************************',
@@ -856,12 +855,12 @@ class PsiturkNetworkShell(PsiturkShell):
                              '    ________________________',
                              '    Total: $%.2f' % total])
             if self.sandbox:
-                print('  Ad for this HIT now hosted at: %s/view/%s?assignmentId=debug%s&hitId=debug%s'
-                      % (self.config.get('Dev Parameters', 'sandbox_ad_server'), str(ad_id), str(self.random_id_generator()), str(self.random_id_generator())))
+                print('  Ad for this HIT now hosted at: https://sandbox.ad.psiturk.org/view/%s?assignmentId=debug%s&hitId=debug%s'
+                      % (str(ad_id), str(self.random_id_generator()), str(self.random_id_generator())))
                 print "Note: This sandboxed ad will expire from the server in 15 days."
             else:
-                print('  Ad for this HIT now hosted at: %s/view/%s?assignmentId=debug%s&hitId=debug%s'
-                      % (self.config.get('Dev Parameters', 'ad_server'), str(ad_id), str(self.random_id_generator()), str(self.random_id_generator())))
+                print('  Ad for this HIT now hosted at: https://ad.psiturk.org/view/%s?assignmentId=debug%s&hitId=debug%s'
+                      % (str(ad_id), str(self.random_id_generator()), str(self.random_id_generator())))
 
 
     @docopt_cmd
