@@ -362,6 +362,7 @@ class PsiturkShell(Cmd, object):
         Usage:
           server on
           server off
+          server restart
           server log
           server help
         """
@@ -467,6 +468,18 @@ class PsiturkNetworkShell(PsiturkShell):
             else:
                 return
         return True
+
+    def server_off(self):
+        self.server.shutdown()
+        print 'Please wait. This could take a few seconds.'
+        self.clean_up()
+        while self.server.is_server_running() != 'no':
+            time.sleep(0.5)
+
+    def server_restart(self):
+        self.server_off()
+        self.clean_up()
+        self.server_on()
 
     def clean_up(self):
         if self.tunnel.is_open:
