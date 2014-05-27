@@ -5,6 +5,7 @@ import webbrowser
 from threading import Thread, Event
 import urllib2
 import socket
+import psutil
 
 
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -118,16 +119,30 @@ class ExperimentServerController:
             self.server_running = False
 
     def is_server_running(self):
-        portopen = self.is_port_available()
+        PROCNAME = "psiturk_experiment_server"
+        cmd = "ps -eo pid,command | grep '"+ PROCNAME + "' | grep -v grep | awk '{print $1}'"
+        psiturk_exp_processes = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+        output = psiturk_exp_processes.stdout.readlines()
+        psiturk_exp_ports = [process[0].laddr[1] for process in [psutil.Process(int(pid)).get_connections() for pid in output]]
+        p = psutil.Process(psiturk_exp_processes.pid)
+        child_pid = p.get_children(recursive=True)
+        for pid in child_pid:
+            pid.send_signal(signal.SIGTERM)
+        if psiturk_exp_ports:
+            is_psiturk_using_port = True
+        else:
+            is_psiturk_using_port = False
+
+        is_port_open = self.is_port_available()
         #print self.server_running, " ", portopen
-        if self.server_running and portopen:  # server running but port open, maybe starting up
+        if is_port_open and is_psiturk_using_port:  # This should never occur
             return 'maybe'
-        elif not self.server_running and not portopen: # server not running but port blocked maybe shutting down
-            return 'maybe'
-        elif self.server_running and not portopen: # server running, port blocked, makes sense
-            return 'yes'
-        elif not self.server_running and portopen: # server off, port open, makes sense
+        elif not is_port_open and not is_psiturk_using_port:
+            return 'blocked'
+        elif is_port_open and not is_psiturk_using_port:
             return 'no'
+        elif not is_port_open and is_psiturk_using_port:
+            return 'yes'
 
     def is_port_available(self):
         return is_port_available(self.config.get("Server Parameters", "host"), self.config.getint("Server Parameters", "port"))
@@ -137,10 +152,16 @@ class ExperimentServerController:
             python_exec = sys.executable,
             server_script = os.path.join(os.path.dirname(__file__), "experiment_server.py")
         )
-        if self.is_port_available() and not self.server_running:
+        server_status = self.is_server_running()
+        if server_status == 'no':
             #print "Running experiment server with command:", server_command
             subprocess.Popen(server_command, shell=True, close_fds=True)
             print "Experiment server launching..."
             self.server_running = True
-        else:
+        elif server_status == 'maybe':
+            print "Error: Not sure what to tell you..."
+        elif server_status == 'yes':
             print "Experiment server may be already running..."
+        elif server_status == 'blocked':
+            print "Another process is running on the desired port. Try using a different port number."
+

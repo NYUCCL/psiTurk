@@ -3,6 +3,8 @@ from gunicorn.app.base import Application
 from gunicorn import util
 import multiprocessing
 from psiturk_config import PsiturkConfig
+import sys
+import setproctitle
 
 config = PsiturkConfig()
 config.load_config()
@@ -54,7 +56,8 @@ class ExperimentServer(Application):
             'loglevels': self.loglevels,
             'loglevel': self.loglevels[config.getint("Server Parameters", "loglevel")],
             # 'accesslog': config.get("Server Parameters", "logfile"),
-            'errorlog': config.get("Server Parameters", "logfile")
+            'errorlog': config.get("Server Parameters", "logfile"),
+            'proc_name': 'psiturk_experiment_server'
         }
 
 def launch():

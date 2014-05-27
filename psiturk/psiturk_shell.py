@@ -8,6 +8,9 @@ import os
 import string
 import random
 import datetime
+import urllib
+from fuzzywuzzy import process
+import atexit
 
 from cmd2 import Cmd
 from docopt import docopt, DocoptExit
@@ -18,12 +21,13 @@ import webbrowser
 import sqlalchemy as sa
 
 from amt_services import MTurkServices, RDSServices
-from psiturk_org_services import PsiturkOrgServices
+from psiturk_org_services import PsiturkOrgServices, TunnelServices
 from version import version_number
 from psiturk_config import PsiturkConfig
 import experiment_server_controller as control
 from db import db_session, init_db
 from models import Participant
+
 
 #  colorize target string. Set use_escape to false when text will not be
 # interpreted by readline, such as in intro message.
@@ -111,6 +115,14 @@ class PsiturkShell(Cmd, object):
         self.color_prompt()
         self.intro = self.get_intro_prompt()
 
+    def default(self, cmd):
+        choices = ["help", "mode", "psiturk_status", "server", "shortcuts", "worker", "db", "edit",
+                   "open", "reload_config", "show debug", "setup_example",
+                   "status", "tunnel", "amt_balance", "download_datafiles",
+                   "exit", "hit", "load", "quit", "save", "shell", "version"]
+        print "%sis not a psiTurk command. See 'help'." %(cmd)
+        print "Did you mean this?\n      %s" %(process.extractOne(cmd, choices)[0])
+
 
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #  basic command line functions
@@ -148,6 +160,8 @@ class PsiturkShell(Cmd, object):
             serverString = colorize('off', 'red')
         elif server_status == 'maybe':
             serverString = colorize('unknown', 'yellow')
+        elif server_status == 'blocked':
+            serverString = colorize('blocked', 'red')
         prompt += ' server:' + serverString
         prompt += ' mode:' + colorize('cabin', 'bold')
         prompt += ']$ '
@@ -189,14 +203,13 @@ class PsiturkShell(Cmd, object):
     #  server management
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     def server_on(self):
-        self.server.startup()
-        while self.server.is_server_running() != 'yes':
-            time.sleep(0.5)
+        self.server.startup('True')
+        time.sleep(0.5)
 
     def server_off(self):
-        self.server.shutdown()
-        print 'Please wait. This could take a few seconds.'
-        while self.server.is_server_running() != 'no':
+        if self.server.is_server_running() == 'yes' or self.server.is_server_running() == 'maybe':
+            self.server.shutdown()
+            print 'Please wait. This could take a few seconds.'
             time.sleep(0.5)
 
     def server_restart(self):
@@ -273,8 +286,6 @@ class PsiturkShell(Cmd, object):
         if restartServer:
             self.server_restart()
 
-
-
     def do_status(self, arg):
         server_status = self.server.is_server_running()
         if server_status == 'yes':
@@ -283,6 +294,8 @@ class PsiturkShell(Cmd, object):
             print 'Server: ' + colorize('currently offline', 'red')
         elif server_status == 'maybe':
             print 'Server: ' + colorize('status unknown', 'yellow')
+        elif server_status == 'blocked':
+            print 'Server: ' + colorize('blocked', 'red')
 
     def do_setup_example(self, arg):
         import setup_example as se
@@ -435,6 +448,7 @@ class PsiturkNetworkShell(PsiturkShell):
         self.web_services = web_services
         self.db_services = aws_rds_services
         self.sandbox = sandbox
+        self.tunnel = TunnelServices()
 
         self.sandboxHITs = 0
         self.liveHITs = 0
@@ -448,11 +462,45 @@ class PsiturkNetworkShell(PsiturkShell):
         self.psiTurk_header = 'psiTurk command help:'
         self.super_header = 'basic CMD command help:'
 
+    def do_quit(self, arg):
+        '''Override do_quit for network clean up.'''
+        if self.server.is_server_running() == 'yes' or self.server.is_server_running() == 'maybe':
+            r = raw_input("Quitting shell will shut down experiment server. Really quit? y or n: ")
+            if r == 'y':
+                self.server_off()
+                self.clean_up()
+            else:
+                return
+        return True
+
+    def server_off(self):
+        if self.server.is_server_running() == 'yes' or self.server.is_server_running() == 'maybe':
+            self.server.shutdown()
+            print 'Please wait. This could take a few seconds.'
+            self.clean_up()
+            while self.server.is_server_running() != 'no':
+                time.sleep(0.5)
+        else:
+            print 'Your server is already off.'
+
+    def server_restart(self):
+        self.server_off()
+        self.clean_up()
+        self.server_on()
+
+    def clean_up(self):
+        if self.tunnel.is_open:
+            print 'Closing tunnel...'
+            self.tunnel.close()
+            print 'Done.'
+        else:
+            pass
 
 
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #  basic command line functions
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
+
     def get_intro_prompt(self):  # overloads intro prompt with network-aware version
         # if you can reach psiTurk.org, request system status
         # message
@@ -469,18 +517,28 @@ class PsiturkNetworkShell(PsiturkShell):
         elif server_status == 'no':
             serverString = colorize('off', 'red')
         elif server_status == 'maybe':
-            serverString = colorize('unknown', 'yellow')
+            serverString = colorize('status unknown', 'yellow')
+        elif server_status == 'blocked':
+            serverString = colorize('blocked', 'red')
         prompt += ' server:' + serverString
         if self.sandbox:
             prompt += ' mode:' + colorize('sdbx', 'bold')
         else:
             prompt += ' mode:' + colorize('live', 'bold')
+        if self.tunnel.is_open:
+            prompt += ' tunnel:' + colorize('✓', 'green')
+        else:
+            prompt += ' tunnel:' + colorize('✗', 'red')
         if self.sandbox:
             prompt += ' #HITs:' + str(self.sandboxHITs)
         else:
             prompt += ' #HITs:' + str(self.liveHITs)
         prompt += ']$ '
         self.prompt = prompt
+
+    def server_on(self):
+        self.server.startup(str(self.sandbox))
+        time.sleep(0.5)
 
     def do_status(self, arg): # overloads do_status with AMT info
         super(PsiturkNetworkShell, self).do_status(arg)
@@ -782,27 +840,34 @@ class PsiturkNetworkShell(PsiturkShell):
         # 3. support_ie?
         # 4. ad.html template
         # 5. contact_email in case an error happens
+
+        if self.tunnel.is_open:
+            ip = self.tunnel.url
+            port = str(self.tunnel.tunnel_port)  # Set by tunnel server.
+        else:
+            ip = str(self.web_services.get_my_ip())
+            port = str(self.config.get('Server Parameters', 'port'))
         ad_content = {'psiturk_external': True,
-              'server': str(self.web_services.get_my_ip()),
-              'port': str(self.config.get('Server Parameters', 'port')),
-              'browser_exclude_rule': str(self.config.get('HIT Configuration', 'browser_exclude_rule')),
-              'is_sandbox': int(self.sandbox),
-              'ad_html': ad_html,
-              # 'amt_hit_id': hitid, Don't know this yet
-              'organization_name': str(self.config.get('HIT Configuration', 'organization_name')),
-              'experiment_name': str(self.config.get('HIT Configuration', 'title')),
-              'contact_email_on_error': str(self.config.get('HIT Configuration', 'contact_email_on_error')),
-              'ad_group': str(self.config.get('HIT Configuration', 'ad_group')),
-              'keywords': str(self.config.get('HIT Configuration', 'psiturk_keywords'))
+                      'server': ip,
+                      'port': port,
+                      'browser_exclude_rule': str(self.config.get('HIT Configuration', 'browser_exclude_rule')),
+                      'is_sandbox': int(self.sandbox),
+                      'ad_html': ad_html,
+                      # 'amt_hit_id': hitid, Don't know this yet
+                      'organization_name': str(self.config.get('HIT Configuration', 'organization_name')),
+                      'experiment_name': str(self.config.get('HIT Configuration', 'title')),
+                      'contact_email_on_error': str(self.config.get('HIT Configuration', 'contact_email_on_error')),
+                      'ad_group': str(self.config.get('HIT Configuration', 'ad_group')),
+                      'keywords': str(self.config.get('HIT Configuration', 'psiturk_keywords'))
         }
 
         create_failed = False
         fail_msg = None
         ad_id = self.web_services.create_ad(ad_content)
         if ad_id != False:
-            ad_url = self.web_services.get_ad_url(ad_id, int(self.sandbox))
+
             hit_config = {
-                "ad_location": ad_url,
+                "ad_location": self.web_services.get_ad_url(ad_id, int(self.sandbox)),
                 "approve_requirement": self.config.get('HIT Configuration', 'Approve_Requirement'),
                 "us_only": self.config.getboolean('HIT Configuration', 'US_only'),
                 "lifetime": datetime.timedelta(hours=self.config.getfloat('HIT Configuration', 'lifetime')),
@@ -855,12 +920,18 @@ class PsiturkNetworkShell(PsiturkShell):
                              '    ________________________',
                              '    Total: $%.2f' % total])
             if self.sandbox:
-                print('  Ad for this HIT now hosted at: https://sandbox.ad.psiturk.org/view/%s?assignmentId=debug%s&hitId=debug%s'
+                print('  Ad URL: https://sandbox.ad.psiturk.org/view/%s?assignmentId=debug%s&hitId=debug%s'
                       % (str(ad_id), str(self.random_id_generator()), str(self.random_id_generator())))
-                print "Note: This sandboxed ad will expire from the server in 15 days."
+                print('  Sandbox URL: https://workersandbox.mturk.com/mturk/searchbar?selectedSearchType=hitgroups&searchWords=%s'
+                      % (urllib.quote_plus(str(self.config.get('HIT Configuration', 'title')))))
+                print "Hint: In OSX, you can open a terminal link using cmd + click"
+                print "Note: This sandboxed ad will expire from the server in 16 days."
             else:
-                print('  Ad for this HIT now hosted at: https://ad.psiturk.org/view/%s?assignmentId=debug%s&hitId=debug%s'
+                print('  Ad URL: https://ad.psiturk.org/view/%s?assignmentId=debug%s&hitId=debug%s'
                       % (str(ad_id), str(self.random_id_generator()), str(self.random_id_generator())))
+                print('  MTurk URL: https://www.mturk.com/mturk/searchbar?selectedSearchType=hitgroups&searchWords=%s'
+                        % (urllib.quote_plus(str(self.config.get('HIT Configuration', 'title')))))
+                print "Hint: In OSX, you can open a terminal link using cmd + click"
 
 
     @docopt_cmd
@@ -1270,6 +1341,12 @@ class PsiturkNetworkShell(PsiturkShell):
         Usage: mode
                mode <which>
         """
+        restartServer = False
+        if self.server.is_server_running() == 'yes' or self.server.is_server_running() == 'maybe':
+            r = raw_input("Switching modes requires the server to restart. Really switch modes? y or n: ")
+            if r != 'y':
+                return
+            restartServer = True
         if arg['<which>'] is None:
             if self.sandbox:
                 arg['<which>'] = 'live'
@@ -1285,9 +1362,29 @@ class PsiturkNetworkShell(PsiturkShell):
             self.amt_services.set_sandbox(True)
             self.tally_hits()
             print 'Entered %s mode' % colorize('sandbox', 'bold')
+        if restartServer:
+            self.server_restart()
     def help_mode(self):
         with open(self.helpPath + 'mode.txt', 'r') as helpText:
             print helpText.read()
+
+    @docopt_cmd
+    def do_tunnel(self, arg):
+        """
+        Usage: tunnel open
+               tunnel close
+               tunnel status
+        """
+        if arg['open']:
+            self.tunnel_open()
+        elif arg['close']:
+            self.tunnel_close()
+        elif arg['status']:
+            self.tunnel_status()
+
+    # def help_tunnel(self):
+    #     with open(self.helpPath + 'tunnel.txt', 'r') as helpText:
+    #         print helpText.read()
 
     @docopt_cmd
     def do_hit(self, arg):
@@ -1357,7 +1454,7 @@ class PsiturkNetworkShell(PsiturkShell):
         with open(self.helpPath + 'worker.txt', 'r') as helpText:
             print helpText.read()
 
-    # modified version of standard cmd help which lists psiturk commands first
+    # Modified version of standard cmd help which lists psiturk commands first.
     def do_help(self, arg):
         if arg:
             try:
@@ -1403,13 +1500,38 @@ class PsiturkNetworkShell(PsiturkShell):
             self.print_topics(self.misc_header, help.keys(), 15, 80)
             self.print_topics(self.super_header, cmds_super, 15, 80)
 
+    #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
+    #  tunnel
+    #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
+
+    def tunnel_open(self):
+        if self.server.is_server_running() == 'no' or self.server.is_server_running()=='maybe':
+            print "Error: Sorry, you need to have the server running to open a tunnel. Try 'server on' first."
+        else:
+            self.tunnel.open()
+            print "Tunnel URL: %s" % self.tunnel.full_url
+            print "Hint: In OSX, you can open a terminal link using cmd + click"
+
+    def tunnel_status(self):
+        if self.tunnel.is_open:
+            print "For tunnel status, navigate to http://127.0.0.1:4040"
+            print "Hint: In OSX, you can open a terminal link using cmd + click"
+        else:
+            print "Sorry, you need to open a tunnel to check the status. Try 'tunnel open' first."
+
+    def tunnel_close(self):
+        print "Closing tunnel..."
+        self.tunnel.close()
+        print "Done."
+
+
 def run(cabinmode=False, script=None):
     usingLibedit = 'libedit' in readline.__doc__
     if usingLibedit:
         print colorize('\n'.join(['libedit version of readline detected.',
                                    'readline will not be well behaved, which may cause all sorts',
                                    'of problems for the psiTurk shell. We highly recommend installing',
-                                   'the gnu version of readline by running "sudo easy_install -a readline".',
+                                   'the gnu version of readline by running "sudo pip install gnureadline".',
                                    'Note: "pip install readline" will NOT work because of how the OSX',
                                    'pythonpath is structured.']), 'red', False)
     sys.argv = [sys.argv[0]] # drop arguments which were already processed in command_line.py
@@ -1431,9 +1553,22 @@ def run(cabinmode=False, script=None):
                                  config.get('psiTurk Access', 'psiturk_secret_access_id'))
         shell = PsiturkNetworkShell(config, amt_services, aws_rds_services, web_services, server, \
                                     config.getboolean('Shell Parameters', 'launch_in_sandbox_mode'))
+
     if script:
         with open(script, 'r') as f:
             for line in f:
                 shell.onecmd_plus_hooks(line)
     else:
         shell.cmdloop()
+
+    # Catch abrupt keyboard interrupts
+    @atexit.register
+    def clean_up():
+        try:
+            if shell.server.is_server_running() == 'yes' or shell.server.is_server_running() == 'maybe':
+               shell.server_off()
+            if not cabinmode:
+                shell.tunnel.close()
+        except:
+            pass
+
