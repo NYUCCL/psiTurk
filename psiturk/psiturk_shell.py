@@ -198,26 +198,6 @@ class PsiturkShell(Cmd, object):
 
 
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
-    #  tunnel
-    #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
-
-    def tunnel_open(self):
-        if self.server.is_server_running() == 'no' or self.server.is_server_running()=='maybe':
-            print "Error: Sorry, you need to have the server running to open a tunnel. Try 'server on' first."
-        else:
-            self.tunnel.open()
-            print "Tunnel URL: %s" % self.tunnel.full_url
-            print "Hint: In OSX, you can open a terminal link using cmd + click"
-
-    def tunnel_status(self):
-        print "For tunnel status, navigate to http://127.0.0.1:4040"
-        print "Hint: In OSX, you can open a terminal link using cmd + click"
-
-    def tunnel_close(self):
-        self.tunnel.close()
-
-
-    #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #  server management
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     def server_on(self):
@@ -500,6 +480,7 @@ class PsiturkNetworkShell(PsiturkShell):
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #  basic command line functions
     #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
+
     def get_intro_prompt(self):  # overloads intro prompt with network-aware version
         # if you can reach psiTurk.org, request system status
         # message
@@ -1494,6 +1475,31 @@ class PsiturkNetworkShell(PsiturkShell):
             self.print_topics(self.misc_header, help.keys(), 15, 80)
             self.print_topics(self.super_header, cmds_super, 15, 80)
 
+    #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
+    #  tunnel
+    #+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
+
+    def tunnel_open(self):
+        if self.server.is_server_running() == 'no' or self.server.is_server_running()=='maybe':
+            print "Error: Sorry, you need to have the server running to open a tunnel. Try 'server on' first."
+        else:
+            self.tunnel.open()
+            print "Tunnel URL: %s" % self.tunnel.full_url
+            print "Hint: In OSX, you can open a terminal link using cmd + click"
+
+    def tunnel_status(self):
+        if self.tunnel.is_open:
+            print "For tunnel status, navigate to http://127.0.0.1:4040"
+            print "Hint: In OSX, you can open a terminal link using cmd + click"
+        else:
+            print "Sorry, you need to open a tunnel to check the status. Try 'tunnel open' first."
+
+    def tunnel_close(self):
+        print "Closing tunnel..."
+        self.tunnel.close()
+        print "Done."
+
+
 def run(cabinmode=False, script=None):
     usingLibedit = 'libedit' in readline.__doc__
     if usingLibedit:
@@ -1522,6 +1528,7 @@ def run(cabinmode=False, script=None):
                                  config.get('psiTurk Access', 'psiturk_secret_access_id'))
         shell = PsiturkNetworkShell(config, amt_services, aws_rds_services, web_services, server, \
                                     config.getboolean('Shell Parameters', 'launch_in_sandbox_mode'))
+
     if script:
         with open(script, 'r') as f:
             for line in f:
