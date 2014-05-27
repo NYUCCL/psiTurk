@@ -567,6 +567,7 @@ class PsiturkNetworkShell(PsiturkShell):
                 init_db()
                 part = Participant.query.\
                        filter(Participant.assignmentid == assignmentID).\
+                       filter(Participant.endhit != None).\
                        one()
                 if auto:
                     amount = part.bonus
