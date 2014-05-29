@@ -49,7 +49,7 @@ class PsiTurkTestCase(unittest.TestCase):
 
     def test_exp_with_all_url_vars_not_registered_on_ad_server(self):
         '''Test that exp page throws Error #1018 with all url vars but not registered.'''
-        rv = self.app.get('/exp' + '?assignmentId=' + self.assignment_id + '&workerId=' + self.worker_id + '&hitId=' + self.hit_id)
+        rv = self.app.get('/exp' + '?assignmentId=' + self.assignment_id + '&workerId=' + self.worker_id + '&hitId=' + self.hit_id + '&mode=sandbox')
         assert 'Error: #1018' in rv.data
 
     def tearDown(self):
