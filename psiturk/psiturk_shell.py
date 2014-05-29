@@ -567,19 +567,20 @@ class PsiturkNetworkShell(PsiturkShell):
                 init_db()
                 part = Participant.query.\
                        filter(Participant.assignmentid == assignmentID).\
+                       filter(Participant.endhit != None).\
                        one()
                 if auto:
                     amount = part.bonus
                 status = part.status
                 if amount<=0:
                     print "bonus amount <=$0, no bonus given to", assignmentID
-                elif status==6 and not overrideStatus:
+                elif status==7 and not overrideStatus:
                     print "bonus already awarded to ", assignmentID
                 else:
                     success = self.amt_services.bonus_worker(assignmentID, amount, reason)
                     if success:
                         print "gave bonus of $" + str(amount) + " to " + assignmentID
-                        part.status = 6
+                        part.status = 7
                         db_session.add(part)
                         db_session.commit()
                         db_session.remove()
@@ -1299,7 +1300,7 @@ class PsiturkNetworkShell(PsiturkShell):
         """
         Usage:
           hit create [<numWorkers> <reward> <duration>]
-          hit extend <HITid> [--assignments <number>] [--expiration <minutes>]
+          hit extend <HITid> [(--assignments <number>)] [(--expiration <minutes>)]
           hit expire (--all | <HITid> ...)
           hit dispose (--all | <HITid> ...)
           hit list [--active | --reviewable]
@@ -1337,7 +1338,7 @@ class PsiturkNetworkShell(PsiturkShell):
           worker reject (--hit <hit_id> | <assignment_id> ...)
           worker unreject (--hit <hit_id> | <assignment_id> ...)
           worker bonus  (--amount <amount> | --auto) (--hit <hit_id> | <assignment_id> ...)
-          worker list [--submitted | --approved | --rejected] [--hit <hit_id>]
+          worker list [--submitted | --approved | --rejected] [(--hit <hit_id>)]
           worker help
         """
         if arg['approve']:
@@ -1414,7 +1415,7 @@ def run(cabinmode=False, script=None):
         print colorize('\n'.join(['libedit version of readline detected.',
                                    'readline will not be well behaved, which may cause all sorts',
                                    'of problems for the psiTurk shell. We highly recommend installing',
-                                   'the gnu version of readline by running "sudo easy_install -a readline".',
+                                   'the gnu version of readline by running "sudo pip install gnureadline".',
                                    'Note: "pip install readline" will NOT work because of how the OSX',
                                    'pythonpath is structured.']), 'red', False)
     sys.argv = [sys.argv[0]] # drop arguments which were already processed in command_line.py
