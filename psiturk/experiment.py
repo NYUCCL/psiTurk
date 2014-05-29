@@ -511,7 +511,7 @@ def quitter():
             user.status = QUITEARLY
             db_session.add(user)
             db_session.commit()
-        except:
+        except SQLAlchemyError:
             raise ExperimentError('tried_to_quit')
         else:
             resp = {"status": "marked as quitter"}
