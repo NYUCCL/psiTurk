@@ -1,127 +1,147 @@
-import os, sys
+# -*- coding: utf-8 -*-
+""" This module """
+
+import os
 import urllib2
 import json
-import datetime
 import requests
-from flask import jsonify
-from version import version_number
+from psiturk.version import version_number
 import git
 import subprocess
 import signal
 import uuid
 import struct
 from sys import platform as _platform
-from psiturk_config import PsiturkConfig
+from psiturk.psiturk_config import PsiturkConfig
 import psutil
 
 
-class PsiturkOrgServices:
+class PsiturkOrgServices(object):
     """
-        PsiturkOrgServices this class provides an interface to the API
-        provided by the psiturk_org website. The two main features of
-        this API are registering secure ads and providing tunnel access
-        see: https://github.com/NYUCCL/api-psiturk-org
+        PsiturkOrgServices this class provides an interface to the API provided
+        by the psiturk_org website. The two main features of this API are
+        registering secure ads and providing tunnel access see:
+        https://github.com/NYUCCL/api-psiturk-org
     """
     def __init__(self, key, secret):
-        self.apiServer = 'https://api.psiturk.org' # 'https://api.psiturk.org' # by default for now
-        self.adServer = 'https://ad.psiturk.org'
-        self.sandboxAdServer = 'https://sandbox.ad.psiturk.org'
-        self.update_credentials(key,secret)
+        # 'https://api.psiturk.org' # by default for now
+        self.api_server = 'https://api.psiturk.org'
+        self.ad_server = 'https://ad.psiturk.org'
+        self.sandbox_ad_server = 'https://sandbox.ad.psiturk.org'
+        self.update_credentials(key, secret)
         if not self.check_credentials():
             print 'WARNING *****************************'
-            print 'Sorry, psiTurk Credentials invalid.\nYou will only be able to '\
-                  + 'test experiments locally until you enter\nvalid '\
-                  + 'credentials in the psiTurk Access section of ~/.psiturkconfig.\nGet your ' \
-                  + 'credentials at https://www.psiturk.org/login.\n'
+            print 'Sorry, psiTurk Credentials invalid.\nYou will only be able'\
+                + 'to test experiments locally until you enter\nvalid '\
+                + 'credentials in the psiTurk Access section of ' \
+                + '~/.psiturkconfig.\n  Get your credentials at '\
+                + 'https://www.psiturk.org/login.\n'
 
     def check_credentials(self):
-        r = requests.get(self.apiServer + '/api/ad', auth=(self.access_key,self.secret_key))
-        if r.status_code in [401, 403, 500]:  # not sure 500 server error should be included here
+        ''' Check credentials '''
+        req = requests.get(self.api_server + '/api/ad',
+                           auth=(self.access_key, self.secret_key))
+        # Not sure 500 server error should be included here
+        if req.status_code in [401, 403, 500]:
             return False
         else:
             return True
 
     def update_credentials(self, key, secret):
+        ''' Update credentials '''
         self.access_key = key
         self.secret_key = secret
 
     def connect(self, server):
         """
             connect:
-            "connects to server"  since the is a fairly
+                "connects to server"  since the is a fairly
             basic API, just allows overriding of which Ad server
             you are talking to
         """
-        self.apiServer = server
+        self.api_server = server
 
     def get_system_status(self):
         """
             get_system_status:
         """
         try:
-            api_server_status_link = self.apiServer + '/status_msg?version=' + version_number
-            response=urllib2.urlopen(api_server_status_link,timeout=1)
+            api_server_status_link = self.api_server + '/status_msg?version=' +\
+                version_number
+            response = urllib2.urlopen(api_server_status_link, timeout=1)
             status_msg = json.load(response)['status']
-        except:
-            status_msg = "Sorry, can't connect to psiturk.org, please check your \
-            internet connection.\nYou will not be able to create new hits, but \
-            testing locally should work.\n"
+        except urllib2.HTTPError:
+            status_msg = "Sorry, can't connect to psiturk.org, please check\
+                your internet connection.\nYou will not be able to create new\
+                hits, but testing locally should work.\n"
         return status_msg
 
-    def get_my_ip(self):
+    @classmethod
+    def get_my_ip(cls):
         """
-            get_my_ip:
-            asks and external server what your ip appears to be (useful
-            is running from behind a NAT/wifi router).  Of course,
-            incoming port to the router must be forwarded correctly.
+            Asks and external server what your ip appears to be (useful is
+            running from behind a NAT/wifi router).  Of course, incoming port
+            to the router must be forwarded correctly.
         """
         if 'OPENSHIFT_SECRET_TOKEN' in os.environ:
-            ip = os.environ['OPENSHIFT_APP_DNS']
+            my_ip = os.environ['OPENSHIFT_APP_DNS']
         else:
-            ip = json.load(urllib2.urlopen('http://httpbin.org/ip'))['origin']
-        return ip
+            my_ip = json.load(urllib2.urlopen(
+                'http://httpbin.org/ip'
+            ))['origin']
+        return my_ip
 
     def create_record(self, name, content, username, password):
+        ''' Create record '''
         #headers = {'key': username, 'secret': password}
-        r = requests.post(self.apiServer + '/api/' + name, data=json.dumps(content), auth=(username,password))
-        return r
+        req = requests.post(self.api_server + '/api/' + name,
+                            data=json.dumps(content), auth=(username, password))
+        return req
 
     def update_record(self, name, recordid, content, username, password):
-        #headers = {'key': username, 'secret': password}
-        r = requests.put(self.apiServer + '/api/' + name + '/' + str(recordid),
-                         data=json.dumps(content), auth=(username,password))
-        return r
+        ''' Update record '''
+        # headers = {'key': username, 'secret': password}
+        req = requests.put(self.api_server + '/api/' + name + '/' +
+                           str(recordid), data=json.dumps(content),
+                           auth=(username, password))
+        return req
 
     def delete_record(self, name, recordid, username, password):
+        ''' Delete record '''
         #headers = {'key': username, 'secret': password}
-        r = requests.delete(self.apiServer + '/api/' + name + '/' + str(recordid), auth=(username,password))
-        return r
+        req = requests.delete(self.api_server + '/api/' + name + '/' +
+                              str(recordid), auth=(username, password))
+        return req
 
     def query_records(self, name, username, password, query=''):
+        ''' Query records '''
         #headers = {'key': username, 'secret': password}
-        r = requests.get(self.apiServer + '/api/' + name + "/" + query, auth=(username,password))
-        return r
+        req = requests.get(self.api_server + '/api/' + name + "/" + query,
+                           auth=(username, password))
+        return req
 
-    def get_ad_url(self, adId, sandbox):
+    def get_ad_url(self, ad_id, sandbox):
         """
             get_ad_url:
             gets ad server thing
         """
         if sandbox:
-            return self.sandboxAdServer + '/view/' + str(adId)
+            return self.sandbox_ad_server + '/view/' + str(ad_id)
         else:
-            return self.adServer + '/view/' + str(adId)
+            return self.ad_server + '/view/' + str(ad_id)
 
-    def set_ad_hitid(self, adId, hitId, sandbox):
+    def set_ad_hitid(self, ad_id, hit_id, sandbox):
         """
             get_ad_hitid:
             updates the ad with the corresponding hitid
         """
         if sandbox:
-            r = self.update_record('sandboxad', adId, {'amt_hit_id':hitId}, self.access_key, self.secret_key)
+            req = self.update_record('sandboxad', ad_id, {'amt_hit_id':hit_id},
+                                     self.access_key, self.secret_key)
         else:
-            r = self.update_record('ad', adId, {'amt_hit_id':hitId}, self.access_key, self.secret_key)
-        if r.status_code == 201:
+            req = self.update_record('ad', ad_id, {'amt_hit_id':hit_id},
+                                     self.access_key, self.secret_key)
+        if req.status_code == 201:
             return True
         else:
             return False
@@ -134,11 +154,15 @@ class PsiturkOrgServices:
             return False
         else:
             if ad_content['is_sandbox']:
-                r = self.create_record('sandboxad', ad_content, self.access_key, self.secret_key)
+                req = self.create_record(
+                    'sandboxad', ad_content, self.access_key, self.secret_key
+                )
             else:
-                r = self.create_record('ad', ad_content, self.access_key, self.secret_key)
-            if r.status_code == 201:
-                return r.json()['ad_id']
+                req = self.create_record(
+                    'ad', ad_content, self.access_key, self.secret_key
+                )
+            if req.status_code == 201:
+                return req.json()['ad_id']
             else:
                 return False
 
@@ -146,42 +170,50 @@ class PsiturkOrgServices:
         """
             download_experiment:
         """
-        r = self.query_records('experiment', self.access_key, self.secret_key, query='download/'+experiment_id)
-        print r.text
+        req = self.query_records('experiment', self.access_key,
+                                 self.secret_key,
+                                 query='download/'+experiment_id)
+        print req.text
         return
 
 
-class ExperimentExchangeServices:
+class ExperimentExchangeServices(object):
     """
         ExperimentExchangeServices
         this class provides a non-authenticated interface to the API provided
-        by the psiturk_org website.  the feature is
-        interfacing with the experiment exchange
-        see: https://github.com/NYUCCL/api-psiturk-org
+        by the psiturk_org website.  the feature is interfacing with the
+        experiment exchange see: https://github.com/NYUCCL/api-psiturk-org
     """
     def __init__(self):
-        self.apiServer = 'https://api.psiturk.org' # 'https://api.psiturk.org' # by default for now
+        # 'https://api.psiturk.org' # by default for now
+        self.api_server = 'https://api.psiturk.org'
 
     def query_records_no_auth(self, name, query=''):
+        ''' Query records without authorization '''
         #headers = {'key': username, 'secret': password}
-        r = requests.get(self.apiServer + '/api/' + name + "/" + query)
-        return r
+        req = requests.get(self.api_server + '/api/' + name + "/" + query)
+        return req
 
     def download_experiment(self, experiment_id):
         """
             download_experiment:
         """
-        r = self.query_records_no_auth('experiment', query='download/'+experiment_id)
-        if r.status_code == 404:
+        req = self.query_records_no_auth('experiment',
+                                         query='download/'+experiment_id)
+        if req.status_code == 404:
             print "Sorry, no experiment matching id # " + experiment_id
-            print "Please double check the code you obtained on the http://psiturk.org/ee"
+            print "Please double check the code you obtained on the\
+                http://psiturk.org/ee"
         else:
-            # check if folder with same name already exists.
-            expinfo = r.json()
+            # Check if folder with same name already exists.
+            expinfo = req.json()
             gitr = requests.get(expinfo['git_url']).json()
             if os.path.exists('./'+gitr['name']):
                 print "*"*20
-                print "Sorry, you already have a file or folder named "+gitr['name']+". Please rename or delete it before trying to download this experiment.  You can do this by typing `rm -rf " + gitr['name'] + "`"
+                print "Sorry, you already have a file or folder named\
+                    "+gitr['name']+". Please rename or delete it before trying\
+                    to download this experiment.  You can do this by typing `rm\
+                    -rf " + gitr['name'] + "`"
                 print "*"*20
                 return
             if "clone_url" in gitr:
@@ -191,14 +223,19 @@ class ExperimentExchangeServices:
                 print "Name: " + expinfo['name']
                 print "Downloads: " + str(expinfo['downloads'])
                 print "Keywords: " + expinfo['keywords']
-                print "psiTurk Version: " + str(expinfo['psiturk_version_string'])
+                print "psiTurk Version: " +\
+                    str(expinfo['psiturk_version_string'])
                 print "URL: http://psiturk.org/ee/"+experiment_id
                 print "\n"
-                print "Experiment downloaded into the `" + gitr['name'] + "` folder of the current directory"
-                print "Type 'cd " + gitr['name'] + "` then run the `psiturk` command."
+                print "Experiment downloaded into the `" + gitr['name'] + "`\
+                    folder of the current directory"
+                print "Type 'cd " + gitr['name'] + "` then run the `psiturk`\
+                    command."
                 print "="*20
             else:
-                print "Sorry, experiment not located on github.  You might contact the author of this experiment.  Experiment NOT downloaded."
+                print "Sorry, experiment not located on github.  You might\
+                    contact the author of this experiment.  Experiment NOT\
+                    downloaded."
             return
 
 
@@ -213,17 +250,23 @@ class TunnelServices():
         self.local_port = config.getint('Server Parameters', 'port')
         self.tunnel_port = 8000  # Set by tunnel server
         self.tunnel_host = 'tunnel.psiturk.org'
-        self.tunnel_server = os.path.join(os.path.dirname(__file__), "tunnel/ngrok")
-        self.tunnel_config = os.path.join(os.path.dirname(__file__), "tunnel/ngrok-config")
+        self.tunnel_server = os.path.join(os.path.dirname(__file__),
+                                          "tunnel/ngrok")
+        self.tunnel_config = os.path.join(os.path.dirname(__file__),
+                                          "tunnel/ngrok-config")
         self.is_open = False
 
-    def check_os(self):
+    @classmethod
+    def check_os(cls):
+        ''' Check OS '''
         is_64bit = struct.calcsize('P')*8 == 64
 
-        if _platform == "linux" or _platform == "linux2" or "win32" or not is_64bit:
+        if (_platform == "linux" or _platform == "linux2" or "win32" or not
+                is_64bit):
             Exception('Your OS is currently unsupported.')
 
     def open(self):
+        ''' Open tunnel '''
         cmd = '%s -subdomain=%s -config=%s -log=stdout %s 2>&1 > server.log' \
                   %(self.tunnel_server, self.unique_id, self.tunnel_config,
                     self.local_port)
@@ -234,8 +277,9 @@ class TunnelServices():
         self.is_open = True
 
     def close(self):
-        p = psutil.Process(self.tunnel.pid)
-        child_pid = p.get_children(recursive=True)
+        ''' Close tunnel '''
+        parent_pid = psutil.Process(self.tunnel.pid)
+        child_pid = parent_pid.get_children(recursive=True)
         for pid in child_pid:
             pid.send_signal(signal.SIGTERM)
         self.is_open = False
