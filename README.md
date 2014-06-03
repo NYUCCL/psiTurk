@@ -6,7 +6,7 @@
 [![Downloads](https://pypip.in/d/PsiTurk/badge.png)](https://pypi.python.org/pypi/PsiTurk/)
 [![License](http://img.shields.io/badge/license-MIT-red.svg)](http://en.wikipedia.org/wiki/MIT_License)
 
-The current stable version is 2.0.
+The current stable version is 2.0.1.
 
 Please visit [psiturk.org](https://psiturk.org) for more information.
 
