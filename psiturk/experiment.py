@@ -16,24 +16,24 @@ try:
 except ImportError:
     from counter import Counter
 
-# Importing flask
+# Setup flask
 from flask import Flask, render_template, render_template_string, request, \
     jsonify
 
-# Database setup
+# Setup database
 from db import db_session, init_db
 from models import Participant
-from sqlalchemy import or_
+from sqlalchemy import or_, exc
 
 from psiturk_config import PsiturkConfig
 from experiment_errors import ExperimentError
 from psiturk.user_utils import nocache
 
-
+# Setup config
 CONFIG = PsiturkConfig()
 CONFIG.load_config()
 
-# Set up logging
+# Setup logging
 LOG_FILE_PATH = os.path.join(os.getcwd(), CONFIG.get("Server Parameters", \
     "logfile"))
 
@@ -53,15 +53,17 @@ CREDITED = 5
 QUITEARLY = 6
 BONUSED = 7
 
-###########################################################
-# Let's start
-###########################################################
-app = Flask("Experiment_Server")
-app.config.update(SEND_FILE_MAX_AGE_DEFAULT=10)  # Set cache timeout to 10ms for static files
 
-###########################################################
-#  serving warm, fresh, & sweet custom, user-provided routes
-###########################################################
+# Let's start
+# ===========
+
+app = Flask("Experiment_Server")
+# Set cache timeout to 10ms for static files
+app.config.update(SEND_FILE_MAX_AGE_DEFAULT=10)
+
+
+# Serving warm, fresh, & sweet custom, user-provided routes
+# ==========================================================
 
 try:
     sys.path.append(os.getcwd())
@@ -81,7 +83,8 @@ except ImportError:
 
 init_db()
 
-# read psiturk.js file into memory
+
+# Read psiturk.js file into memory
 PSITURK_JS_FILE = os.path.join(os.path.dirname(__file__), \
     "psiturk_js/psiturk.js")
 app.logger.error(PSITURK_JS_FILE)
@@ -91,15 +94,6 @@ if os.path.exists(PSITURK_JS_FILE):
 else:
     PSITURK_JS_CODE = "alert('psiturk.js file not found!');"
 
-# ----------------------------------------------
-#  favicon
-# ----------------------------------------------
-@app.route('/favicon.ico')
-def favicon():
-    """
-    Serving a favicon
-    """
-    return app.send_static_file('favicon.ico')
 
 @app.errorhandler(ExperimentError)
 def handle_exp_error(exception):
@@ -107,22 +101,15 @@ def handle_exp_error(exception):
     return exception.error_page(request, CONFIG.get('HIT Configuration',
                                                     'contact_email_on_error'))
 
-@app.route('/static/js/psiturk.js')
-def psiturk_js():
-    ''' psiTurk js route '''
-    return render_template_string(PSITURK_JS_CODE)
-
-#----------------------------------------------
-# DB setup
-#----------------------------------------------
 @app.teardown_request
-def shutdown_session(exception=None):
+def shutdown_session(_=None):
     ''' Shut down session route '''
     db_session.remove()
 
-#----------------------------------------------
-# Experiment counterbalancing code.
-#----------------------------------------------
+
+# Experiment counterbalancing code
+# ================================
+
 def get_random_condcount():
     """
     HITs can be in one of three states:
@@ -143,13 +130,13 @@ def get_random_condcount():
     numcounts = CONFIG.getint('Task Parameters', 'num_counters')
 
     participants = Participant.query.\
-                   filter(Participant.codeversion == CONFIG.get('Task Parameters', 'experiment_code_version')).\
-                   filter(or_(Participant.status == COMPLETED,
-                              Participant.status == CREDITED,
-                              Participant.status == SUBMITTED,
-                              Participant.status == BONUSED,
-                              Participant.beginhit > starttime)).\
-                   all()
+        filter(Participant.codeversion == \
+               CONFIG.get('Task Parameters', 'experiment_code_version')).\
+        filter(or_(Participant.status == COMPLETED,
+                   Participant.status == CREDITED,
+                   Participant.status == SUBMITTED,
+                   Participant.status == BONUSED,
+                   Participant.beginhit > starttime)).all()
     counts = Counter()
     for cond in range(numconds):
         for counter in range(numcounts):
@@ -165,14 +152,26 @@ def get_random_condcount():
 
     return chosen
 
-#----------------------------------------------
-# routes
-#----------------------------------------------
+
+# Routes
+# ======
+
 @app.route('/')
 @nocache
 def index():
     ''' Index route '''
     return render_template('default.html')
+
+
+@app.route('/favicon.ico')
+def favicon():
+    ''' Serve favicon '''
+    return app.send_static_file('favicon.ico')
+
+@app.route('/static/js/psiturk.js')
+def psiturk_js():
+    ''' psiTurk js route '''
+    return render_template_string(PSITURK_JS_CODE)
 
 @app.route('/check_worker_status', methods=['GET'])
 def check_worker_status():
@@ -184,41 +183,38 @@ def check_worker_status():
         worker_id = request.args['workerId']
         try:
             part = Participant.query.\
-                   filter(Participant.workerid == worker_id).\
-                   one()
+                filter(Participant.workerid == worker_id).one()
             status = part.status
-        except:
+        except exc.SQLAlchemyError:
             status = NOT_ACCEPTED
         resp = {"status" : status}
         return jsonify(**resp)
-
 
 @app.route('/ad', methods=['GET'])
 @nocache
 def advertisement():
     """
-    This is the url we give for the ad for our 'external question'.
-    The ad has to display two different things:
-    This page will be called from within mechanical turk, with url arguments
-    hitId, assignmentId, and workerId.
+    This is the url we give for the ad for our 'external question'.  The ad has
+    to display two different things: This page will be called from within
+    mechanical turk, with url arguments hitId, assignmentId, and workerId.
     If the worker has not yet accepted the hit:
-      These arguments will have null values, we should just show an ad for the
-      experiment.
+        These arguments will have null values, we should just show an ad for
+        the experiment.
     If the worker has accepted the hit:
-      These arguments will have appropriate values and we should enter the
-      person in the database and provide a link to the experiment popup.
+        These arguments will have appropriate values and we should enter the
+        person in the database and provide a link to the experiment popup.
     """
     user_agent_string = request.user_agent.string
     user_agent_obj = user_agents.parse(user_agent_string)
     browser_ok = True
-    for rule in string.split(CONFIG.get('HIT Configuration',
-                                        'browser_exclude_rule'), ','):
+    for rule in string.split(
+            CONFIG.get('HIT Configuration', 'browser_exclude_rule'), ','):
         myrule = rule.strip()
         if myrule in ["mobile", "tablet", "touchcapable", "pc", "bot"]:
-            if (myrule == "mobile" and user_agent_obj.is_mobile) or \
-               (myrule == "tablet" and user_agent_obj.is_tablet) or \
-               (myrule == "touchcapable" and user_agent_obj.is_touch_capable) or \
-               (myrule == "pc" and user_agent_obj.is_pc) or \
+            if (myrule == "mobile" and user_agent_obj.is_mobile) or\
+               (myrule == "tablet" and user_agent_obj.is_tablet) or\
+               (myrule == "touchcapable" and user_agent_obj.is_touch_capable) or\
+               (myrule == "pc" and user_agent_obj.is_pc) or\
                (myrule == "bot" and user_agent_obj.is_bot):
                 browser_ok = False
         elif myrule in user_agent_string:
@@ -240,26 +236,24 @@ def advertisement():
     already_in_db = False
     if 'workerId' in request.args:
         worker_id = request.args['workerId']
-        # first check if this workerId has completed the task before (v1)
+        # First check if this workerId has completed the task before (v1).
         nrecords = Participant.query.\
-                   filter(Participant.assignmentid != assignment_id).\
-                   filter(Participant.workerid == worker_id).\
-                   count()
+            filter(Participant.assignmentid != assignment_id).\
+            filter(Participant.workerid == worker_id).\
+            count()
 
-        if nrecords > 0:
-            # already completed task
+        if nrecords > 0:  # Already completed task
             already_in_db = True
-    else:
-        # If worker has not accepted the hit:
+    else:  # If worker has not accepted the hit
         worker_id = None
     try:
         part = Participant.query.\
-                           filter(Participant.hitid == hit_id).\
-                           filter(Participant.assignmentid == assignment_id).\
-                           filter(Participant.workerid == worker_id).\
-                           one()
+            filter(Participant.hitid == hit_id).\
+            filter(Participant.assignmentid == assignment_id).\
+            filter(Participant.workerid == worker_id).\
+            one()
         status = part.status
-    except:
+    except exc.SQLAlchemyError:
         status = None
 
     if status == STARTED and not debug_mode:
@@ -270,11 +264,13 @@ def advertisement():
         # They've done the debriefing but perhaps haven't submitted the HIT
         # yet.. Turn asignmentId into original assignment id before sending it
         # back to AMT
-        return render_template('thanks.html',
-                               is_sandbox=(mode == "sandbox"),
-                               hitid=hit_id,
-                               assignmentid=assignment_id,
-                               workerid=worker_id)
+        return render_template(
+            'thanks.html',
+            is_sandbox=(mode == "sandbox"),
+            hitid=hit_id,
+            assignmentid=assignment_id,
+            workerid=worker_id
+        )
     elif already_in_db and not debug_mode:
         raise ExperimentError('already_did_exp_hit')
     elif status == ALLOCATED or not status or debug_mode:
@@ -308,10 +304,12 @@ def give_consent():
     with open('templates/consent.html', 'r') as temp_file:
         consent_string = temp_file.read()
     consent_string = insert_mode(consent_string, mode)
-    return render_template_string(consent_string,
-                                  hitid=hit_id,
-                                  assignmentid=assignment_id,
-                                  workerid=worker_id)
+    return render_template_string(
+        consent_string,
+        hitid=hit_id,
+        assignmentid=assignment_id,
+        workerid=worker_id
+    )
 
 def get_ad_via_hitid(hit_id):
     ''' Get ad via HIT id '''
@@ -331,9 +329,7 @@ def get_ad_via_hitid(hit_id):
 @app.route('/exp', methods=['GET'])
 @nocache
 def start_exp():
-    """
-    Serves up the experiment applet.
-    """
+    """ Serves up the experiment applet. """
     if not ('hitId' in request.args and 'assignmentId' in request.args and
             'workerId' in request.args):
         raise ExperimentError('hit_assign_worker_id_not_set_in_exp')
@@ -341,19 +337,21 @@ def start_exp():
     assignment_id = request.args['assignmentId']
     worker_id = request.args['workerId']
     mode = request.args['mode']
-    app.logger.info("Accessing /exp: %(h)s %(a)s %(w)s " % {"h" : hit_id,
-                                                            "a": assignment_id,
-                                                            "w": worker_id})
+    app.logger.info("Accessing /exp: %(h)s %(a)s %(w)s " % {
+        "h" : hit_id,
+        "a": assignment_id,
+        "w": worker_id
+    })
     if hit_id[:5] == "debug":
         debug_mode = True
     else:
         debug_mode = False
 
-    # check first to see if this hitId or assignmentId exists.  if so check to
+    # Check first to see if this hitId or assignmentId exists.  If so, check to
     # see if inExp is set
     matches = Participant.query.\
-                        filter(Participant.workerid == worker_id).\
-                        all()
+        filter(Participant.workerid == worker_id).\
+        all()
     numrecs = len(matches)
     if numrecs == 0:
         # Choose condition and counterbalance
@@ -368,7 +366,7 @@ def start_exp():
         language = "UNKNOWN" if not request.user_agent.language else \
             request.user_agent.language
 
-        # set condition here and insert into database
+        # Set condition here and insert into database.
         participant_attributes = dict(
             assignmentid=assignment_id,
             workerid=worker_id,
@@ -378,16 +376,20 @@ def start_exp():
             ipaddress=worker_ip,
             browser=browser,
             platform=platform,
-            language=language)
-        part=Participant(**participant_attributes)
+            language=language
+        )
+        part = Participant(**participant_attributes)
         db_session.add(part)
         db_session.commit()
 
     else:
         # A couple possible problems here:
-        # 1: They've already done an assignment, then we should tell them they can't do another one
-        # 2: They've already worked on this assignment, and got too far to start over.
-        # 3: They're in the database twice for the same assignment, that should never happen.
+        # 1: They've already done an assignment, then we should tell them they
+        #    can't do another one
+        # 2: They've already worked on this assignment, and got too far to
+        #    start over.
+        # 3: They're in the database twice for the same assignment, that should
+        #    never happen.
         # 4: They're returning and all is well.
         nrecords = 0
         for record in matches:
@@ -398,18 +400,22 @@ def start_exp():
                 nrecords += 1
         if nrecords <= 1 and not other_assignment:
             part = matches[0]
-            if part.status >= STARTED and not debug_mode: # in experiment (or later) can't restart at this point
+            # In experiment (or later) can't restart at this point
+            if part.status >= STARTED and not debug_mode:
                 raise ExperimentError('already_started_exp')
         else:
             if nrecords > 1:
                 app.logger.error("Error, hit/assignment appears in database \
                                  more than once (serious problem)")
-                raise ExperimentError('hit_assign_appears_in_database_more_than_once')
+                raise ExperimentError(
+                    'hit_assign_appears_in_database_more_than_once'
+                )
             if other_assignment:
                 raise ExperimentError('already_did_exp_hit')
 
     if mode == 'sandbox' or mode == 'live':
-        # if everything goes ok here relatively safe to assume we can lookup the ad
+        # If everything goes ok here relatively safe to assume we can lookup
+        # the ad.
         ad_id = get_ad_via_hitid(hit_id)
         if ad_id != "error":
             if mode == "sandbox":
@@ -423,10 +429,12 @@ def start_exp():
     else:
         ad_server_location = '/complete'
 
-    return render_template('exp.html', uniqueId=part.uniqueid,
-                           condition=part.cond,
-                           counterbalance=part.counterbalance,
-                           adServerLoc=ad_server_location)
+    return render_template(
+        'exp.html', uniqueId=part.uniqueid,
+        condition=part.cond,
+        counterbalance=part.counterbalance,
+        adServerLoc=ad_server_location
+    )
 
 @app.route('/inexp', methods=['POST'])
 def enterexp():
@@ -444,21 +452,20 @@ def enterexp():
 
     try:
         user = Participant.query.\
-                filter(Participant.uniqueid == unique_id).\
-                one()
+            filter(Participant.uniqueid == unique_id).one()
         user.status = STARTED
         user.beginexp = datetime.datetime.now()
         db_session.add(user)
         db_session.commit()
         resp = {"status": "success"}
-    except:
-        app.logger.error( "DB error: Unique user not found.")
+    except exc.SQLAlchemyError:
+        app.logger.error("DB error: Unique user not found.")
         resp = {"status": "error, uniqueId not found"}
     return jsonify(**resp)
 
-# TODD SAYS: this the only route in the whole thing that uses <id> like this
+# TODD SAYS: This the only route in the whole thing that uses <id> like this
 # where everything else uses POST!  This could be confusing but is forced
-# somewhat by Backbone?  take heed!
+# somewhat by Backbone?  Take heed!
 @app.route('/sync/<uid>', methods=['GET', 'PUT'])
 def update(uid=None):
     """
@@ -469,21 +476,25 @@ def update(uid=None):
 
     try:
         user = Participant.query.\
-                filter(Participant.uniqueid == uid).\
-                one()
-    except:
-        app.logger.error( "DB error: Unique user not found.")
+            filter(Participant.uniqueid == uid).\
+            one()
+    except exc.SQLAlchemyError:
+        app.logger.error("DB error: Unique user not found.")
 
     if hasattr(request, 'json'):
-        user.datastring = request.data.decode('utf-8').encode('ascii', 'xmlcharrefreplace')
+        user.datastring = request.data.decode('utf-8').encode(
+            'ascii', 'xmlcharrefreplace'
+        )
         db_session.add(user)
         db_session.commit()
 
-    resp = {"condition": user.cond,
-            "counterbalance": user.counterbalance,
-            "assignmentId": user.assignmentid,
-            "workerId": user.workerid,
-            "hitId": user.hitid}
+    resp = {
+        "condition": user.cond,
+        "counterbalance": user.counterbalance,
+        "assignmentId": user.assignmentid,
+        "workerId": user.workerid,
+        "hitId": user.hitid
+    }
 
     return jsonify(**resp)
 
@@ -504,31 +515,31 @@ def quitter():
     else:
         try:
             unique_id = request.form['uniqueId']
-            app.logger.info( "Marking quitter %s" % unique_id)
+            app.logger.info("Marking quitter %s" % unique_id)
             user = Participant.query.\
-                    filter(Participant.uniqueid == unique_id).\
-                    one()
+                filter(Participant.uniqueid == unique_id).\
+                one()
             user.status = QUITEARLY
             db_session.add(user)
             db_session.commit()
-        except SQLAlchemyError:
+        except exc.SQLAlchemyError:
             raise ExperimentError('tried_to_quit')
         else:
             resp = {"status": "marked as quitter"}
             return jsonify(**resp)
 
-# this route should only used when debugging
+# Note: This route should only used when debugging
 @app.route('/complete', methods=['GET'])
 @nocache
 def debug_complete():
+    ''' Debugging route for complete. '''
     if not 'uniqueId' in request.args:
         raise ExperimentError('improper_inputs')
     else:
         unique_id = request.args['uniqueId']
         try:
             user = Participant.query.\
-                        filter(Participant.uniqueid == unique_id).\
-                        one()
+                filter(Participant.uniqueid == unique_id).one()
             user.status = COMPLETED
             user.endhit = datetime.datetime.now()
             db_session.add(user)
@@ -549,14 +560,13 @@ def worker_complete():
         app.logger.info("Completed experiment %s" % unique_id)
         try:
             user = Participant.query.\
-                        filter(Participant.uniqueid == unique_id).\
-                        one()
+                filter(Participant.uniqueid == unique_id).one()
             user.status = COMPLETED
             user.endhit = datetime.datetime.now()
             db_session.add(user)
             db_session.commit()
             status = "success"
-        except:
+        except exc.SQLAlchemyError:
             status = "database error"
         resp = {"status" : status}
         return jsonify(**resp)
@@ -572,13 +582,12 @@ def worker_submitted():
         app.logger.info("Submitted experiment for %s" % unique_id)
         try:
             user = Participant.query.\
-                        filter(Participant.uniqueid == unique_id).\
-                        one()
+                filter(Participant.uniqueid == unique_id).one()
             user.status = SUBMITTED
             db_session.add(user)
             db_session.commit()
             status = "success"
-        except:
+        except exc.SQLAlchemyError:
             status = "database error"
         resp = {"status" : status}
         return jsonify(**resp)
@@ -587,28 +596,29 @@ def worker_submitted():
 @app.route("/ppid")
 def ppid():
     ''' Get ppid '''
-    ppid = os.getppid()
-    return str(ppid)
+    proc_id = os.getppid()
+    return str(proc_id)
 
-# insert "mode" into pages so it's carried from page to page
-# done server-side to avoid breaking backwards compatibility
-# with old templates
+# Insert "mode" into pages so it's carried from page to page done server-side
+# to avoid breaking backwards compatibility with old templates.
 def insert_mode(page_html, mode):
     ''' Insert mode '''
     match_found = False
     matches = re.finditer('workerId={{ workerid }}', page_html)
-    m = None
-    for m in matches:
+    match = None
+    for match in matches:
         match_found = True
     if match_found:
-        new_html = page_html[:m.end()] + "&mode=" + mode + page_html[m.end():]
+        new_html = page_html[:match.end()] + "&mode=" + mode +\
+            page_html[match.end():]
         return new_html
     else:
         raise ExperimentError("insert_mode_failed")
 
-#----------------------------------------------
-# generic route
-#----------------------------------------------
+
+# Generic route
+# =============
+
 @app.route('/<pagename>')
 @app.route('/<foldername>/<pagename>')
 def regularpage(foldername=None, pagename=None):
@@ -622,9 +632,8 @@ def regularpage(foldername=None, pagename=None):
     else:
         return render_template(foldername+"/"+pagename)
 
-# # Initialize database if necessary
 def run_webserver():
-    ''' Run web serve '''
+    ''' Run web server '''
     host = "0.0.0.0"
     port = CONFIG.getint('Server Parameters', 'port')
     print "Serving on ", "http://" +  host + ":" + str(port)
