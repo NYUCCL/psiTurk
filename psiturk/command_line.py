@@ -4,8 +4,7 @@ import argparse
 import sys, os
 from psiturk.version import version_number
 from psiturk.psiturk_org_services import ExperimentExchangeServices
-import psiturk.psiturk_shell as ps
-import psiturk.setup_example as se
+
 
 def process():
     ''' Figure out how we were invoked '''
@@ -53,6 +52,7 @@ def setup_example():
     if args.version:
         print version_number
     else:
+        import psiturk.setup_example as se
         se.setup_example()
 
 def launch_server():
@@ -97,6 +97,7 @@ def launch_shell():
     if args.version:
         print version_number
     else:
+        import psiturk.psiturk_shell as ps
         if args.script:
             ps.run(cabinmode=args.cabinmode, script=args.script)
         else:
