@@ -77,7 +77,7 @@ init_db()
 
 # read psiturk.js file into memory
 psiturk_js_file = os.path.join(os.path.dirname(__file__), "psiturk_js/psiturk.js")
-app.logger.error( psiturk_js_file )
+app.logger.info( psiturk_js_file )
 
 if os.path.exists(psiturk_js_file):
     psiturk_js_code = open(psiturk_js_file).read()
@@ -97,6 +97,8 @@ def favicon():
 @app.errorhandler(ExperimentError)
 def handleExpError(e):
     """Handle errors by sending an error page."""
+    app.logger.error(
+        "%s (%s) %s", e.value, e.errornum, str(dict(request.args)))
     return e.error_page( request, config.get('HIT Configuration', 'contact_email_on_error') )
 
 @app.route('/static/js/psiturk.js')
