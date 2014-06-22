@@ -6,6 +6,7 @@ from random import choice
 import user_agents
 import string
 import requests
+import json
 try:
     from collections import Counter
 except ImportError:
@@ -415,7 +416,35 @@ def enterexp():
 # TODD SAYS: this the only route in the whole thing that uses <id> like this
 # where everything else uses POST!  This could be confusing but is forced
 # somewhat by Backbone?  take heed!
-@app.route('/sync/<uid>', methods=['GET', 'PUT'])
+@app.route('/sync/<uid>', methods=['GET'])
+def load(uid=None):
+    """
+    Load experiment data, which should be a JSON object and will be stored
+    after converting to string.
+    """
+    app.logger.info("accessing the /sync route with id: %s" % uid)
+
+    try:
+        user = Participant.query.\
+                filter(Participant.uniqueid == uid).\
+                one()
+    except:
+        app.logger.error( "DB error: Unique user not found.")
+
+    app.logger.debug("User data: %s", user.datastring)
+    try:
+        resp = json.loads(user.datastring)
+    except:
+        resp = {"condition": user.cond,
+                "counterbalance": user.counterbalance,
+                "assignmentId": user.assignmentid,
+                "workerId": user.workerid,
+                "hitId": user.hitid,
+                "bonus": user.bonus}
+
+    return jsonify(**resp)
+
+@app.route('/sync/<uid>', methods=['PUT'])
 def update(uid=None):
     """
     Save experiment data, which should be a JSON object and will be stored
@@ -430,17 +459,14 @@ def update(uid=None):
     except:
         app.logger.error( "DB error: Unique user not found.")
 
-    if hasattr(request, 'json'):
+    if hasattr(request, 'data'):
+        app.logger.debug("Saving user data")
         user.datastring = request.data.decode('utf-8').encode('ascii', 'xmlcharrefreplace')
         db_session.add(user)
         db_session.commit()
 
-    resp = {"condition": user.cond,
-            "counterbalance": user.counterbalance,
-            "assignmentId": user.assignmentid,
-            "workerId": user.workerid,
-            "hitId": user.hitid}
-
+    app.logger.debug("User data: %s", user.datastring)
+    resp = json.loads(user.datastring)
     return jsonify(**resp)
 
 @app.route('/quitter', methods=['POST'])
