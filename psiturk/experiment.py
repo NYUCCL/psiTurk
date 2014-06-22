@@ -422,7 +422,7 @@ def load(uid=None):
     Load experiment data, which should be a JSON object and will be stored
     after converting to string.
     """
-    app.logger.info("accessing the /sync route with id: %s" % uid)
+    app.logger.info("GET /sync route with id: %s" % uid)
 
     try:
         user = Participant.query.\
@@ -431,7 +431,6 @@ def load(uid=None):
     except:
         app.logger.error( "DB error: Unique user not found.")
 
-    app.logger.debug("User data: %s", user.datastring)
     try:
         resp = json.loads(user.datastring)
     except:
@@ -450,7 +449,7 @@ def update(uid=None):
     Save experiment data, which should be a JSON object and will be stored
     after converting to string.
     """
-    app.logger.info("accessing the /sync route with id: %s" % uid)
+    app.logger.info("PUT /sync route with id: %s" % uid)
 
     try:
         user = Participant.query.\
@@ -460,13 +459,18 @@ def update(uid=None):
         app.logger.error( "DB error: Unique user not found.")
 
     if hasattr(request, 'data'):
-        app.logger.debug("Saving user data")
         user.datastring = request.data.decode('utf-8').encode('ascii', 'xmlcharrefreplace')
         db_session.add(user)
         db_session.commit()
 
-    app.logger.debug("User data: %s", user.datastring)
-    resp = json.loads(user.datastring)
+    try:
+        data = json.loads(user.datastring)
+    except:
+        data = {}
+
+    trial = data.get("currenttrial", None)
+    app.logger.info("saved data for %s (current trial: %s)", uid, trial)
+    resp = {"status": "user data saved"}
     return jsonify(**resp)
 
 @app.route('/quitter', methods=['POST'])
