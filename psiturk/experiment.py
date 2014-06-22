@@ -458,7 +458,7 @@ def update(uid=None):
     except:
         app.logger.error( "DB error: Unique user not found.")
 
-    if hasattr(request, 'data'):
+    if hasattr(request, 'json'):
         user.datastring = request.data.decode('utf-8').encode('ascii', 'xmlcharrefreplace')
         db_session.add(user)
         db_session.commit()
