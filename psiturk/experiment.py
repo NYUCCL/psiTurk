@@ -10,6 +10,7 @@ import user_agents
 import string
 import requests
 import re
+import json
 
 try:
     from collections import Counter
@@ -466,13 +467,42 @@ def enterexp():
 # TODD SAYS: This the only route in the whole thing that uses <id> like this
 # where everything else uses POST!  This could be confusing but is forced
 # somewhat by Backbone?  Take heed!
-@app.route('/sync/<uid>', methods=['GET', 'PUT'])
+@app.route('/sync/<uid>', methods=['GET'])
+def load(uid=None):
+    """
+    Load experiment data, which should be a JSON object and will be stored
+    after converting to string.
+    """
+    app.logger.info("GET /sync route with id: %s" % uid)
+
+    try:
+        user = Participant.query.\
+            filter(Participant.uniqueid == uid).\
+            one()
+    except exc.SQLAlchemyError:
+        app.logger.error("DB error: Unique user not found.")
+
+    try:
+        resp = json.loads(user.datastring)
+    except:
+        resp = {
+            "condition": user.cond,
+            "counterbalance": user.counterbalance,
+            "assignmentId": user.assignmentid,
+            "workerId": user.workerid,
+            "hitId": user.hitid,
+            "bonus": user.bonus
+        }
+
+    return jsonify(**resp)
+
+@app.route('/sync/<uid>', methods=['PUT'])
 def update(uid=None):
     """
     Save experiment data, which should be a JSON object and will be stored
     after converting to string.
     """
-    app.logger.info("accessing the /sync route with id: %s" % uid)
+    app.logger.info("PUT /sync route with id: %s" % uid)
 
     try:
         user = Participant.query.\
@@ -488,14 +518,14 @@ def update(uid=None):
         db_session.add(user)
         db_session.commit()
 
-    resp = {
-        "condition": user.cond,
-        "counterbalance": user.counterbalance,
-        "assignmentId": user.assignmentid,
-        "workerId": user.workerid,
-        "hitId": user.hitid
-    }
+    try:
+        data = json.loads(user.datastring)
+    except:
+        data = {}
 
+    trial = data.get("currenttrial", None)
+    app.logger.info("saved data for %s (current trial: %s)", uid, trial)
+    resp = {"status": "user data saved"}
     return jsonify(**resp)
 
 @app.route('/quitter', methods=['POST'])
