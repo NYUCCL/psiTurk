@@ -8,6 +8,7 @@ import unittest
 import tempfile
 import psiturk
 import urllib
+import json
 from faker import Faker
 
 
@@ -102,6 +103,48 @@ class PsiTurkStandardTests(PsiturkUnitTest):
             self.worker_id + '&hitId=' + self.hit_id + '&mode=sandbox'
         )
         assert 'Error: #1018' in rv.data
+
+    def test_sync_put(self):
+        request = "&".join([
+           "assignmentId=debug%s" % self.assignment_id,
+           "workerId=debug%s" % self.worker_id,
+           "hitId=debug%s" % self.hit_id,
+           "mode=debug"])
+
+        # put the user in the database
+        rv = self.app.get("/exp?%s" % request)
+
+        # try putting the sync
+        uniqueid = "debug%s:debug%s" % (self.worker_id, self.assignment_id)
+        rv = self.app.put('/sync/%s' % uniqueid)
+        status = json.loads(rv.data).get("status", "")
+        assert status == "user data saved"
+
+    def test_sync_get(self):
+        request = "&".join([
+           "assignmentId=debug%s" % self.assignment_id,
+           "workerId=debug%s" % self.worker_id,
+           "hitId=debug%s" % self.hit_id,
+           "mode=debug"])
+
+        # put the user in the database
+        rv = self.app.get("/exp?%s" % request)
+
+        # save data with sync PUT
+        uniqueid = "debug%s:debug%s" % (self.worker_id, self.assignment_id)
+        rv = self.app.put('/sync/%s' % uniqueid)
+
+        # get data with sync GET
+        uniqueid = "debug%s:debug%s" % (self.worker_id, self.assignment_id)
+        rv = self.app.get('/sync/%s' % uniqueid)
+
+        response = json.loads(rv.data)
+        assert response.get("assignmentId", "") == "debug%s" % self.assignment_id
+        assert response.get("workerId", "") == "debug%s" % self.worker_id
+        assert response.get("hitId", "") == "debug%s" % self.hit_id
+        assert response.get("condition", None) == 0
+        assert response.get("counterbalance", None) == 0
+        assert response.get("bonus", None) == 0.0
 
     def test_favicon(self):
        '''Test that favicon loads.'''
