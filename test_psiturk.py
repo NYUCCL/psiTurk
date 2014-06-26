@@ -15,29 +15,29 @@ fake = Faker()  # Fake data generator
 
 
 class FlaskTestClientProxy(object):
-   '''Spoof user agent (Chrome)'''
-   def __init__(self, app):
-       self.app = app
+    '''Spoof user agent (Chrome)'''
+    def __init__(self, app):
+        self.app = app
 
-   def __call__(self, environ, start_response):
-       environ['REMOTE_ADDR'] = environ.get('REMOTE_ADDR', fake.ipv4())
-       environ['HTTP_USER_AGENT'] = 'Mozilla/5.0 (Macintosh; Intel Mac OS X\
-           10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1944.0\
-           Safari/537.36'
-       return self.app(environ, start_response)
+    def __call__(self, environ, start_response):
+        environ['REMOTE_ADDR'] = environ.get('REMOTE_ADDR', fake.ipv4())
+        environ['HTTP_USER_AGENT'] = 'Mozilla/5.0 (Macintosh; Intel Mac OS X\
+            10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1944.0\
+            Safari/537.36'
+        return self.app(environ, start_response)
 
 
 class BadFlaskTestClientProxy(object):
-   '''Spoof user agent (iPad)'''
-   def __init__(self, app):
-       self.app = app
+    '''Spoof user agent (iPad)'''
+    def __init__(self, app):
+        self.app = app
 
-   def __call__(self, environ, start_response):
-       environ['REMOTE_ADDR'] = environ.get('REMOTE_ADDR', fake.ipv4())
-       environ['HTTP_USER_AGENT'] = 'Mozilla/5.0 (iPad; U; CPU OS 3_2 like Mac\
-           OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Version/4.0.4\
-           Mobile/7B334b Safari/531.21.10'
-       return self.app(environ, start_response)
+    def __call__(self, environ, start_response):
+        environ['REMOTE_ADDR'] = environ.get('REMOTE_ADDR', fake.ipv4())
+        environ['HTTP_USER_AGENT'] = 'Mozilla/5.0 (iPad; U; CPU OS 3_2 like \
+            Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) \
+            Version/4.0.4 Mobile/7B334b Safari/531.21.10'
+        return self.app(environ, start_response)
 
 
 class PsiturkUnitTest(unittest.TestCase):
@@ -49,8 +49,11 @@ class PsiturkUnitTest(unittest.TestCase):
         import psiturk.experiment
         reload(psiturk.experiment)
 
-        self.db_fd, psiturk.experiment.app.config['DATABASE'] = tempfile.mkstemp()
-        psiturk.experiment.app.wsgi_app = FlaskTestClientProxy(psiturk.experiment.app.wsgi_app)
+        fd, db_path = tempfile.mkstemp()
+        self.db_fd = fd
+        psiturk.experiment.app.config['DATABASE'] = db_path
+        psiturk.experiment.app.wsgi_app = FlaskTestClientProxy(
+            psiturk.experiment.app.wsgi_app)
         self.app = psiturk.experiment.app.test_client()
         psiturk.db.init_db()
 
@@ -89,38 +92,45 @@ class PsiTurkStandardTests(PsiturkUnitTest):
 
     def test_ad_with_all_urls(self):
         '''Test that ad page throws Error #1003 with no url vars.'''
-        rv = self.app.get(
-            '/ad' + '?assignmentId=debug' + self.assignment_id + '&workerId=debug' +
-            self.worker_id + '&hitId=debug' + self.hit_id + '&mode=sandbox'
-        )
+        args = '&'.join([
+            'assignmentId=debug%s' % self.assignment_id,
+            'workerId=debug%s' % self.worker_id,
+            'hitId=debug%s' % self.hit_id,
+            'mode=sandbox'])
+        rv = self.app.get('/ad?%s' % args)
         assert 'Thank you for accepting this HIT!' in rv.data
 
     def test_exp_with_all_url_vars_not_registered_on_ad_server(self):
         '''Test that exp page throws Error #1018 with all url vars but not registered.'''
-        rv = self.app.get(
-            '/exp' + '?assignmentId=' + self.assignment_id + '&workerId=' +
-            self.worker_id + '&hitId=' + self.hit_id + '&mode=sandbox'
-        )
+        args = '&'.join([
+            'assignmentId=debug%s' % self.assignment_id,
+            'workerId=debug%s' % self.worker_id,
+            'hitId=debug%s' % self.hit_id,
+            'mode=sandbox'])
+        rv = self.app.get('/exp?%s' % args)
         assert 'Error: #1018' in rv.data
 
     def test_favicon(self):
-       '''Test that favicon loads.'''
-       rv = self.app.get('/favicon.ico')
-       assert rv.status_code == 200
+        '''Test that favicon loads.'''
+        rv = self.app.get('/favicon.ico')
+        assert rv.status_code == 200
 
 
 class BadUserAgent(PsiturkUnitTest):
-     ''' Setup test blocked user agent (iPad/tablets) '''
+    '''Setup test blocked user agent (iPad/tablets)'''
 
-     def setUp(self):
+    def setUp(self):
         '''Build up fixtures'''
         os.chdir('psiturk-example')
         import psiturk.db
         import psiturk.experiment
         reload(psiturk.experiment)
 
-        self.db_fd, psiturk.experiment.app.config['DATABASE'] = tempfile.mkstemp()
-        psiturk.experiment.app.wsgi_app = BadFlaskTestClientProxy(psiturk.experiment.app.wsgi_app)
+        fd, db_path = tempfile.mkstemp()
+        self.db_fd = fd
+        psiturk.experiment.app.config['DATABASE'] = db_path
+        psiturk.experiment.app.wsgi_app = BadFlaskTestClientProxy(
+            psiturk.experiment.app.wsgi_app)
         self.app = psiturk.experiment.app.test_client()
         psiturk.db.init_db()
 
@@ -129,7 +139,7 @@ class BadUserAgent(PsiturkUnitTest):
         self.hit_id = fake.md5(raw_output=False)
         self.assignment_id = fake.md5(raw_output=False)
 
-     def test_ad_with_bad_user_agent(self):
+    def test_ad_with_bad_user_agent(self):
         '''Test that ad page throws Error when user agent is blocked.'''
         rv = self.app.get(
             '/ad' + '?assignmentId=debug' + self.assignment_id + '&workerId=debug' +
@@ -149,8 +159,12 @@ class PsiTurkTestPsiturkJS(PsiturkUnitTest):
         import psiturk.db
         import psiturk.experiment
         reload(psiturk.experiment)
-        self.db_fd, psiturk.experiment.app.config['DATABASE'] = tempfile.mkstemp()
-        psiturk.experiment.app.wsgi_app = FlaskTestClientProxy(psiturk.experiment.app.wsgi_app)
+
+        fd, db_path = tempfile.mkstemp()
+        self.db_fd = fd
+        psiturk.experiment.app.config['DATABASE'] = db_path
+        psiturk.experiment.app.wsgi_app = FlaskTestClientProxy(
+            psiturk.experiment.app.wsgi_app)
         self.app = psiturk.experiment.app.test_client()
         psiturk.db.init_db()
 
