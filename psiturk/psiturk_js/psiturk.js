@@ -204,7 +204,7 @@ var PsiTurk = function(uniqueId, adServerLoc) {
 	self.getPage = function(pagename) {
 		if (!(pagename in self.pages)){
 		    throw new Error(
-			["Attemping to load page before preloading: ",
+			["Attempting to load page before preloading: ",
 			pagename].join(""));
 		};
 		return self.pages[pagename];
