@@ -24,6 +24,7 @@ class PsiturkOrgServices(object):
         https://github.com/NYUCCL/api-psiturk-org
     """
     def __init__(self, key, secret):
+
         # 'https://api.psiturk.org' # by default for now
         self.api_server = 'https://api.psiturk.org'
         self.ad_server = 'https://ad.psiturk.org'
@@ -239,15 +240,16 @@ class ExperimentExchangeServices(object):
             return
 
 
-class TunnelServices():
+class TunnelServices(object):
     ''' Allow psiTurk to puncture firewalls using reverse tunnelling.'''
 
     def __init__(self):
         config = PsiturkConfig()
         config.load_config()
-        self.check_os()
-        self.unique_id = str(uuid.uuid4())
+        self.access_key = config.get('psiTurk Access', 'psiturk_access_key_id')
+        self.secret_key = config.get('psiTurk Access', 'psiturk_secret_access_id')
         self.local_port = config.getint('Server Parameters', 'port')
+        self.check_os()
         self.tunnel_port = 8000  # Set by tunnel server
         self.tunnel_host = 'tunnel.psiturk.org'
         self.tunnel_server = os.path.join(os.path.dirname(__file__),
@@ -260,19 +262,44 @@ class TunnelServices():
     def check_os(cls):
         ''' Check OS '''
         is_64bit = struct.calcsize('P')*8 == 64
-
         if (_platform == "linux" or _platform == "linux2" or "win32" or not
                 is_64bit):
             Exception('Your OS is currently unsupported.')
 
+    def get_tunnel_ad_url(self):
+        ''' Get tunnel hostname from psiturk.org  '''
+        req = requests.get('https://api.psiturk.org/api/tunnel',
+                           auth=(self.access_key, self.secret_key))
+        if req.status_code in [401, 403, 500]:
+            print(req.content)
+            return False
+        else:
+            return req.json()['tunnel_hostname']
+
+    def change_tunnel_ad_url(self):
+        ''' Change tunnel ad url. '''
+        self.close()
+        # req = requests.delete('https://api.psiturk.org/api/tunnel/',
+        #                       data="delte", auth=(self.access_key,
+        #                                           self.secret_key))
+        req = requests.post('https://api.psiturk.org/api/tunnel/',
+                              data="bogus", auth=(self.access_key,
+                                                  self.secret_key))
+        if req.status_code in [401, 403, 500]:
+            print(req.content)
+            return False
+
     def open(self):
         ''' Open tunnel '''
+        tunnel_ad_url = self.get_tunnel_ad_url()
+        if not tunnel_ad_url:
+            return("Tunnel server appears to be down.")
         cmd = '%s -subdomain=%s -config=%s -log=stdout %s 2>&1 > server.log' \
-                  %(self.tunnel_server, self.unique_id, self.tunnel_config,
+                  %(self.tunnel_server, tunnel_ad_url, self.tunnel_config,
                     self.local_port)
         self.tunnel = subprocess.Popen(cmd, shell=True)
-        self.url = '%s.%s' %(self.unique_id, self.tunnel_host)
-        self.full_url = 'http://%s.%s:%s' %(self.unique_id, self.tunnel_host,
+        self.url = '%s.%s' %(tunnel_ad_url, self.tunnel_host)
+        self.full_url = 'http://%s.%s:%s' %(tunnel_ad_url, self.tunnel_host,
                                             self.tunnel_port)
         self.is_open = True
 
@@ -283,3 +310,4 @@ class TunnelServices():
         for pid in child_pid:
             pid.send_signal(signal.SIGTERM)
         self.is_open = False
+

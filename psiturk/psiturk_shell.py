@@ -1531,13 +1531,13 @@ class PsiturkNetworkShell(PsiturkShell):
     def do_tunnel(self, arg):
         """
         Usage: tunnel open
-               tunnel close
+               tunnel change
                tunnel status
         """
         if arg['open']:
             self.tunnel_open()
-        elif arg['close']:
-            self.tunnel_close()
+        elif arg['change']:
+            self.tunnel_change()
         elif arg['status']:
             self.tunnel_status()
 
@@ -1739,12 +1739,11 @@ class PsiturkNetworkShell(PsiturkShell):
             print "Sorry, you need to open a tunnel to check the status. Try \
                 'tunnel open' first."
 
-    def tunnel_close(self):
-        ''' Close tunnel '''
-        print "Closing tunnel..."
-        self.tunnel.close()
-        print "Done."
-
+    def tunnel_change(self):
+        ''' Change tunnel url '''
+        print('Tearing down old tunnel if present...')
+        self.tunnel.change_tunnel_ad_url()
+        print("New tunnel ready. Run 'tunnel open' to start.")
 
 def run(cabinmode=False, script=None):
     using_libedit = 'libedit' in readline.__doc__
