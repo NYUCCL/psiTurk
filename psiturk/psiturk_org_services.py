@@ -278,7 +278,8 @@ class TunnelServices(object):
 
     def change_tunnel_ad_url(self):
         ''' Change tunnel ad url. '''
-        self.close()
+        if self.is_open:
+            self.close()
         # req = requests.delete('https://api.psiturk.org/api/tunnel/',
         #                       data="delte", auth=(self.access_key,
         #                                           self.secret_key))
