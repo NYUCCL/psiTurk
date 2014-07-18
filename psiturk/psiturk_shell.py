@@ -584,8 +584,6 @@ class PsiturkNetworkShell(PsiturkShell):
             prompt += ' mode:' + colorize('live', 'bold')
         if self.tunnel.is_open:
             prompt += ' tunnel:' + colorize('✓', 'green')
-        else:
-            prompt += ' tunnel:' + colorize('✗', 'red')
         if self.sandbox:
             prompt += ' #HITs:' + str(self.sandbox_hits)
         else:
