@@ -280,12 +280,10 @@ class TunnelServices(object):
         ''' Change tunnel ad url. '''
         if self.is_open:
             self.close()
-        # req = requests.delete('https://api.psiturk.org/api/tunnel/',
-        #                       data="delte", auth=(self.access_key,
-        #                                           self.secret_key))
-        req = requests.post('https://api.psiturk.org/api/tunnel/',
-                              data="bogus", auth=(self.access_key,
-                                                  self.secret_key))
+        req = requests.delete('https://api.psiturk.org/api/tunnel/',
+                              auth=(self.access_key, self.secret_key))
+        # the request content here actually will include the tunnel_hostname
+        # if needed or wanted.
         if req.status_code in [401, 403, 500]:
             print(req.content)
             return False
