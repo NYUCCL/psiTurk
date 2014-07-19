@@ -234,6 +234,18 @@ var PsiTurk = function(uniqueId, adServerLoc) {
 		taskdata.addUnstructuredData(field, value);
 	};
 
+	self.getTrialData = function() {
+		return taskdata.getTrialData();	
+	};
+		
+	self.getEventData = function() {
+		return taskdata.getEventData();	
+	};
+		
+	self.getQuestionData = function() {
+		return taskdata.getQuestionData();	
+	};
+
 	// Add bonus to task data
 	self.computeBonus = function(url, callback) {
 		$.ajax(url, {
