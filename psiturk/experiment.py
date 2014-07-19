@@ -434,7 +434,8 @@ def start_exp():
         'exp.html', uniqueId=part.uniqueid,
         condition=part.cond,
         counterbalance=part.counterbalance,
-        adServerLoc=ad_server_location
+        adServerLoc=ad_server_location,
+        mode = mode
     )
 
 @app.route('/inexp', methods=['POST'])

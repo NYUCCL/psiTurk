@@ -19,7 +19,8 @@ _.extend(Backbone.Notifications, Backbone.Events);
 /*******
  * API *
  ******/
-var PsiTurk = function(uniqueId, adServerLoc) {
+var PsiTurk = function(uniqueId, adServerLoc, mode) {
+	mode = mode || "live";  // defaults to live mode in case user doesn't pass this
 	var self = this;
 	
 	/****************
@@ -29,6 +30,7 @@ var PsiTurk = function(uniqueId, adServerLoc) {
 		urlRoot: "/sync", // Save will PUT to /data, with mimetype 'application/JSON'
 		id: uniqueId,
 		adServerLoc: adServerLoc,
+		mode: mode,
 		
 		defaults: {
 			condition: 0,
@@ -268,18 +270,20 @@ var PsiTurk = function(uniqueId, adServerLoc) {
 				data: {uniqueId: self.taskdata.id}
 		});
 		
-		// Provide opt-out 
-		$(window).on("beforeunload", function(){
-			self.saveData();
-			
-			$.ajax("quitter", {
-					type: "POST",
-					data: {uniqueId: self.taskdata.id}
+		if (self.taskdata.mode != 'debug') {  // don't block people from reloading in debug mode
+			// Provide opt-out 
+			$(window).on("beforeunload", function(){
+				self.saveData();
+				
+				$.ajax("quitter", {
+						type: "POST",
+						data: {uniqueId: self.taskdata.id}
+				});
+				//var optoutmessage = "By leaving this page, you opt out of the experiment.";
+				//alert(optoutmessage);
+				return "By leaving or reloading this page, you opt out of the experiment.  Are you sure you want to leave the experiment?";
 			});
-			//var optoutmessage = "By leaving this page, you opt out of the experiment.";
-			//alert(optoutmessage);
-			return "By leaving or reloading this page, you opt out of the experiment.  Are you sure you want to leave the experiment?";
-		});
+		}
 
 	};
 	

@@ -5,7 +5,7 @@
  */
 
 // Initalize psiturk object
-var psiTurk = new PsiTurk(uniqueId, adServerLoc);
+var psiTurk = new PsiTurk(uniqueId, adServerLoc, mode);
 
 var mycondition = condition;  // these two variables are passed by the psiturk server process
 var mycounterbalance = counterbalance;  // they tell you which condition you have been assigned to
