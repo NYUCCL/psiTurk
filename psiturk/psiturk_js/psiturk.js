@@ -67,7 +67,19 @@ var PsiTurk = function(uniqueId, adServerLoc) {
 			qd[field] = response;
 			this.set("questiondata", qd);
 		},
-
+		
+		getTrialData: function() {
+			return this.get('data');	
+		},
+		
+		getEventData: function() {
+			return this.get('eventdata');	
+		},
+		
+		getQuestionData: function() {
+			return this.get('questiondata');	
+		},
+		
 		addEvent: function(eventtype, value) {
 			var interval,
 			    ed = this.get('eventdata'),
