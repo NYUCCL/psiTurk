@@ -130,8 +130,8 @@ class RDSServices(object):
                 print exception.error_message
                 return False
             except AttributeError:
-                print "*** Unable to establish connection to AWS region %s \
-                    using your access key/secret key", self.region
+                print "*** Unable to establish connection to AWS region %s "\
+                    "using your access key/secret key", self.region
                 return False
             except boto.exception.BotoServerError:
                 print "***********************************************************"
@@ -151,8 +151,8 @@ class RDSServices(object):
     def connect_to_aws_rds(self):
         ''' Connec to aws rds '''
         if not self.valid_login:
-            print 'Sorry, unable to connect to Amazon\'s RDS database server. \
-                AWS credentials invalid.'
+            print 'Sorry, unable to connect to Amazon\'s RDS database server. "\
+                "AWS credentials invalid.'
             return False
         # rdsparams = dict(
         #     aws_access_key_id = self.aws_access_key_id,
@@ -307,8 +307,8 @@ class MTurkServices(object):
         if not self.valid_login:
             print 'WARNING *****************************'
             print 'Sorry, AWS Credentials invalid.\nYou will only be able to '\
-                  + 'test experiments locally until you enter\nvalid '\
-                  + 'credentials in the AWS Access section of ~/.psiturkconfig\n'
+                  'test experiments locally until you enter\nvalid '\
+                  'credentials in the AWS Access section of ~/.psiturkconfig\n'
 
     def update_credentials(self, aws_access_key_id, aws_secret_access_key):
         ''' Update credentials '''
@@ -482,8 +482,8 @@ class MTurkServices(object):
     def connect_to_turk(self):
         ''' Connect to turk '''
         if not self.valid_login:
-            print 'Sorry, unable to connect to Amazon Mechanical Turk. AWS \
-                credentials invalid.'
+            print 'Sorry, unable to connect to Amazon Mechanical Turk. AWS '\
+                  'credentials invalid.'
             return False
         if self.is_sandbox:
             host = 'mechanicalturk.sandbox.amazonaws.com'
@@ -571,8 +571,8 @@ class MTurkServices(object):
         try:
             self.mtc.dispose_hit(hitid)
         except Exception, e:
-            print 'Failed to dispose of HIT %s. Make sure there are no \
-                assignments remaining to be reviewed' % hitid
+            print 'Failed to dispose of HIT %s. Make sure there are no "\
+                "assignments remaining to be reviewed' % hitid
 
     def extend_hit(self, hitid, assignments_increment=None,
                    expiration_increment=None):

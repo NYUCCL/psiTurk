@@ -6,6 +6,7 @@ from threading import Thread, Event
 import urllib2
 import socket
 import psutil
+import time
 
 
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -164,4 +165,5 @@ class ExperimentServerController:
             print "Experiment server may be already running..."
         elif server_status == 'blocked':
             print "Another process is running on the desired port. Try using a different port number."
+        time.sleep(1)  # Allow CLI to catch up.
 
