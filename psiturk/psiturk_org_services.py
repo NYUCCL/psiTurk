@@ -249,22 +249,24 @@ class TunnelServices(object):
         self.access_key = config.get('psiTurk Access', 'psiturk_access_key_id')
         self.secret_key = config.get('psiTurk Access', 'psiturk_secret_access_id')
         self.local_port = config.getint('Server Parameters', 'port')
-        self.check_os()
+        self.is_open = False
         self.tunnel_port = 8000  # Set by tunnel server
         self.tunnel_host = 'tunnel.psiturk.org'
         self.tunnel_server = os.path.join(os.path.dirname(__file__),
                                           "tunnel/ngrok")
         self.tunnel_config = os.path.join(os.path.dirname(__file__),
                                           "tunnel/ngrok-config")
-        self.is_open = False
 
     @classmethod
-    def check_os(cls):
+    def is_compatible(cls):
         ''' Check OS '''
         is_64bit = struct.calcsize('P')*8 == 64
-        if (_platform == "linux" or _platform == "linux2" or "win32" or not
-                is_64bit):
-            Exception('Your OS is currently unsupported.')
+        if (_platform == "darwin" and is_64bit):
+            return True
+        else:
+            print("Linux tunnels are currenlty unsupported.  Please notify "\
+                  "authors@psiturk.org\nif you'd like to see this feature.")
+            return False
 
     def get_tunnel_ad_url(self):
         ''' Get tunnel hostname from psiturk.org  '''
@@ -290,17 +292,20 @@ class TunnelServices(object):
 
     def open(self):
         ''' Open tunnel '''
-        tunnel_ad_url = self.get_tunnel_ad_url()
-        if not tunnel_ad_url:
-            return("Tunnel server appears to be down.")
-        cmd = '%s -subdomain=%s -config=%s -log=stdout %s 2>&1 > server.log' \
-                  %(self.tunnel_server, tunnel_ad_url, self.tunnel_config,
-                    self.local_port)
-        self.tunnel = subprocess.Popen(cmd, shell=True)
-        self.url = '%s.%s' %(tunnel_ad_url, self.tunnel_host)
-        self.full_url = 'http://%s.%s:%s' %(tunnel_ad_url, self.tunnel_host,
-                                            self.tunnel_port)
-        self.is_open = True
+        if self.is_compatible():
+            tunnel_ad_url = self.get_tunnel_ad_url()
+            if not tunnel_ad_url:
+                return("Tunnel server appears to be down.")
+            cmd = '%s -subdomain=%s -config=%s -log=stdout %s 2>&1 > server.log' \
+                      %(self.tunnel_server, tunnel_ad_url, self.tunnel_config,
+                        self.local_port)
+            self.tunnel = subprocess.Popen(cmd, shell=True)
+            self.url = '%s.%s' %(tunnel_ad_url, self.tunnel_host)
+            self.full_url = 'http://%s.%s:%s' %(tunnel_ad_url, self.tunnel_host,
+                                                self.tunnel_port)
+            self.is_open = True
+            print "Tunnel URL: %s" % self.full_url
+            print "Hint: In OSX, you can open a terminal link using cmd + click"
 
     def close(self):
         ''' Close tunnel '''

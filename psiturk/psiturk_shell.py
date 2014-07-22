@@ -1728,8 +1728,6 @@ class PsiturkNetworkShell(PsiturkShell):
                   "tunnel.  Try 'server on' first."
         else:
             self.tunnel.open()
-            print "Tunnel URL: %s" % self.tunnel.full_url
-            print "Hint: In OSX, you can open a terminal link using cmd + click"
 
     def tunnel_status(self):
         ''' Get tunnel status '''
