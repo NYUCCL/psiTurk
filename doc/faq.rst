@@ -95,3 +95,12 @@ Sorry, but probably not.  See the above about programming experiments.  There ar
 ways of `getting help <getting_help.html>`__ with **psiTurk** specifically and many
 excellent tutorials online for developing web applications using Javascript.  A good
 example is `CodeAcademy's Javascript lessons <http://www.codecademy.com/tracks/javascript>`__.
+
+Where is the **/static/js/psiturk.js** file?  It doesn't appear in any of the experiments I have downloaded!
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+psiturk.js doesn’t actually “exists” as a file in the static folder of any project.  
+Instead, the psiturk server/command line tool automatically generates this file.  
+The best way to view it is by “view source” in your browser while debugging your experiment.  
+While somewhat unintuitive, this ensures that changes to psiturk.js are linked
+to new versions of the overall psiturk command line tool (since they are tightly 
+interdependent).  
