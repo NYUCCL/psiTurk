@@ -5,6 +5,7 @@ import multiprocessing
 from psiturk_config import PsiturkConfig
 import sys
 import setproctitle
+import os
 
 config = PsiturkConfig()
 config.load_config()
@@ -24,7 +25,11 @@ class ExperimentServer(Application):
         self.options = self.user_options
         self.prog = None
         self.do_load_config()
-        print "Now serving on", "http://" + self.options["bind"]
+        if 'OPENSHIFT_SECRET_TOKEN' in os.environ:
+            my_ip = os.environ['OPENSHIFT_APP_DNS']
+            print "Now serving on " + os.environ['OPENSHIFT_APP_DNS']
+        else:
+            print "Now serving on", "http://" + self.options["bind"]
 
     def init(self, *args):
         '''init method

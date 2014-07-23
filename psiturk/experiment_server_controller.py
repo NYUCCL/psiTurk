@@ -6,6 +6,7 @@ from threading import Thread, Event
 import urllib2
 import socket
 import psutil
+import time
 
 
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -118,21 +119,35 @@ class ExperimentServerController:
         else:
             self.server_running = False
 
+    def kill_child_processes(self, parent_pid, sig=signal.SIGTERM):
+        if os.uname()[0] is 'Linux':
+            ps_command = subprocess.Popen('pstree -p %d | perl -ne \'print "$1 "\
+                                          while /\((\d+)\)/g\'' % parent.pid,
+                                          shell=True, stdout=subprocess.PIPE)
+            ps_output = ps_command.stdout.read()
+            retcode = ps_command.wait()
+            assert retcode == 0, "ps command returned %d" % retcode
+            for pid_str in ps_output.split("\n")[:-1]:
+                os.kill(int(pid_str), sig)
+        if os.uname()[0] is 'Darwin':
+            child_pid = parent.get_children(recursive=True)
+            for pid in child_pid:
+                pid.send_signal(signal.SIGTERM)
+
     def is_server_running(self):
         PROCNAME = "psiturk_experiment_server"
         cmd = "ps -eo pid,command | grep '"+ PROCNAME + "' | grep -v grep | awk '{print $1}'"
         psiturk_exp_processes = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
         output = psiturk_exp_processes.stdout.readlines()
-        psiturk_exp_ports = [process[0].laddr[1] for process in [psutil.Process(int(pid)).get_connections() for pid in output]]
-        p = psutil.Process(psiturk_exp_processes.pid)
-        child_pid = p.get_children(recursive=True)
-        for pid in child_pid:
-            pid.send_signal(signal.SIGTERM)
+        psiturk_exp_ports = []
+        if output:
+            psiturk_exp_ports = [process[0].laddr[1] for process in [psutil.Process(int(pid)).get_connections() for pid in output]]
+        parent = psutil.Process(psiturk_exp_processes.pid)
+        self.kill_child_processes(parent.pid)
         if psiturk_exp_ports:
             is_psiturk_using_port = True
         else:
             is_psiturk_using_port = False
-
         is_port_open = self.is_port_available()
         #print self.server_running, " ", portopen
         if is_port_open and is_psiturk_using_port:  # This should never occur
@@ -164,4 +179,5 @@ class ExperimentServerController:
             print "Experiment server may be already running..."
         elif server_status == 'blocked':
             print "Another process is running on the desired port. Try using a different port number."
+        time.sleep(1.2)  # Allow CLI to catch up.
 

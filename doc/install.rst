@@ -27,7 +27,7 @@ Installation of **psiTurk** requires:
 4. **A web browser.** A WebKit compatible browser such as FireFox,
    Safari, or Chrome is recommended.
 
-An addition requirement for actually using **psiTurk** to run experiments
+An additional requirement for actually using **psiTurk** to run experiments
 is a Internet connected computer capable of receiving incoming requests.
 
 Installation steps
