@@ -408,7 +408,7 @@ class MTurkServices(object):
         worker_data = [{
             'hitId': worker.HITId,
             'assignmentId': worker.AssignmentId,
-            'workerId': worker.Worker_id,
+            'workerId': worker.WorkerId,
             'submit_time': worker.SubmitTime,
             'accept_time': worker.AcceptTime,
             'status': worker.assignment_status
@@ -422,7 +422,7 @@ class MTurkServices(object):
         try:
             bonus = MTurkConnection.get_price_as_price(amount)
             assignment = self.mtc.get_assignment(assignment_id)[0]
-            worker_id = assignment.Worker_id
+            worker_id = assignment.WorkerId
             self.mtc.grant_bonus(worker_id, assignment_id, bonus, reason)
             return True
         except MTurkRequestError as exception:
