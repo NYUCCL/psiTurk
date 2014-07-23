@@ -302,7 +302,6 @@ class MTurkServices(object):
         self.update_credentials(aws_access_key_id, aws_secret_access_key)
         self.set_sandbox(is_sandbox)
         self.valid_login = self.verify_aws_login()
-        self.is_sandbox = None
 
         if not self.valid_login:
             print 'WARNING *****************************'
