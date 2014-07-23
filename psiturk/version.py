@@ -1,1 +1,1 @@
-version_number = '2.1.0dev'
+version_number = '2.1.0'

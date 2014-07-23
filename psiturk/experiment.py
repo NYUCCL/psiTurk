@@ -99,6 +99,8 @@ else:
 @app.errorhandler(ExperimentError)
 def handle_exp_error(exception):
     """Handle errors by sending an error page."""
+    app.logger.error(
+        "%s (%s) %s", e.value, e.errornum, str(dict(request.args)))
     return exception.error_page(request, CONFIG.get('HIT Configuration',
                                                     'contact_email_on_error'))
 

@@ -24,6 +24,10 @@ to do everything for everybody. This means that we might decide against
 incorporating a new feature. However, there might be a way to implement
 that feature *on top of* **psiTurk**.
 
+**Please create pull requests for the dev branch rather than master**
+so they can go through regular testing and evaluation prior to being
+distributed via pypi.
+
 ### Discuss your design on the mailing list
 
 We recommend discussing your plans in our [Google group](https://groups.google.com/d/forum/psiturk)

@@ -114,7 +114,7 @@ var PsiTurk = function(uniqueId, adServerLoc, mode) {
 		var loadPage = function() {
 
 			// show the page
-			psiTurk.showPage(instruction_pages[currentscreen]);
+			psiturk.showPage(instruction_pages[currentscreen]);
 
 			// connect event handler to previous button
 			if(currentscreen != 0) {  // can't do this if first page
