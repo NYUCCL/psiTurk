@@ -3,7 +3,12 @@ from psiturk.version import version_number
 
 try:
     with open("README.md") as readmefile:
-        long_description = readmefile.read()
+        readme_text = readmefile.readlines()
+        long_description = ''
+        for line in readme_text:
+            if line[0]!='<' and line[0]!='[': # drop lines that are html/markdown
+                longdescription += line
+
 except IOError:
     long_description = ""
 
