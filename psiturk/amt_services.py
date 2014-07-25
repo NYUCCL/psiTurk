@@ -410,7 +410,7 @@ class MTurkServices(object):
             'workerId': worker.WorkerId,
             'submit_time': worker.SubmitTime,
             'accept_time': worker.AcceptTime,
-            'status': worker.assignment_status
+            'status': worker.AssignmentStatus
         } for worker in workers]
         return worker_data
 
