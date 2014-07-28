@@ -7,7 +7,7 @@ try:
         long_description = ''
         for line in readme_text:
             if line[0]!='<' and line[0]!='[': # drop lines that are html/markdown
-                longdescription += line
+                long_description += line
 
 except IOError:
     long_description = ""
