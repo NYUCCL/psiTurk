@@ -139,7 +139,28 @@ Linux
 
 **psiTurk** is relatively painless to install on most Linux systems
 since all four of the requirements listed above come installed by
-default in most distributions. If you have specific issues please help
+default in most distributions.
+
+If you encounter install problems when installing using pip as above, a
+likely cause is that you are missing the package from your distribution
+that contains a needed header file.  In this case, one way to troubleshoot
+the problem is to do a web search for the name of your distribution and
+the name of the missing header file (which often appears in the error text
+produced by a failed pip install).  That search will likely turn up the name of
+the package for your distribution that supplies the needed header file.
+
+As an example, when setting up a Debian 7 server on
+`Digital Ocean <https://www.digitalocean.com/>`__
+(just one of many reasonably-priced hosting services), one should before
+installing psiturk install some needed packages by typing the following
+command at a root prompt:
+
+::
+
+    aptitude install python-pip python-dev libncurses-dev
+
+
+If you have additional specific issues please help
 us update the documentation!
 
 Windows
