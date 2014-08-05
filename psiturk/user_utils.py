@@ -2,7 +2,12 @@
 """ This module provides additional tools for psiTurk users. """
 
 from functools import wraps, update_wrapper
-from flask import request, Response, make_response
+from flask import request, Response, make_response, current_app
+
+# provides easy way to print to log in custom.py
+# =========================================
+def print_to_log(stuff_to_print):
+    current_app.logger.info(stuff_to_print)
 
 
 # Decorator for turning off browser caching
