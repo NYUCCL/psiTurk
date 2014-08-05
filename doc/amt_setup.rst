@@ -80,7 +80,8 @@ Creating an AMT Requester account
 ----------------------------------
 
 To use your AWS keys to interface with Amazon Mechanical Turk, you need to create a requester account.
-Please see `Amazon's instructions <http://docs.aws.amazon.com/AWSMechTurk/latest/AWSMechanicalTurkGettingStartedGuide/SetUp.html>`__ for this.  In particular, it appears important to actually login to the requester site at least once (`http://requester.mturk.com <http://requester.mturk.com>`__) so that you can agree to the terms of service.
+Please see `Amazon's instructions <http://docs.aws.amazon.com/AWSMechTurk/latest/AWSMechanicalTurkGettingStartedGuide/SetUp.html>`__ for this.  In particular, it is necessary to at least once login to the requester site (`http://requester.mturk.com <http://requester.mturk.com>`__) and also to at least once login to the sandbox requester site (`https://requestersandbox.mturk.com <https://requestersandbox.mturk.com>`__), so that you can agree to the terms of service.
+
 
 Linking funds
 ----------------------------------
