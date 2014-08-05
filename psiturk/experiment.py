@@ -334,8 +334,8 @@ def get_ad_via_hitid(hit_id):
 @nocache
 def start_exp():
     """ Serves up the experiment applet. """
-    if not ('hitId' in request.args and 'assignmentId' in request.args and
-            'workerId' in request.args):
+    if not (('hitId' in request.args) and ('assignmentId' in request.args) and
+            ('workerId' in request.args) and ('mode' in request.args)):
         raise ExperimentError('hit_assign_worker_id_not_set_in_exp')
     hit_id = request.args['hitId']
     assignment_id = request.args['assignmentId']
