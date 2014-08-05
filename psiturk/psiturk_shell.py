@@ -396,8 +396,7 @@ class PsiturkShell(Cmd, object):
         ''' Execute on quit '''
         if (self.server.is_server_running() == 'yes' or
                 self.server.is_server_running() == 'maybe'):
-            user_input = raw_input("Quitting shell will shut down experiment \
-                server.  Really quit? y or n: ")
+            user_input = raw_input("Quitting shell will shut down experiment server.  Really quit? y or n: ")
             if user_input == 'y':
                 self.server_off()
             else:
