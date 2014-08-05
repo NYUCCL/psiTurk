@@ -61,7 +61,8 @@ BONUSED = 7
 app = Flask("Experiment_Server")
 # Set cache timeout to 10ms for static files
 app.config.update(SEND_FILE_MAX_AGE_DEFAULT=10)
-
+app.secret_key = CONFIG.get('Server Parameters', 'secret_key')
+app.logger.info("Secret key: " + app.secret_key)
 
 # Serving warm, fresh, & sweet custom, user-provided routes
 # ==========================================================
