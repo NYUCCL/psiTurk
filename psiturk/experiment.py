@@ -635,8 +635,8 @@ def ppid():
 # Insert "mode" into pages so it's carried from page to page done server-side
 # to avoid breaking backwards compatibility with old templates.
 def insert_mode(page_html, mode):
-    page_html = page_html.decode("utf-8")
     ''' Insert mode '''
+    page_html = page_html.decode("utf-8")
     match_found = False
     matches = re.finditer('workerId={{ workerid }}', page_html)
     match = None
