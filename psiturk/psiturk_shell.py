@@ -1011,6 +1011,7 @@ class PsiturkNetworkShell(PsiturkShell):
             if self.sandbox:
                 print('  Ad URL: https://sandbox.ad.psiturk.org/view/%s?assignmentId=debug%s&hitId=debug%s&workerId=debug%s'
                       % (str(ad_id), str(self.random_id_generator()), str(self.random_id_generator()), str(self.random_id_generator())))
+                print "Note: This url cannot be used to run your full psiTurk experiment.  It is only for testing your ad."
                 print('  Sandbox URL: https://workersandbox.mturk.com/mturk/searchbar?selectedSearchType=hitgroups&searchWords=%s'
                       % (urllib.quote_plus(str(self.config.get('HIT Configuration', 'title')))))
                 print "Hint: In OSX, you can open a terminal link using cmd + click"
@@ -1018,6 +1019,7 @@ class PsiturkNetworkShell(PsiturkShell):
             else:
                 print('  Ad URL: https://ad.psiturk.org/view/%s?assignmentId=debug%s&hitId=debug%s&workerId=debug%s'
                       % (str(ad_id), str(self.random_id_generator()), str(self.random_id_generator()), str(self.random_id_generator())))
+                print "Note: This url cannot be used to run your full psiTurk experiment.  It is only for testing your ad."
                 print('  MTurk URL: https://www.mturk.com/mturk/searchbar?selectedSearchType=hitgroups&searchWords=%s'
                         % (urllib.quote_plus(str(self.config.get('HIT Configuration', 'title')))))
                 print "Hint: In OSX, you can open a terminal link using cmd + click"
