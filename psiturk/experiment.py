@@ -637,6 +637,7 @@ def ppid():
 # to avoid breaking backwards compatibility with old templates.
 def insert_mode(page_html, mode):
     ''' Insert mode '''
+    page_html = page_html.decode("utf-8")
     match_found = False
     matches = re.finditer('workerId={{ workerid }}', page_html)
     match = None
