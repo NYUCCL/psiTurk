@@ -89,7 +89,7 @@ init_db()
 # Read psiturk.js file into memory
 PSITURK_JS_FILE = os.path.join(os.path.dirname(__file__), \
     "psiturk_js/psiturk.js")
-app.logger.error(PSITURK_JS_FILE)
+app.logger.info(PSITURK_JS_FILE)
 
 if os.path.exists(PSITURK_JS_FILE):
     PSITURK_JS_CODE = open(PSITURK_JS_FILE).read()
