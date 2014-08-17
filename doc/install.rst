@@ -149,18 +149,18 @@ the name of the missing header file (which often appears in the error text
 produced by a failed pip install).  That search will likely turn up the name of
 the package for your distribution that supplies the needed header file.
 
-As an example, when setting up a Debian 7 server on
-`Digital Ocean <https://www.digitalocean.com/>`__
-(just one of many reasonably-priced hosting services), one should before
-installing psiturk install some needed packages by typing the following
-command at a root prompt:
+As an example, before installing psiTurk on a minimal Debian 7 server 
+(such as the one provided by many server hosting companies) you will need
+to install some additional packages, as illustrated by the following
+example command:
 
 ::
 
     aptitude install python-pip python-dev libncurses-dev
 
 
-If you have additional specific issues please help
+If you have additional specific issues, or if you can report the steps
+needed to install psiTurk on a particular Linux distribution, please help
 us update the documentation!
 
 Windows
