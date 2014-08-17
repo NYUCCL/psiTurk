@@ -28,7 +28,7 @@ Installation of **psiTurk** requires:
    Safari, or Chrome is recommended.
 
 An additional requirement for actually using **psiTurk** to run experiments
-is a Internet connected computer capable of receiving incoming requests.
+is an Internet connected computer capable of receiving incoming requests.
 
 Installation steps
 ------------------
