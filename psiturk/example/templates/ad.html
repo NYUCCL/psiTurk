@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <!-- 
 	The ad.html has a very specific format.
 
@@ -19,9 +19,10 @@
 -->
 <html>
 	<head>
+                <meta charset="utf-8" />
 		<title>Psychology Experiment</title>
-		<link rel=stylesheet href="/static/css/bootstrap.min.css" type="text/css">
-		<style>
+		<link rel="stylesheet" href="/static/css/bootstrap.min.css" type="text/css" />
+		<style type="text/css">
 			/* these tyles need to be defined locally */
 			body {
 			    padding:0px;
@@ -112,7 +113,7 @@
 							    	By clicking the following URL link, you will be taken to the experiment,
 							        including complete instructions and an informed consent agreement.
 							    </p>
-							    <script>
+							    <script type="text/javascript">
 									function openwindow() {
 							    		popup = window.open('{{ server_location }}/consent?hitId={{ hitid }}&assignmentId={{ assignmentid }}&workerId={{ workerid }}','Popup','toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=no,width='+1024+',height='+768+'');
 							  		}
@@ -131,7 +132,8 @@
 								endif
 							-->
 					</div>
-			</div>
+			        </div>
+		        </div>
 		</div>
 	</body>
 </html>
