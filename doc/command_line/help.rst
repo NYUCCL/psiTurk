@@ -20,9 +20,9 @@ Examples
 
    psiTurk command help:
    =====================
-   amt    download_datafiles  open           server         system_status
-   db     hit                 print_config   setup_example  version
-   debug  mode                reload_config  status         worker
+   amt_balance  debug               mode            server         tunnel 
+   config       download_datafiles  open            setup_example  version
+   db           hit                 psiturk_status  status         worker 
 
    basic CMD command help:
    =======================

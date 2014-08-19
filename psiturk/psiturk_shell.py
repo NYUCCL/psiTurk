@@ -123,7 +123,7 @@ class PsiturkShell(Cmd, object):
     def default(self, cmd):
         ''' Collect incorrect and mistyped commands '''
         choices = ["help", "mode", "psiturk_status", "server", "shortcuts",
-                   "worker", "db", "edit", "open", "reload_config", "show",
+                   "worker", "db", "edit", "open", "config", "show",
                    "debug", "setup_example", "status", "tunnel", "amt_balance",
                    "download_datafiles", "exit", "hit", "load", "quit", "save",
                    "shell", "version"]
@@ -291,7 +291,34 @@ class PsiturkShell(Cmd, object):
         ''' Print version number '''
         print 'psiTurk version ' + version_number
 
-    def do_print_config(self, _):
+
+    @docopt_cmd
+    def do_config(self, arg):
+        """
+        Usage:
+          config print
+          config reload
+          config help
+        """
+        if arg['print']:
+            self.print_config(arg)
+        elif arg['reload']:
+            self.reload_config(arg)
+        else:
+            self.help_server()
+
+    config_commands = ('print', 'reload', 'help')
+
+    def complete_config(self, text, line, begidx, endidx):
+        ''' Not sure what this does... '''
+        return  [i for i in PsiturkShell.config_commands if i.startswith(text)]
+
+    def help_config(self):
+        ''' Help for config '''
+        with open(self.help_path + 'config.txt', 'r') as help_text:
+            print help_text.read()
+
+    def print_config(self, _):
         ''' Print configuration. '''
         for section in self.config.sections():
             print '[%s]' % section
@@ -300,13 +327,13 @@ class PsiturkShell(Cmd, object):
                 print "%(a)s=%(b)s" % {'a': k, 'b': items[k]}
             print ''
 
-    def do_reload_config(self, _):
+    def reload_config(self, _):
         ''' Reload config. '''
         restart_server = False
         if (self.server.is_server_running() == 'yes' or
                 self.server.is_server_running() == 'maybe'):
-            user_input = raw_input("Reloading configuration requires the server\
-                                   to restart. Really reload? y or n: ")
+            user_input = raw_input("Reloading configuration requires the server "
+                                   "to restart. Really reload? y or n: ")
             if user_input != 'y':
                 return
             restart_server = True

@@ -74,7 +74,8 @@ We recommend that you also download your access keys just in case. The "Download
 .. image:: images/docs_AWS_credentials_download_button.png
 	:align: center
 
-The values of these keys need to be placed in you ``~/.psiturkconfig`` file. The file is located in your home directory
+The values of these keys need to be placed in your global ``~/.psiturkconfig`` file. The file is by default located in your home directory
+(see `Configuration files <configuration.html>`__ for more info)
 
 Creating an AMT Requester account
 ----------------------------------
