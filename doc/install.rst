@@ -28,7 +28,7 @@ Installation of **psiTurk** requires:
    Safari, or Chrome is recommended.
 
 An additional requirement for actually using **psiTurk** to run experiments
-is a Internet connected computer capable of receiving incoming requests.
+is an Internet connected computer capable of receiving incoming requests.
 
 Installation steps
 ------------------
@@ -139,7 +139,28 @@ Linux
 
 **psiTurk** is relatively painless to install on most Linux systems
 since all four of the requirements listed above come installed by
-default in most distributions. If you have specific issues please help
+default in most distributions.
+
+If you encounter install problems when installing using pip as above, a
+likely cause is that you are missing the package from your distribution
+that contains a needed header file.  In this case, one way to troubleshoot
+the problem is to do a web search for the name of your distribution and
+the name of the missing header file (which often appears in the error text
+produced by a failed pip install).  That search will likely turn up the name of
+the package for your distribution that supplies the needed header file.
+
+As an example, before installing psiTurk on a minimal Debian 7 server 
+(such as the one provided by many server hosting companies) you will need
+to install some additional packages, as illustrated by the following
+example command:
+
+::
+
+    aptitude install python-pip python-dev libncurses-dev
+
+
+If you have additional specific issues, or if you can report the steps
+needed to install psiTurk on a particular Linux distribution, please help
 us update the documentation!
 
 Windows
