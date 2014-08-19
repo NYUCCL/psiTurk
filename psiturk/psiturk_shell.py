@@ -13,6 +13,7 @@ import string
 import random
 import datetime
 import urllib
+import signal
 from fuzzywuzzy import process
 import atexit
 
@@ -1785,6 +1786,10 @@ def run(cabinmode=False, script=None):
             for line in temp_file:
                 shell.onecmd_plus_hooks(line)
     else:
+        def handler(signum, frame):
+            """ just do nothing """
+
+        signal.signal(signal.SIGINT, handler)
         shell.cmdloop()
 
     @atexit.register
