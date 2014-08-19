@@ -141,12 +141,12 @@ class PsiturkShell(Cmd, object):
         database_url = self.config.get('Database Parameters', 'database_url')
         host = self.config.get('Server Parameters', 'host', 'localhost')
         if database_url[:6] != 'sqlite':
-            print "*** Error: config.txt option 'database_url' set to use " \
-                "mysql://.  Please change this sqllite:// while in cabin mode."
+            print("*** Error: config.txt option 'database_url' set to use " 
+                "mysql://.  Please change this sqllite:// while in cabin mode.")
             quit_on_start = True
         if host != 'localhost':
-            print "*** Error: config option 'host' is not set to localhost. " \
-                "Please change this to localhost while in cabin mode."
+            print("*** Error: config option 'host' is not set to localhost. " 
+                "Please change this to localhost while in cabin mode.")
             quit_on_start = True
         if quit_on_start:
             exit()
@@ -258,8 +258,8 @@ class PsiturkShell(Cmd, object):
         """
         if (self.server.is_server_running() == 'no' or
                 self.server.is_server_running() == 'maybe'):
-            print "Error: Sorry, you need to have the server running to debug "\
-                   "your experiment.  Try 'server on' first."
+            print("Error: Sorry, you need to have the server running to debug "
+                   "your experiment.  Try 'server on' first.")
             return
 
         if 'OPENSHIFT_SECRET_TOKEN' in os.environ:
@@ -275,11 +275,11 @@ class PsiturkShell(Cmd, object):
             + str(self.random_id_generator() + "&mode=debug")
 
         if arg['--print-only']:
-            print "Here's your randomized debug link, feel free to request "\
-            "another:\n\t", launch_url
+            print("Here's your randomized debug link, feel free to request "
+                  "another:\n\t", launch_url)
         else:
-            print "Launching browser pointed at your randomized debug link, " \
-            "feel free to request another.\n\t", launch_url
+            print("Launching browser pointed at your randomized debug link, " 
+                  "feel free to request another.\n\t", launch_url)
             webbrowser.open(launch_url, new=1, autoraise=True)
 
     def help_debug(self):
@@ -372,9 +372,9 @@ class PsiturkShell(Cmd, object):
         # interactive = False  # Never used
         if filename is None:
             # interactive = True  # Never used
-            filename = raw_input('Enter the filename of the local SQLLite \
-                                 database you would like to use \
-                                 [default=participants.db]: ')
+            filename = raw_input('Enter the filename of the local SQLLite '
+                                 'database you would like to use '
+                                 '[default=participants.db]: ')
             if filename == '':
                 filename = 'participants.db'
         base_url = "sqlite:///" + filename
@@ -424,7 +424,8 @@ class PsiturkShell(Cmd, object):
         ''' Execute on quit '''
         if (self.server.is_server_running() == 'yes' or
                 self.server.is_server_running() == 'maybe'):
-            user_input = raw_input("Quitting shell will shut down experiment server.  Really quit? y or n: ")
+            user_input = raw_input("Quitting shell will shut down experiment " 
+                                    "server.  Really quit? y or n: ")
             if user_input == 'y':
                 self.server_off()
             else:
@@ -544,8 +545,8 @@ class PsiturkNetworkShell(PsiturkShell):
         '''Override do_quit for network clean up.'''
         if (self.server.is_server_running() == 'yes' or
                 self.server.is_server_running() == 'maybe'):
-            user_input = raw_input("Quitting shell will shut down experiment \
-                server. Really quit? y or n: ")
+            user_input = raw_input("Quitting shell will shut down experiment " 
+                                    "server. Really quit? y or n: ")
             if user_input == 'y':
                 self.server_off()
                 self.clean_up()
@@ -705,8 +706,8 @@ class PsiturkNetworkShell(PsiturkShell):
                      assignment_ids=None):
         ''' Bonus worker '''
         while not reason:
-            user_input = raw_input("Type the reason for the bonus. Workers \
-            will see this message: ")
+            user_input = raw_input("Type the reason for the bonus. Workers "
+                                   "will see this message: ")
             reason = user_input
         # Bonus already-bonused workers if the user explicitly lists their
         # worker IDs
@@ -811,8 +812,8 @@ class PsiturkNetworkShell(PsiturkShell):
                 print "*** Error getting hit status"
                 return
             if self.amt_services.get_hit_status(hit) != "Reviewable":
-                print "*** This hit is not 'Reviewable' and so can not be "\
-                "disposed of"
+                print("*** This hit is not 'Reviewable' and so can not be "
+                      "disposed of")
                 return
             else:
                 success = self.amt_services.dispose_hit(hit)
@@ -1137,18 +1138,18 @@ class PsiturkNetworkShell(PsiturkShell):
             tries = 0
             while region_name not in allowed_regions:
                 if tries == 0:
-                    region_name = raw_input('Enter the name of the region you \
-                                            would like to use: ')
+                    region_name = raw_input('Enter the name of the region you '
+                                            'would like to use: ')
                 else:
-                    print "*** The region name (%s) you entered is not allowed, "\
-                        "please choose from the list printed above (use type 'db "\
-                        "aws_list_regions'." % region_name
-                    region_name = raw_input('Enter the name of the region you '\
+                    print("*** The region name (%s) you entered is not allowed, " \
+                          "please choose from the list printed above (use type 'db " \
+                          "aws_list_regions'." % region_name)
+                    region_name = raw_input('Enter the name of the region you '
                                             'would like to use: ')
                 tries += 1
                 if tries > 5:
-                    print "*** Error, region you are requesting not available.  "\
-                        "No changes made to regions."
+                    print("*** Error, region you are requesting not available.  "
+                          "No changes made to regions.")
                     return
         self.db_services.set_region(region_name)
         print "Region updated to ", region_name
@@ -1160,11 +1161,11 @@ class PsiturkNetworkShell(PsiturkShell):
         ''' List AWS DB instances '''
         instances = self.db_services.get_db_instances()
         if not instances:
-            print "There are no DB instances associated with your AWS account "\
-                "in region ", self.db_services.get_region()
+            print("There are no DB instances associated with your AWS account " \
+                "in region ", self.db_services.get_region())
         else:
-            print "Here are the current DB instances associated with your AWS "\
-                "account in region ", self.db_services.get_region()
+            print("Here are the current DB instances associated with your AWS " \
+                "account in region ", self.db_services.get_region())
             for dbinst in instances:
                 print '\t'+'-'*20
                 print "\tInstance ID: " + dbinst.id
@@ -1182,53 +1183,53 @@ class PsiturkNetworkShell(PsiturkShell):
         if interactive:
             valid = False
             if len(instances) == 0:
-                print "There are no instances you can delete currently.  Use "\
-                    "`db aws_create_instance` to make one."
+                print("There are no instances you can delete currently.  Use "
+                      "`db aws_create_instance` to make one.")
                 return
             print "Here are the available instances you can delete:"
             for inst in instances:
                 print "\t ", inst.id, "(", inst.status, ")"
             while not valid:
-                instance_id = raw_input('Enter the instance identity you would \
-                                        like to delete: ')
+                instance_id = raw_input('Enter the instance identity you would '
+                                        'like to delete: ')
                 res = self.db_services.validate_instance_id(instance_id)
                 if res is True:
                     valid = True
                 else:
-                    print res + " Try again, instance name not valid.  Check "\
-                        "for typos."
+                    print(res + " Try again, instance name not valid.  Check " \
+                        "for typos.")
                 if instance_id in instance_list:
                     valid = True
                 else:
                     valid = False
-                    print "Try again, instance not present in this account.  "\
-                        "Try again checking for typos."
+                    print("Try again, instance not present in this account.  "
+                          "Try again checking for typos.")
         else:
             res = self.db_services.validate_instance_id(instance_id)
             if res is not True:
-                print "*** Error, instance name either not valid.  Try again " \
-                     "checking for typos."
+                print("*** Error, instance name either not valid.  Try again " 
+                     "checking for typos.")
                 return
             if instance_id not in instance_list:
-                print "*** Error, This instance not present in this account.  "\
-                     "Try again checking for typos.  Run `db aws_list_instances` to "\
-                     "see valid list."
+                print("*** Error, This instance not present in this account.  "
+                     "Try again checking for typos.  Run `db aws_list_instances` to "
+                     "see valid list.")
                 return
 
         user_input = raw_input(
-            "Deleting an instance will erase all your data associated with the "\
+            "Deleting an instance will erase all your data associated with the "
             "database in that instance.  Really quit? y or n:"
         )
         if user_input == 'y':
             res = self.db_services.delete_db_instance(instance_id)
             if res:
-                print "AWS RDS database instance %s deleted.  Run `db "\
-                    "aws_list_instances` for current status." % instance_id
+                print("AWS RDS database instance %s deleted.  Run `db " \
+                    "aws_list_instances` for current status." % instance_id)
             else:
-                print "*** Error deleting database instance ", instance_id, ".  "\
-                    "It maybe because it is still being created, deleted, or is "\
-                    "being backed up.  Run `db aws_list_instances` for current "\
-                    "status."
+                print("*** Error deleting database instance ", instance_id, ".  " \
+                    "It maybe because it is still being created, deleted, or is " \
+                    "being backed up.  Run `db aws_list_instances` for current " \
+                    "status.")
         else:
             return
 
@@ -1243,58 +1244,58 @@ class PsiturkNetworkShell(PsiturkShell):
         instance_list = [dbinst.id for dbinst in instances]
 
         if len(instances) == 0:
-            print "There are no instances in this region/account.  Use `db "\
-                "aws_create_instance` to make one first."
+            print("There are no instances in this region/account.  Use `db "
+                "aws_create_instance` to make one first.")
             return
 
         # show list of available instances, if there are none cancel immediately
         if interactive:
             valid = False
-            print "Here are the available instances you have.  You can only "\
-                "use those listed as 'available':"
+            print("Here are the available instances you have.  You can only "
+                "use those listed as 'available':")
             for inst in instances:
                 print "\t ", inst.id, "(", inst.status, ")"
             while not valid:
-                instance_id = raw_input('Enter the instance identity you would \
-                                        like to use: ')
+                instance_id = raw_input('Enter the instance identity you would '
+                                        'like to use: ')
                 res = self.db_services.validate_instance_id(instance_id)
                 if res is True:
                     valid = True
                 else:
-                    print res + " Try again, instance name not valid.  Check "\
-                        "for typos."
+                    print(res + " Try again, instance name not valid.  Check "
+                          "for typos.")
                 if instance_id in instance_list:
                     valid = True
                 else:
                     valid = False
-                    print "Try again, instance not present in this account. "\
-                        "Try again checking for typos."
+                    print("Try again, instance not present in this account. "
+                          "Try again checking for typos.")
         else:
             res = self.db_services.validate_instance_id(instance_id)
             if res != True:
-                print "*** Error, instance name either not valid.  Try again "\
-                    "checking for typos."
+                print("*** Error, instance name either not valid.  Try again "
+                      "checking for typos.")
                 return
             if instance_id not in instance_list:
-                print "*** Error, This instance not present in this account. "\
-                    "Try again checking for typos.  Run `db aws_list_instances` to "\
-                    "see valid list."
+                print("*** Error, This instance not present in this account. "
+                      "Try again checking for typos.  Run `db aws_list_instances` to "
+                      "see valid list.")
                 return
 
         user_input = raw_input(
-            "Switching your DB settings to use this instance. Are you sure you "\
+            "Switching your DB settings to use this instance. Are you sure you "
             "want to do this? "
         )
         if user_input == 'y':
             # ask for password
             valid = False
             while not valid:
-                password = raw_input('enter the master password for this \
-                                     instance: ')
+                password = raw_input('enter the master password for this '
+                                     'instance: ')
                 res = self.db_services.validate_instance_password(password)
                 if res != True:
-                    print "*** Error: password seems incorrect, doesn't "\
-                        "conform to AWS rules.  Try again"
+                    print("*** Error: password seems incorrect, doesn't "
+                          "conform to AWS rules.  Try again")
                 else:
                     valid = True
 
@@ -1305,8 +1306,8 @@ class PsiturkNetworkShell(PsiturkShell):
                 my_ip = self.web_services.get_my_ip()
                 if (not self.db_services.allow_access_to_instance(myinstance,
                                                                   my_ip)):
-                    print "*** Error authorizing your ip address to connect to "\
-                        "server (%s)." % my_ip
+                    print("*** Error authorizing your ip address to connect to " \
+                          "server (%s)." % my_ip)
                     return
                 print "AWS RDS database instance %s selected." % instance_id
 
@@ -1320,8 +1321,8 @@ class PsiturkNetworkShell(PsiturkShell):
                     eng = engine.connect().execute
                     db_names = eng("show databases").fetchall()
                 except:
-                    print "***  Error connecting to instance.  Your password "\
-                        "might be incorrect."
+                    print("***  Error connecting to instance.  Your password "
+                          "might be incorrect.")
                     return
                 existing_dbs = [db[0] for db in db_names if db not in \
                                 [('information_schema',), ('innodb',), \
@@ -1330,8 +1331,8 @@ class PsiturkNetworkShell(PsiturkShell):
                 if len(existing_dbs) == 0:
                     valid = False
                     while not valid:
-                        db_name = raw_input("No existing DBs in this instance. \
-                                            Enter a new name to create one: ")
+                        db_name = raw_input("No existing DBs in this instance. "
+                                            "Enter a new name to create one: ")
                         res = self.db_services.validate_instance_dbname(db_name)
                         if res is True:
                             valid = True
@@ -1345,8 +1346,8 @@ class PsiturkNetworkShell(PsiturkShell):
                     valid = False
                     while not valid:
                         db_name = raw_input(
-                            "Enter the name of the database you want to use or \
-                            a new name to create  a new one: "
+                            "Enter the name of the database you want to use or "
+                            "a new name to create  a new one: "
                         )
                         res = self.db_services.validate_instance_dbname(db_name)
                         if res is True:
@@ -1359,15 +1360,15 @@ class PsiturkNetworkShell(PsiturkShell):
                     try:
                         connection.execute("CREATE DATABASE %s;" % db_name)
                     except:
-                        print "*** Error creating database %s on instance "\
-                            "%s" % (db_name, instance_id)
+                        print("*** Error creating database %s on instance " \
+                              "%s" % (db_name, instance_id))
                         return
                 base_url = 'mysql://' + myinstance.master_username + ":" + \
                     password + "@" + myinstance.endpoint[0] + ":" + \
                     str(myinstance.endpoint[1]) + "/" + db_name
                 self.config.set("Database Parameters", "database_url", base_url)
-                print "Successfully set your current database (database_url) "\
-                    "to \n\t%s" % base_url
+                print("Successfully set your current database (database_url) " \
+                      "to \n\t%s" % base_url)
                 if (self.server.is_server_running() == 'maybe' or
                         self.server.is_server_running() == 'yes'):
                     self.do_restart_server('')
@@ -1419,8 +1420,8 @@ class PsiturkNetworkShell(PsiturkShell):
         if interactive:
             valid = False
             while not valid:
-                instid = raw_input('enter an identifier for the instance (see \
-                                   rules above): ')
+                instid = raw_input('enter an identifier for the instance (see '
+                                   'rules above): ')
                 res = self.db_services.validate_instance_id(instid)
                 if res is True:
                     valid = True
@@ -1531,7 +1532,8 @@ class PsiturkNetworkShell(PsiturkShell):
         """
         restart_server = False
         if self.server.is_server_running() == 'yes' or self.server.is_server_running() == 'maybe':
-            r = raw_input("Switching modes requires the server to restart. Really switch modes? y or n: ")
+            r = raw_input("Switching modes requires the server to restart. Really "
+                          "switch modes? y or n: ")
             if r != 'y':
                 return
             restart_server = True
@@ -1662,8 +1664,8 @@ class PsiturkNetworkShell(PsiturkShell):
         """
         if (self.server.is_server_running() == 'no' or
                 self.server.is_server_running() == 'maybe'):
-            print "Error: Sorry, you need to have the server running to debug " \
-                  "your experiment.  Try 'server on' first."
+            print("Error: Sorry, you need to have the server running to debug "
+                  "your experiment.  Try 'server on' first.")
             return
 
         if 'OPENSHIFT_SECRET_TOKEN' in os.environ:
@@ -1691,12 +1693,12 @@ class PsiturkNetworkShell(PsiturkShell):
             + "&mode=debug")
 
         if arg['--print-only']:
-            print "Here's your randomized debug link, feel free to request "\
-                "another:\n\t", remote_launch_url
+            print("Here's your randomized debug link, feel free to request " \
+                  "another:\n\t", remote_launch_url)
 
         else:
-            print "Launching browser pointed at your randomized debug link, " \
-            "feel free to request another.\n\t", launch_url
+            print("Launching browser pointed at your randomized debug link, " \
+                  "feel free to request another.\n\t", launch_url)
             webbrowser.open(launch_url, new=1, autoraise=True)
 
     # Modified version of standard cmd help which lists psiturk commands first.
@@ -1753,8 +1755,8 @@ class PsiturkNetworkShell(PsiturkShell):
         ''' Open tunnel '''
         if (self.server.is_server_running() == 'no' or
                 self.server.is_server_running() == 'maybe'):
-            print "Error: Sorry, you need to have the server running to open a "\
-                  "tunnel.  Try 'server on' first."
+            print("Error: Sorry, you need to have the server running to open a "
+                  "tunnel.  Try 'server on' first.")
         else:
             self.tunnel.open()
 
@@ -1764,8 +1766,8 @@ class PsiturkNetworkShell(PsiturkShell):
             print "For tunnel status, navigate to http://127.0.0.1:4040"
             print "Hint: In OSX, you can open a terminal link using cmd + click"
         else:
-            print "Sorry, you need to open a tunnel to check the status. Try" \
-                  "'tunnel open' first."
+            print("Sorry, you need to open a tunnel to check the status. Try" 
+                  "'tunnel open' first.")
 
     def tunnel_change(self):
         ''' Change tunnel url '''
