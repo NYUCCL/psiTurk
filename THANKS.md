@@ -13,4 +13,4 @@ Doug Markant - https://github.com/dmarkant
 Jay Martin - https://github.com/jbmartin  
 John McDonnell - https://github.com/johnmcdonnell  
 Alex Rich - https://github.com/alexanderrich  
-
+Joseph Slote - https://github.com/JSlote  
