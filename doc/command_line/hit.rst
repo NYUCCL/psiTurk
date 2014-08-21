@@ -23,7 +23,7 @@ duration. Will be posted either live to AMT or to the Worker Sandbox depending
 upon your current mode. ``hit create`` can also be run interactively by
 entering the command without parameters.
 
-The ``duration`` specifies how long a worker can "hold on" to your HIT (in hours or hours:minutes) This should be long enough for workers to actually
+The ``duration`` specifies how long a worker can "hold on" to your HIT (in hours or hours:minutes). This should be long enough for workers to actually
 complete your HIT, but sometimes workers will "accept" a HIT which is
 worth a lot of money but come back and do the work later in the
 day. You can specify a shorter duration if you want workers to
