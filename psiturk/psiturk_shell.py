@@ -922,13 +922,22 @@ class PsiturkNetworkShell(PsiturkShell):
             print '*** reward must have format [dollars].[cents]'
             return
         if interactive:
-            duration = raw_input('duration of hit (in hours)? ')
+            duration = raw_input('duration of hit (in hours or h:mm)? ')
+
         try:
-            int(duration)
+            durParts = duration.split(":")
+            if len(durParts) = 1:
+                hrs = int(durParts[0])
+                mns = 0
+            if len(durParts) = 2:
+                hrs = int(durParts[0])
+                mns = int(durParts[1])
+            else:
+                raise ValueError
         except ValueError:
-            print '*** duration must be a whole number'
+            print '*** duration must be a number of hours or in the form [hours]:[minutes]'
             return
-        if int(duration) <= 0:
+        if (hrs < 0 or mns < 0 or (hrs == 0 and mns == 0)):
             print '*** duration must be greater than 0'
             return
 
@@ -994,7 +1003,7 @@ class PsiturkNetworkShell(PsiturkShell):
                 "description": self.config.get('HIT Configuration', 'description'),
                 "keywords": self.config.get('HIT Configuration', 'amt_keywords'),
                 "reward": reward,
-                "duration": datetime.timedelta(hours=int(duration))
+                "duration": datetime.timedelta(hours = hrs, minutes = mns)
             }
             hit_id = self.amt_services.create_hit(hit_config)
             if hit_id is not False:
