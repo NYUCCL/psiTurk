@@ -926,13 +926,16 @@ class PsiturkNetworkShell(PsiturkShell):
 
         try:
             durParts = duration.split(":")
-            if len(durParts) = 1:
+            if len(durParts) == 1:
                 hrs = int(durParts[0])
                 mns = 0
-            if len(durParts) = 2:
+            elif len(durParts) == 2:
                 hrs = int(durParts[0])
                 mns = int(durParts[1])
             else:
+                print "elsing"
+                print duration.split(":")
+                print len(durParts)
                 raise ValueError
         except ValueError:
             print '*** duration must be a number of hours or in the form [hours]:[minutes]'
