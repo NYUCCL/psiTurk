@@ -19,7 +19,7 @@ _.extend(Backbone.Notifications, Backbone.Events);
 /*******
  * API *
  ******/
-var PsiTurk = function(uniqueId, adServerLoc, mode) {
+var PsiTurk = function(uniqueId, adServerLoc, mode, ready) {
 	mode = mode || "live";  // defaults to live mode in case user doesn't pass this
 	var self = this;
 	
@@ -203,14 +203,15 @@ var PsiTurk = function(uniqueId, adServerLoc, mode) {
 		});
 	};
 	
-	self.preloadPages = function(pagenames) {
+	self.preloadPages = function(pagenames, callback) {
 		// Synchronously preload pages.
 		$(pagenames).each(function() {
 			$.ajax({
 				url: this,
-				success: function(page_html) { self.pages[this.url] = page_html;},
-				dataType: "html",
-				async: false
+				success: function(page_html) {
+					self.pages[this.url] = page_html;
+					if (typeof callback === 'function') callback();},
+				dataType: "html"
 			});
 		});
 	};
@@ -321,12 +322,12 @@ var PsiTurk = function(uniqueId, adServerLoc, mode) {
 	/* initialized local variables */
 
 	var taskdata = new TaskData();
-	taskdata.fetch({async: false});
-	
-	/*  DATA: */
-	self.pages = {};
-	self.taskdata = taskdata;
-
+	taskdata.fetch({success: function() {
+		/*  DATA: */
+		self.pages = {};
+		self.taskdata = taskdata;
+		if (typeof ready === 'function') ready();
+	}});
 
 	/* Backbone stuff */
 	Backbone.Notifications.on('_psiturk_finishedinstructions', self.startTask);

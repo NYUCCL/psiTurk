@@ -4,9 +4,8 @@
  *     utils.js
  */
 
-// Initalize psiturk object
-var psiTurk = new PsiTurk(uniqueId, adServerLoc, mode);
-
+// Define psiTurk
+var psiTurk;
 var mycondition = condition;  // these two variables are passed by the psiturk server process
 var mycounterbalance = counterbalance;  // they tell you which condition you have been assigned to
 // they are not used in the stroop code but may be useful to you
@@ -20,8 +19,6 @@ var pages = [
 	"stage.html",
 	"postquestionnaire.html"
 ];
-
-psiTurk.preloadPages(pages);
 
 var instructionPages = [ // add as a list as many pages as you like
 	"instructions/instruct-1.html",
@@ -216,8 +213,16 @@ var currentview;
  * Run Task
  ******************/
 $(window).load( function(){
-    psiTurk.doInstructions(
-    	instructionPages, // a list of pages you want to display in sequence
-    	function() { currentview = new StroopExperiment(); } // what you want to do when you are done with instructions
-    );
+	//You may want to use a control flow library to clean up your loading and presentation sequence.
+	//See https://github.com/bebraw/jswiki/wiki/Async---Control-Flow---Event-Libraries for some options.
+	
+	//initialize psiTurk object
+	psiTurk = new PsiTurk(uniqueId, adServerLoc, mode, function(){
+		psiTurk.preloadPages(pages, function() {
+		    psiTurk.doInstructions(
+		    	instructionPages, // a list of pages you want to display in sequence
+		    	function() { currentview = new StroopExperiment(); } // what you want to do when you are done with instructions
+		    );
+		});
+	});
 });
