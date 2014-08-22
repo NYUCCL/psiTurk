@@ -8,21 +8,23 @@ Creating the **psiTurk** object
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To use the **psiTurk** library, a ``psiturk`` object must be created at
-the beginning of your experiment.  It takes two key arguments ``uniqueId``
-and ``adServerLoc``.  These two variables are first created in 
-`exp.html <file_desc/exp_html.html>`.  They tell **psiTurk** which unique
-number/code corresponds to the current participant (allowing updating
-of data as the task progresses) and the location of the `ad <secure_ad_server.html>`__
-where users should be sent when the task is complete.
+the beginning of your experiment.  It takes four key arguments, three of which
+(``uniqueId``, ``adServerLoc``, and ``mode) are defined in `exp.html <file_desc/exp_html.html>`__.  
+``uniqueId`` tells **psiTurk** which unique number/code corresponds to the current participant (allowing updating
+of data as the task progresses), ``adServerLoc`` is the location of the `ad <secure_ad_server.html>`__
+where users should be sent when the task is complete, and ``mode`` is the status of the current experiment - whether ``live``, ``debug``, or something else. ``ready`` is a callback function that is called when psiTurk has finished initial communication with the experiment server.
 
 .. code-block:: javascript
 
-    // Create the psiturk object
-    var psiTurk = PsiTurk(uniqueId, adServerLoc);
+    var ready() = function() {
+        // Run the experiment from here.
+        // For instance, add some data and save:
+        psiturk.addUnstructuredData('age', 24)
+        psiturk.saveData();
+    }
 
-    // Add some data and save
-    psiturk.addUnstructuredData('age', 24)
-    psiturk.saveData();
+    // Create the psiturk object
+    var psiTurk = PsiTurk(uniqueId, adServerLoc, mode, ready);
 
 
 The following documents the javascript API.
@@ -65,7 +67,7 @@ useful for debugging. For example:
     psiturk.taskdata.get('condition');
 
 
-``psiturk.preloadPages(pagelist)``
+``psiturk.preloadPages(pagelist, callback)``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 For each path in ``pagelist``, this will request the html and store in
@@ -77,11 +79,10 @@ Example:
 .. code-block:: javascript
 
     // Preload a set of HTML files
-    psiturk.preLoadPages(['instructions.html', 'block1.html', 'block2.html']);
-
-    // Set the content of the body tag to one of the pages
-    $('body').html(psiturk.getPage('block1.html'));
-
+    psiturk.preLoadPages(['instructions.html', 'block1.html', 'block2.html'], function() {
+        // Set the content of the body tag to one of the pages
+        $('body').html(psiturk.getPage('block1.html'));
+    });
 
 ``psiturk.getPage(pagename)``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -221,18 +222,21 @@ Example
 
 .. code-block:: javascript
 
-    psiturk = new PsiTurk(uniqueId, adServerLoc);
-    var pages = [
-        "instructions/instruct-1.html",
-        "instructions/instruct-2.html",
-        "instructions/instruct-3.html"];
-    psiTurk.preloadPages(pages); // preload the pages
-    var instructionPages = [ // any file here should be preloaded first
-        "instructions/instruct-1.html",
-        "instructions/instruct-2.html",
-        "instructions/instruct-3.html"]; // however, you can have as many as you like
-    psiturk.doInstructions(instructionPages, 
-                            function() { currentview = new StroopExperiment(); });
+    psiturk = new PsiTurk(uniqueId, adServerLoc, mode, function() {
+        var pages = [
+            "instructions/instruct-1.html",
+            "instructions/instruct-2.html",
+            "instructions/instruct-3.html"];
+        var instructionPages = [ // any file here should be preloaded first
+            "instructions/instruct-1.html",
+            "instructions/instruct-2.html",
+            "instructions/instruct-3.html"]; // however, you can have as many as you like
+        // preload the pages
+        psiTurk.preloadPages(pages, function(){
+            psiturk.doInstructions(instructionPages, 
+                                    function() { currentview = new StroopExperiment(); });
+        }); 
+    });
 
 The last line in this example uses an anonymous function
 to launch the `Stroop Experiment <stroop.html>`__.
@@ -257,6 +261,6 @@ Example
 
 .. code-block:: javascript
 
-    psiturk = new PsiTurk(uniqueId, adServerLoc);
+    psiturk = new PsiTurk(uniqueId, adServerLoc, mode, ready);
     ...
     psiturk.finishInstructions();
