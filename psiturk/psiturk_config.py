@@ -28,7 +28,7 @@ class PsiturkConfig(SafeConfigParser):
         local_defaults_file = os.path.join(defaults_folder, "local_config_defaults.txt")
         global_defaults_file = os.path.join(defaults_folder, "global_config_defaults.txt")
         if not os.path.exists(self.localFile):
-            print "ERROR - no config.txt file in the current directory. \n\nAre you use this directory is a valid psiTurk experiment?  If you are starting a new project run 'psiturk-setup-example' first."
+            print "ERROR - no config.txt file in the current directory. \n\nAre you sure this directory is a valid psiTurk experiment?  If you are starting a new project run 'psiturk-setup-example' first."
             exit()
         self.localParser.read( self.localFile)
         if not os.path.exists(self.globalFile):
