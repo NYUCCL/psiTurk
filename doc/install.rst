@@ -53,7 +53,7 @@ terminal:
 ::
 
     cd /tmp  # Just to put us in a directory that will be cleaned up periodically
-    curl -O https://raw.github.com/pypa/pip/master/contrib/get-pip.py
+    curl -O https://raw.githubusercontent.com/pypa/pip/develop/contrib/get-pip.py
     python get-pip.py  # If you get a permissions error, try typing sudo python get-pip.py
 
 Once ``pip`` is installed, type into a terminal:
