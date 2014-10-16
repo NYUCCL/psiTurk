@@ -62,6 +62,8 @@ class MTurkHIT(object):
         self.options = json_options
 
     def __repr__(self):
+        for opt in self.options:
+            self.options[opt] = self.options[opt].encode('ascii', 'replace')
         return "%s \n\tStatus: %s \n\tHITid: %s \
             \n\tmax:%s/pending:%s/complete:%s/remain:%s \n\tCreated:%s \
             \n\tExpires:%s\n" % (
