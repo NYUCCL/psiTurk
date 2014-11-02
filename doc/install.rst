@@ -46,9 +46,11 @@ notes are provided below.
 Install stable version via pypi
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The easiest way to install **psiTurk** is via ``pip``. If you don't
-already have ``pip``, you can install it by typing the following in a
-terminal:
+The easiest way to install **psiTurk** is via ``pip``. Linux users will
+likely prefer to install pip as described `below <#linux>`__.
+Otherwise, If you don't already have ``pip``, you can install it by
+typing the following in a terminal:
+
 
 ::
 
