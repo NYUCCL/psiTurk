@@ -58,6 +58,11 @@ typing the following in a terminal:
     curl -O https://raw.githubusercontent.com/pypa/pip/develop/contrib/get-pip.py
     python get-pip.py  # If you get a permissions error, try typing sudo python get-pip.py
 
+If you want a single system to run different versions of **psiTurk**
+(or other python packages) on a per-experiment basis, follow the
+Virtual Environment instructions `below <#Running inside a Virtual
+Environment>`__.
+
 Once ``pip`` is installed, type into a terminal:
 
 ::
@@ -120,6 +125,61 @@ following sequence of commands:
 
 To use the development tree, the second command should be
 ``git clone -b dev git@github.com:NYUCCL/psiTurk.git``.
+
+Running inside a Virtual Environment
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+It can desirable to keep each of your experiments' dependencies (python
+and python package versions) isolated from each other. For example, if
+you want to install the development version of psiTurk (as
+described `above <#install-directly-from-github>`__) in one experiment,
+but not all the others installed on your system, `Virtual Environments
+<http://virtualenv.readthedocs.org/en/latest/>`__ provide a solution.
+
+You can install via pip:
+
+::
+
+   sudo pip install virtualenv virtualenvwrapper
+
+or alternatively, on a Debian-based systems:
+
+::
+
+   sudo apt-get install python-virtualenv virtualenvwrapper
+
+And then start a new shell session. This will install the virtualenv
+tool as well as the supplementary virtualenvwrapper tools that make
+working with virtualenvs easier. You create a virtual environment as
+follows (if mkvirtualenv is not recognized follow the instructions
+`here
+<http://virtualenvwrapper.readthedocs.org/en/latest/install.html>`) :
+
+::
+
+   $ mkvirtualenv my-experiment
+
+   Running virtualenv with interpreter /usr/bin/python2
+   New python executable in my-experiment/bin/python2
+   Also creating executable in my-experiment/bin/python
+   Installing setuptools, pip...done.
+
+Then, at any point in the future, to activate the virtual environment use the workon command
+
+::
+
+   $ workon my-experiment
+   (my-experiment) $ which python python pip easy_install
+
+   ~/.virtualenvs/my-experiment/bin/python
+   ~/.virtualenvs/my-experiment/bin/pip
+   ~/.virtualenvs/my-experiment/bin/easy_install
+
+As you can see, when the environment is active, running python or pip
+will run copies specific to your project. Any packages installed with
+pip or easy_install will be installed inside your my-experiment
+virtualenv rather than system-wide. Use the `deactivate` command to
+leave the virtualenv.
 
 System-specific notes
 ---------------------
