@@ -86,6 +86,31 @@ It is wise to test that you can connect to this url with a MySQL client prior to
 launching.  `Sequel Pro <http://www.sequelpro.com/>`__ is a nice GUI database
 client for MySQL for Mac OS X.
 
+Here's an example of setting up a minimal MySQL database for use with
+**psiTurk**:
+
+::
+
+   $ mysql -uroot
+   mysql> CREATE USER 'your_username'@'localhost' IDENTIFIED BY 'your_password';
+   Query OK, 0 rows affected (0.03 sec)
+
+   mysql> CREATE DATABASE your_database;
+   Query OK, 1 row affected (0.01 sec)
+
+   mysql> GRANT ALL PRIVILEGES ON your_database.* TO 'your_username'@'localhost';
+   Query OK, 0 rows affected (0.00 sec)
+
+where `your_username`, `your_password` and `your_database` match the `USERNAME`,
+`PASSWORD` and `DATABASE` specified in config.txt's `database_url` variable.
+
+The table specified in config.txt, `turkdemo` by default
+
+::
+
+   table_name = turkdemo
+
+will be created automatically when running the psiturk shell.
 MySQL is (fairly) easy to install and free.  However, a variety of web hosting
 services offer managed MySQL databases.  Some are even 
 `free <https://www.google.com/search?q=free+mysql+hosting>`__.  Your university
