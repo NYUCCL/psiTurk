@@ -57,7 +57,7 @@ class Participant(Base):
     def get_trial_data(self):
         try:
             trialdata = json.loads(self.datastring)["data"]
-        except:
+        except TypeError, ValueError:
             # There was no data to return.
             print("No trial data found in record:", self)
             return("")
@@ -81,7 +81,7 @@ class Participant(Base):
     def get_event_data(self):
         try:
             eventdata = json.loads(self.datastring)["eventdata"]
-        except:
+        except TypeError, ValueError:
             # There was no data to return.
             print("No event data found in record:", self)
             return("")
@@ -101,7 +101,7 @@ class Participant(Base):
     def get_question_data(self):
         try:
             questiondata = json.loads(self.datastring)["questiondata"]
-        except:
+        except TypeError, ValueError:
             # There was no data to return.
             print("No question data found in record:", self)
             return("")
