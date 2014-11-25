@@ -91,7 +91,7 @@ Here's an example of setting up a minimal MySQL database for use with
 
 ::
 
-   $ mysql -uroot
+   $ mysql -uroot -p
    mysql> CREATE USER 'your_username'@'localhost' IDENTIFIED BY 'your_password';
    Query OK, 0 rows affected (0.03 sec)
 
