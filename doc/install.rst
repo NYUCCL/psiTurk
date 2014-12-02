@@ -220,6 +220,12 @@ example command:
 
     aptitude install python-pip python-dev libncurses-dev
 
+If you would like to use mysql as your backend database (which is optional, and can
+be done at any time), further packages are needed.  On a Debian system, they are:
+
+::
+
+    aptitude install python-mysqldb python-mysqldb-dbg python-sqlalchemy libmysqlclient-dev
 
 If you have additional specific issues, or if you can report the steps
 needed to install psiTurk on a particular Linux distribution, please help
