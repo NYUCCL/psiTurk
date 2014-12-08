@@ -19,7 +19,7 @@
 -->
 <html>
 	<head>
-                <meta charset="utf-8" />
+        <meta charset="utf-8" />
 		<title>Psychology Experiment</title>
 		<link rel="stylesheet" href="/static/css/bootstrap.min.css" type="text/css" />
 		<style type="text/css">
@@ -35,35 +35,29 @@
 
 			/* ad.html  - the ad that people view first */
 			#adlogo {
-			    float: right;
 			    width: 140px;
 			    padding: 2px;
 			    border: 1px solid #ccc;
+			    margin-right: 1em;
 			}
 
 			#container-ad {
-			    position: absolute;
-			    top: 0px; /* Header Height */
-			    bottom: 0px; /* Footer Height */
-			    left: 0px;
-			    right: 0px;
-			    padding: 100px;
-			    padding-top: 5%;
-			    border: 18px solid #f3f3f3;
-			    background: white;
+				background: white;
+			    margin: 30px;
+			}
+
+			h1 {
+				margin-top: 0px;
 			}
 		</style>
 	</head>
 	<body>
-		<div id="container-ad">
-
-			<div id="ad">
-				<div class="row">
-					<div class="col-xs-2">
+		<div id="container-ad" class="media">
+			<div class="media-left pull-left" href="#">
 						<!-- REPLACE THE LOGO HERE WITH YOUR  UNIVERSITY, LAB, or COMPANY -->
 						<img id="adlogo" src="{{ server_location }}/static/images/university.png" alt="Lab Logo" />
-					</div>
-					<div class="col-xs-10">
+			</div>
+			<div class="media-body">
 
 							<!-- 
 								If assignmentid is "ASSIGNMENT_ID_NOT_AVAILABLE"
@@ -131,9 +125,7 @@
 							<!-- 
 								endif
 							-->
-					</div>
-			        </div>
-		        </div>
+			</div>
 		</div>
 	</body>
 </html>
