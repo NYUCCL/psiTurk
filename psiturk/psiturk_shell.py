@@ -127,7 +127,7 @@ class PsiturkShell(Cmd, object):
                    "debug", "setup_example", "status", "tunnel", "amt_balance",
                    "download_datafiles", "exit", "hit", "load", "quit", "save",
                    "shell", "version"]
-        print "%sis not a psiTurk command. See 'help'." %(cmd)
+        print "%s is not a psiTurk command. See 'help'." %(cmd)
         print "Did you mean this?\n      %s" %(process.extractOne(cmd,
                                                                   choices)[0])
 
