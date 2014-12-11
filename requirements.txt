@@ -4,7 +4,7 @@ SQLAlchemy==0.8.3
 gunicorn==18.0
 boto==2.15.0
 cmd2==0.6.7
-docopt==0.6.1
+docopt==0.6.2
 requests==2.2.1
 user-agents==0.2.0
 sh==1.09 
