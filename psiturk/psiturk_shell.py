@@ -412,13 +412,11 @@ class PsiturkShell(Cmd, object):
 
     def do_eof(self, arg):
         ''' Execute on EOF '''
-        self.do_quit(arg)
-        return True
+        return self.do_quit(arg)
 
     def do_exit(self, arg):
         ''' Execute on exit '''
-        self.do_quit(arg)
-        return True
+        return self.do_quit(arg)
 
     def do_quit(self, _):
         ''' Execute on quit '''
@@ -541,7 +539,7 @@ class PsiturkNetworkShell(PsiturkShell):
         self.psiturk_header = 'psiTurk command help:'
         self.super_header = 'basic CMD command help:'
 
-    def do_quit(self, arg):
+    def do_quit(self, _):
         '''Override do_quit for network clean up.'''
         if (self.server.is_server_running() == 'yes' or
                 self.server.is_server_running() == 'maybe'):
@@ -549,9 +547,8 @@ class PsiturkNetworkShell(PsiturkShell):
                                     "server. Really quit? y or n: ")
             if user_input == 'y':
                 self.server_off()
-                self.clean_up()
             else:
-                return
+                return False
         return True
 
     def server_off(self):
