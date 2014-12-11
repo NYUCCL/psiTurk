@@ -275,11 +275,11 @@ class PsiturkShell(Cmd, object):
             + str(self.random_id_generator() + "&mode=debug")
 
         if arg['--print-only']:
-            print("Here's your randomized debug link, feel free to request "
-                  "another:\n\t", launch_url)
+            print("Here's your randomized debug link, feel free to request " \
+                  "another:\n\t" + launch_url)
         else:
-            print("Launching browser pointed at your randomized debug link, " 
-                  "feel free to request another.\n\t", launch_url)
+            print("Launching browser pointed at your randomized debug link, " \
+                  "feel free to request another.\n\t" + launch_url)
             webbrowser.open(launch_url, new=1, autoraise=True)
 
     def help_debug(self):
@@ -1185,10 +1185,10 @@ class PsiturkNetworkShell(PsiturkShell):
         instances = self.db_services.get_db_instances()
         if not instances:
             print("There are no DB instances associated with your AWS account " \
-                "in region ", self.db_services.get_region())
+                "in region " + self.db_services.get_region())
         else:
             print("Here are the current DB instances associated with your AWS " \
-                "account in region ", self.db_services.get_region())
+                "account in region " + self.db_services.get_region())
             for dbinst in instances:
                 print '\t'+'-'*20
                 print "\tInstance ID: " + dbinst.id
@@ -1249,10 +1249,10 @@ class PsiturkNetworkShell(PsiturkShell):
                 print("AWS RDS database instance %s deleted.  Run `db " \
                     "aws_list_instances` for current status." % instance_id)
             else:
-                print("*** Error deleting database instance ", instance_id, ".  " \
+                print("*** Error deleting database instance %s.  " \
                     "It maybe because it is still being created, deleted, or is " \
                     "being backed up.  Run `db aws_list_instances` for current " \
-                    "status.")
+                    "status." % instance_id)
         else:
             return
 
@@ -1717,11 +1717,11 @@ class PsiturkNetworkShell(PsiturkShell):
 
         if arg['--print-only']:
             print("Here's your randomized debug link, feel free to request " \
-                  "another:\n\t", remote_launch_url)
+                  "another:\n\t" + remote_launch_url)
 
         else:
             print("Launching browser pointed at your randomized debug link, " \
-                  "feel free to request another.\n\t", launch_url)
+                  "feel free to request another.\n\t" + launch_url)
             webbrowser.open(launch_url, new=1, autoraise=True)
 
     # Modified version of standard cmd help which lists psiturk commands first.
