@@ -174,12 +174,12 @@ var Questionnaire = function() {
 	};
 
 	prompt_resubmit = function() {
-		replaceBody(error_message);
+		document.body.innerHTML = error_message;
 		$("#resubmit").click(resubmit);
 	};
 
 	resubmit = function() {
-		replaceBody("<h1>Trying to resubmit...</h1>");
+		document.body.innerHTML = "<h1>Trying to resubmit...</h1>";
 		reprompt = setTimeout(prompt_resubmit, 10000);
 		
 		psiTurk.saveData({
