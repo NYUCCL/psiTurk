@@ -142,12 +142,6 @@ You can install via pip:
 
    sudo pip install virtualenv virtualenvwrapper
 
-or alternatively, on a Debian-based systems:
-
-::
-
-   sudo apt-get install python-virtualenv virtualenvwrapper
-
 And then start a new shell session. This will install the virtualenv
 tool as well as the supplementary virtualenvwrapper tools that make
 working with virtualenvs easier. You create a virtual environment as
