@@ -638,6 +638,18 @@ class PsiturkNetworkShell(PsiturkShell):
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #   worker management
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
+    @staticmethod
+    def add_bonus(worker_dict):
+        " Adds DB-logged worker bonus to worker list data "
+        try:
+            worker = Participant.query.filter(
+                Participant.assignmentid == worker_dict['assignmentId']).one()
+            worker_dict['bonus'] = worker.bonus
+        except sa.exc.InvalidRequestError:
+            # assignment is found on mturk but not in local database.
+            worker_dict['bonus'] = 'N/A'
+        return worker_dict
+
     def worker_list(self, submitted, approved, rejected, chosen_hit):
         ''' List worker stats '''
         workers = None
@@ -658,6 +670,8 @@ class PsiturkNetworkShell(PsiturkShell):
         if not len(workers):
             print "*** no workers match your request"
         else:
+            workers = [self.add_bonus(worker)
+                       for worker in workers]
             print json.dumps(workers, indent=4,
                              separators=(',', ': '))
 
