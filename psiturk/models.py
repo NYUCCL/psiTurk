@@ -98,7 +98,7 @@ class Participant(Base):
     def get_question_data(self):
         try:
             questiondata = json.loads(self.datastring)["questiondata"]
-        except ValueError:
+        except (ValueError, TypeError):
             # There was no data to return.
             print("No question data found in record:", self)
             return("")
