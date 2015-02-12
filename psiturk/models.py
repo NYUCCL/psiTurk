@@ -81,7 +81,7 @@ class Participant(Base):
     def get_event_data(self):
         try:
             eventdata = json.loads(self.datastring)["eventdata"]
-        except TypeError, ValueError:
+        except ValueError, TypeError:
             # There was no data to return.
             print("No event data found in record:", self)
             return("")
