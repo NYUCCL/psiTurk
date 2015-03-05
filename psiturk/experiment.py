@@ -71,17 +71,10 @@ try:
     sys.path.append(os.getcwd())
     from custom import custom_code
 except ImportError:
-    app.logger.info("Hmm... it seems no custom code (custom.py) assocated \
+    app.logger.info("Hmm... it seems no custom code (custom.py) associated \
                     with this project.")
 else:
     app.register_blueprint(custom_code)
-
-try:
-    sys.path.append(os.getcwd())
-
-except ImportError:
-    app.logger.info("Hmm... it seems no custom model code (custom_models.py) \
-                    assocated with this project.")
 
 init_db()
 
