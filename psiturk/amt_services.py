@@ -528,8 +528,13 @@ class MTurkServices(object):
             duration=hit_config['duration'],
             approval_delay=None,
             questions=None,
-            qualifications=quals
-        )
+            qualifications=quals,
+            response_groups=[
+                'Minimal',
+                'HITDetail',
+                'HITQuestion',
+                'HITAssignmentSummary'
+            ])
 
     def check_balance(self):
         ''' Check balance '''
