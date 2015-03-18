@@ -58,6 +58,10 @@ class Participant(Base):
             # There was no data to return.
             print("No trial data found in record:", self)
             return("")
+        except TypeError:
+            #When self.datastring is None
+            print("No trial data found in record (None):", self)
+            return("")
 
         try:
             ret = []
