@@ -11,6 +11,7 @@ from boto.mturk.qualification import LocaleRequirement, \
     PercentAssignmentsApprovedRequirement, Qualifications
 from flask import jsonify
 import re as re
+from psiturk.psiturk_config import PsiturkConfig
 
 
 MYSQL_RESERVED_WORDS_CAP = [
@@ -524,6 +525,30 @@ class MTurkServices(object):
             keywords=hit_config['keywords'],
             approval_delay=None,
             qual_req=None)[0]
+
+        # Check the config file to see if notifications are wanted.
+        config = PsiturkConfig()
+        config.load_config()
+
+        try:
+            url = config.get('Server Parameters', 'notification_url')
+
+            all_event_types = [
+                "AssignmentAccepted",
+                "AssignmentAbandoned",
+                "AssignmentReturned",
+                "AssignmentSubmitted",
+                "HITReviewable",
+                "HITExpired",
+            ]
+
+            self.mtc.set_rest_notification(
+                hit_type.HITTypeId,
+                url,
+                event_types=all_event_types)
+
+        except:
+            pass
 
         # Specify all the HIT parameters
         self.param_dict = dict(
