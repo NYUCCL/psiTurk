@@ -515,9 +515,19 @@ class MTurkServices(object):
         if hit_config['us_only']:
             quals.add(LocaleRequirement("EqualTo", "US"))
 
+        # Create a HIT type for this HIT.
+        hit_type = self.mtc.register_hit_type(
+            hit_config['title'],
+            hit_config['description'],
+            hit_config['reward'],
+            hit_config['duration'],
+            keywords=hit_config['keywords'],
+            approval_delay=None,
+            qual_req=None)[0]
+
         # Specify all the HIT parameters
         self.param_dict = dict(
-            hit_type=None,
+            hit_type=hit_type.HITTypeId,
             question=mturk_question,
             lifetime=hit_config['lifetime'],
             max_assignments=hit_config['max_assignments'],
