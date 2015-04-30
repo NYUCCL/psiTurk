@@ -40,6 +40,7 @@ if __name__ == "__main__":
         description = "An open platform for science on Amazon Mechanical Turk",
         long_description = long_description,
         url = "http://github.com/NYUCCL/psiturk",
-        test_suite='test_psiturk'
+        test_suite='test_psiturk',
+        data_files=[('$HOME',['psiturk/default_configs/.psiturkconfig'])]
     )
 
