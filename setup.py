@@ -1,5 +1,6 @@
 from setuptools import setup
 from psiturk.version import version_number
+import os
 
 try:
     with open("README.md") as readmefile:
@@ -41,6 +42,6 @@ if __name__ == "__main__":
         long_description = long_description,
         url = "http://github.com/NYUCCL/psiturk",
         test_suite='test_psiturk',
-        data_files=[('$HOME',['psiturk/default_configs/.psiturkconfig'])]
+        data_files=[(os.environ['HOME'],['psiturk/default_configs/.psiturkconfig'])]
     )
 
