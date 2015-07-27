@@ -34,7 +34,7 @@ if __name__ == "__main__":
         install_requires = ["argparse", "Flask", "SQLAlchemy", "gunicorn",
                             "boto>=2.9","cmd2","docopt","gnureadline","requests>=2.2.1","user_agents",
                             "sh", "fake-factory", "gitpython", "fuzzywuzzy",
-                            "psutil>=1.2.1", "setproctitle"],
+                            "psutil>=1.2.1,<=2.2.1", "setproctitle"],
         author = "NYU Computation and Cognition Lab",
         author_email = "authors@psiturk.org",
         description = "An open platform for science on Amazon Mechanical Turk",
