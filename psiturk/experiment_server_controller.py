@@ -139,12 +139,10 @@ class ExperimentServerController:
         cmd = "ps -eo pid,command | grep '"+ PROCNAME + "' | grep -v grep | awk '{print $1}'"
         psiturk_exp_processes = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
         output = psiturk_exp_processes.stdout.readlines()
-        psiturk_exp_ports = []
-        if output:
-            psiturk_exp_ports = [process[0].laddr[1] for process in [psutil.Process(int(pid)).get_connections() for pid in output]]
         parent = psutil.Process(psiturk_exp_processes.pid)
         self.kill_child_processes(parent.pid)
-        if psiturk_exp_ports:
+        
+        if output:
             is_psiturk_using_port = True
         else:
             is_psiturk_using_port = False
