@@ -10,7 +10,9 @@ config.load_config()
 
 DATABASE = config.get('Database Parameters', 'database_url')
 
-engine = create_engine(DATABASE, echo=False) 
+config_pool_recycle = config.getint('Database Parameters', 'pool_recycle')
+
+engine = create_engine(DATABASE, echo=False, pool_recycle=config_pool_recycle)
 db_session = scoped_session(sessionmaker(autocommit=False,
                                          autoflush=False,
                                          bind=engine))
