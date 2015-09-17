@@ -75,6 +75,8 @@ class PsiturkOrgServices(object):
             status_msg = "Sorry, can't connect to psiturk.org, please check\
                 your internet connection.\nYou will not be able to create new\
                 hits, but testing locally should work.\n"
+        except ValueError:
+            status_msg = "Problem decoding status message from psiturk.org."
         return status_msg
 
     @classmethod
