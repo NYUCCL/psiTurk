@@ -1,11 +1,13 @@
-import os, sys
+import os, os.path
 import subprocess
+import sys
 import signal
 import webbrowser
 from threading import Thread, Event
 import urllib2
 import socket
 import psutil
+import pwd
 import time
 
 
@@ -135,29 +137,39 @@ class ExperimentServerController:
                 pid.send_signal(signal.SIGTERM)
 
     def is_server_running(self):
-        PROCNAME = "psiturk_experiment_server"
-        cmd = "ps -eo pid,command | grep '"+ PROCNAME + "' | grep -v grep | awk '{print $1}'"
-        psiturk_exp_processes = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
-        output = psiturk_exp_processes.stdout.readlines()
-        psiturk_exp_ports = []
-        if output:
-            psiturk_exp_ports = [process[0].laddr[1] for process in [psutil.Process(int(pid)).get_connections() for pid in output]]
-        parent = psutil.Process(psiturk_exp_processes.pid)
-        self.kill_child_processes(parent.pid)
-        if psiturk_exp_ports:
-            is_psiturk_using_port = True
-        else:
-            is_psiturk_using_port = False
-        is_port_open = self.is_port_available()
-        #print self.server_running, " ", portopen
-        if is_port_open and is_psiturk_using_port:  # This should never occur
-            return 'maybe'
-        elif not is_port_open and not is_psiturk_using_port:
-            return 'blocked'
-        elif is_port_open and not is_psiturk_using_port:
+        if self.is_port_available():
             return 'no'
-        elif not is_port_open and is_psiturk_using_port:
-            return 'yes'
+
+        # else: port unavailable
+        #
+        # a non-psiturk process owns it
+        # a not-me psiturk process owns it
+        # one of my psiturk processes owns it
+        #
+        PROCNAME = "master [psiturk_experiment_server]"
+        psiturk_servers = [x for x in psutil.process_iter()
+                if PROCNAME in ' '.join(x.cmdline())
+                ]
+
+        if not psiturk_servers:
+            # no psiturk servers in system, port is owned by something else
+            return 'blocked'
+
+        # psiturk servers running, figure out if one of them is ours
+        myusername = pwd.getpwuid(os.getuid())[0]
+        procs = [x for x in psiturk_servers if x.username() == myusername]
+        if not procs:
+            # no processes I own, assume the port is in use by someone/something else
+            return 'blocked'
+        else:
+            # one of my psiturk processes owns the port
+            given_port = self.config.getint("Server Parameters", "port")
+            if given_port in [x.get_connections()[0].laddr[1] for x in procs]:
+                # found it
+                return 'yes'
+            else:
+                # didn't find it... it's probably owned by another server/process
+                return 'maybe'
 
     def is_port_available(self):
         return is_port_available(self.config.get("Server Parameters", "host"), self.config.getint("Server Parameters", "port"))
