@@ -384,24 +384,22 @@ class PsiturkShell(Cmd, object):
 
     def do_eof(self, arg):
         ''' Execute on EOF '''
-        self.do_quit(arg)
-        return True
+        return self.do_quit(arg)
 
     def do_exit(self, arg):
         ''' Execute on exit '''
-        self.do_quit(arg)
-        return True
+        return self.do_quit(arg)
 
     def do_quit(self, _):
         ''' Execute on quit '''
         if (self.server.is_server_running() == 'yes' or
                 self.server.is_server_running() == 'maybe'):
-            user_input = raw_input("Quitting shell will shut down experiment \
-                server.  Really quit? y or n: ")
+            user_input = raw_input("Quitting shell will shut down experiment\n" +
+                "server.  Really quit? y or n: ")
             if user_input == 'y':
                 self.server_off()
             else:
-                return
+                return False
         return True
 
     @docopt_cmd
@@ -517,13 +515,13 @@ class PsiturkNetworkShell(PsiturkShell):
         '''Override do_quit for network clean up.'''
         if (self.server.is_server_running() == 'yes' or
                 self.server.is_server_running() == 'maybe'):
-            user_input = raw_input("Quitting shell will shut down experiment \
-                server. Really quit? y or n: ")
+            user_input = raw_input("Quitting shell will shut down experiment\n" +
+                "server. Really quit? y or n: ")
             if user_input == 'y':
                 self.server_off()
                 self.clean_up()
             else:
-                return
+                return False
         return True
 
     def server_off(self):
