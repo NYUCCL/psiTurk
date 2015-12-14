@@ -1040,8 +1040,15 @@ class PsiturkNetworkShell(PsiturkShell):
             else:
                 self.live_hits += 1
             # print results
+            # fee structure changed 07.22.15:
+            # 20% for HITS with < 10 assignments
+            # 40% for HITS with >= 10 assignments
+            commission = 0.2
+            if float(numWorkers) >= 10:
+                commission = 0.4 
+
             total = float(numWorkers) * float(reward)
-            fee = total / 10
+            fee = total * commission
             total = total + fee
             location = ''
             if self.sandbox:
