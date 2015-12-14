@@ -38,7 +38,7 @@ current stable release of **psiTurk** is hosted on the python package
 index `pypi <https://pypi.python.org/pypi>`__. As a result, it can
 easily be installed as a standard python package using the python
 package manager tool ``pip``. Alternatively, you can install directly
-from the development or master (i.e., stable) branch on
+from the development branch on
 `github <https://github.com/NYUCCL/psiTurk>`__. The following
 instructions describe the general process. In addition, system specific
 notes are provided below.
@@ -79,23 +79,17 @@ command by typing
 Install directly from github
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You can also install the latest version directly from github using
-``pip``. To install the latest stable branch follow the instructions
-above to install ``pip`` and:
+You can also install the bleeding-edge development version directly 
+from github using ``pip``. To install the latest stable branch follow 
+the instructions above to install ``pip`` and:
 
 ::
 
     sudo pip install git+git://github.com/NYUCCL/psiTurk.git@master
 
-or
-
-::
-
-    sudo pip install git+git://github.com/NYUCCL/psiTurk.git@dev
-
-for the bleeding-edge development version. If the install was successful
-you will have a new command ``psiturk`` available on your command line.
-You can check the location of this command by typing
+If the install was successful you will have a new command ``psiturk`` 
+available on your command line. You can check the location of this command 
+by typing
 
 ::
 
@@ -115,9 +109,6 @@ following sequence of commands:
     $ cd psiTurk
     $ sudo python setup.py install
 
-
-To use the development tree, the second command should be
-``git clone -b dev git@github.com:NYUCCL/psiTurk.git``.
 
 System-specific notes
 ---------------------
