@@ -9,7 +9,6 @@ from psiturk.version import version_number
 import git
 import subprocess
 import signal
-import uuid
 import struct
 from sys import platform as _platform
 from psiturk.psiturk_config import PsiturkConfig

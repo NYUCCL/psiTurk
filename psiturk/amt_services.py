@@ -11,6 +11,7 @@ from boto.mturk.qualification import LocaleRequirement, \
     PercentAssignmentsApprovedRequirement, Qualifications
 from flask import jsonify
 import re as re
+from psiturk.psiturk_config import PsiturkConfig
 
 
 MYSQL_RESERVED_WORDS_CAP = [
@@ -515,9 +516,43 @@ class MTurkServices(object):
         if hit_config['us_only']:
             quals.add(LocaleRequirement("EqualTo", "US"))
 
+        # Create a HIT type for this HIT.
+        hit_type = self.mtc.register_hit_type(
+            hit_config['title'],
+            hit_config['description'],
+            hit_config['reward'],
+            hit_config['duration'],
+            keywords=hit_config['keywords'],
+            approval_delay=None,
+            qual_req=None)[0]
+
+        # Check the config file to see if notifications are wanted.
+        config = PsiturkConfig()
+        config.load_config()
+
+        try:
+            url = config.get('Server Parameters', 'notification_url')
+
+            all_event_types = [
+                "AssignmentAccepted",
+                "AssignmentAbandoned",
+                "AssignmentReturned",
+                "AssignmentSubmitted",
+                "HITReviewable",
+                "HITExpired",
+            ]
+
+            self.mtc.set_rest_notification(
+                hit_type.HITTypeId,
+                url,
+                event_types=all_event_types)
+
+        except:
+            pass
+
         # Specify all the HIT parameters
         self.param_dict = dict(
-            hit_type=None,
+            hit_type=hit_type.HITTypeId,
             question=mturk_question,
             lifetime=hit_config['lifetime'],
             max_assignments=hit_config['max_assignments'],
@@ -528,8 +563,13 @@ class MTurkServices(object):
             duration=hit_config['duration'],
             approval_delay=None,
             questions=None,
-            qualifications=quals
-        )
+            qualifications=quals,
+            response_groups=[
+                'Minimal',
+                'HITDetail',
+                'HITQuestion',
+                'HITAssignmentSummary'
+            ])
 
     def check_balance(self):
         ''' Check balance '''

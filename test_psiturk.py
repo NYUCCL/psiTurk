@@ -2,12 +2,9 @@
 """ This module tests the psiTurk suite.  """
 
 import os
-import sh
-import shutil
 import unittest
 import tempfile
 import psiturk
-import urllib
 import json
 from faker import Faker
 
