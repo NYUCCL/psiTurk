@@ -34,16 +34,11 @@ class Participant(Base):
     endhit = Column(DateTime)
     bonus = Column(Float, default = 0)
     status = Column(Integer, default = 1)
-<<<<<<< HEAD
     if 'postgres://' in config.get('Database Parameters', 'database_url').lower():
         datastring = Column(Text)
     else:
         datastring = Column(Text(4294967295))
-    
-=======
-    datastring = Column(Text(4294967295))
 
->>>>>>> 4b6aa6f7b6445304e701b6433990defd90d99dd1
     def __init__(self, **kwargs):
         self.uniqueid = "{workerid}:{assignmentid}".format(**kwargs)
         for key in kwargs:
