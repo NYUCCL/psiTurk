@@ -14,7 +14,7 @@ Setting up an OpenShift account is relatively easy. First, visit `openshift.com 
 
 And that's it, you should now have created a python cartridge that you can use to run **psiTurk** experiments! 
 
-To access your application, visit the application overview page on OpenShift, click on your newly created python application, and under "Remote Access", copy the ssh command and paste it to your local terminal (Note: Windows users probably want to use an SSH client like PuTTY instead. Instructions for using PuTTY can be found `here <https://www.openshift.com/developers/install-and-setup-putty-ssh-client-for-windows>`__.). This should start a new OpenShift session. The command should look like this:
+To access your application, visit the application overview page on OpenShift, click on your newly created python application, and under "Remote Access", copy the ssh command and paste it into your local terminal (Note: Windows users probably want to use an SSH client like PuTTY instead. Instructions for using PuTTY can be found `here <https://www.openshift.com/developers/install-and-setup-putty-ssh-client-for-windows>`__.). This should start a new OpenShift session. The command should look like this:
 
 
 ::

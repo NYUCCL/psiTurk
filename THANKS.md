@@ -13,6 +13,8 @@ Doug Markant - https://github.com/dmarkant
 Jay Martin - https://github.com/jbmartin  
 John McDonnell - https://github.com/johnmcdonnell  
 Alex Rich - https://github.com/alexanderrich  
+Joseph Slote - https://github.com/JSlote  
+
 
 Several organizations have also provided help, by supporting projects
 that led to improvements in psiTurk and/or its documentation.  Some
@@ -23,3 +25,4 @@ The David A. Gardner '69 Magic project - http://humanities.princeton.edu/grants/
 The PIIRs Research Community on Global Systemic Risk - https://www.princeton.edu/piirs/research-communities/global-systemic-risk/index.xml
 
 Deutshe Bank (via support of a 2014-15 Membership at the Princeton Institute for Advanced Study) - https://www.sss.ias.edu/
+

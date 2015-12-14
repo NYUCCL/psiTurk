@@ -32,7 +32,7 @@ class PsiturkOrgServices(object):
         self.update_credentials(key, secret)
         if not self.check_credentials():
             print 'WARNING *****************************'
-            print 'Sorry, psiTurk Credentials invalid.\nYou will only be able'\
+            print 'Sorry, psiTurk Credentials invalid.\nYou will only be able '\
                 + 'to test experiments locally until you enter\nvalid '\
                 + 'credentials in the psiTurk Access section of ' \
                 + '~/.psiturkconfig.\n  Get your credentials at '\

@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <!-- 
   The consent.html displays the text of your IRB-approved
   consent form.  Even if you are not required to provide
@@ -8,9 +8,10 @@
 -->
 <html>
     <head>
+        <meta charset="utf-8" />
         <title>Psychology Experiment - Informed Consent Form</title>
-        <link rel=stylesheet href="/static/css/bootstrap.min.css" type="text/css">
-        <link rel=stylesheet href="/static/css/style.css" type="text/css">
+        <link rel="stylesheet" href="/static/css/bootstrap.min.css" type="text/css" />
+        <link rel="stylesheet" href="/static/css/style.css" type="text/css" />
         <script type="text/javascript">
             function onexit() {
               self.close(); // no harm, no foul here
@@ -21,7 +22,7 @@
         <div id="container-consent">
             <div id="consent">
                 <h1>We need your consent to proceed</h1>
-                <hr>
+                <hr />
                 <div class="legal well">
                     <p>
                     You have been invited to take part in a research study named BLAH BLAH
@@ -36,9 +37,9 @@
                     </button>
                 </div>
 
-                <hr>
+                <hr />
                 <h4>Do you understand and consent to these terms?</h4>
-                <br>
+                <br />
 
                 <center>
                     <button type="button" class="btn btn-primary btn-lg" onClick="window.location='/exp?hitId={{ hitid }}&assignmentId={{ assignmentid }}&workerId={{ workerid }}'">

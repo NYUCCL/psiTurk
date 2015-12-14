@@ -28,7 +28,7 @@ Installation of **psiTurk** requires:
    Safari, or Chrome is recommended.
 
 An additional requirement for actually using **psiTurk** to run experiments
-is a Internet connected computer capable of receiving incoming requests.
+is an Internet connected computer capable of receiving incoming requests.
 
 Installation steps
 ------------------
@@ -46,15 +46,22 @@ notes are provided below.
 Install stable version via pypi
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The easiest way to install **psiTurk** is via ``pip``. If you don't
-already have ``pip``, you can install it by typing the following in a
-terminal:
+The easiest way to install **psiTurk** is via ``pip``. Linux users will
+likely prefer to install pip as described `below <#linux>`__.
+Otherwise, If you don't already have ``pip``, you can install it by
+typing the following in a terminal:
+
 
 ::
 
     cd /tmp  # Just to put us in a directory that will be cleaned up periodically
-    curl -O https://raw.github.com/pypa/pip/master/contrib/get-pip.py
+    curl -O https://raw.githubusercontent.com/pypa/pip/develop/contrib/get-pip.py
     python get-pip.py  # If you get a permissions error, try typing sudo python get-pip.py
+
+If you want a single system to run different versions of **psiTurk**
+(or other python packages) on a per-experiment basis, follow the
+Virtual Environment instructions `below <#Running inside a Virtual
+Environment>`__.
 
 Once ``pip`` is installed, type into a terminal:
 
@@ -110,6 +117,55 @@ following sequence of commands:
     $ sudo python setup.py install
 
 
+Running inside a Virtual Environment
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+It can desirable to keep each of your experiments' dependencies (python
+and python package versions) isolated from each other. For example, if
+you want to install the development version of psiTurk (as
+described `above <#install-directly-from-github>`__) in one experiment,
+but not all the others installed on your system, `Virtual Environments
+<http://virtualenv.readthedocs.org/en/latest/>`__ provide a solution.
+
+You can install via pip:
+
+::
+
+   sudo pip install virtualenv virtualenvwrapper
+
+And then start a new shell session. This will install the virtualenv
+tool as well as the supplementary virtualenvwrapper tools that make
+working with virtualenvs easier. You create a virtual environment as
+follows (if mkvirtualenv is not recognized follow the instructions
+`here
+<http://virtualenvwrapper.readthedocs.org/en/latest/install.html>`) :
+
+::
+
+   $ mkvirtualenv my-experiment
+
+   Running virtualenv with interpreter /usr/bin/python2
+   New python executable in my-experiment/bin/python2
+   Also creating executable in my-experiment/bin/python
+   Installing setuptools, pip...done.
+
+Then, at any point in the future, to activate the virtual environment use the workon command
+
+::
+
+   $ workon my-experiment
+   (my-experiment) $ which python python pip easy_install
+
+   ~/.virtualenvs/my-experiment/bin/python
+   ~/.virtualenvs/my-experiment/bin/pip
+   ~/.virtualenvs/my-experiment/bin/easy_install
+
+As you can see, when the environment is active, running python or pip
+will run copies specific to your project. Any packages installed with
+pip or easy_install will be installed inside your my-experiment
+virtualenv rather than system-wide. Use the `deactivate` command to
+leave the virtualenv.
+
 System-specific notes
 ---------------------
 
@@ -130,7 +186,34 @@ Linux
 
 **psiTurk** is relatively painless to install on most Linux systems
 since all four of the requirements listed above come installed by
-default in most distributions. If you have specific issues please help
+default in most distributions.
+
+If you encounter install problems when installing using pip as above, a
+likely cause is that you are missing the package from your distribution
+that contains a needed header file.  In this case, one way to troubleshoot
+the problem is to do a web search for the name of your distribution and
+the name of the missing header file (which often appears in the error text
+produced by a failed pip install).  That search will likely turn up the name of
+the package for your distribution that supplies the needed header file.
+
+As an example, before installing psiTurk on a minimal Debian 7 server 
+(such as the one provided by many server hosting companies) you will need
+to install some additional packages, as illustrated by the following
+example command:
+
+::
+
+    aptitude install python-pip python-dev libncurses-dev
+
+If you would like to use mysql as your backend database (which is optional, and can
+be done at any time), further packages are needed.  On a Debian system, they are:
+
+::
+
+    aptitude install python-mysqldb python-mysqldb-dbg python-sqlalchemy libmysqlclient-dev
+
+If you have additional specific issues, or if you can report the steps
+needed to install psiTurk on a particular Linux distribution, please help
 us update the documentation!
 
 Windows

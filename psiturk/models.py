@@ -34,7 +34,10 @@ class Participant(Base):
     endhit = Column(DateTime)
     bonus = Column(Float, default = 0)
     status = Column(Integer, default = 1)
-    datastring = Column(Text(4294967295))
+    if 'postgres://' in config.get('Database Parameters', 'database_url').lower():
+        datastring = Column(Text)
+    else:
+        datastring = Column(Text(4294967295))
     
     def __init__(self, **kwargs):
         self.uniqueid = "{workerid}:{assignmentid}".format(**kwargs)
@@ -54,7 +57,7 @@ class Participant(Base):
     def get_trial_data(self):
         try:
             trialdata = json.loads(self.datastring)["data"]
-        except:
+        except TypeError, ValueError:
             # There was no data to return.
             print("No trial data found in record:", self)
             return("")
@@ -78,7 +81,7 @@ class Participant(Base):
     def get_event_data(self):
         try:
             eventdata = json.loads(self.datastring)["eventdata"]
-        except ValueError:
+        except TypeError, ValueError:
             # There was no data to return.
             print("No event data found in record:", self)
             return("")
@@ -98,7 +101,7 @@ class Participant(Base):
     def get_question_data(self):
         try:
             questiondata = json.loads(self.datastring)["questiondata"]
-        except ValueError:
+        except TypeError, ValueError:
             # There was no data to return.
             print("No question data found in record:", self)
             return("")

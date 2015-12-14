@@ -97,8 +97,16 @@ Sphinx simply by typing
 
 on the command line.
 
-All documentation files are in the docs folder and are formatted as 
-reStructured Text. A good, detailed manual for the reStructured Text 
+There's a Makefile in the docs directory, so you can generate the docs by
+running `make` on the command line, for example:
+
+    make html
+
+will generate the html docs in `_build/html`. Running make with no arguments
+will show you the available subcommands.
+
+All documentation files are in the docs folder and are formatted as
+reStructured Text. A good, detailed manual for the reStructured Text
 syntax can be found `here <http://docutils.sourceforge.net/docs/user/rst/quickstart.html>`__.
 
 Some essentials:

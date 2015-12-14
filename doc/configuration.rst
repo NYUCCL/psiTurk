@@ -56,6 +56,10 @@ as well as `psiturk.org <psiturk_org_setup.html>`__.
 You can learn how to obtain proper values for these
 settings by following those links.
 
+You can customize the location of this file to something
+other than the ~ folder by setting the `PSITURK_GLOBAL_CONFIG_LOCATION` 
+in your shell environment.
+
 Local configuration file
 --------------------------
 

@@ -59,9 +59,10 @@ BONUSED = 7
 # ===========
 
 app = Flask("Experiment_Server")
-# Set cache timeout to 10ms for static files
+# Set cache timeout to 10 seconds for static files
 app.config.update(SEND_FILE_MAX_AGE_DEFAULT=10)
-
+app.secret_key = CONFIG.get('Server Parameters', 'secret_key')
+app.logger.info("Secret key: " + app.secret_key)
 
 # Serving warm, fresh, & sweet custom, user-provided routes
 # ==========================================================
@@ -72,15 +73,13 @@ try:
 except ImportError as e:
     if str(e) == 'No module named custom':
         app.logger.info("Hmm... it seems no custom code (custom.py) associated \
-                    with this project.")
-        pass
+                        with this project.")
     else:
         app.logger.error("There is custom code (custom.py) associated with this \
-                    project but it doesn't import cleanly. Raising exception,")
+                          project but it doesn't import cleanly.  Raising exception,")
         raise
 else:
     app.register_blueprint(custom_code)
-
 
 init_db()
 
@@ -88,7 +87,7 @@ init_db()
 # Read psiturk.js file into memory
 PSITURK_JS_FILE = os.path.join(os.path.dirname(__file__), \
     "psiturk_js/psiturk.js")
-app.logger.error(PSITURK_JS_FILE)
+app.logger.info(PSITURK_JS_FILE)
 
 if os.path.exists(PSITURK_JS_FILE):
     PSITURK_JS_CODE = open(PSITURK_JS_FILE).read()
@@ -333,8 +332,8 @@ def get_ad_via_hitid(hit_id):
 @nocache
 def start_exp():
     """ Serves up the experiment applet. """
-    if not ('hitId' in request.args and 'assignmentId' in request.args and
-            'workerId' in request.args):
+    if not (('hitId' in request.args) and ('assignmentId' in request.args) and
+            ('workerId' in request.args) and ('mode' in request.args)):
         raise ExperimentError('hit_assign_worker_id_not_set_in_exp')
     hit_id = request.args['hitId']
     assignment_id = request.args['assignmentId']
