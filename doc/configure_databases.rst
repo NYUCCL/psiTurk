@@ -77,12 +77,17 @@ To use an existing MySQL database::
 
 	database_url = mysql://USERNAME:PASSWORD@HOSTNAME:PORT/DATABASE
 
-where USERNAME and PASSWORD are your access credentials for
-the database, HOSTNAME and is the DNS entry or IP address for the
-database, PORT is the port number (standard is 3306) and DATABASE
-is the name of the database on the server.  
+where USERNAME and PASSWORD are your access credentials for the database,
+HOSTNAME is the DNS entry or IP address for the database, PORT is the port
+number (standard is 3306) and DATABASE is the name of the database on the
+server.
 
-It is wise to test that you can connect to this url with a MySQL client prior to 
+Use 127.0.0.1 as the HOSTNAME for a database running locally to the psiTurk
+server rather than 'localhost'. Mysql treats the HOSTNAME 'localhost' `as a
+special case in Unix-based systems <https://dev.mysql.com/doc/refman/5.0/en/connecting.html#idm140235558252992>`__
+and will cause the psiTurk server to fail to boot.
+
+It is wise to test that you can connect to this url with a MySQL client prior to
 launching.  `Sequel Pro <http://www.sequelpro.com/>`__ is a nice GUI database
 client for MySQL for Mac OS X.
 

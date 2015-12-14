@@ -137,7 +137,7 @@ class ExperimentServerController:
 
     def is_server_running(self):
         PROCNAME = "psiturk_experiment_server"
-        cmd = "ps -eo pid,command | grep '"+ PROCNAME + "' | grep -v grep | awk '{print $1}'"
+        cmd = "ps -o pid,command | grep '"+ PROCNAME + "' | grep -v grep | awk '{print $1}'"
         psiturk_exp_processes = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
         output = psiturk_exp_processes.stdout.readlines()
         parent = psutil.Process(psiturk_exp_processes.pid)
