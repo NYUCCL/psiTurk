@@ -1,7 +1,7 @@
 
 import datetime
 import io, csv, json
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, Float, Text
+from sqlalchemy import Column, Integer, String, DateTime, Float, Text
 
 from db import Base
 from psiturk_config import PsiturkConfig
@@ -17,7 +17,7 @@ class Participant(Base):
     Object representation of a participant in the database.
     """
     __tablename__ = TABLENAME
-   
+
     uniqueid =Column(String(128), primary_key=True)
     assignmentid =Column(String(128), nullable=False)
     workerid = Column(String(128), nullable=False)
@@ -34,11 +34,16 @@ class Participant(Base):
     endhit = Column(DateTime)
     bonus = Column(Float, default = 0)
     status = Column(Integer, default = 1)
+<<<<<<< HEAD
     if 'postgres://' in config.get('Database Parameters', 'database_url').lower():
         datastring = Column(Text)
     else:
         datastring = Column(Text(4294967295))
     
+=======
+    datastring = Column(Text(4294967295))
+
+>>>>>>> 4b6aa6f7b6445304e701b6433990defd90d99dd1
     def __init__(self, **kwargs):
         self.uniqueid = "{workerid}:{assignmentid}".format(**kwargs)
         for key in kwargs:
@@ -46,14 +51,14 @@ class Participant(Base):
         self.status = 1
         self.codeversion = CODE_VERSION
         self.beginhit = datetime.datetime.now()
-    
+
     def __repr__(self):
-        return "Subject(%s, %s, %s, %s)" % ( 
-            self.uniqueid, 
-            self.cond, 
+        return "Subject(%s, %s, %s, %s)" % (
+            self.uniqueid,
+            self.cond,
             self.status,
             self.codeversion)
-    
+
     def get_trial_data(self):
         try:
             trialdata = json.loads(self.datastring)["data"]
@@ -77,7 +82,7 @@ class Participant(Base):
         except:
             print("Error reading record:", self)
             return("")
-    
+
     def get_event_data(self):
         try:
             eventdata = json.loads(self.datastring)["eventdata"]
@@ -85,7 +90,7 @@ class Participant(Base):
             # There was no data to return.
             print("No event data found in record:", self)
             return("")
-        
+
         try:
             ret = []
             with io.BytesIO() as outstring:
@@ -97,7 +102,7 @@ class Participant(Base):
         except:
             print("Error reading record:", self)
             return("")
-    
+
     def get_question_data(self):
         try:
             questiondata = json.loads(self.datastring)["questiondata"]
@@ -105,7 +110,7 @@ class Participant(Base):
             # There was no data to return.
             print("No question data found in record:", self)
             return("")
-        
+
         try:
             ret = []
             with io.BytesIO() as outstring:

@@ -1,7 +1,8 @@
 ''' This module supports commandline functionality '''
 
 import argparse
-import sys, os
+import sys
+import os
 from psiturk.version import version_number
 from psiturk.psiturk_org_services import ExperimentExchangeServices
 
