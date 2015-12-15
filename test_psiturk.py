@@ -84,7 +84,7 @@ class PsiTurkStandardTests(PsiturkUnitTest):
         assert 'Error: #1003' in rv.data
 
     def test_ad_no_url_vars(self):
-        '''Test that ad page throws Error #1003 with no url vars.'''
+        '''Test that ad page throws Error #1001 with no url vars.'''
         rv = self.app.get('/ad')
         assert 'Error: #1001' in rv.data
 
