@@ -118,13 +118,13 @@ var PsiTurk = function(uniqueId, adServerLoc, mode) {
 
 			// connect event handler to previous button
 			if(currentscreen != 0) {  // can't do this if first page
-				$('.previous').bind('click.psiturk.instructionsnav.prev', function() {
+				$('.instructionsnav').on('click.psiturk.instructionsnav.prev', '.previous', function() {
 					prevPageButtonPress();
 				});
 			}
 
 			// connect event handler to continue button
-			$('.continue').bind('click.psiturk.instructionsnav.next', function() {
+			$('.instructionsnav').on('click.psiturk.instructionsnav.next', '.continue', function() {
 				nextPageButtonPress();
 			});
 			
