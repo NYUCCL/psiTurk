@@ -396,13 +396,33 @@ class MTurkServices(object):
             hits = self.mtc.search_hits(sort_direction='Descending',
                                         page_size=20)
             hit_ids = [hit.HITId for hit in hits]
-            workers_nested = [
-                self.mtc.get_assignments(
+           
+            workers_nested = []
+            page_size=100
+            for hit_id in hit_ids:
+                current_page_number=1
+                hit_assignments = self.mtc.get_assignments(
                     hit_id,
                     status=assignment_status,
                     sort_by='SubmitTime',
-                    page_size=100
-                ) for hit_id in hit_ids]
+                    page_size=page_size,
+                    page_number=current_page_number
+                )
+
+                totalNumResults = int(hit_assignments.TotalNumResults)
+                total_pages = (totalNumResults // page_size) + (totalNumResults % page_size > 0) #do integer division then round up if necessary
+
+                while current_page_number < total_pages:
+                    current_page_number += 1
+                    hit_assignments += self.mtc.get_assignments(
+                        hit_id,
+                        status=assignment_status,
+                        sort_by='SubmitTime',
+                        page_size=page_size,
+                        page_number=current_page_number
+                    )
+
+                workers_nested.append(hit_assignments)
 
             workers = [val for subl in workers_nested for val in subl]  # Flatten nested lists
         except MTurkRequestError:
