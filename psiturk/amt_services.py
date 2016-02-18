@@ -393,8 +393,7 @@ class MTurkServices(object):
         if not self.connect_to_turk():
             return False
         try:
-            hits = self.mtc.search_hits(sort_direction='Descending',
-                                        page_size=20)
+            hits = self.mtc.get_all_hits()
             hit_ids = [hit.HITId for hit in hits]
            
             workers_nested = []
