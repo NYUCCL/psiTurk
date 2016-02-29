@@ -15,30 +15,30 @@
 						<img id="adlogo" src="/static/images/university.png" alt="Lab Logo" />
 			</div>
 			<div class="media-body">
-						<h1>Welcome to psiTurk!</h1>
-						<hr />
-					    <div class="alert alert-warning">
-							Begin by viewing the <a href="#" id="ad-href">ad</a>.
-							<script type="text/javascript">
-							function makeid()
-							{
-								var text = "";
-								var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+				<h1>Welcome to psiTurk!</h1>
+				<hr />
+			    <div class="alert alert-warning">
+					Begin by viewing the <a href="#" id="ad-href">ad</a>.
+					<script type="text/javascript">
+					function makeid()
+					{
+						var text = "";
+						var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
-								for( var i=0; i < 5; i++ )
-									text += possible.charAt(Math.floor(Math.random() * possible.length));
+						for( var i=0; i < 5; i++ )
+							text += possible.charAt(Math.floor(Math.random() * possible.length));
 
-								return text;
-							}
+						return text;
+					}
 
-							var assignmentId = "debug" + makeid();
-							var hitId = "debug" + makeid();
-							var workerId = "debug" + makeid();
-							var href = "/ad?assignmentId=" + assignmentId + "&hitId=" + hitId + "&workerId=" + workerId + "&mode=debug"
+					var assignmentId = "debug" + makeid();
+					var hitId = "debug" + makeid();
+					var workerId = "debug" + makeid();
+					var href = "/ad?assignmentId=" + assignmentId + "&hitId=" + hitId + "&workerId=" + workerId + "&mode=debug"
 
-							$("#ad-href").attr("href", href);
-							</script>
-						</div>
+					$("#ad-href").attr("href", href);
+					</script>
+				</div>
 			</div>
 		</div>
 	</body>
