@@ -259,7 +259,7 @@ def advertisement():
         status = None
 
     allow_repeats = CONFIG.getboolean('HIT Configuration', 'allow_repeats')
-    if status == STARTED and not debug_mode:
+    if (status == STARTED or status == QUITEARLY) and not debug_mode:
         # Once participants have finished the instructions, we do not allow
         # them to start the task again.
         raise ExperimentError('already_started_exp_mturk')

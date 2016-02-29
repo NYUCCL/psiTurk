@@ -268,6 +268,89 @@ class PsiTurkStandardTests(PsiturkUnitTest):
         rv = self.app.get('/complete?uniqueId=%s' % uniqueid)
         assert rv.status_code == 200
 
+    def test_repeat_experiment_quit(self):
+        '''Test that a participant cannot restart the experiment.'''
+        request = "&".join([
+            "assignmentId=%s" % self.assignment_id,
+            "workerId=%s" % self.worker_id,
+            "hitId=%s" % self.hit_id,
+            "mode=debug"])
+
+        # put the user in the database
+        rv = self.app.get("/exp?%s" % request)
+        assert rv.status_code == 200
+
+        # put the in the experiment
+        uniqueid = "%s:%s" % (self.worker_id, self.assignment_id)
+        rv = self.app.post("/inexp", data=dict(uniqueId=uniqueid))
+        assert rv.status_code == 200
+
+        # make sure they are blocked on the ad page
+        rv = self.app.get('/ad?%s' % request)
+        assert rv.status_code == 200
+        assert 'Error: #1009' in rv.data
+
+        # make sure they are blocked on the experiment page
+        rv = self.app.get("/exp?%s" % request)
+        assert rv.status_code == 200
+        assert 'Error: #1008' in rv.data
+
+        # have them quit the experiment
+        rv = self.app.post("/quitter", data=dict(uniqueId=uniqueid))
+        assert rv.status_code == 200
+
+        # make sure they are blocked on the ad page
+        rv = self.app.get('/ad?%s' % request)
+        assert rv.status_code == 200
+        assert 'Error: #1009' in rv.data
+
+        # make sure they are blocked on the experiment page
+        rv = self.app.get("/exp?%s" % request)
+        assert rv.status_code == 200
+        assert 'Error: #1008' in rv.data
+
+    def test_repeat_experiment_quit_allow_repeats(self):
+        '''Test that a participant cannot restart the experiment, even when repeats are allowed.'''
+        self.set_config('HIT Configuration', 'allow_repeats', 'true')
+        request = "&".join([
+            "assignmentId=%s" % self.assignment_id,
+            "workerId=%s" % self.worker_id,
+            "hitId=%s" % self.hit_id,
+            "mode=debug"])
+
+        # put the user in the database
+        rv = self.app.get("/exp?%s" % request)
+        assert rv.status_code == 200
+
+        # put the in the experiment
+        uniqueid = "%s:%s" % (self.worker_id, self.assignment_id)
+        rv = self.app.post("/inexp", data=dict(uniqueId=uniqueid))
+        assert rv.status_code == 200
+
+        # make sure they are blocked on the ad page
+        rv = self.app.get('/ad?%s' % request)
+        assert rv.status_code == 200
+        assert 'Error: #1009' in rv.data
+
+        # make sure they are blocked on the experiment page
+        rv = self.app.get("/exp?%s" % request)
+        assert rv.status_code == 200
+        assert 'Error: #1008' in rv.data
+
+        # have them quit the experiment
+        rv = self.app.post("/quitter", data=dict(uniqueId=uniqueid))
+        assert rv.status_code == 200
+
+        # make sure they are blocked on the ad page
+        rv = self.app.get('/ad?%s' % request)
+        assert rv.status_code == 200
+        assert 'Error: #1009' in rv.data
+
+        # make sure they are blocked on the experiment page
+        rv = self.app.get("/exp?%s" % request)
+        assert rv.status_code == 200
+        assert 'Error: #1008' in rv.data
+
 
 class BadUserAgent(PsiturkUnitTest):
     '''Setup test blocked user agent (iPad/tablets)'''
