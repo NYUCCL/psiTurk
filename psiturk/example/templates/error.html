@@ -37,12 +37,13 @@
                             <a href="mailto:{{contact_address}}">{{contact_address}}</a>
                             and send the following information:
                         </p>
+                        <hr />
                         <p>
-                            Error: #{{ errornum }}<br />
-                            Description: {{ errordesc }}<br />
-                            {% if hitId %} HITID: #{{ hitId }}<br /> {% endif %}
-                            {% if assignId %}AssignmentId: #{{ assignId }}<br /> {% endif %}
-                            {% if workerId %} WorkerId: #{{ workerId }}<br /> {% endif %}
+                            <b>Error</b>: {{ errornum }}<br />
+                            <b>Description</b>: {{ errordesc }}<br />
+                            {% if hitId %}<b>HITId</b>: #{{ hitId }}<br /> {% endif %}
+                            {% if assignId %}<b>AssignmentId</b>: #{{ assignId }}<br /> {% endif %}
+                            {% if workerId %}<b>WorkerId</b>: #{{ workerId }}<br /> {% endif %}
                         </p>
 
                 </div>
