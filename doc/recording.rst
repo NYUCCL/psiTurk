@@ -26,6 +26,8 @@ appended to the log. It is up to you how to structure those lists; you
 will have to parse them as part of your analysis.
 
 
+.. _recording-unstructured-data-label:
+
 Recording unstructured data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

@@ -36,6 +36,7 @@ User's Guide
    recording
    retrieving
    customizing
+   external_surveys
    openshift
    error
    faq
@@ -54,8 +55,8 @@ Contributing to **psiTurk**
 API Reference
 --------------
 .. toctree::
-	:maxdepth: 2
-    
-    api
-    psiturk_org_api
+   :maxdepth: 2
+
+   api
+   psiturk_org_api
 
