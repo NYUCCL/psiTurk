@@ -13,7 +13,6 @@ The two most important files are ad.html and exp.html
 so be sure to review the documentation for those.
 
 .. toctree::
-
    :maxdepth: 2
 
    ad_html
