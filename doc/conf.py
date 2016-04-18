@@ -34,7 +34,7 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
-    'sphinx.ext.imgmath',
+#    'sphinx.ext.imgmath',  removed 4/18 by todd based on build fails.
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
 ]
