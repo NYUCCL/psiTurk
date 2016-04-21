@@ -632,8 +632,8 @@ class MTurkServices(object):
         try:
             self.mtc.dispose_hit(hitid)
         except Exception, e:
-            print 'Failed to dispose of HIT %s. Make sure there are no "\
-                "assignments remaining to be reviewed' % hitid
+            print "Failed to dispose of HIT %s. Make sure there are no "\
+                "assignments remaining to be reviewed." % hitid
 
     def extend_hit(self, hitid, assignments_increment=None,
                    expiration_increment=None):
