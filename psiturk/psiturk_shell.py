@@ -310,7 +310,7 @@ class PsiturkShell(Cmd, object):
     config_commands = ('print', 'reload', 'help')
 
     def complete_config(self, text, line, begidx, endidx):
-        ''' Not sure what this does... '''
+        ''' Tab-complete config command '''
         return  [i for i in PsiturkShell.config_commands if i.startswith(text)]
 
     def help_config(self):
@@ -454,7 +454,7 @@ class PsiturkShell(Cmd, object):
     server_commands = ('on', 'off', 'restart', 'log', 'help')
 
     def complete_server(self, text, line, begidx, endidx):
-        ''' Not sure what this does... '''
+        ''' Tab-complete server command '''
         return  [i for i in PsiturkShell.server_commands if i.startswith(text)]
 
     def help_server(self):
@@ -1115,6 +1115,7 @@ class PsiturkNetworkShell(PsiturkShell):
                    'aws_delete_instance', 'help')
 
     def complete_db(self, text, line, begidx, endidx):
+        ''' Tab-complete db command '''
         return  [i for i in PsiturkNetworkShell.db_commands if \
                  i.startswith(text)]
 
@@ -1622,7 +1623,7 @@ class PsiturkNetworkShell(PsiturkShell):
     hit_commands = ('create', 'extend', 'expire', 'dispose', 'list')
 
     def complete_hit(self, text, line, begidx, endidx):
-        ''' Complete HIT. '''
+        ''' Tab-complete hit command. '''
         return  [i for i in PsiturkNetworkShell.hit_commands if \
                  i.startswith(text)]
 
@@ -1661,7 +1662,7 @@ class PsiturkNetworkShell(PsiturkShell):
     worker_commands = ('approve', 'reject', 'unreject', 'bonus', 'list', 'help')
 
     def complete_worker(self, text, line, begidx, endidx):
-        ''' Complete worker. '''
+        ''' Tab-complete worker command. '''
         return  [i for i in PsiturkNetworkShell.worker_commands if \
                  i.startswith(text)]
 
