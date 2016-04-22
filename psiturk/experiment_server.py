@@ -64,6 +64,15 @@ class ExperimentServer(Application):
             'limit_request_line': '0'
         }
 
+        if config.has_option("Server Parameters", "certfile") and config.has_option("Server Parameters", "keyfile"):
+            print "Loading SSL certs for server..."
+            ssl_options = {
+                'certfile' : config.get("Server Parameters", "certfile"),
+                'keyfile' : config.get("Server Parameters", "keyfile")
+            }
+            self.user_options.update(ssl_options)
+
+
 def launch():
     ExperimentServer().run()
 

@@ -881,14 +881,17 @@ class PsiturkNetworkShell(PsiturkShell):
                           ))
             if user_input != 'y':
                 return
+        
+        use_psiturk_ad_server = self.config.getboolean('Shell Parameters', 'use_psiturk_ad_server')
 
-        if not self.web_services.check_credentials():
-            print '\n'.join(['*****************************',
-                            '  Sorry, your psiTurk Credentials are invalid.\n ',
-                            '  You cannot create ads and hits until you enter valid credentials in ',
-                            '  the \'psiTurk Access\' section of ~/.psiturkconfig.  You can obtain your',
-                            '  credentials or sign up at https://www.psiturk.org/login.\n'])
-            return
+        if use_psiturk_ad_server:
+            if not self.web_services.check_credentials():
+                print '\n'.join(['*****************************',
+                                '  Sorry, your psiTurk Credentials are invalid.\n ',
+                                '  You cannot create ads and hits until you enter valid credentials in ',
+                                '  the \'psiTurk Access\' section of ~/.psiturkconfig.  You can obtain your',
+                                '  credentials or sign up at https://www.psiturk.org/login.\n'])
+                return
 
         if not self.amt_services.verify_aws_login():
             print '\n'.join(['*****************************',
@@ -941,60 +944,89 @@ class PsiturkNetworkShell(PsiturkShell):
             print '*** duration must be greater than 0'
             return
 
-        # register with the ad server (psiturk.org/ad/register) using POST
-        if os.path.exists('templates/ad.html'):
-            ad_html = open('templates/ad.html').read()
-        else:
-            print '\n'.join(['*****************************',
-                             '  Sorry, there was an error registering ad.',
-                             '  Both ad.html is required to be in the templates folder',
-                             '  of your project so that these Ad can be served!'])
-            return
+        if use_psiturk_ad_server:
 
-        size_of_ad = sys.getsizeof(ad_html)
-        if size_of_ad >= 1048576:
-            print '\n'.join(['*****************************',
-                             '  Sorry, there was an error registering ad.',
-                             '  Your local ad.html is %s byes, but the maximum',
-                             '  template size uploadable to the Ad server is',
-                             '  1048576 bytes!' % size_of_ad])
-            return
+            # register with the ad server (psiturk.org/ad/register) using POST
+            if os.path.exists('templates/ad.html'):
+                ad_html = open('templates/ad.html').read()
+            else:
+                print '\n'.join(['*****************************',
+                                 '  Sorry, there was an error registering ad.',
+                                 '  Both ad.html is required to be in the templates folder',
+                                 '  of your project so that these Ad can be served!'])
+                return
 
-        # what all do we need to send to server?
-        # 1. server
-        # 2. port
-        # 3. support_ie?
-        # 4. ad.html template
-        # 5. contact_email in case an error happens
+            size_of_ad = sys.getsizeof(ad_html)
+            if size_of_ad >= 1048576:
+                print '\n'.join(['*****************************',
+                                 '  Sorry, there was an error registering ad.',
+                                 '  Your local ad.html is %s byes, but the maximum',
+                                 '  template size uploadable to the Ad server is',
+                                 '  1048576 bytes!' % size_of_ad])
+                return
 
-        if self.tunnel.is_open:
-            ip_address = self.tunnel.url
-            port = str(self.tunnel.tunnel_port)  # Set by tunnel server.
-        else:
-            ip_address = str(self.web_services.get_my_ip())
-            port = str(self.config.get('Server Parameters', 'port'))
-        ad_content = {
-            'psiturk_external': True,
-            'server': ip_address,
-            'port': port,
-            'browser_exclude_rule': str(self.config.get('HIT Configuration', 'browser_exclude_rule')),
-            'is_sandbox': int(self.sandbox),
-            'ad_html': ad_html,
-            # 'amt_hit_id': hitid, Don't know this yet
-            'organization_name': str(self.config.get('HIT Configuration', 'organization_name')),
-            'experiment_name': str(self.config.get('HIT Configuration', 'title')),
-            'contact_email_on_error': str(self.config.get('HIT Configuration', 'contact_email_on_error')),
-            'ad_group': str(self.config.get('HIT Configuration', 'ad_group')),
-            'keywords': str(self.config.get('HIT Configuration', 'psiturk_keywords'))
-        }
+            # what all do we need to send to server?
+            # 1. server
+            # 2. port
+            # 3. support_ie?
+            # 4. ad.html template
+            # 5. contact_email in case an error happens
 
-        create_failed = False
-        fail_msg = None
-        ad_id = self.web_services.create_ad(ad_content)
-        if ad_id is not False:
+            if self.tunnel.is_open:
+                ip_address = self.tunnel.url
+                port = str(self.tunnel.tunnel_port)  # Set by tunnel server.
+            else:
+                ip_address = str(self.web_services.get_my_ip())
+                port = str(self.config.get('Server Parameters', 'port'))
+            ad_content = {
+                'psiturk_external': True,
+                'server': ip_address,
+                'port': port,
+                'browser_exclude_rule': str(self.config.get('HIT Configuration', 'browser_exclude_rule')),
+                'is_sandbox': int(self.sandbox),
+                'ad_html': ad_html,
+                # 'amt_hit_id': hitid, Don't know this yet
+                'organization_name': str(self.config.get('HIT Configuration', 'organization_name')),
+                'experiment_name': str(self.config.get('HIT Configuration', 'title')),
+                'contact_email_on_error': str(self.config.get('HIT Configuration', 'contact_email_on_error')),
+                'ad_group': str(self.config.get('HIT Configuration', 'ad_group')),
+                'keywords': str(self.config.get('HIT Configuration', 'psiturk_keywords'))
+            }
 
+            create_failed = False
+            fail_msg = None
+            ad_id = self.web_services.create_ad(ad_content)
+            if ad_id is not False:
+
+                hit_config = {
+                    "ad_location": self.web_services.get_ad_url(ad_id, int(self.sandbox)),
+                    "approve_requirement": self.config.get('HIT Configuration', 'Approve_Requirement'),
+                    "us_only": self.config.getboolean('HIT Configuration', 'US_only'),
+                    "lifetime": datetime.timedelta(hours=self.config.getfloat('HIT Configuration', 'lifetime')),
+                    "max_assignments": numWorkers,
+                    "title": self.config.get('HIT Configuration', 'title'),
+                    "description": self.config.get('HIT Configuration', 'description'),
+                    "keywords": self.config.get('HIT Configuration', 'amt_keywords'),
+                    "reward": reward,
+                    "duration": datetime.timedelta(hours=duration)
+                }
+                hit_id = self.amt_services.create_hit(hit_config)
+                if hit_id is not False:
+                    if not self.web_services.set_ad_hitid(ad_id, hit_id, int(self.sandbox)):
+                        create_failed = True
+                        fail_msg = "  Unable to update Ad on http://ad.psiturk.org to point at HIT."
+                else:
+                    create_failed = True
+                    fail_msg = "  Unable to create HIT on Amazon Mechanical Turk."
+            else:
+                create_failed = True
+                fail_msg = "  Unable to create Ad on http://ad.psiturk.org."
+
+        else: # not using psiturk ad server
+
+            mode = 'sandbox' if self.sandbox else 'live'
             hit_config = {
-                "ad_location": self.web_services.get_ad_url(ad_id, int(self.sandbox)),
+                "ad_location": "%(hp)s?mode=%(mode)s" % { 'hp': self.config.get('Shell Parameters', 'ad_location'), 'mode': mode },
                 "approve_requirement": self.config.get('HIT Configuration', 'Approve_Requirement'),
                 "us_only": self.config.getboolean('HIT Configuration', 'US_only'),
                 "lifetime": datetime.timedelta(hours=self.config.getfloat('HIT Configuration', 'lifetime')),
@@ -1005,17 +1037,11 @@ class PsiturkNetworkShell(PsiturkShell):
                 "reward": reward,
                 "duration": datetime.timedelta(hours=duration)
             }
+            create_failed = False
             hit_id = self.amt_services.create_hit(hit_config)
-            if hit_id is not False:
-                if not self.web_services.set_ad_hitid(ad_id, hit_id, int(self.sandbox)):
-                    create_failed = True
-                    fail_msg = "  Unable to update Ad on http://ad.psiturk.org to point at HIT."
-            else:
+            if hit_id is False:
                 create_failed = True
                 fail_msg = "  Unable to create HIT on Amazon Mechanical Turk."
-        else:
-            create_failed = True
-            fail_msg = "  Unable to create Ad on http://ad.psiturk.org."
 
         if create_failed:
             print '\n'.join(['*****************************',
@@ -1054,17 +1080,19 @@ class PsiturkNetworkShell(PsiturkShell):
                              '    ________________________',
                              '    Total: $%.2f' % total])
             if self.sandbox:
-                print('  Ad URL: https://sandbox.ad.psiturk.org/view/%s?assignmentId=debug%s&hitId=debug%s&workerId=debug%s'
-                      % (str(ad_id), str(self.random_id_generator()), str(self.random_id_generator()), str(self.random_id_generator())))
-                print "Note: This url cannot be used to run your full psiTurk experiment.  It is only for testing your ad."
+                if use_psiturk_ad_server:
+                    print('  Ad URL: https://sandbox.ad.psiturk.org/view/%s?assignmentId=debug%s&hitId=debug%s&workerId=debug%s'
+                          % (str(ad_id), str(self.random_id_generator()), str(self.random_id_generator()), str(self.random_id_generator())))
+                    print "Note: This url cannot be used to run your full psiTurk experiment.  It is only for testing your ad."
                 print('  Sandbox URL: https://workersandbox.mturk.com/mturk/searchbar?selectedSearchType=hitgroups&searchWords=%s'
                       % (urllib.quote_plus(str(self.config.get('HIT Configuration', 'title')))))
                 print "Hint: In OSX, you can open a terminal link using cmd + click"
                 print "Note: This sandboxed ad will expire from the server in 16 days."
             else:
-                print('  Ad URL: https://ad.psiturk.org/view/%s?assignmentId=debug%s&hitId=debug%s&workerId=debug%s'
-                      % (str(ad_id), str(self.random_id_generator()), str(self.random_id_generator()), str(self.random_id_generator())))
-                print "Note: This url cannot be used to run your full psiTurk experiment.  It is only for testing your ad."
+                if use_psiturk_ad_server:
+                    print('  Ad URL: https://ad.psiturk.org/view/%s?assignmentId=debug%s&hitId=debug%s&workerId=debug%s'
+                          % (str(ad_id), str(self.random_id_generator()), str(self.random_id_generator()), str(self.random_id_generator())))
+                    print "Note: This url cannot be used to run your full psiTurk experiment.  It is only for testing your ad."
                 print('  MTurk URL: https://www.mturk.com/mturk/searchbar?selectedSearchType=hitgroups&searchWords=%s'
                         % (urllib.quote_plus(str(self.config.get('HIT Configuration', 'title')))))
                 print "Hint: In OSX, you can open a terminal link using cmd + click"
