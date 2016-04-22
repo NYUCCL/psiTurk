@@ -263,11 +263,11 @@ def advertisement():
         # them to start the task again.
         raise ExperimentError('already_started_exp_mturk')
     elif status == COMPLETED:
-        # They've finished the experiment but perhaps haven't submitted the HIT
-        # yet.. Turn asignmentId into original assignment id before sending it
-        # back to AMT
         use_psiturk_ad_server = CONFIG.getboolean('Shell Parameters', 'use_psiturk_ad_server')
         if not use_psiturk_ad_server:
+            # They've finished the experiment but haven't submitted the HIT
+            # yet.. Turn asignmentId into original assignment id before sending it
+            # back to AMT
             return render_template(
                 'thanks-mturksubmit.html',
                 using_sandbox=(mode == "sandbox"),
@@ -276,7 +276,13 @@ def advertisement():
                 workerid=worker_id
             )
         else: 
-            # then AMT isn't involved. Show them a thanks message and tell them to go away
+            # `thanks.html` was taken out in v2 with the introduction of the psiturk ad server
+            # but put back in in v2.1.2 because "local thanks page needed when reloading the 
+            # local ad and a worker has already completed the task." As far as I, @deargle, can interpret,
+            # a user, be they an AMT worker or not, should not typically reach this page unless 
+            # they're fooling around with URLs.
+            # 
+            # Show them a thanks message and tell them to go away.
             return render_template( 'thanks.html' )
     elif already_in_db and not debug_mode:
         raise ExperimentError('already_did_exp_hit')
