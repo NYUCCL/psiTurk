@@ -45,6 +45,7 @@ secret_key = 'this is my secret key which is hard to guess, i should change this
 #certfile = <path_to.crt> 
 #keyfile = <path_to.key>
 
+
 [Task Parameters]
 experiment_code_version = 1.0
 num_conds = 1
@@ -66,4 +67,5 @@ launch_in_sandbox_mode = true
 # See http://docs.gunicorn.org/en/stable/deploy.html
 
 use_psiturk_ad_server = true
-ad_location = false # https://<host>:<port>/ad -- only used if `use_psiturk_ad_server` is false. Set to whatever you set up your proxy server to listen on.
+ad_location = false # https://<host>:<port>/ad -- only used if `use_psiturk_ad_server` 
+                    # is false. Set to whatever you set up your proxy server to listen on.
