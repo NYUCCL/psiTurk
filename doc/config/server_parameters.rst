@@ -7,16 +7,18 @@ command line.  An example looks like this:
 
 ::
 
-	[Server Parameters]
-	host = 0.0.0.0
-	port = 22362
-	cutoff_time = 30
-	logfile = server.log
-	loglevel = 2
-	debug = true
-	login_username = examplename
-	login_pw = examplepassword
-	threads = auto
+    [Server Parameters]
+    host = 0.0.0.0
+    port = 22362
+    cutoff_time = 30
+    logfile = server.log
+    loglevel = 2
+    debug = true
+    login_username = examplename
+    login_pw = examplepassword
+    threads = auto
+    #certfile = <path_to.crt> 
+    #keyfile = <path_to.key>
 
 `host` [ string]
 --------------
@@ -91,3 +93,46 @@ the the psiturk webserver will run.  This enables multiple
 simultanous connections from internet users.  If you select
 `auto` it will set this based on the number of processor
 cores on your current computer.
+
+`certfile` [ string ]
+----------------------
+.. warning::
+    
+    SSL support for the psiturk server is an experimental feature.
+
+`certfile` should be the /path/to/your/domain/SSL.crt
+    
+If both certfile and keyfile are set and the files readable, then 
+the psiturk gunicorn server will run with ssl. You will need 
+to execute the psiturk with privileges sufficient to read 
+the keyfile (typically root). If you run `psiturk` with `sudo` and if you are using
+a virtual environment, make sure to execute the full path to the desired psiturk instance in your environment. 
+See `launch-sudo-psiturk in this gist`_ for an example.
+
+If you want to do this, you are responsible for obtaining 
+your own cert and key. It is not necessary to run the 
+psiturk server with `ssl` in order to use your own ad server.
+You can have a proxy server such as `nginx` in front of 
+psiturk/gunicorn which handles ssl connections. See `this gist`_ for an example.
+
+See http://docs.gunicorn.org/en/stable/deploy.html for more information on setting up proxy servers with the psiturk (gunicorn) server.
+
+.. seealso::
+
+    `use_psiturk_ad_server <shell_parameters.html#use-psiturk-ad-server-true-false>`__
+        How to use your on ad_location. Does not require that the **psiTurk** server be SSL-enabled. (Although you will still need your own SSL certificate and key)
+
+`keyfile` [ string ]
+----------------------
+.. warning::
+    
+    SSL support for the psiturk server is an experimental feature.
+
+`certfile` should be the /path/to/your/domain/private-SSL.key. Although .crts can contain .key files within them,
+psiturk currently requires that you point to separate .crt and .key files for this experimental feature to work.
+
+See the documentation for `certfile` for more information.
+
+.. _launch-sudo-psiturk in this gist: gist_
+.. _this gist: gist_
+.. _gist: https://gist.github.com/deargle/5d8c01660a77b8090a2cd24efcda2c59

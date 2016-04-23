@@ -26,25 +26,8 @@ login_username = examplename
 login_pw = examplepassword
 threads = auto
 secret_key = 'this is my secret key which is hard to guess, i should change this'
-
-# If both certfile and keyfile are present and readable, then 
-# the psiturk gunicorn server will run with ssl. You will need 
-# to execute the psiturk with privileges sufficient to read 
-# the keyfile (typically root). If you run `psiturk` with sudo, 
-# make sure to execute the full path to the desired psiturk instance in your (virtual) environment. 
-# See `launch-sudo-psiturk` for an example.
-
-# If you want to do this, you are responsible for obtaining 
-# your own cert and key. It is not necessary to run the 
-# psiturk server with ssl in order to use your own ad server.
-# You can have a proxy server such as nginx in front of 
-# psiturk/gunicorn which handles ssl connections.
-
-# See http://docs.gunicorn.org/en/stable/deploy.html
-
 #certfile = <path_to.crt> 
 #keyfile = <path_to.key>
-
 
 [Task Parameters]
 experiment_code_version = 1.0
@@ -53,19 +36,7 @@ num_counters = 1
 
 [Shell Parameters]
 launch_in_sandbox_mode = true
-
-# If you want to host your own ad, you are responsible for obtaining 
-# your own cert and key and for configuring your own proxy server in front
-# of psiturk/gunicorn. It is not necessary to include the cert and key
-# in the [Server Parameters] section above -- You can have a proxy server 
-# such as nginx in front of psiturk/gunicorn which handles ssl connections.
-# Although if you don't have your certs in both places, then traffic between
-# your proxy server and psiturk/gunicorn will not be encrypted. Perhaps that
-# doesn't matter to you though if you configure your proxy server to pass traffic
-# to your gunicorn/psiturk server via localhost.
-
-# See http://docs.gunicorn.org/en/stable/deploy.html
-
 use_psiturk_ad_server = true
-ad_location = false # https://<host>:<port>/ad -- only used if `use_psiturk_ad_server` 
-                    # is false. Set to whatever you set up your proxy server to listen on.
+ad_location = false # https://<host>:<port>/ad, 
+                    # point this to your proxy server <host> and <port> 
+                    # if you are not using the psiturk_ad_server
