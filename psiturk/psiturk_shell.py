@@ -1065,13 +1065,13 @@ class PsiturkNetworkShell(PsiturkShell):
             total = float(numWorkers) * float(reward)
             fee = total * commission
             total = total + fee
-            location = ''
+            mode = ''
             if self.sandbox:
-                location = 'sandbox'
+                mode = 'sandbox'
             else:
-                location = 'live'
+                mode = 'live'
             print '\n'.join(['*****************************',
-                             '  Creating %s HIT' % colorize(location, 'bold'),
+                             '  Creating %s HIT' % colorize(mode, 'bold'),
                              '    HITid: %s' % str(hit_id),
                              '    Max workers: %s' % numWorkers,
                              '    Reward: $%s' %reward,
@@ -1079,24 +1079,42 @@ class PsiturkNetworkShell(PsiturkShell):
                              '    Fee: $%.2f' % fee,
                              '    ________________________',
                              '    Total: $%.2f' % total])
-            if self.sandbox:
-                if use_psiturk_ad_server:
-                    print('  Ad URL: https://sandbox.ad.psiturk.org/view/%s?assignmentId=debug%s&hitId=debug%s&workerId=debug%s'
-                          % (str(ad_id), str(self.random_id_generator()), str(self.random_id_generator()), str(self.random_id_generator())))
-                    print "Note: This url cannot be used to run your full psiTurk experiment.  It is only for testing your ad."
-                print('  Sandbox URL: https://workersandbox.mturk.com/mturk/searchbar?selectedSearchType=hitgroups&searchWords=%s'
-                      % (urllib.quote_plus(str(self.config.get('HIT Configuration', 'title')))))
-                print "Hint: In OSX, you can open a terminal link using cmd + click"
-                print "Note: This sandboxed ad will expire from the server in 16 days."
-            else:
-                if use_psiturk_ad_server:
-                    print('  Ad URL: https://ad.psiturk.org/view/%s?assignmentId=debug%s&hitId=debug%s&workerId=debug%s'
-                          % (str(ad_id), str(self.random_id_generator()), str(self.random_id_generator()), str(self.random_id_generator())))
-                    print "Note: This url cannot be used to run your full psiTurk experiment.  It is only for testing your ad."
-                print('  MTurk URL: https://www.mturk.com/mturk/searchbar?selectedSearchType=hitgroups&searchWords=%s'
-                        % (urllib.quote_plus(str(self.config.get('HIT Configuration', 'title')))))
-                print "Hint: In OSX, you can open a terminal link using cmd + click"
 
+            # Print the Ad Url
+            ad_url = ''
+            if use_psiturk_ad_server:
+                if self.sandbox:
+                    ad_url_base = 'https://sandbox.ad.psiturk.org/view'
+                else:
+                    ad_url_base = 'https://ad.psiturk.org/view'
+                ad_url = '{}/{}?assignmentId=debug{}&hitId=debug{}&workerId=debug{}'.format( 
+                    ad_url_base, str(ad_id), str(self.random_id_generator()), str(self.random_id_generator()), str(self.random_id_generator()))
+
+            else:
+                options = { 
+                    'base': self.config.get('Shell Parameters', 'ad_location'), 
+                    'mode': mode,
+                    'assignmentid': str(self.random_id_generator()),
+                    'hitid': str(self.random_id_generator()),
+                    'workerid': str(self.random_id_generator())
+                  }
+                ad_url = '{base}?mode={mode}&assignmentId=debug{assignmentid}&hitId=debug{hitid}&workerId=debug{workerid}'.format(**options)
+            print('  Ad URL: {}'.format(ad_url) )
+            print "Note: This url cannot be used to run your full psiTurk experiment.  It is only for testing your ad."
+
+            # Print the Mturk Url
+            mturk_url = ''
+            if self.sandbox:
+                mturk_url_base = 'https://workersandbox.mturk.com'
+            else:
+                mturk_url_base = 'https://www.mturk.com'
+            mturk_url = '{}/mturk/searchbar?selectedSearchType=hitgroups&searchWords={}'.format(
+                mturk_url_base, urllib.quote_plus(str(self.config.get('HIT Configuration', 'title'))) )
+
+            print('  MTurk URL: {}'.format(mturk_url) )
+            print "Hint: In OSX, you can open a terminal link using cmd + click"
+            if self.sandbox and use_psiturk_ad_server:
+                print "Note: This sandboxed ad will expire from the server in 16 days."
 
     @docopt_cmd
     def do_db(self, arg):
