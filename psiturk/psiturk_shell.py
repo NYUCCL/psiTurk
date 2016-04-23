@@ -949,70 +949,12 @@ class PsiturkNetworkShell(PsiturkShell):
 
         if use_psiturk_ad_server:
 
-            # register with the ad server (psiturk.org/ad/register) using POST
-            if os.path.exists('templates/ad.html'):
-                ad_html = open('templates/ad.html').read()
-            else:
-                print '\n'.join(['*****************************',
-                                 '  Sorry, there was an error registering ad.',
-                                 '  The file ad.html is required to be in the templates folder',
-                                 '  of your project so that the ad can be served.'])
-                return
-
-            size_of_ad = sys.getsizeof(ad_html)
-            if size_of_ad >= 1048576:
-                print '\n'.join(['*****************************',
-                                 '  Sorry, there was an error registering the ad.',
-                                 '  Your local ad.html is %s byes, but the maximum',
-                                 '  template size uploadable to the ad server is',
-                                 '  1048576 bytes.' % size_of_ad])
-                return
-
-            # what all do we need to send to server?
-            # 1. server
-            # 2. port
-            # 3. support_ie?
-            # 4. ad.html template
-            # 5. contact_email in case an error happens
-
-            if self.tunnel.is_open:
-                ip_address = self.tunnel.url
-                port = str(self.tunnel.tunnel_port)  # Set by tunnel server.
-            else:
-                ip_address = str(self.web_services.get_my_ip())
-                port = str(self.config.get('Server Parameters', 'port'))
-            ad_content = {
-                'psiturk_external': True,
-                'server': ip_address,
-                'port': port,
-                'browser_exclude_rule': str(self.config.get('HIT Configuration', 'browser_exclude_rule')),
-                'is_sandbox': int(self.sandbox),
-                'ad_html': ad_html,
-                # 'amt_hit_id': hitid, Don't know this yet
-                'organization_name': str(self.config.get('HIT Configuration', 'organization_name')),
-                'experiment_name': str(self.config.get('HIT Configuration', 'title')),
-                'contact_email_on_error': str(self.config.get('HIT Configuration', 'contact_email_on_error')),
-                'ad_group': str(self.config.get('HIT Configuration', 'ad_group')),
-                'keywords': str(self.config.get('HIT Configuration', 'psiturk_keywords'))
-            }
-
+            ad_id = self.create_psiturk_ad() 
             create_failed = False
             fail_msg = None
-            ad_id = self.web_services.create_ad(ad_content)
             if ad_id is not False:
-
-                hit_config = {
-                    "ad_location": self.web_services.get_ad_url(ad_id, int(self.sandbox)),
-                    "approve_requirement": self.config.get('HIT Configuration', 'Approve_Requirement'),
-                    "us_only": self.config.getboolean('HIT Configuration', 'US_only'),
-                    "lifetime": datetime.timedelta(hours=self.config.getfloat('HIT Configuration', 'lifetime')),
-                    "max_assignments": numWorkers,
-                    "title": self.config.get('HIT Configuration', 'title'),
-                    "description": self.config.get('HIT Configuration', 'description'),
-                    "keywords": self.config.get('HIT Configuration', 'amt_keywords'),
-                    "reward": reward,
-                    "duration": datetime.timedelta(hours=duration)
-                }
+                ad_location = self.web_services.get_ad_url(ad_id, int(self.sandbox))
+                hit_config = self.generate_hit_config(ad_location, numWorkers, reward, duration )
                 hit_id = self.amt_services.create_hit(hit_config)
                 if hit_id is not False:
                     if not self.web_services.set_ad_hitid(ad_id, hit_id, int(self.sandbox)):
@@ -1028,18 +970,8 @@ class PsiturkNetworkShell(PsiturkShell):
         else: # not using psiturk ad server
 
             mode = 'sandbox' if self.sandbox else 'live'
-            hit_config = {
-                "ad_location": "%(hp)s?mode=%(mode)s" % { 'hp': self.config.get('Shell Parameters', 'ad_location'), 'mode': mode },
-                "approve_requirement": self.config.get('HIT Configuration', 'Approve_Requirement'),
-                "us_only": self.config.getboolean('HIT Configuration', 'US_only'),
-                "lifetime": datetime.timedelta(hours=self.config.getfloat('HIT Configuration', 'lifetime')),
-                "max_assignments": numWorkers,
-                "title": self.config.get('HIT Configuration', 'title'),
-                "description": self.config.get('HIT Configuration', 'description'),
-                "keywords": self.config.get('HIT Configuration', 'amt_keywords'),
-                "reward": reward,
-                "duration": datetime.timedelta(hours=duration)
-            }
+            ad_location = "{}?mode={}".format(self.config.get('Shell Parameters', 'ad_location'), mode )
+            hit_config = self.generate_hit_config(ad_location, numWorkers, reward, duration )
             create_failed = False
             hit_id = self.amt_services.create_hit(hit_config)
             if hit_id is False:
@@ -1118,6 +1050,71 @@ class PsiturkNetworkShell(PsiturkShell):
             print "Hint: In OSX, you can open a terminal link using cmd + click"
             if self.sandbox and use_psiturk_ad_server:
                 print "Note: This sandboxed ad will expire from the server in 16 days."
+
+    def create_psiturk_ad(self):
+        # register with the ad server (psiturk.org/ad/register) using POST
+        if os.path.exists('templates/ad.html'):
+            ad_html = open('templates/ad.html').read()
+        else:
+            print '\n'.join(['*****************************',
+                '  Sorry, there was an error registering ad.',
+                '  The file ad.html is required to be in the templates folder',
+                '  of your project so that the ad can be served.'])
+            return
+
+        size_of_ad = sys.getsizeof(ad_html)
+        if size_of_ad >= 1048576:
+            print '\n'.join(['*****************************',
+                '  Sorry, there was an error registering the ad.',
+                '  Your local ad.html is %s byes, but the maximum',
+                '  template size uploadable to the ad server is',
+                '  1048576 bytes.' % size_of_ad])
+            return
+
+        # what all do we need to send to server?
+        # 1. server
+        # 2. port
+        # 3. support_ie?
+        # 4. ad.html template
+        # 5. contact_email in case an error happens
+
+        if self.tunnel.is_open:
+            ip_address = self.tunnel.url
+            port = str(self.tunnel.tunnel_port)  # Set by tunnel server.
+        else:
+            ip_address = str(self.web_services.get_my_ip())
+            port = str(self.config.get('Server Parameters', 'port'))
+        ad_content = {
+            'psiturk_external': True,
+            'server': ip_address,
+            'port': port,
+            'browser_exclude_rule': str(self.config.get('HIT Configuration', 'browser_exclude_rule')),
+            'is_sandbox': int(self.sandbox),
+            'ad_html': ad_html,
+            # 'amt_hit_id': hitid, Don't know this yet
+            'organization_name': str(self.config.get('HIT Configuration', 'organization_name')),
+            'experiment_name': str(self.config.get('HIT Configuration', 'title')),
+            'contact_email_on_error': str(self.config.get('HIT Configuration', 'contact_email_on_error')),
+            'ad_group': str(self.config.get('HIT Configuration', 'ad_group')),
+            'keywords': str(self.config.get('HIT Configuration', 'psiturk_keywords'))
+        }
+        ad_id = self.web_services.create_ad(ad_content)
+        return ad_id
+    
+    def generate_hit_config(self, ad_location, numWorkers, reward, duration):
+        hit_config = {
+            "ad_location": ad_location,
+            "approve_requirement": self.config.get('HIT Configuration', 'Approve_Requirement'),
+            "us_only": self.config.getboolean('HIT Configuration', 'US_only'),
+            "lifetime": datetime.timedelta(hours=self.config.getfloat('HIT Configuration', 'lifetime')),
+            "max_assignments": numWorkers,
+            "title": self.config.get('HIT Configuration', 'title'),
+            "description": self.config.get('HIT Configuration', 'description'),
+            "keywords": self.config.get('HIT Configuration', 'amt_keywords'),
+            "reward": reward,
+            "duration": datetime.timedelta(hours=duration)
+        }
+        return hit_config
 
     @docopt_cmd
     def do_db(self, arg):
