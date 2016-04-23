@@ -9,7 +9,7 @@
                 $.ajax({
                     dataType: "json",
                     type: "GET",
-                    url: "/worker_submitted?uniqueId={{ workerid }}:{{ assignmentid }}", // this needs to be the location of the 'submitted' listener for the server
+                    url: "/worker_submitted?uniqueId={{ workerid }}:{{ assignmentid }}",
                     success: function (data) {
                         $( "#mturk_form" ).submit();
                     }
