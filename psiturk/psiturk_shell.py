@@ -864,6 +864,7 @@ class PsiturkNetworkShell(PsiturkShell):
     def hit_create(self, numWorkers, reward, duration):
 
         server_loc = str(self.config.get('Server Parameters', 'host'))
+        inaccessible_but_do_it_anyways = False
         if server_loc in ['localhost', '127.0.0.1']:
             print '\n'.join(['*****************************',
             "  Sorry, your server is set for local debugging only.  You cannot",\
@@ -881,6 +882,8 @@ class PsiturkNetworkShell(PsiturkShell):
                           ))
             if user_input != 'y':
                 return
+            else:
+                inaccessible_but_do_it_anyways = True
         
         use_psiturk_ad_server = self.config.getboolean('Shell Parameters', 'use_psiturk_ad_server')
 
@@ -901,7 +904,7 @@ class PsiturkNetworkShell(PsiturkShell):
                              '  credentials via the Amazon AMT requester website.\n'])
             return
 
-        if self.server.is_server_running() != 'yes':
+        if self.server.is_server_running() != 'yes' and not inaccessible_but_do_it_anyways:
             print '\n'.join(['*****************************',
                              '  Your psiTurk server is currently not running but you are trying to create ',
                              '  an Ad/HIT.  This can cause problems for worker trying to access your ',
