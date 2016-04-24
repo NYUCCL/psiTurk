@@ -113,14 +113,14 @@ If you want to do this, you are responsible for obtaining
 your own cert and key. It is not necessary to run the 
 psiturk server with `ssl` in order to use your own ad server.
 You can have a proxy server such as `nginx` in front of 
-psiturk/gunicorn which handles ssl connections. See `this gist`_ for an example.
+psiturk/gunicorn which handles ssl connections. See `this gist`_ for an example. **However, if you configure the psiturk server to run with SSL by setting the `certfile` and `keyfile` here, you must use a proxy server in front of psiturk to serve the content in your /static folder. An SSL-enabled psiturk/gunicorn server will not serve static content -- it will only serve dynamic content.**
 
 See http://docs.gunicorn.org/en/stable/deploy.html for more information on setting up proxy servers with the psiturk (gunicorn) server.
 
 .. seealso::
 
     `use_psiturk_ad_server <shell_parameters.html#use-psiturk-ad-server-true-false>`__
-        How to use your on ad_location. Does not require that the **psiTurk** server be SSL-enabled. (Although you will still need your own SSL certificate and key)
+        How to use your own ad_location. Does not require that the **psiTurk** server be SSL-enabled. (Although you will still need your own SSL certificate and key)
 
 `keyfile` [ string ]
 ----------------------
