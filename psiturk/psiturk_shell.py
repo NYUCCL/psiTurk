@@ -1066,7 +1066,7 @@ class PsiturkNetworkShell(PsiturkShell):
         if size_of_ad >= 1048576:
             print '\n'.join(['*****************************',
                 '  Sorry, there was an error registering the ad.',
-                '  Your local ad.html is %s byes, but the maximum',
+                '  Your local ad.html is %s bytes, but the maximum',
                 '  template size uploadable to the ad server is',
                 '  1048576 bytes.' % size_of_ad])
             return
