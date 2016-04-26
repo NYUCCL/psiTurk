@@ -219,6 +219,11 @@ def advertisement():
                (myrule == "pc" and user_agent_obj.is_pc) or\
                (myrule == "bot" and user_agent_obj.is_bot):
                 browser_ok = False
+        elif (myrule == "Safari" or myrule == "safari"):
+            if "Chrome" in user_agent_string and "Safari" in user_agent_string:
+                pass
+            elif "Safari" in user_agent_string:
+                browser_ok = False
         elif myrule in user_agent_string:
             browser_ok = False
 
