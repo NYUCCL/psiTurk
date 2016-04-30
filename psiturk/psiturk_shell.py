@@ -15,7 +15,6 @@ import datetime
 import urllib
 import signal
 from fuzzywuzzy import process
-import atexit
 
 from cmd2 import Cmd
 from docopt import docopt, DocoptExit
@@ -1837,14 +1836,3 @@ def run(cabinmode=False, script=None):
         signal.signal(signal.SIGINT, handler)
         shell.cmdloop()
 
-    @atexit.register
-    def clean_up():
-        ''' Catch abrupt keyboard interrupts '''
-        try:
-            if (shell.server.is_server_running() == 'yes' or
-                    shell.server.is_server_running() == 'maybe'):
-                shell.server_off()
-            if not cabinmode:
-                shell.tunnel.close()
-        except:
-            pass
