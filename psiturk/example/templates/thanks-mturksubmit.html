@@ -5,13 +5,16 @@
         <script src="/static/lib/jquery-min.js" type="text/javascript"> </script>
         <script>
             function complete_amt_task() {
-                // reload trials
+                $(window).on('beforeunload', function(){
+                    return 'Your submission is in progress. If you leave now, your assignment data will be corrupted.';
+                });
                 $.ajax({
                     dataType: "json",
                     type: "GET",
                     url: "/worker_submitted?uniqueId={{ workerid }}:{{ assignmentid }}",
                     success: function (data) {
                         $( "#mturk_form" ).submit();
+                        $(window).off('beforeunload');
                     }
                 });
             };
