@@ -7,6 +7,7 @@ are (alphabetically):
 
 Patricia Chan - https://github.com/patriciachan  
 Anna Coenen - https://github.com/annacoenen  
+Dave Eargle - https://github.com/deargle
 Todd Gureckis - https://github.com/gureckis  
 Jessica Hamrick - https://github.com/jhamrick  
 Doug Markant - https://github.com/dmarkant  
