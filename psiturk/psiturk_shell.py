@@ -119,6 +119,8 @@ class PsiturkShell(Cmd, object):
         self.color_prompt()
         self.intro = self.get_intro_prompt()
 
+        self.already_prelooped = False
+
     def default(self, cmd):
         ''' Collect incorrect and mistyped commands '''
         choices = ["help", "mode", "psiturk_status", "server", "shortcuts",
@@ -182,11 +184,13 @@ class PsiturkShell(Cmd, object):
 
     def preloop(self):
         ''' Keep persistent command history. '''
-        open('.psiturk_history', 'a').close()  # create file if it doesn't exist
-        readline.read_history_file('.psiturk_history')
-        for i in range(readline.get_current_history_length()):
-            if readline.get_history_item(i) is not None:
-                self.history.append(readline.get_history_item(i))
+        if not self.already_prelooped:
+            self.already_prelooped = True
+            open('.psiturk_history', 'a').close()  # create file if it doesn't exist
+            readline.read_history_file('.psiturk_history')
+            for i in range(readline.get_current_history_length()):
+                if readline.get_history_item(i) is not None:
+                    self.history.append(readline.get_history_item(i))
         Cmd.preloop(self)
 
     def postloop(self):
@@ -1790,6 +1794,16 @@ class PsiturkNetworkShell(PsiturkShell):
         self.tunnel.change_tunnel_ad_url()
         print("New tunnel ready. Run 'tunnel open' to start.")
 
+    def cmdloop(self):
+        while True:
+            stop = Cmd._cmdloop(self) 
+            if not stop:
+                self.intro = ''
+                self.color_prompt()
+                print "^C"
+            else:
+                break
+
 def run(cabinmode=False, script=None):
     using_libedit = 'libedit' in readline.__doc__
     if using_libedit:
@@ -1830,9 +1844,5 @@ def run(cabinmode=False, script=None):
             for line in temp_file:
                 shell.onecmd_plus_hooks(line)
     else:
-        def handler(signum, frame):
-            """ just do nothing """
-
-        signal.signal(signal.SIGINT, handler)
         shell.cmdloop()
 
