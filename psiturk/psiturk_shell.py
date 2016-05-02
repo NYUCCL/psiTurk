@@ -191,12 +191,10 @@ class PsiturkShell(Cmd, object):
             for i in range(readline.get_current_history_length()):
                 if readline.get_history_item(i) is not None:
                     self.history.append(readline.get_history_item(i))
-        Cmd.preloop(self)
 
     def postloop(self):
         ''' Save history on exit. '''
         readline.write_history_file('.psiturk_history')
-        Cmd.postloop(self)
 
     def onecmd_plus_hooks(self, line):
         ''' Trigger hooks after command. '''
