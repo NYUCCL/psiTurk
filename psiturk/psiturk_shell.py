@@ -208,9 +208,8 @@ class PsiturkShell(Cmd, object):
         return Cmd.postcmd(self, stop, line)
 
     def emptyline(self):
-        ''' Create blank line. '''
+        ''' Refresh the prompt after an empty line is entered. '''
         self.color_prompt()
-
 
     def complete(self, text, state):
         ''' Add space after a completion, makes tab completion with
