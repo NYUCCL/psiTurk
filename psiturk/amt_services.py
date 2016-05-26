@@ -136,16 +136,27 @@ class RDSServices(object):
                 print "*** Unable to establish connection to AWS region %s "\
                     "using your access key/secret key", self.region
                 return False
-            except boto.exception.BotoServerError:
+            except boto.exception.BotoServerError as e:
                 print "***********************************************************"
                 print "WARNING"
-                print "Unable to establish connection to AWS."
+                print "Unable to establish connection to AWS RDS services (relational database services)."
+                print
                 print "While your keys may be valid, your AWS account needs a "
-                print "subscription to certain services.  If you haven't been asked"
+                print "subscription to certain services to perform AWS database commands. If you haven't been asked"
                 print "to provide a credit card and verified your account using your "
                 print "phone, it means your keys are not completely set up yet."
                 print "Please refer to "
                 print "\thttp://psiturk.readthedocs.org/en/latest/amt_setup.html"
+                print
+                print "Note:"
+                print "If you are using psiturk with an IAM user, and if you want to use AWS RDB services via psiturk, "
+                print "add the `AmazonRDSFullAccess` AWS policy or an equivalent custom policy to your IAM user." 
+                print "See AWS docs here: "
+                print "\thttp://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.IAM.AccessControl.IdentityBased.html#UsingWithRDS.IAM.AccessControl.ManagedPolicies"
+                print 
+                print "and relevant psiturk docs here:"
+                print "\thttp://psiturk.readthedocs.io/en/latest/configure_databases.html#obtaining-a-low-cost-or-free-mysql-database-on-amazon-s-web-services-cloud"
+
                 print "***********************************************************"
                 return False
             else:
