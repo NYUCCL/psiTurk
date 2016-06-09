@@ -36,7 +36,10 @@ num_counters = 1
 
 [Shell Parameters]
 launch_in_sandbox_mode = true
+
+# If you are not using the psiturk ad server, set `use_psiturk_ad_server` to `false` and point `ad_location` to your proxy server <host> and <port>. Format the ad_location like this:
+#
+#   https://<host>:<port>/ad 
+
 use_psiturk_ad_server = true
-ad_location = false # https://<host>:<port>/ad, 
-                    # point this to your proxy server <host> and <port> 
-                    # if you are not using the psiturk_ad_server
+ad_location = false
