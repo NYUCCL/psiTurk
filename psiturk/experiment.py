@@ -582,6 +582,10 @@ def debug_complete():
         raise ExperimentError('improper_inputs')
     else:
         unique_id = request.args['uniqueId']
+        if unique_id[:5] == "debug":
+            debug_mode = True
+        else:
+            debug_mode = False
         try:
             user = Participant.query.\
                 filter(Participant.uniqueid == unique_id).one()
@@ -592,8 +596,7 @@ def debug_complete():
         except:
             raise ExperimentError('error_setting_worker_complete')
         else:
-            use_psiturk_ad_server = CONFIG.getboolean('Shell Parameters', 'use_psiturk_ad_server')
-            if use_psiturk_ad_server:
+            if debug_mode:
                 return render_template('complete.html')
             else: # send them back to mturk.
                 return render_template('closepopup.html')
