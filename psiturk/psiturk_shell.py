@@ -639,8 +639,9 @@ class PsiturkNetworkShell(PsiturkShell):
     def add_bonus(worker_dict):
         " Adds DB-logged worker bonus to worker list data "
         try:
+            unique_id = '{}:{}'.format(worker_dict['workerId'], worker_dict['assignmentId'])
             worker = Participant.query.filter(
-                Participant.assignmentid == worker_dict['assignmentId']).one()
+                Participant.uniqueid == unique_id).one()
             worker_dict['bonus'] = worker.bonus
         except sa.exc.InvalidRequestError:
             # assignment is found on mturk but not in local database.
