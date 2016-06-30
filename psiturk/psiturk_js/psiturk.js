@@ -27,7 +27,7 @@ var PsiTurk = function(uniqueId, adServerLoc, mode) {
 	 * TASK DATA    *
 	 ***************/
 	var TaskData = Backbone.Model.extend({
-		urlRoot: "/sync", // Save will PUT to /data, with mimetype 'application/JSON'
+		urlRoot: "/sync", // Fetch will GET from this url, while Save will PUT to this url, with mimetype 'application/JSON'
 		id: uniqueId,
 		adServerLoc: adServerLoc,
 		mode: mode,
