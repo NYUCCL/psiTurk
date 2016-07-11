@@ -1,6 +1,10 @@
 Using psiTurk on OpenShift
 ===================
 
+.. note::
+
+    Consider trying the `OpenShift PsiTurk cartridge <https://github.com/deargle/openshift-psiturk-cartridge>`__. It involves less configuration, and you automatically 
+    get an nginx server in front of psiturk.
 
 Get an OpenShift account
 --------------------------
@@ -78,7 +82,6 @@ To put it all together, this is what your first OpenShift session could look lik
     $ psiturk # Start psiturk
 
 Before you can go live, remember to change the global config file ("/app-root/data/.psiturkconfig").
-
 
 
 

@@ -380,3 +380,14 @@ end of the month (you may not realize the charges until later).
 The point is that using a free MySQL database hosted by your university or another
 provider may be better, but this solution is available for researchers who can 
 afford to pay the hosting fee and would like everything in one place.
+
+Obtaining a free MySQL database via OpenShift
+-------------------------------------------------------
+
+If you are hosting your experiment on OpenShift, if you add a `MySQL` cartridge to your gear, **psiTurk** will automatically
+save data to that db instead of to whatever is specified in your `database_url` config. OpenShift gears, including using MySQL 
+cartridges, are free unless you change default configuration settings.
+
+.. seealso ::
+
+    `PsiTurk OpenShift documentation <openshift.html>`__.
