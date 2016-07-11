@@ -683,7 +683,18 @@ class PsiturkNetworkShell(PsiturkShell):
         for assignment_id in assignment_ids:
             success = self.amt_services.approve_worker(assignment_id)
             if success:
-                print 'approved', assignment_id
+                try:
+                    init_db()
+                    part = Participant.query.\
+                           filter(Participant.assignmentid == assignment_id).\
+                           filter(Participant.status == 4).\
+                           one()
+                    part.status = 5
+                    db_session.add(part)
+                    db_session.commit()
+                    print 'approved', assignment_id
+                except:
+                    print "*** approved but failed to update status in db for", assignment_id
             else:
                 print '*** failed to approve', assignment_id
 
