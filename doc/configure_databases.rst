@@ -159,9 +159,13 @@ interface with the Amazon cloud.
 
 .. note::
 
-	Of course, you must have valid AWS credentials to use this system.  See
-	`Getting setup with Amazon Mechanical Turk <amt_setup.html>`__ and
-	`Global configuration file <configuration.html#global-configuration-file>`__.
+    Of course, you must have valid AWS credentials to use this system.  See
+    `Getting setup with Amazon Mechanical Turk <amt_setup.html>`__ and
+    `Global configuration file <configuration.html#global-configuration-file>`__.
+    
+    If you are using psiturk with an IAM user, and if you want to use AWS RDB services via psiturk,
+    add the *AmazonRDSFullAccess* AWS policy or an equivalent custom policy to your IAM user.
+    See AWS docs `here <http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.IAM.AccessControl.IdentityBased.html#UsingWithRDS.IAM.AccessControl.ManagedPolicies>`__.
 
 
 AWS Regions
