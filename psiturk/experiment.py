@@ -268,16 +268,21 @@ def advertisement():
         # them to start the task again.
         raise ExperimentError('already_started_exp_mturk')
     elif status == COMPLETED:
-        # They've done the debriefing but perhaps haven't submitted the HIT
-        # yet.. Turn asignmentId into original assignment id before sending it
-        # back to AMT
-        return render_template(
-            'thanks.html',
-            is_sandbox=(mode == "sandbox"),
-            hitid=hit_id,
-            assignmentid=assignment_id,
-            workerid=worker_id
-        )
+        use_psiturk_ad_server = CONFIG.getboolean('Shell Parameters', 'use_psiturk_ad_server')
+        if not use_psiturk_ad_server:
+            # They've finished the experiment but haven't submitted the HIT
+            # yet.. Turn asignmentId into original assignment id before sending it
+            # back to AMT
+            return render_template(
+                'thanks-mturksubmit.html',
+                using_sandbox=(mode == "sandbox"),
+                hitid=hit_id,
+                assignmentid=assignment_id,
+                workerid=worker_id
+            )
+        else: 
+            # Show them a thanks message and tell them to go away.
+            return render_template( 'thanks.html' )
     elif already_in_db and not debug_mode:
         raise ExperimentError('already_did_exp_hit')
     elif status == ALLOCATED or not status or debug_mode:
@@ -420,7 +425,8 @@ def start_exp():
             if other_assignment:
                 raise ExperimentError('already_did_exp_hit')
 
-    if mode == 'sandbox' or mode == 'live':
+    use_psiturk_ad_server = CONFIG.getboolean('Shell Parameters', 'use_psiturk_ad_server')
+    if use_psiturk_ad_server and (mode == 'sandbox' or mode == 'live'):
         # If everything goes ok here relatively safe to assume we can lookup
         # the ad.
         ad_id = get_ad_via_hitid(hit_id)
@@ -566,6 +572,7 @@ def quitter():
             return jsonify(**resp)
 
 # Note: This route should only used when debugging
+# or when not using the psiturk adserver
 @app.route('/complete', methods=['GET'])
 @nocache
 def debug_complete():
@@ -574,6 +581,10 @@ def debug_complete():
         raise ExperimentError('improper_inputs')
     else:
         unique_id = request.args['uniqueId']
+        if unique_id[:5] == "debug":
+            debug_mode = True
+        else:
+            debug_mode = False
         try:
             user = Participant.query.\
                 filter(Participant.uniqueid == unique_id).one()
@@ -584,7 +595,10 @@ def debug_complete():
         except:
             raise ExperimentError('error_setting_worker_complete')
         else:
-            return render_template('complete.html')
+            if debug_mode:
+                return render_template('complete.html')
+            else: # send them back to mturk.
+                return render_template('closepopup.html')
 
 @app.route('/worker_complete', methods=['GET'])
 def worker_complete():

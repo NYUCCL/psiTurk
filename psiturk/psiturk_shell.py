@@ -310,7 +310,7 @@ class PsiturkShell(Cmd, object):
     config_commands = ('print', 'reload', 'help')
 
     def complete_config(self, text, line, begidx, endidx):
-        ''' Not sure what this does... '''
+        ''' Tab-complete config command '''
         return  [i for i in PsiturkShell.config_commands if i.startswith(text)]
 
     def help_config(self):
@@ -454,7 +454,7 @@ class PsiturkShell(Cmd, object):
     server_commands = ('on', 'off', 'restart', 'log', 'help')
 
     def complete_server(self, text, line, begidx, endidx):
-        ''' Not sure what this does... '''
+        ''' Tab-complete server command '''
         return  [i for i in PsiturkShell.server_commands if i.startswith(text)]
 
     def help_server(self):
@@ -876,6 +876,7 @@ class PsiturkNetworkShell(PsiturkShell):
     def hit_create(self, numWorkers, reward, duration):
 
         server_loc = str(self.config.get('Server Parameters', 'host'))
+        inaccessible_but_do_it_anyways = False
         if server_loc in ['localhost', '127.0.0.1']:
             print '\n'.join(['*****************************',
             "  Sorry, your server is set for local debugging only.  You cannot",\
@@ -893,14 +894,19 @@ class PsiturkNetworkShell(PsiturkShell):
                           ))
             if user_input != 'y':
                 return
+            else:
+                inaccessible_but_do_it_anyways = True
+        
+        use_psiturk_ad_server = self.config.getboolean('Shell Parameters', 'use_psiturk_ad_server')
 
-        if not self.web_services.check_credentials():
-            print '\n'.join(['*****************************',
-                            '  Sorry, your psiTurk Credentials are invalid.\n ',
-                            '  You cannot create ads and hits until you enter valid credentials in ',
-                            '  the \'psiTurk Access\' section of ~/.psiturkconfig.  You can obtain your',
-                            '  credentials or sign up at https://www.psiturk.org/login.\n'])
-            return
+        if use_psiturk_ad_server:
+            if not self.web_services.check_credentials():
+                print '\n'.join(['*****************************',
+                                '  Sorry, your psiTurk Credentials are invalid.\n ',
+                                '  You cannot create ads and hits until you enter valid credentials in ',
+                                '  the \'psiTurk Access\' section of ~/.psiturkconfig.  You can obtain your',
+                                '  credentials or sign up at https://www.psiturk.org/login.\n'])
+                return
 
         if not self.amt_services.verify_aws_login():
             print '\n'.join(['*****************************',
@@ -910,7 +916,7 @@ class PsiturkNetworkShell(PsiturkShell):
                              '  credentials via the Amazon AMT requester website.\n'])
             return
 
-        if self.server.is_server_running() != 'yes':
+        if self.server.is_server_running() != 'yes' and not inaccessible_but_do_it_anyways:
             print '\n'.join(['*****************************',
                              '  Your psiTurk server is currently not running but you are trying to create ',
                              '  an Ad/HIT.  This can cause problems for worker trying to access your ',
@@ -953,23 +959,128 @@ class PsiturkNetworkShell(PsiturkShell):
             print '*** duration must be greater than 0'
             return
 
+        if use_psiturk_ad_server:
+
+            ad_id = self.create_psiturk_ad() 
+            create_failed = False
+            fail_msg = None
+            if ad_id is not False:
+                ad_location = self.web_services.get_ad_url(ad_id, int(self.sandbox))
+                hit_config = self.generate_hit_config(ad_location, numWorkers, reward, duration )
+                hit_id = self.amt_services.create_hit(hit_config)
+                if hit_id is not False:
+                    if not self.web_services.set_ad_hitid(ad_id, hit_id, int(self.sandbox)):
+                        create_failed = True
+                        fail_msg = "  Unable to update Ad on http://ad.psiturk.org to point at HIT."
+                else:
+                    create_failed = True
+                    fail_msg = "  Unable to create HIT on Amazon Mechanical Turk."
+            else:
+                create_failed = True
+                fail_msg = "  Unable to create Ad on http://ad.psiturk.org."
+
+        else: # not using psiturk ad server
+
+            mode = 'sandbox' if self.sandbox else 'live'
+            ad_location = "{}?mode={}".format(self.config.get('Shell Parameters', 'ad_location'), mode )
+            hit_config = self.generate_hit_config(ad_location, numWorkers, reward, duration )
+            create_failed = False
+            hit_id = self.amt_services.create_hit(hit_config)
+            if hit_id is False:
+                create_failed = True
+                fail_msg = "  Unable to create HIT on Amazon Mechanical Turk."
+
+        if create_failed:
+            print '\n'.join(['*****************************',
+                             '  Sorry, there was an error creating hit and registering ad.'])
+            if fail_msg:
+                print fail_msg
+
+        else:
+            if self.sandbox:
+                self.sandbox_hits += 1
+            else:
+                self.live_hits += 1
+            # print results
+            # fee structure changed 07.22.15:
+            # 20% for HITS with < 10 assignments
+            # 40% for HITS with >= 10 assignments
+            commission = 0.2
+            if float(numWorkers) >= 10:
+                commission = 0.4 
+
+            total = float(numWorkers) * float(reward)
+            fee = total * commission
+            total = total + fee
+            mode = ''
+            if self.sandbox:
+                mode = 'sandbox'
+            else:
+                mode = 'live'
+            print '\n'.join(['*****************************',
+                             '  Creating %s HIT' % colorize(mode, 'bold'),
+                             '    HITid: %s' % str(hit_id),
+                             '    Max workers: %s' % numWorkers,
+                             '    Reward: $%s' %reward,
+                             '    Duration: %s hours' % duration,
+                             '    Fee: $%.2f' % fee,
+                             '    ________________________',
+                             '    Total: $%.2f' % total])
+
+            # Print the Ad Url
+            ad_url = ''
+            if use_psiturk_ad_server:
+                if self.sandbox:
+                    ad_url_base = 'https://sandbox.ad.psiturk.org/view'
+                else:
+                    ad_url_base = 'https://ad.psiturk.org/view'
+                ad_url = '{}/{}?assignmentId=debug{}&hitId=debug{}&workerId=debug{}'.format( 
+                    ad_url_base, str(ad_id), str(self.random_id_generator()), str(self.random_id_generator()), str(self.random_id_generator()))
+
+            else:
+                options = { 
+                    'base': self.config.get('Shell Parameters', 'ad_location'), 
+                    'mode': mode,
+                    'assignmentid': str(self.random_id_generator()),
+                    'hitid': str(self.random_id_generator()),
+                    'workerid': str(self.random_id_generator())
+                  }
+                ad_url = '{base}?mode={mode}&assignmentId=debug{assignmentid}&hitId=debug{hitid}&workerId=debug{workerid}'.format(**options)
+            print('  Ad URL: {}'.format(ad_url) )
+            print "Note: This url cannot be used to run your full psiTurk experiment.  It is only for testing your ad."
+
+            # Print the Mturk Url
+            mturk_url = ''
+            if self.sandbox:
+                mturk_url_base = 'https://workersandbox.mturk.com'
+            else:
+                mturk_url_base = 'https://www.mturk.com'
+            mturk_url = '{}/mturk/searchbar?selectedSearchType=hitgroups&searchWords={}'.format(
+                mturk_url_base, urllib.quote_plus(str(self.config.get('HIT Configuration', 'title'))) )
+
+            print('  MTurk URL: {}'.format(mturk_url) )
+            print "Hint: In OSX, you can open a terminal link using cmd + click"
+            if self.sandbox and use_psiturk_ad_server:
+                print "Note: This sandboxed ad will expire from the server in 16 days."
+
+    def create_psiturk_ad(self):
         # register with the ad server (psiturk.org/ad/register) using POST
         if os.path.exists('templates/ad.html'):
             ad_html = open('templates/ad.html').read()
         else:
             print '\n'.join(['*****************************',
-                             '  Sorry, there was an error registering ad.',
-                             '  Both ad.html is required to be in the templates folder',
-                             '  of your project so that these Ad can be served!'])
+                '  Sorry, there was an error registering ad.',
+                '  The file ad.html is required to be in the templates folder',
+                '  of your project so that the ad can be served.'])
             return
 
         size_of_ad = sys.getsizeof(ad_html)
         if size_of_ad >= 1048576:
             print '\n'.join(['*****************************',
-                             '  Sorry, there was an error registering ad.',
-                             '  Your local ad.html is %s byes, but the maximum',
-                             '  template size uploadable to the Ad server is',
-                             '  1048576 bytes!' % size_of_ad])
+                '  Sorry, there was an error registering the ad.',
+                '  Your local ad.html is %s bytes, but the maximum',
+                '  template size uploadable to the ad server is',
+                '  1048576 bytes.' % size_of_ad])
             return
 
         # what all do we need to send to server?
@@ -999,88 +1110,23 @@ class PsiturkNetworkShell(PsiturkShell):
             'ad_group': str(self.config.get('HIT Configuration', 'ad_group')),
             'keywords': str(self.config.get('HIT Configuration', 'psiturk_keywords'))
         }
-
-        create_failed = False
-        fail_msg = None
         ad_id = self.web_services.create_ad(ad_content)
-        if ad_id is not False:
-
-            hit_config = {
-                "ad_location": self.web_services.get_ad_url(ad_id, int(self.sandbox)),
-                "approve_requirement": self.config.get('HIT Configuration', 'Approve_Requirement'),
-                "us_only": self.config.getboolean('HIT Configuration', 'US_only'),
-                "lifetime": datetime.timedelta(hours=self.config.getfloat('HIT Configuration', 'lifetime')),
-                "max_assignments": numWorkers,
-                "title": self.config.get('HIT Configuration', 'title'),
-                "description": self.config.get('HIT Configuration', 'description'),
-                "keywords": self.config.get('HIT Configuration', 'amt_keywords'),
-                "reward": reward,
-                "duration": datetime.timedelta(hours=duration)
-            }
-            hit_id = self.amt_services.create_hit(hit_config)
-            if hit_id is not False:
-                if not self.web_services.set_ad_hitid(ad_id, hit_id, int(self.sandbox)):
-                    create_failed = True
-                    fail_msg = "  Unable to update Ad on http://ad.psiturk.org to point at HIT."
-            else:
-                create_failed = True
-                fail_msg = "  Unable to create HIT on Amazon Mechanical Turk."
-        else:
-            create_failed = True
-            fail_msg = "  Unable to create Ad on http://ad.psiturk.org."
-
-        if create_failed:
-            print '\n'.join(['*****************************',
-                             '  Sorry, there was an error creating hit and registering ad.'])
-            if fail_msg:
-                print fail_msg
-
-        else:
-            if self.sandbox:
-                self.sandbox_hits += 1
-            else:
-                self.live_hits += 1
-            # print results
-            # fee structure changed 07.22.15:
-            # 20% for HITS with < 10 assignments
-            # 40% for HITS with >= 10 assignments
-            commission = 0.2
-            if float(numWorkers) >= 10:
-                commission = 0.4 
-
-            total = float(numWorkers) * float(reward)
-            fee = total * commission
-            total = total + fee
-            location = ''
-            if self.sandbox:
-                location = 'sandbox'
-            else:
-                location = 'live'
-            print '\n'.join(['*****************************',
-                             '  Creating %s HIT' % colorize(location, 'bold'),
-                             '    HITid: %s' % str(hit_id),
-                             '    Max workers: %s' % numWorkers,
-                             '    Reward: $%s' %reward,
-                             '    Duration: %s hours' % duration,
-                             '    Fee: $%.2f' % fee,
-                             '    ________________________',
-                             '    Total: $%.2f' % total])
-            if self.sandbox:
-                print('  Ad URL: https://sandbox.ad.psiturk.org/view/%s?assignmentId=debug%s&hitId=debug%s&workerId=debug%s'
-                      % (str(ad_id), str(self.random_id_generator()), str(self.random_id_generator()), str(self.random_id_generator())))
-                print "Note: This url cannot be used to run your full psiTurk experiment.  It is only for testing your ad."
-                print('  Sandbox URL: https://workersandbox.mturk.com/mturk/searchbar?selectedSearchType=hitgroups&searchWords=%s'
-                      % (urllib.quote_plus(str(self.config.get('HIT Configuration', 'title')))))
-                print "Hint: In OSX, you can open a terminal link using cmd + click"
-                print "Note: This sandboxed ad will expire from the server in 16 days."
-            else:
-                print('  Ad URL: https://ad.psiturk.org/view/%s?assignmentId=debug%s&hitId=debug%s&workerId=debug%s'
-                      % (str(ad_id), str(self.random_id_generator()), str(self.random_id_generator()), str(self.random_id_generator())))
-                print "Note: This url cannot be used to run your full psiTurk experiment.  It is only for testing your ad."
-                print('  MTurk URL: https://www.mturk.com/mturk/searchbar?selectedSearchType=hitgroups&searchWords=%s'
-                        % (urllib.quote_plus(str(self.config.get('HIT Configuration', 'title')))))
-                print "Hint: In OSX, you can open a terminal link using cmd + click"
-
+        return ad_id
+    
+    def generate_hit_config(self, ad_location, numWorkers, reward, duration):
+        hit_config = {
+            "ad_location": ad_location,
+            "approve_requirement": self.config.get('HIT Configuration', 'Approve_Requirement'),
+            "us_only": self.config.getboolean('HIT Configuration', 'US_only'),
+            "lifetime": datetime.timedelta(hours=self.config.getfloat('HIT Configuration', 'lifetime')),
+            "max_assignments": numWorkers,
+            "title": self.config.get('HIT Configuration', 'title'),
+            "description": self.config.get('HIT Configuration', 'description'),
+            "keywords": self.config.get('HIT Configuration', 'amt_keywords'),
+            "reward": reward,
+            "duration": datetime.timedelta(hours=duration)
+        }
+        return hit_config
 
     @docopt_cmd
     def do_db(self, arg):
@@ -1127,6 +1173,7 @@ class PsiturkNetworkShell(PsiturkShell):
                    'aws_delete_instance', 'help')
 
     def complete_db(self, text, line, begidx, endidx):
+        ''' Tab-complete db command '''
         return  [i for i in PsiturkNetworkShell.db_commands if \
                  i.startswith(text)]
 
@@ -1634,7 +1681,7 @@ class PsiturkNetworkShell(PsiturkShell):
     hit_commands = ('create', 'extend', 'expire', 'dispose', 'list')
 
     def complete_hit(self, text, line, begidx, endidx):
-        ''' Complete HIT. '''
+        ''' Tab-complete hit command. '''
         return  [i for i in PsiturkNetworkShell.hit_commands if \
                  i.startswith(text)]
 
@@ -1673,7 +1720,7 @@ class PsiturkNetworkShell(PsiturkShell):
     worker_commands = ('approve', 'reject', 'unreject', 'bonus', 'list', 'help')
 
     def complete_worker(self, text, line, begidx, endidx):
-        ''' Complete worker. '''
+        ''' Tab-complete worker command. '''
         return  [i for i in PsiturkNetworkShell.worker_commands if \
                  i.startswith(text)]
 
