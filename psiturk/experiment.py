@@ -276,12 +276,6 @@ def advertisement():
                 workerid=worker_id
             )
         else: 
-            # `thanks.html` was taken out in v2 with the introduction of the psiturk ad server
-            # but put back in in v2.1.2 because "local thanks page needed when reloading the 
-            # local ad and a worker has already completed the task." As far as I, @deargle, can interpret,
-            # a user, be they an AMT worker or not, should not typically reach this page unless 
-            # they're fooling around with URLs.
-            # 
             # Show them a thanks message and tell them to go away.
             return render_template( 'thanks.html' )
     elif already_in_db and not debug_mode:
