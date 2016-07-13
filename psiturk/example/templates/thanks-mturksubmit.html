@@ -6,7 +6,7 @@
         <script>
             function complete_amt_task() {
                 $(window).on('beforeunload', function(){
-                    return 'Your submission is in progress. If you leave now, your assignment data will be corrupted.';
+                    return 'Your submission is in progress. Please do not close this window.';
                 });
                 $.ajax({
                     dataType: "json",
