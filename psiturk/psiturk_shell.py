@@ -266,7 +266,7 @@ class PsiturkShell(Cmd, object):
             base_url = "http://" + self.config.get('Server Parameters', 'host')\
             + "/ad"
         elif self.config.has_option('Server Parameters','revproxy'):
-            base_url = self.config.get('Server Parameters', 'revproxy')
+            base_url = self.config.get('Server Parameters', 'revproxy') + "/ad"
         else:
             base_url = "http://" + self.config.get('Server Parameters', 'host')\
             + ":" + self.config.get('Server Parameters', 'port') + "/ad"
@@ -898,7 +898,7 @@ class PsiturkNetworkShell(PsiturkShell):
                 return
             else:
                 inaccessible_but_do_it_anyways = True
-        
+
         use_psiturk_ad_server = self.config.getboolean('Shell Parameters', 'use_psiturk_ad_server')
 
         if use_psiturk_ad_server:
@@ -963,7 +963,7 @@ class PsiturkNetworkShell(PsiturkShell):
 
         if use_psiturk_ad_server:
 
-            ad_id = self.create_psiturk_ad() 
+            ad_id = self.create_psiturk_ad()
             create_failed = False
             fail_msg = None
             if ad_id is not False:
@@ -1036,12 +1036,12 @@ class PsiturkNetworkShell(PsiturkShell):
                     ad_url_base = 'https://sandbox.ad.psiturk.org/view'
                 else:
                     ad_url_base = 'https://ad.psiturk.org/view'
-                ad_url = '{}/{}?assignmentId=debug{}&hitId=debug{}&workerId=debug{}'.format( 
+                ad_url = '{}/{}?assignmentId=debug{}&hitId=debug{}&workerId=debug{}'.format(
                     ad_url_base, str(ad_id), str(self.random_id_generator()), str(self.random_id_generator()), str(self.random_id_generator()))
 
             else:
-                options = { 
-                    'base': self.config.get('Shell Parameters', 'ad_location'), 
+                options = {
+                    'base': self.config.get('Shell Parameters', 'ad_location'),
                     'mode': mode,
                     'assignmentid': str(self.random_id_generator()),
                     'hitid': str(self.random_id_generator()),
@@ -1114,7 +1114,7 @@ class PsiturkNetworkShell(PsiturkShell):
         }
         ad_id = self.web_services.create_ad(ad_content)
         return ad_id
-    
+
     def generate_hit_config(self, ad_location, numWorkers, reward, duration):
         hit_config = {
             "ad_location": ad_location,
@@ -1749,7 +1749,7 @@ class PsiturkNetworkShell(PsiturkShell):
             base_url = "http://" + self.config.get('Server Parameters',
                                                    'host') + "/ad"
         elif self.config.has_option('Server Parameters','revproxy'):
-            base_url = self.config.get('Server Parameters', 'revproxy')
+            base_url = self.config.get('Server Parameters', 'revproxy') + "/ad"
         else:
             base_url = "http://" + self.config.get('Server Parameters',
                                                    'host') + \
