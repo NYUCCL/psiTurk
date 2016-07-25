@@ -136,16 +136,12 @@ class RDSServices(object):
                 print "*** Unable to establish connection to AWS region %s "\
                     "using your access key/secret key", self.region
                 return False
-            except boto.exception.BotoServerError:
+            except boto.exception.BotoServerError as e:
                 print "***********************************************************"
                 print "WARNING"
-                print "Unable to establish connection to AWS."
-                print "While your keys may be valid, your AWS account needs a "
-                print "subscription to certain services.  If you haven't been asked"
-                print "to provide a credit card and verified your account using your "
-                print "phone, it means your keys are not completely set up yet."
-                print "Please refer to "
-                print "\thttp://psiturk.readthedocs.org/en/latest/amt_setup.html"
+                print "Unable to establish connection to AWS RDS (Amazon relational database services)."
+                print "See relevant psiturk docs here:"
+                print "\thttp://psiturk.readthedocs.io/en/latest/configure_databases.html#obtaining-a-low-cost-or-free-mysql-database-on-amazon-s-web-services-cloud"
                 print "***********************************************************"
                 return False
             else:
@@ -631,8 +627,8 @@ class MTurkServices(object):
         try:
             self.mtc.dispose_hit(hitid)
         except Exception, e:
-            print 'Failed to dispose of HIT %s. Make sure there are no "\
-                "assignments remaining to be reviewed' % hitid
+            print "Failed to dispose of HIT %s. Make sure there are no "\
+                "assignments remaining to be reviewed." % hitid
 
     def extend_hit(self, hitid, assignments_increment=None,
                    expiration_increment=None):
