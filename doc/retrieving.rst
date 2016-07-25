@@ -99,7 +99,8 @@ as well as the datastring sub-objects:
     "useragent": useragent,
     "data": <data>,
     "questiondata": <questiondata>,
-    "eventdata": <eventdata>}
+    "eventdata": <eventdata>,
+    "mode": <mode>}
 
 data
 ~~~~~

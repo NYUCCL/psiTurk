@@ -77,6 +77,11 @@ We recommend that you also download your access keys just in case. The "Download
 The values of these keys need to be placed in your global ``~/.psiturkconfig`` file. The file is by default located in your home directory
 (see `Configuration files <configuration.html>`__ for more info)
 
+.. note::
+
+    If you are using IAM authentication, **psiTurk** requires that the *AmazonMechanicalTurkFullAccess* policy be added to the credentials it uses to connect to MTurk.
+    See `here <http://docs.aws.amazon.com/AWSMechTurk/latest/AWSMechanicalTurkGettingStartedGuide/SetUp.html#create-iam-user-or-role>`__ for how to set up an IAM user.
+
 Creating an AMT Requester account
 ----------------------------------
 

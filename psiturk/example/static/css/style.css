@@ -29,7 +29,7 @@ h1 {
 
 
 /* these are all the same for now, but easy to modify individually */
-#container-ad, #container-error, #container-exp, #container-consent, #container-instructions, #container-questionnaire {
+#container-not-an-ad, #container-error, #container-exp, #container-consent, #container-instructions, #container-questionnaire {
     background: white;
     margin: 30px;
 }

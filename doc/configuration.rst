@@ -71,41 +71,47 @@ project:
 
 ::
 
-	[HIT Configuration]
-	title = Stroop task
-	description = Judge the color of a series of words.
-	amt_keywords = Perception, Psychology
-	lifetime = 24
-	us_only = true
-	approve_requirement = 95
-	contact_email_on_error = youremail@gmail.com
-	ad_group = My research project
-	psiturk_keywords = stroop
-	organization_name = New Great University
-	browser_exclude_rule = MSIE, mobile, tablet
+    [HIT Configuration]
+    title = Stroop task
+    description = Judge the color of a series of words.
+    amt_keywords = Perception, Psychology
+    lifetime = 24
+    us_only = true
+    approve_requirement = 95
+    contact_email_on_error = youremail@gmail.com
+    ad_group = Default psiTurk Stroop Example
+    psiturk_keywords = stroop
+    organization_name = New Great University
+    browser_exclude_rule = MSIE, mobile, tablet
 
-	[Database Parameters]
-	database_url = sqlite:///participants.db
-	table_name = turkdemo
+    [Database Parameters]
+    database_url = sqlite:///participants.db
+    table_name = turkdemo
 
-	[Server Parameters]
-	host = 0.0.0.0
-	port = 22362
-	cutoff_time = 30
-	logfile = server.log
-	loglevel = 2
-	debug = true
-	login_username = examplename
-	login_pw = examplepassword
-	threads = auto
+    [Server Parameters]
+    host = localhost
+    port = 22362
+    cutoff_time = 30
+    logfile = server.log
+    loglevel = 2
+    debug = true
+    login_username = examplename
+    login_pw = examplepassword
+    threads = auto
+    secret_key = 'this is my secret key which is hard to guess, i should change this'    
+    #certfile = <path_to.crt> 
+    #keyfile = <path_to.key>
 
-	[Task Parameters]
-	experiment_code_version = 1.0
-	num_conds = 1
-	num_counters = 1
+    [Task Parameters]
+    experiment_code_version = 1.0
+    num_conds = 1
+    num_counters = 1
 
-	[Shell Parameters]
-	launch_in_sandbox_mode = true
+    [Shell Parameters]
+    launch_in_sandbox_mode = true
+    use_psiturk_ad_server = true
+    ad_location = false
+
 
 This file is divided into a few sections which are
 described in detail.  Each field is described by
