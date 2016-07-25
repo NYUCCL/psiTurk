@@ -265,8 +265,8 @@ class PsiturkShell(Cmd, object):
         if 'OPENSHIFT_SECRET_TOKEN' in os.environ:
             base_url = "http://" + self.config.get('Server Parameters', 'host')\
             + "/ad"
-        elif 'ProxyUrl' in self.config:
-
+        elif self.config.has_option('Server Parameters','revproxy'):
+            base_url = self.config.get('Server Parameters', 'revproxy')
         else:
             base_url = "http://" + self.config.get('Server Parameters', 'host')\
             + ":" + self.config.get('Server Parameters', 'port') + "/ad"
