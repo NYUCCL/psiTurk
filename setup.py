@@ -1,6 +1,7 @@
 import sys
 from setuptools import setup
 from psiturk.version import version_number
+from os import environ
 
 try:
     with open("README.md") as readmefile:
@@ -41,7 +42,8 @@ if __name__ == "__main__":
         description = "An open platform for science on Amazon Mechanical Turk",
         long_description = long_description,
         url = "http://github.com/NYUCCL/psiturk",
-        test_suite='test_psiturk'
+        test_suite='test_psiturk',
+        data_files=[(environ['HOME'],['psiturk/default_configs/.psiturkconfig'])]
     )
 
     # read in requirements.txt for dependencies

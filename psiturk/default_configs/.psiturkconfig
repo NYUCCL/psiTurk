@@ -1,0 +1,8 @@
+[AWS Access]
+aws_access_key_id = YourAccessKeyId
+aws_secret_access_key = YourSecretAccessKey
+aws_region = us-east-1
+
+[psiTurk Access]
+psiturk_access_key_id = YourAccessKeyId
+psiturk_secret_access_id = YourSecretAccessKey
