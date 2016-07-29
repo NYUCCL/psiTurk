@@ -40,7 +40,7 @@ if __name__ == "__main__":
         author_email = "authors@psiturk.org",
         description = "An open platform for science on Amazon Mechanical Turk",
         long_description = long_description,
-        url = "http://github.com/NYUCCL/psiturk",
+        url = "https://github.com/NYUCCL/psiturk",
         test_suite='test_psiturk'
     )
 
