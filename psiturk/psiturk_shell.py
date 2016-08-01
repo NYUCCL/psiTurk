@@ -142,11 +142,11 @@ class PsiturkShell(Cmd, object):
         database_url = self.config.get('Database Parameters', 'database_url')
         host = self.config.get('Server Parameters', 'host', 'localhost')
         if database_url[:6] != 'sqlite':
-            print("*** Error: config.txt option 'database_url' set to use " 
+            print("*** Error: config.txt option 'database_url' set to use "
                 "mysql://.  Please change this sqllite:// while in cabin mode.")
             quit_on_start = True
         if host != 'localhost':
-            print("*** Error: config option 'host' is not set to localhost. " 
+            print("*** Error: config option 'host' is not set to localhost. "
                 "Please change this to localhost while in cabin mode.")
             quit_on_start = True
         if quit_on_start:
@@ -265,6 +265,8 @@ class PsiturkShell(Cmd, object):
         if 'OPENSHIFT_SECRET_TOKEN' in os.environ:
             base_url = "http://" + self.config.get('Server Parameters', 'host')\
             + "/ad"
+        elif self.config.has_option('Server Parameters','revproxy'):
+            base_url = self.config.get('Server Parameters', 'revproxy') + "/ad"
         else:
             base_url = "http://" + self.config.get('Server Parameters', 'host')\
             + ":" + self.config.get('Server Parameters', 'port') + "/ad"
@@ -422,7 +424,7 @@ class PsiturkShell(Cmd, object):
         ''' Execute on quit '''
         if (self.server.is_server_running() == 'yes' or
                 self.server.is_server_running() == 'maybe'):
-            user_input = raw_input("Quitting shell will shut down experiment " 
+            user_input = raw_input("Quitting shell will shut down experiment "
                                     "server.  Really quit? y or n: ")
             if user_input == 'y':
                 self.server_off()
@@ -543,7 +545,7 @@ class PsiturkNetworkShell(PsiturkShell):
         '''Override do_quit for network clean up.'''
         if (self.server.is_server_running() == 'yes' or
                 self.server.is_server_running() == 'maybe'):
-            user_input = raw_input("Quitting shell will shut down experiment " 
+            user_input = raw_input("Quitting shell will shut down experiment "
                                     "server. Really quit? y or n: ")
             if user_input == 'y':
                 self.server_off()
@@ -896,7 +898,7 @@ class PsiturkNetworkShell(PsiturkShell):
                 return
             else:
                 inaccessible_but_do_it_anyways = True
-        
+
         use_psiturk_ad_server = self.config.getboolean('Shell Parameters', 'use_psiturk_ad_server')
 
         if use_psiturk_ad_server:
@@ -961,7 +963,7 @@ class PsiturkNetworkShell(PsiturkShell):
 
         if use_psiturk_ad_server:
 
-            ad_id = self.create_psiturk_ad() 
+            ad_id = self.create_psiturk_ad()
             create_failed = False
             fail_msg = None
             if ad_id is not False:
@@ -1007,7 +1009,7 @@ class PsiturkNetworkShell(PsiturkShell):
             # 40% for HITS with >= 10 assignments
             commission = 0.2
             if float(numWorkers) >= 10:
-                commission = 0.4 
+                commission = 0.4
 
             total = float(numWorkers) * float(reward)
             fee = total * commission
@@ -1034,12 +1036,12 @@ class PsiturkNetworkShell(PsiturkShell):
                     ad_url_base = 'https://sandbox.ad.psiturk.org/view'
                 else:
                     ad_url_base = 'https://ad.psiturk.org/view'
-                ad_url = '{}/{}?assignmentId=debug{}&hitId=debug{}&workerId=debug{}'.format( 
+                ad_url = '{}/{}?assignmentId=debug{}&hitId=debug{}&workerId=debug{}'.format(
                     ad_url_base, str(ad_id), str(self.random_id_generator()), str(self.random_id_generator()), str(self.random_id_generator()))
 
             else:
-                options = { 
-                    'base': self.config.get('Shell Parameters', 'ad_location'), 
+                options = {
+                    'base': self.config.get('Shell Parameters', 'ad_location'),
                     'mode': mode,
                     'assignmentid': str(self.random_id_generator()),
                     'hitid': str(self.random_id_generator()),
@@ -1112,7 +1114,7 @@ class PsiturkNetworkShell(PsiturkShell):
         }
         ad_id = self.web_services.create_ad(ad_content)
         return ad_id
-    
+
     def generate_hit_config(self, ad_location, numWorkers, reward, duration):
         hit_config = {
             "ad_location": ad_location,
@@ -1282,7 +1284,7 @@ class PsiturkNetworkShell(PsiturkShell):
         else:
             res = self.db_services.validate_instance_id(instance_id)
             if res is not True:
-                print("*** Error, instance name either not valid.  Try again " 
+                print("*** Error, instance name either not valid.  Try again "
                      "checking for typos.")
                 return
             if instance_id not in instance_list:
@@ -1746,6 +1748,8 @@ class PsiturkNetworkShell(PsiturkShell):
         if 'OPENSHIFT_SECRET_TOKEN' in os.environ:
             base_url = "http://" + self.config.get('Server Parameters',
                                                    'host') + "/ad"
+        elif self.config.has_option('Server Parameters','revproxy'):
+            base_url = self.config.get('Server Parameters', 'revproxy') + "/ad"
         else:
             base_url = "http://" + self.config.get('Server Parameters',
                                                    'host') + \
@@ -1841,7 +1845,7 @@ class PsiturkNetworkShell(PsiturkShell):
             print "For tunnel status, navigate to http://127.0.0.1:4040"
             print "Hint: In OSX, you can open a terminal link using cmd + click"
         else:
-            print("Sorry, you need to open a tunnel to check the status. Try" 
+            print("Sorry, you need to open a tunnel to check the status. Try"
                   "'tunnel open' first.")
 
     def tunnel_change(self):
@@ -1852,7 +1856,7 @@ class PsiturkNetworkShell(PsiturkShell):
 
     def cmdloop(self):
         while True:
-            stop = Cmd._cmdloop(self) 
+            stop = Cmd._cmdloop(self)
             if not stop:
                 self.intro = ''
                 self.color_prompt()
@@ -1901,4 +1905,3 @@ def run(cabinmode=False, script=None):
                 shell.onecmd_plus_hooks(line)
     else:
         shell.cmdloop()
-
