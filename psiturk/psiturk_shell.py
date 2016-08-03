@@ -519,12 +519,13 @@ class PsiturkNetworkShell(PsiturkShell):
     ''' Extends PsiturkShell class to include online psiTurk.org features '''
 
     def __init__(self, config, amt_services, aws_rds_services, web_services,
-                 server, sandbox):
+                 server, sandbox, quiet=False):
         self.config = config
         self.amt_services = amt_services
         self.web_services = web_services
         self.db_services = aws_rds_services
         self.sandbox = sandbox
+        self.quiet = quiet
         self.tunnel = TunnelServices()
 
         self.sandbox_hits = 0
@@ -877,25 +878,26 @@ class PsiturkNetworkShell(PsiturkShell):
 
         server_loc = str(self.config.get('Server Parameters', 'host'))
         inaccessible_but_do_it_anyways = False
-        if server_loc in ['localhost', '127.0.0.1']:
-            print '\n'.join(['*****************************',
-            "  Sorry, your server is set for local debugging only.  You cannot",\
-            "  make public HITs or Ads.  Please edit the config.txt file inside",\
-            "  your project folder and set the 'host' variable in the 'Server",\
-            "  Parameters' section to something other than 'localhost' or",\
-            "  '127.0.0.1'.  This will make your psiturk server process",\
-            "  reachable by the external world.  The most useful option is",\
-            "  '0.0.0.0'", ""])
+        if not self.quiet:
+            if server_loc in ['localhost', '127.0.0.1']:
+                print '\n'.join(['*****************************',
+                "  Sorry, your server is set for local debugging only.  You cannot",\
+                "  make public HITs or Ads.  Please edit the config.txt file inside",\
+                "  your project folder and set the 'host' variable in the 'Server",\
+                "  Parameters' section to something other than 'localhost' or",\
+                "  '127.0.0.1'.  This will make your psiturk server process",\
+                "  reachable by the external world.  The most useful option is",\
+                "  '0.0.0.0'", ""])
 
-            user_input = raw_input(
-                '\n'.join(['  If you are using an external server process press'\
-                           ' `y` to continue.', '  Otherwise press `n` to'\
-                           ' cancel:  ']
-                          ))
-            if user_input != 'y':
-                return
-            else:
-                inaccessible_but_do_it_anyways = True
+                user_input = raw_input(
+                    '\n'.join(['  If you are using an external server process press'\
+                               ' `y` to continue.', '  Otherwise press `n` to'\
+                               ' cancel:  ']
+                              ))
+                if user_input != 'y':
+                    return
+                else:
+                    inaccessible_but_do_it_anyways = True
         
         use_psiturk_ad_server = self.config.getboolean('Shell Parameters', 'use_psiturk_ad_server')
 
@@ -916,19 +918,20 @@ class PsiturkNetworkShell(PsiturkShell):
                              '  credentials via the Amazon AMT requester website.\n'])
             return
 
-        if self.server.is_server_running() != 'yes' and not inaccessible_but_do_it_anyways:
-            print '\n'.join(['*****************************',
-                             '  Your psiTurk server is currently not running but you are trying to create ',
-                             '  an Ad/HIT.  This can cause problems for worker trying to access your ',
-                             '  hit.  Please start the server by first typing \'server on\' then try this ',
-                             '  command again.',
-                             ''])
-            user_input = raw_input('\n'.join([
-                '  If you are using an external server process, press `y` to continue.',
-                '  Otherwise, press `n` to cancel:'
-            ]))
-            if user_input != 'y':
-                return
+        if not self.quiet:
+            if self.server.is_server_running() != 'yes' and not inaccessible_but_do_it_anyways:
+                print '\n'.join(['*****************************',
+                                 '  Your psiTurk server is currently not running but you are trying to create ',
+                                 '  an Ad/HIT.  This can cause problems for worker trying to access your ',
+                                 '  hit.  Please start the server by first typing \'server on\' then try this ',
+                                 '  command again.',
+                                 ''])
+                user_input = raw_input('\n'.join([
+                    '  If you are using an external server process, press `y` to continue.',
+                    '  Otherwise, press `n` to cancel:'
+                ]))
+                if user_input != 'y':
+                    return
 
         interactive = False
         if numWorkers is None:
@@ -1860,7 +1863,7 @@ class PsiturkNetworkShell(PsiturkShell):
             else:
                 break
 
-def run(cabinmode=False, script=None):
+def run(cabinmode=False, script=None, execute=None, quiet=False):
     using_libedit = 'libedit' in readline.__doc__
     if using_libedit:
         print colorize('\n'.join([
@@ -1887,18 +1890,21 @@ def run(cabinmode=False, script=None):
         aws_rds_services = RDSServices(
             config.get('AWS Access', 'aws_access_key_id'), \
             config.get('AWS Access', 'aws_secret_access_key'),
-            config.get('AWS Access', 'aws_region'))
+            config.get('AWS Access', 'aws_region'),
+            quiet=quiet)
         web_services = PsiturkOrgServices(
             config.get('psiTurk Access', 'psiturk_access_key_id'),
             config.get('psiTurk Access', 'psiturk_secret_access_id'))
         shell = PsiturkNetworkShell(
             config, amt_services, aws_rds_services, web_services, server, \
-            config.getboolean('Shell Parameters', 'launch_in_sandbox_mode'))
+            config.getboolean('Shell Parameters', 'launch_in_sandbox_mode'), quiet=quiet)
 
     if script:
         with open(script, 'r') as temp_file:
             for line in temp_file:
                 shell.onecmd_plus_hooks(line)
+    elif execute:
+        shell.onecmd_plus_hooks(execute)
     else:
         shell.cmdloop()
 

@@ -83,10 +83,11 @@ class RDSServices(object):
     ''' Relational database services via AWS '''
 
     def __init__(self, aws_access_key_id, aws_secret_access_key,
-                 region='us-east-1'):
+                 region='us-east-1', quiet=False):
         self.update_credentials(aws_access_key_id, aws_secret_access_key)
         self.set_region(region)
-        self.valid_login = self.verify_aws_login()
+        if not quiet:
+            self.valid_login = self.verify_aws_login()
 
         # if not self.valid_login:
         #     print 'Sorry, AWS Credentials invalid.\nYou will only be able to
