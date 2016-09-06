@@ -19,6 +19,7 @@ like this:
 	psiturk_keywords = stroop
 	organization_name = New Great University
 	browser_exclude_rule = MSIE, mobile, tablet
+    allow_repeats = false
 
 
 `title` [string]
@@ -162,3 +163,13 @@ standard computers (sort of the opposite to the `mobile` and `tablet` exclusions
 Finally `bot` tries to exclude web spiders and non-browser agents like
 the Unix curl command.
 
+`allow_repeats` [boolean]
+-------------------------
+`allow_repeats` specifies whether participants may complete the experiment more
+than once. If it is set to `false` (the default), then participants will be
+blocked from completing the experiment more than once. If it is set to `true`,
+then participants will be able to complete the experiment any number of times.
+
+Note that this option does not affect the behavior when a participant starts
+the experiment but the quits or refreshes the page. In those cases, they will
+still be locked out, regardless of the setting of `allow_repeats`.
