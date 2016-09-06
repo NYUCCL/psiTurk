@@ -4,3 +4,4 @@ recursive-include psiturk/default_configs *
 recursive-include psiturk/psiturk_js *
 recursive-include psiturk/tunnel *
 include requirements.txt
+include LICENSE
