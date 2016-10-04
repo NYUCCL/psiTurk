@@ -193,6 +193,7 @@ def check_worker_status():
         return jsonify(**resp)
 
 @app.route('/ad', methods=['GET'])
+@app.route('/pub', methods=['GET'])
 @nocache
 def advertisement():
     """
