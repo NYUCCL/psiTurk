@@ -24,7 +24,7 @@ to do everything for everybody. This means that we might decide against
 incorporating a new feature. However, there might be a way to implement
 that feature *on top of* **psiTurk**.
 
-**Please create pull requests for the dev branch rather than master**
+Please create pull requests for the **master** branch
 so they can go through regular testing and evaluation prior to being
 distributed via pypi.
 
@@ -83,7 +83,7 @@ your name and email address match your git configuration.
 
 ## Contributing to the docs
 
-Our docs are currently hosted at [readthedocs](psiturk.readthedocs.org). 
+Our docs are currently hosted at [readthedocs](http://psiturk.readthedocs.org). 
 Readthedocs uses [Sphinx](http://sphinx-doc.org/) as the backend for their
 documentation so in order to update the docs you will first have to install
 Sphinx simply by typing

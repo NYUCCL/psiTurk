@@ -16,7 +16,6 @@ your university or company.
 In addition, there are typically four sub-directories:
 
 .. toctree::
-
    :maxdepth: 2
 
    static_images_folder

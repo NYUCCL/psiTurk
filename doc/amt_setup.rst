@@ -74,13 +74,20 @@ We recommend that you also download your access keys just in case. The "Download
 .. image:: images/docs_AWS_credentials_download_button.png
 	:align: center
 
-The values of these keys need to be placed in you ``~/.psiturkconfig`` file. The file is located in your home directory
+The values of these keys need to be placed in your global ``~/.psiturkconfig`` file. The file is by default located in your home directory
+(see `Configuration files <configuration.html>`__ for more info)
+
+.. note::
+
+    If you are using IAM authentication, **psiTurk** requires that the *AmazonMechanicalTurkFullAccess* policy be added to the credentials it uses to connect to MTurk.
+    See `here <http://docs.aws.amazon.com/AWSMechTurk/latest/AWSMechanicalTurkGettingStartedGuide/SetUp.html#create-iam-user-or-role>`__ for how to set up an IAM user.
 
 Creating an AMT Requester account
 ----------------------------------
 
 To use your AWS keys to interface with Amazon Mechanical Turk, you need to create a requester account.
-Please see `Amazon's instructions <http://docs.aws.amazon.com/AWSMechTurk/latest/AWSMechanicalTurkGettingStartedGuide/SetUp.html>`__ for this.  In particular, it appears important to actually login to the requester site at least once (`http://requester.mturk.com <http://requester.mturk.com>`__) so that you can agree to the terms of service.
+Please see `Amazon's instructions <http://docs.aws.amazon.com/AWSMechTurk/latest/AWSMechanicalTurkGettingStartedGuide/SetUp.html>`__ for this.  In particular, it is necessary to at least once login to the requester site (`http://requester.mturk.com <http://requester.mturk.com>`__) and also to at least once login to the sandbox requester site (`https://requestersandbox.mturk.com <https://requestersandbox.mturk.com>`__), so that you can agree to the terms of service.
+
 
 Linking funds
 ----------------------------------

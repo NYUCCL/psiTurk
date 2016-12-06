@@ -1,7 +1,8 @@
 ''' This module supports commandline functionality '''
 
 import argparse
-import sys, os
+import sys
+import os
 from psiturk.version import version_number
 from psiturk.psiturk_org_services import ExperimentExchangeServices
 
@@ -89,8 +90,12 @@ def launch_shell():
         '-c', '--cabinmode', help='Launch psiturk in cabin (offline) mode',
         action="store_true"
     )
-    parser.add_argument(
+    script_group = parser.add_mutually_exclusive_group()
+    script_group.add_argument(
         '-s', '--script', help='Run commands from a script file'
+    )
+    script_group.add_argument(
+        '-e', '--execute', help='Execute one command specified on the command line'
     )
     args = parser.parse_args()
     # If requested version just print and quite
@@ -99,6 +104,8 @@ def launch_shell():
     else:
         import psiturk.psiturk_shell as ps
         if args.script:
-            ps.run(cabinmode=args.cabinmode, script=args.script)
+            ps.run(cabinmode=args.cabinmode, script=args.script, quiet=True)
+        elif args.execute:
+            ps.run(cabinmode=args.cabinmode, execute=args.execute, quiet=True)
         else:
             ps.run(cabinmode=args.cabinmode)

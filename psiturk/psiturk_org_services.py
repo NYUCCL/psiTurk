@@ -9,7 +9,6 @@ from psiturk.version import version_number
 import git
 import subprocess
 import signal
-import uuid
 import struct
 from sys import platform as _platform
 from psiturk.psiturk_config import PsiturkConfig
@@ -32,7 +31,7 @@ class PsiturkOrgServices(object):
         self.update_credentials(key, secret)
         if not self.check_credentials():
             print 'WARNING *****************************'
-            print 'Sorry, psiTurk Credentials invalid.\nYou will only be able'\
+            print 'Sorry, psiTurk Credentials invalid.\nYou will only be able '\
                 + 'to test experiments locally until you enter\nvalid '\
                 + 'credentials in the psiTurk Access section of ' \
                 + '~/.psiturkconfig.\n  Get your credentials at '\

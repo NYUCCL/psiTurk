@@ -77,15 +77,45 @@ To use an existing MySQL database::
 
 	database_url = mysql://USERNAME:PASSWORD@HOSTNAME:PORT/DATABASE
 
-where USERNAME and PASSWORD are your access credentials for
-the database, HOSTNAME and is the DNS entry or IP address for the
-database, PORT is the port number (standard is 3306) and DATABASE
-is the name of the database on the server.  
+where USERNAME and PASSWORD are your access credentials for the database,
+HOSTNAME is the DNS entry or IP address for the database, PORT is the port
+number (standard is 3306) and DATABASE is the name of the database on the
+server.
 
-It is wise to test that you can connect to this url with a MySQL client prior to 
+Use 127.0.0.1 as the HOSTNAME for a database running locally to the psiTurk
+server rather than 'localhost'. Mysql treats the HOSTNAME 'localhost' `as a
+special case in Unix-based systems <https://dev.mysql.com/doc/refman/5.0/en/connecting.html#idm140235558252992>`__
+and will cause the psiTurk server to fail to boot.
+
+It is wise to test that you can connect to this url with a MySQL client prior to
 launching.  `Sequel Pro <http://www.sequelpro.com/>`__ is a nice GUI database
 client for MySQL for Mac OS X.
 
+Here's an example of setting up a minimal MySQL database for use with
+**psiTurk**:
+
+::
+
+   $ mysql -uroot -p
+   mysql> CREATE USER 'your_username'@'localhost' IDENTIFIED BY 'your_password';
+   Query OK, 0 rows affected (0.03 sec)
+
+   mysql> CREATE DATABASE your_database;
+   Query OK, 1 row affected (0.01 sec)
+
+   mysql> GRANT ALL PRIVILEGES ON your_database.* TO 'your_username'@'localhost';
+   Query OK, 0 rows affected (0.00 sec)
+
+where `your_username`, `your_password` and `your_database` match the `USERNAME`,
+`PASSWORD` and `DATABASE` specified in config.txt's `database_url` variable.
+
+The table specified in config.txt, `turkdemo` by default
+
+::
+
+   table_name = turkdemo
+
+will be created automatically when running the psiturk shell.
 MySQL is (fairly) easy to install and free.  However, a variety of web hosting
 services offer managed MySQL databases.  Some are even 
 `free <https://www.google.com/search?q=free+mysql+hosting>`__.  Your university
@@ -129,9 +159,13 @@ interface with the Amazon cloud.
 
 .. note::
 
-	Of course, you must have valid AWS credentials to use this system.  See
-	`Getting setup with Amazon Mechanical Turk <amt_setup.html>`__ and
-	`Global configuration file <configuration.html#global-configuration-file>`__.
+    Of course, you must have valid AWS credentials to use this system.  See
+    `Getting setup with Amazon Mechanical Turk <amt_setup.html>`__ and
+    `Global configuration file <configuration.html#global-configuration-file>`__.
+    
+    If you are using psiturk with an IAM user, and if you want to use AWS RDB services via psiturk,
+    add the *AmazonRDSFullAccess* AWS policy or an equivalent custom policy to your IAM user.
+    See AWS docs `here <http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.IAM.AccessControl.IdentityBased.html#UsingWithRDS.IAM.AccessControl.ManagedPolicies>`__.
 
 
 AWS Regions
@@ -346,3 +380,14 @@ end of the month (you may not realize the charges until later).
 The point is that using a free MySQL database hosted by your university or another
 provider may be better, but this solution is available for researchers who can 
 afford to pay the hosting fee and would like everything in one place.
+
+Obtaining a free MySQL database via OpenShift
+-------------------------------------------------------
+
+If you are hosting your experiment on OpenShift, if you add a `MySQL` cartridge to your gear, **psiTurk** will automatically
+save data to that db instead of to whatever is specified in your `database_url` config. OpenShift gears, including using MySQL 
+cartridges, are free unless you change default configuration settings.
+
+.. seealso ::
+
+    `PsiTurk OpenShift documentation <openshift.html>`__.

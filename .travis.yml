@@ -1,12 +1,31 @@
 language: python
 python:
-  - "2.7"
+- '2.7'
 install:
-  - pip install -r requirements.txt 
-  - pip install coverage
-  - pip install coveralls
+- pip install -r requirements.txt
+- pip install coverage
+- pip install coveralls
 script:
-  - python setup.py install
-  - psiturk-setup-example
-  - coverage run --source=psiturk setup.py test
+- python setup.py install
+- psiturk-setup-example
+- coverage run --source=psiturk setup.py test
 after_success: coveralls
+deploy:
+    # test pypi
+  - provider: pypi
+    server: https://testpypi.python.org/pypi
+    user: nyuccl
+    password:
+      secure: h8nh6ooykI7eniajVkE/MYxZgyZoxcKRODhFWUwjlSHRmUV2tW/n2i/4MYJvMQXqiBgO64nOPmNhNH0mhYY+GbwyinAThRn3xhPIUfO8tV+edpzlzSwnGT+xSRINoUaGZfrs5UqCPVS7Ff5EB4SYRfrYBoV2VA5sx1XxoKKPkU4=
+    on:
+      tags: false
+      branch: master
+         
+    # production pypi
+  - provider: pypi
+    user: nyuccl
+    password:
+      secure: h8nh6ooykI7eniajVkE/MYxZgyZoxcKRODhFWUwjlSHRmUV2tW/n2i/4MYJvMQXqiBgO64nOPmNhNH0mhYY+GbwyinAThRn3xhPIUfO8tV+edpzlzSwnGT+xSRINoUaGZfrs5UqCPVS7Ff5EB4SYRfrYBoV2VA5sx1XxoKKPkU4=
+    on:
+      tags: true
+      branch: master

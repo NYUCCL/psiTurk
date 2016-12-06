@@ -2,12 +2,9 @@
 """ This module tests the psiTurk suite.  """
 
 import os
-import sh
-import shutil
 import unittest
 import tempfile
 import psiturk
-import urllib
 import json
 from faker import Faker
 
@@ -84,12 +81,12 @@ class PsiTurkStandardTests(PsiturkUnitTest):
     def test_exp_debug_no_url_vars(self):
         '''Test that exp page throws Error #1003 with no url vars.'''
         rv = self.app.get('/exp')
-        assert 'Error: #1003' in rv.data
+        assert '<b>Error</b>: 1003' in rv.data
 
     def test_ad_no_url_vars(self):
-        '''Test that ad page throws Error #1003 with no url vars.'''
+        '''Test that ad page throws Error #1001 with no url vars.'''
         rv = self.app.get('/ad')
-        assert 'Error: #1001' in rv.data
+        assert '<b>Error</b>: 1001' in rv.data
 
     def test_ad_with_all_urls(self):
         '''Test that ad page throws Error #1003 with no url vars.'''
@@ -109,7 +106,7 @@ class PsiTurkStandardTests(PsiturkUnitTest):
             'hitId=debug%s' % self.hit_id,
             'mode=sandbox'])
         rv = self.app.get('/exp?%s' % args)
-        assert 'Error: #1018' in rv.data
+        assert '<b>Error</b>: 1018' in rv.data
 
     def test_sync_put(self):
         request = "&".join([
@@ -188,7 +185,7 @@ class BadUserAgent(PsiturkUnitTest):
             '/ad' + '?assignmentId=debug' + self.assignment_id + '&workerId=debug' +
             self.worker_id + '&hitId=debug' + self.hit_id + '&mode=sandbox'
         )
-        assert 'Error: #1014' in rv.data
+        assert '<b>Error</b>: 1014' in rv.data
 
 
 class PsiTurkTestPsiturkJS(PsiturkUnitTest):
@@ -221,6 +218,19 @@ class PsiTurkTestPsiturkJS(PsiturkUnitTest):
         super(PsiTurkTestPsiturkJS, self).tearDown()
         os.chdir('psiturk-example')
         os.rename(self.PSITURK_JS_FILE + '.bup', self.PSITURK_JS_FILE)
+
+
+class ExperimentErrorsTest(PsiturkUnitTest):
+
+    def test_experiment_errors(self):
+        """Make sure every error has a description"""
+        error_cls = psiturk.experiment_errors.ExperimentError
+
+        for error_name in error_cls.experiment_errors:
+            assert error_name in error_cls.error_descriptions
+
+        for error_name in error_cls.error_descriptions:
+            assert error_name in error_cls.experiment_errors
 
 
 if __name__ == '__main__':

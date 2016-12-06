@@ -27,7 +27,7 @@ var PsiTurk = function(uniqueId, adServerLoc, mode) {
 	 * TASK DATA    *
 	 ***************/
 	var TaskData = Backbone.Model.extend({
-		urlRoot: "/sync", // Save will PUT to /data, with mimetype 'application/JSON'
+		urlRoot: "/sync", // Fetch will GET from this url, while Save will PUT to this url, with mimetype 'application/JSON'
 		id: uniqueId,
 		adServerLoc: adServerLoc,
 		mode: mode,
@@ -43,11 +43,13 @@ var PsiTurk = function(uniqueId, adServerLoc, mode) {
 			data: [],
 			questiondata: {},
 			eventdata: [],
-			useragent: ""
+			useragent: "",
+			mode: ""
 		},
 		
 		initialize: function() {
-			this.useragent = navigator.userAgent;
+			this.set({ useragent: navigator.userAgent });
+			this.set({ mode: this.mode });
 			this.addEvent('initialized', null);
 			this.addEvent('window_resize', [window.innerWidth, window.innerHeight]);
 
@@ -118,13 +120,13 @@ var PsiTurk = function(uniqueId, adServerLoc, mode) {
 
 			// connect event handler to previous button
 			if(currentscreen != 0) {  // can't do this if first page
-				$('.previous').bind('click.psiturk.instructionsnav.prev', function() {
+				$('.instructionsnav').on('click.psiturk.instructionsnav.prev', '.previous', function() {
 					prevPageButtonPress();
 				});
 			}
 
 			// connect event handler to continue button
-			$('.continue').bind('click.psiturk.instructionsnav.next', function() {
+			$('.instructionsnav').on('click.psiturk.instructionsnav.next', '.continue', function() {
 				nextPageButtonPress();
 			});
 			

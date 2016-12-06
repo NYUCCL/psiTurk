@@ -59,9 +59,10 @@ BONUSED = 7
 # ===========
 
 app = Flask("Experiment_Server")
-# Set cache timeout to 10ms for static files
+# Set cache timeout to 10 seconds for static files
 app.config.update(SEND_FILE_MAX_AGE_DEFAULT=10)
-
+app.secret_key = CONFIG.get('Server Parameters', 'secret_key')
+app.logger.info("Secret key: " + app.secret_key)
 
 # Serving warm, fresh, & sweet custom, user-provided routes
 # ==========================================================
@@ -69,18 +70,16 @@ app.config.update(SEND_FILE_MAX_AGE_DEFAULT=10)
 try:
     sys.path.append(os.getcwd())
     from custom import custom_code
-except ImportError:
-    app.logger.info("Hmm... it seems no custom code (custom.py) assocated \
-                    with this project.")
+except ImportError as e:
+    if str(e) == 'No module named custom':
+        app.logger.info("Hmm... it seems no custom code (custom.py) associated \
+                        with this project.")
+    else:
+        app.logger.error("There is custom code (custom.py) associated with this \
+                          project but it doesn't import cleanly.  Raising exception,")
+        raise
 else:
     app.register_blueprint(custom_code)
-
-try:
-    sys.path.append(os.getcwd())
-
-except ImportError:
-    app.logger.info("Hmm... it seems no custom model code (custom_models.py) \
-                    assocated with this project.")
 
 init_db()
 
@@ -88,7 +87,7 @@ init_db()
 # Read psiturk.js file into memory
 PSITURK_JS_FILE = os.path.join(os.path.dirname(__file__), \
     "psiturk_js/psiturk.js")
-app.logger.error(PSITURK_JS_FILE)
+app.logger.info(PSITURK_JS_FILE)
 
 if os.path.exists(PSITURK_JS_FILE):
     PSITURK_JS_CODE = open(PSITURK_JS_FILE).read()
@@ -194,6 +193,7 @@ def check_worker_status():
         return jsonify(**resp)
 
 @app.route('/ad', methods=['GET'])
+@app.route('/pub', methods=['GET'])
 @nocache
 def advertisement():
     """
@@ -219,6 +219,11 @@ def advertisement():
                (myrule == "touchcapable" and user_agent_obj.is_touch_capable) or\
                (myrule == "pc" and user_agent_obj.is_pc) or\
                (myrule == "bot" and user_agent_obj.is_bot):
+                browser_ok = False
+        elif (myrule == "Safari" or myrule == "safari"):
+            if "Chrome" in user_agent_string and "Safari" in user_agent_string:
+                pass
+            elif "Safari" in user_agent_string:
                 browser_ok = False
         elif myrule in user_agent_string:
             browser_ok = False
@@ -264,16 +269,21 @@ def advertisement():
         # them to start the task again.
         raise ExperimentError('already_started_exp_mturk')
     elif status == COMPLETED:
-        # They've done the debriefing but perhaps haven't submitted the HIT
-        # yet.. Turn asignmentId into original assignment id before sending it
-        # back to AMT
-        return render_template(
-            'thanks.html',
-            is_sandbox=(mode == "sandbox"),
-            hitid=hit_id,
-            assignmentid=assignment_id,
-            workerid=worker_id
-        )
+        use_psiturk_ad_server = CONFIG.getboolean('Shell Parameters', 'use_psiturk_ad_server')
+        if not use_psiturk_ad_server:
+            # They've finished the experiment but haven't submitted the HIT
+            # yet.. Turn asignmentId into original assignment id before sending it
+            # back to AMT
+            return render_template(
+                'thanks-mturksubmit.html',
+                using_sandbox=(mode == "sandbox"),
+                hitid=hit_id,
+                assignmentid=assignment_id,
+                workerid=worker_id
+            )
+        else: 
+            # Show them a thanks message and tell them to go away.
+            return render_template( 'thanks.html' )
     elif already_in_db and not debug_mode:
         raise ExperimentError('already_did_exp_hit')
     elif status == ALLOCATED or not status or debug_mode:
@@ -333,8 +343,8 @@ def get_ad_via_hitid(hit_id):
 @nocache
 def start_exp():
     """ Serves up the experiment applet. """
-    if not ('hitId' in request.args and 'assignmentId' in request.args and
-            'workerId' in request.args):
+    if not (('hitId' in request.args) and ('assignmentId' in request.args) and
+            ('workerId' in request.args) and ('mode' in request.args)):
         raise ExperimentError('hit_assign_worker_id_not_set_in_exp')
     hit_id = request.args['hitId']
     assignment_id = request.args['assignmentId']
@@ -416,7 +426,8 @@ def start_exp():
             if other_assignment:
                 raise ExperimentError('already_did_exp_hit')
 
-    if mode == 'sandbox' or mode == 'live':
+    use_psiturk_ad_server = CONFIG.getboolean('Shell Parameters', 'use_psiturk_ad_server')
+    if use_psiturk_ad_server and (mode == 'sandbox' or mode == 'live'):
         # If everything goes ok here relatively safe to assume we can lookup
         # the ad.
         ad_id = get_ad_via_hitid(hit_id)
@@ -562,6 +573,7 @@ def quitter():
             return jsonify(**resp)
 
 # Note: This route should only used when debugging
+# or when not using the psiturk adserver
 @app.route('/complete', methods=['GET'])
 @nocache
 def debug_complete():
@@ -570,6 +582,10 @@ def debug_complete():
         raise ExperimentError('improper_inputs')
     else:
         unique_id = request.args['uniqueId']
+        if unique_id[:5] == "debug":
+            debug_mode = True
+        else:
+            debug_mode = False
         try:
             user = Participant.query.\
                 filter(Participant.uniqueid == unique_id).one()
@@ -580,7 +596,10 @@ def debug_complete():
         except:
             raise ExperimentError('error_setting_worker_complete')
         else:
-            return render_template('complete.html')
+            if debug_mode:
+                return render_template('complete.html')
+            else: # send them back to mturk.
+                return render_template('closepopup.html')
 
 @app.route('/worker_complete', methods=['GET'])
 def worker_complete():
@@ -636,6 +655,7 @@ def ppid():
 # to avoid breaking backwards compatibility with old templates.
 def insert_mode(page_html, mode):
     ''' Insert mode '''
+    page_html = page_html.decode("utf-8")
     match_found = False
     matches = re.finditer('workerId={{ workerid }}', page_html)
     match = None

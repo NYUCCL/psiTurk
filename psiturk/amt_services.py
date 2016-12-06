@@ -11,6 +11,7 @@ from boto.mturk.qualification import LocaleRequirement, \
     PercentAssignmentsApprovedRequirement, Qualifications
 from flask import jsonify
 import re as re
+from psiturk.psiturk_config import PsiturkConfig
 
 
 MYSQL_RESERVED_WORDS_CAP = [
@@ -62,6 +63,8 @@ class MTurkHIT(object):
         self.options = json_options
 
     def __repr__(self):
+        for opt in self.options:
+            self.options[opt] = self.options[opt].encode('ascii', 'replace')
         return "%s \n\tStatus: %s \n\tHITid: %s \
             \n\tmax:%s/pending:%s/complete:%s/remain:%s \n\tCreated:%s \
             \n\tExpires:%s\n" % (
@@ -80,10 +83,11 @@ class RDSServices(object):
     ''' Relational database services via AWS '''
 
     def __init__(self, aws_access_key_id, aws_secret_access_key,
-                 region='us-east-1'):
+                 region='us-east-1', quiet=False):
         self.update_credentials(aws_access_key_id, aws_secret_access_key)
         self.set_region(region)
-        self.valid_login = self.verify_aws_login()
+        if not quiet:
+            self.valid_login = self.verify_aws_login()
 
         # if not self.valid_login:
         #     print 'Sorry, AWS Credentials invalid.\nYou will only be able to
@@ -133,16 +137,12 @@ class RDSServices(object):
                 print "*** Unable to establish connection to AWS region %s "\
                     "using your access key/secret key", self.region
                 return False
-            except boto.exception.BotoServerError:
+            except boto.exception.BotoServerError as e:
                 print "***********************************************************"
                 print "WARNING"
-                print "Unable to establish connection to AWS."
-                print "While your keys may be valid, your AWS account needs a "
-                print "subscription to certain services.  If you haven't been asked"
-                print "to provide a credit card and verified your account using your "
-                print "phone, it means your keys are not completely set up yet."
-                print "Please refer to "
-                print "\thttp://psiturk.readthedocs.org/en/latest/amt_setup.html"
+                print "Unable to establish connection to AWS RDS (Amazon relational database services)."
+                print "See relevant psiturk docs here:"
+                print "\thttp://psiturk.readthedocs.io/en/latest/configure_databases.html#obtaining-a-low-cost-or-free-mysql-database-on-amazon-s-web-services-cloud"
                 print "***********************************************************"
                 return False
             else:
@@ -390,16 +390,35 @@ class MTurkServices(object):
         if not self.connect_to_turk():
             return False
         try:
-            hits = self.mtc.search_hits(sort_direction='Descending',
-                                        page_size=20)
+            hits = self.mtc.get_all_hits()
             hit_ids = [hit.HITId for hit in hits]
-            workers_nested = [
-                self.mtc.get_assignments(
+           
+            workers_nested = []
+            page_size=100
+            for hit_id in hit_ids:
+                current_page_number=1
+                hit_assignments = self.mtc.get_assignments(
                     hit_id,
                     status=assignment_status,
                     sort_by='SubmitTime',
-                    page_size=100
-                ) for hit_id in hit_ids]
+                    page_size=page_size,
+                    page_number=current_page_number
+                )
+
+                totalNumResults = int(hit_assignments.TotalNumResults)
+                total_pages = (totalNumResults // page_size) + (totalNumResults % page_size > 0) #do integer division then round up if necessary
+
+                while current_page_number < total_pages:
+                    current_page_number += 1
+                    hit_assignments += self.mtc.get_assignments(
+                        hit_id,
+                        status=assignment_status,
+                        sort_by='SubmitTime',
+                        page_size=page_size,
+                        page_number=current_page_number
+                    )
+
+                workers_nested.append(hit_assignments)
 
             workers = [val for subl in workers_nested for val in subl]  # Flatten nested lists
         except MTurkRequestError:
@@ -513,9 +532,43 @@ class MTurkServices(object):
         if hit_config['us_only']:
             quals.add(LocaleRequirement("EqualTo", "US"))
 
+        # Create a HIT type for this HIT.
+        hit_type = self.mtc.register_hit_type(
+            hit_config['title'],
+            hit_config['description'],
+            hit_config['reward'],
+            hit_config['duration'],
+            keywords=hit_config['keywords'],
+            approval_delay=None,
+            qual_req=None)[0]
+
+        # Check the config file to see if notifications are wanted.
+        config = PsiturkConfig()
+        config.load_config()
+
+        try:
+            url = config.get('Server Parameters', 'notification_url')
+
+            all_event_types = [
+                "AssignmentAccepted",
+                "AssignmentAbandoned",
+                "AssignmentReturned",
+                "AssignmentSubmitted",
+                "HITReviewable",
+                "HITExpired",
+            ]
+
+            self.mtc.set_rest_notification(
+                hit_type.HITTypeId,
+                url,
+                event_types=all_event_types)
+
+        except:
+            pass
+
         # Specify all the HIT parameters
         self.param_dict = dict(
-            hit_type=None,
+            hit_type=hit_type.HITTypeId,
             question=mturk_question,
             lifetime=hit_config['lifetime'],
             max_assignments=hit_config['max_assignments'],
@@ -526,8 +579,13 @@ class MTurkServices(object):
             duration=hit_config['duration'],
             approval_delay=None,
             questions=None,
-            qualifications=quals
-        )
+            qualifications=quals,
+            response_groups=[
+                'Minimal',
+                'HITDetail',
+                'HITQuestion',
+                'HITAssignmentSummary'
+            ])
 
     def check_balance(self):
         ''' Check balance '''
@@ -570,8 +628,8 @@ class MTurkServices(object):
         try:
             self.mtc.dispose_hit(hitid)
         except Exception, e:
-            print 'Failed to dispose of HIT %s. Make sure there are no "\
-                "assignments remaining to be reviewed' % hitid
+            print "Failed to dispose of HIT %s. Make sure there are no "\
+                "assignments remaining to be reviewed." % hitid
 
     def extend_hit(self, hitid, assignments_increment=None,
                    expiration_increment=None):

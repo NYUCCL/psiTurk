@@ -1,9 +1,14 @@
+import sys
 from setuptools import setup
 from psiturk.version import version_number
 
 try:
     with open("README.md") as readmefile:
-        long_description = readmefile.read()
+        readme_text = readmefile.readlines()
+        long_description = ''
+        for line in readme_text:
+            if line[0]!='<' and line[0]!='[': # drop lines that are html/markdown
+                long_description += line
 except IOError:
     long_description = ""
 
@@ -15,7 +20,7 @@ if __name__ == "__main__":
     fp.flush()
     fp.close()
 
-    setup(
+    setup_args = dict(
         name = "PsiTurk",
         version = version_number,
         packages = ["psiturk"],
@@ -31,15 +36,26 @@ if __name__ == "__main__":
             ]
         },
         setup_requires = [],
-        install_requires = ["argparse", "Flask", "SQLAlchemy", "gunicorn",
-                            "boto>=2.9","cmd2","docopt","gnureadline","requests>=2.2.1","user_agents",
-                            "sh", "fake-factory", "gitpython", "fuzzywuzzy",
-                            "psutil>=1.2.1", "setproctitle"],
         author = "NYU Computation and Cognition Lab",
         author_email = "authors@psiturk.org",
         description = "An open platform for science on Amazon Mechanical Turk",
         long_description = long_description,
-        url = "http://github.com/NYUCCL/psiturk",
+        url = "https://github.com/NYUCCL/psiturk",
         test_suite='test_psiturk'
     )
 
+    # read in requirements.txt for dependencies
+    setup_args['install_requires'] = install_requires = []
+    with open('requirements.txt') as f:
+        for line in f.readlines():
+            req = line.strip()
+            if not req or req.startswith('#'): # ignore comments
+                continue
+            else:
+                install_requires.append(req)
+
+    # add readline only on osx
+    if sys.platform == 'darwin':
+        install_requires.append('gnureadline==6.3.3')
+
+    setup(**setup_args)

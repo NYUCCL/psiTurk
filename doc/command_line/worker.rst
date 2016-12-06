@@ -128,7 +128,7 @@ Examples
      Type the reason for the bonus. Workers will see this message: Here's another one!
      gave bonus of $2.00 to 21A8IUB2YU98ZV9C5BUL3FBJB5B8K7
 
-2. Say there approved assignments for a HIT, one already bonused, one not yet
+2. Say there are approved assignments for a HIT, one already bonused, one not yet
    bonused. Bonusing by HIT prevents repeated bonuses::
 
      [psiTurk server:on mode:sdbx #HITs:0]$ worker bonus --amount 2.00 --hit 2ECYT3DHJHP4RRU304P8USX9BCXU1O
