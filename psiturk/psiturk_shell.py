@@ -18,7 +18,11 @@ from fuzzywuzzy import process
 
 from cmd2 import Cmd
 from docopt import docopt, DocoptExit
-import readline
+
+try:
+    import gnureadline as readline
+except ImportError:
+    import readline
 
 import webbrowser
 import sqlalchemy as sa
