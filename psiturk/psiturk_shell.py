@@ -937,34 +937,46 @@ class PsiturkNetworkShell(PsiturkShell):
                 if user_input != 'y':
                     return
 
-        interactive = False
+        # Validate arguments
+        # numWorkers
         if numWorkers is None:
-            interactive = True
-            numWorkers = raw_input('number of participants? ')
+            numWorkers = raw_input('number of participants? ').strip()
         try:
-            int(numWorkers)
+            numWorkers = int(numWorkers)
         except ValueError:
-
             print '*** number of participants must be a whole number'
             return
-        if int(numWorkers) <= 0:
+        if numWorkers <= 0:
             print '*** number of participants must be greater than 0'
             return
-        if interactive:
-            reward = raw_input('reward per HIT? ')
-        p = re.compile('\d*.\d\d')
+
+        # reward
+        if reward is None:
+            reward = raw_input('reward per HIT? ').strip()
+        p = re.compile('^\d*\.\d\d$')
         m = p.match(reward)
         if m is None:
             print '*** reward must have format [dollars].[cents]'
             return
-        if interactive:
-            duration = raw_input('duration of hit (in hours, it can be decimals)? ')
-
-        duration = float(duration)
-
+        try:
+            reward = float(reward)
+        except:
+            print '*** reward must be in format [dollars].[cents]'
+            return
+            
+        # duration
+        if duration is None:
+            duration = raw_input(
+                'duration of hit (in hours, it can be decimals)? ').strip()
+        try:
+            duration = float(duration)
+        except ValueError:
+            print '*** duration must a number'
+            return
         if duration <= 0:
             print '*** duration must be greater than 0'
             return
+        
 
         if use_psiturk_ad_server:
 
@@ -973,7 +985,7 @@ class PsiturkNetworkShell(PsiturkShell):
             fail_msg = None
             if ad_id is not False:
                 ad_location = self.web_services.get_ad_url(ad_id, int(self.sandbox))
-                hit_config = self.generate_hit_config(ad_location, numWorkers, reward, duration )
+                hit_config = self.generate_hit_config(ad_location, numWorkers, reward, duration)
                 hit_id = self.amt_services.create_hit(hit_config)
                 if hit_id is not False:
                     if not self.web_services.set_ad_hitid(ad_id, hit_id, int(self.sandbox)):
@@ -990,7 +1002,7 @@ class PsiturkNetworkShell(PsiturkShell):
 
             mode = 'sandbox' if self.sandbox else 'live'
             ad_location = "{}?mode={}".format(self.config.get('Shell Parameters', 'ad_location'), mode )
-            hit_config = self.generate_hit_config(ad_location, numWorkers, reward, duration )
+            hit_config = self.generate_hit_config(ad_location, numWorkers, reward, duration)
             create_failed = False
             hit_id = self.amt_services.create_hit(hit_config)
             if hit_id is False:
@@ -1027,8 +1039,8 @@ class PsiturkNetworkShell(PsiturkShell):
             print '\n'.join(['*****************************',
                              '  Creating %s HIT' % colorize(mode, 'bold'),
                              '    HITid: %s' % str(hit_id),
-                             '    Max workers: %s' % numWorkers,
-                             '    Reward: $%s' %reward,
+                             '    Max workers: %d' % numWorkers,
+                             '    Reward: $%d' % reward,
                              '    Duration: %s hours' % duration,
                              '    Fee: $%.2f' % fee,
                              '    ________________________',
