@@ -266,7 +266,18 @@ class PsiturkShell(Cmd, object):
                    "your experiment.  Try 'server on' first.")
             return
 
-        if 'OPENSHIFT_SECRET_TOKEN' in os.environ:
+        revproxy_url = False
+        if self.config.has_option('Server Parameters','adserver_revproxy_host'):
+            if self.config.has_option( 'Server Parameters', 'adserver_revproxy_port'):
+                port = self.config.get( 'Server Parameters', 'adserver_revproxy_port')
+            else:
+                port = 80
+            revproxy_url =  "http://" + self.config.get('Server Parameters', 'adserver_revproxy_host')\
+            + ":" + port + "/ad"
+
+        if revproxy_url:
+            base_url = revproxy_url
+        elif 'OPENSHIFT_SECRET_TOKEN' in os.environ:
             base_url = "http://" + self.config.get('Server Parameters', 'host')\
             + "/ad"
         else:
@@ -1112,6 +1123,12 @@ class PsiturkNetworkShell(PsiturkShell):
         if self.tunnel.is_open:
             ip_address = self.tunnel.url
             port = str(self.tunnel.tunnel_port)  # Set by tunnel server.
+        elif self.config.has_option('Server Parameters','adserver_revproxy_host'):
+            ip_address = self.config.get('Server Parameters', 'adserver_revproxy_host') # misnomer, could actually be a fqdn sans protocol
+            if self.config.has_option('Server Parameters','adserver_revproxy_port'):
+                port = self.config.getint('Server Parameters','adserver_revproxy_port')
+            else:
+                port = 80
         else:
             ip_address = str(self.web_services.get_my_ip())
             port = str(self.config.get('Server Parameters', 'port'))
@@ -1762,17 +1779,29 @@ class PsiturkNetworkShell(PsiturkShell):
                   "your experiment.  Try 'server on' first.")
             return
 
-        if 'OPENSHIFT_SECRET_TOKEN' in os.environ:
-            base_url = "http://" + self.config.get('Server Parameters',
-                                                   'host') + "/ad"
+        revproxy_url = False
+        if self.config.has_option('Server Parameters','adserver_revproxy_host'):
+            if self.config.has_option( 'Server Parameters', 'adserver_revproxy_port'):
+                port = self.config.get( 'Server Parameters', 'adserver_revproxy_port')
+            else:
+                port = 80
+            revproxy_url = "http://" + self.config.get('Server Parameters', 'adserver_revproxy_host')\
+            + ":" + port + "/ad"
+
+        if revproxy_url:
+            base_url = revproxy_url
+        elif 'OPENSHIFT_SECRET_TOKEN' in os.environ:
+            base_url = "http://" + self.config.get('Server Parameters', 'host') + "/ad"
         else:
-            base_url = "http://" + self.config.get('Server Parameters',
+            if arg['--print-only']:
+                my_ip = self.web_services.get_my_ip()
+                base_url = "http://" + my_ip + ":" + \
+                    self.config.get('Server Parameters', 'port') + "/ad"
+            else:
+                base_url = "http://" + self.config.get('Server Parameters',
                                                    'host') + \
                 ":" + self.config.get('Server Parameters', 'port') + "/ad"
 
-        my_ip = self.web_services.get_my_ip()
-        remote_url = "http://" + my_ip + ":" + \
-            self.config.get('Server Parameters', 'port') + "/ad"
 
         launch_url = base_url + "?assignmentId=debug" + \
             str(self.random_id_generator()) \
@@ -1780,15 +1809,9 @@ class PsiturkNetworkShell(PsiturkShell):
             + "&workerId=debug" + str(self.random_id_generator() \
             + "&mode=debug")
 
-        remote_launch_url = remote_url + "?assignmentId=debug" + \
-            str(self.random_id_generator()) \
-            + "&hitId=debug" + str(self.random_id_generator()) \
-            + "&workerId=debug" + str(self.random_id_generator() \
-            + "&mode=debug")
-
         if arg['--print-only']:
             print("Here's your randomized debug link, feel free to request " \
-                  "another:\n\t" + remote_launch_url)
+                  "another:\n\t" + launch_url)
 
         else:
             print("Launching browser pointed at your randomized debug link, " \

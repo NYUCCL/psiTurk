@@ -19,6 +19,8 @@ command line.  An example looks like this:
     threads = auto
     #certfile = <path_to.crt> 
     #keyfile = <path_to.key>
+    #adserver_revproxy_host = www.location.of.your.revproxy.sans.protocol.com
+    #adserver_revproxy_port = 80
 
 `host` [ string]
 --------------
@@ -136,3 +138,37 @@ See the documentation for `certfile` for more information.
 .. _launch-sudo-psiturk in this gist: gist_
 .. _this gist: gist_
 .. _gist: https://gist.github.com/deargle/5d8c01660a77b8090a2cd24efcda2c59
+
+
+`adserver_revproxy_host` [ string ]
+----------------------------------------
+Normally when you create an ad on the psiturk ad server (`hit create...`), your external ip address is
+fetched and combined with the `port` that your psiturk gunicorn server is running on (the same port set in your config.txt). The psiTurk ad server directs all traffic directly to the psiturk gunicorn server. 
+
+If you want to put a reverse proxy in front of the psiturk gunicorn server (such as apache or nginx), 
+set the hostname or ip address of the reverse proxy
+here. Set it even if it's the same as your external ip. Leave the protocol off (i.e., don't add `http://` to the front). 
+(The psiturk ad server will add `http://` to the front of whatever you set here.)
+
+If your reverse proxy port is different from 80, set it in `adserver_revproxy_port`.
+
+.. note::
+    
+    If you want to host your own ad, see the documentation for `use_psiturk_ad_server` and `ad_location`. The `adserver_revproxy_host` and `adserver_revproxy_port` settings are only used if you are using the 
+    psiTurk ad server.
+    
+.. seealso::
+
+    * `use_psiturk_ad_server <shell_parameters.html#use-psiturk-ad-server-true-false>`__
+    * `ad_location <shell_parameters.html#ad-location-false-string>`__
+
+    
+`adserver_revproxy_port` [ integer ]
+----------------------------------------
+
+Defaults to port 80 (the standard http port).
+
+See the documentation for `adserver_revproxy_port` for more information.
+
+.. note::
+    If you are hosting your experiment on `rhcloud.com`, this setting is ignored and 80 will always be used.
