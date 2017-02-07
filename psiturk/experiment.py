@@ -144,7 +144,9 @@ def get_random_condcount():
         for counter in range(numcounts):
             counts[(cond, counter)] = 0
     for participant in participants:
-        counts[(participant.cond, participant.counterbalance)] += 1
+        condcount = (participant.cond, participant.counterbalance)
+        if condcount in counts:
+            counts[condcount] += 1
     mincount = min(counts.values())
     minima = [hsh for hsh, count in counts.iteritems() if count == mincount]
     chosen = choice(minima)
