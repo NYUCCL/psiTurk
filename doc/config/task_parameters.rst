@@ -35,9 +35,9 @@ a condition (or possibly withdrawing).  Thus, you can be
 fairly assured that after running 100 subjects in two conditions
 each condition will have 50+/- completed participants. 
 
-.. warning::
+.. note::
     
-    It is very important to change the `experiment_code_version` when changing the `num_conds` or the `num_counters` variable in config.txt, because **PsiTurk** will consider all the workers run *with the same code version* when deciding which condition to assign a new worker. In other words, if `num_conds` changes from 4 to 2 without changing `experiment_code_version`, **PsiTurk** will still assign 4 conditions instead of 2 because there will be 4 conditions present in participants.db that were run with the same code version.    
+    If you want to reset the random assignment when changing `num_conds`, update the `experiment_code_version`.  
 
 `num_counters`  [ integer ]
 -------------------------
