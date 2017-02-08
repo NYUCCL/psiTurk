@@ -4,7 +4,19 @@ import subprocess
 import signal
 import webbrowser
 from threading import Thread, Event
-import urllib2
+
+
+try:
+    from urllib.request import urlopen
+    from urllib.parse import urlparse
+    from urllib.error import HTTPError
+    from urllib.request import Request
+except ImportError:
+    from urlparse import urlparse
+    from urllib2 import urlopen
+    from urllib2 import HTTPError
+    from urllib import Request
+
 import socket
 import psutil
 import time
@@ -22,9 +34,9 @@ def is_port_available(ip, port):
         s.shutdown(2)
         return False
     except socket.timeout:
-        print "*** Failed to test port availability. Check that host\nis set properly in config.txt"
+        print("*** Failed to test port availability. Check that host\nis set properly in config.txt")
         return True
-    except socket.error,e:
+    except socket.error as e:
         return True
 
 def wait_until_online(function, ip, port):
@@ -98,8 +110,8 @@ class ExperimentServerController:
     def get_ppid(self):
         if not self.is_port_available():
             url = "http://{hostname}:{port}/ppid".format(hostname=self.config.get("Server Parameters", "host"), port=self.config.getint("Server Parameters", "port"))
-            ppid_request = urllib2.Request(url)
-            ppid =  urllib2.urlopen(ppid_request).read()
+            ppid_request = Request(url)
+            ppid =  urlopen(ppid_request).read()
             return ppid
         else:
             raise ExperimentServerControllerException("Cannot shut down experiment server, server not online")
@@ -116,14 +128,14 @@ class ExperimentServerController:
             os.kill(int(ppid), signal.SIGKILL)
             self.server_running = False
         except ExperimentServerControllerException:
-            print ExperimentServerControllerException
+            print(ExperimentServerControllerException)
         else:
             self.server_running = False
 
     def kill_child_processes(self, parent_pid, sig=signal.SIGTERM):
         if os.uname()[0] is 'Linux':
-            ps_command = subprocess.Popen('pstree -p %d | perl -ne \'print "$1 "\
-                                          while /\((\d+)\)/g\'' % parent.pid,
+            ps_command = subprocess.Popen('pstree -p %d | perl -ne \'print "$1 "'\
+                                          'while /\((\d+)\)/g\'' % parent.pid,
                                           shell=True, stdout=subprocess.PIPE)
             ps_output = ps_command.stdout.read()
             retcode = ps_command.wait()
@@ -170,13 +182,13 @@ class ExperimentServerController:
         if server_status == 'no':
             #print "Running experiment server with command:", server_command
             subprocess.Popen(server_command, shell=True, close_fds=True)
-            print "Experiment server launching..."
+            print("Experiment server launching...")
             self.server_running = True
         elif server_status == 'maybe':
-            print "Error: Not sure what to tell you..."
+            print("Error: Not sure what to tell you...")
         elif server_status == 'yes':
-            print "Experiment server may be already running..."
+            print("Experiment server may be already running...")
         elif server_status == 'blocked':
-            print "Another process is running on the desired port. Try using a different port number."
+            print("Another process is running on the desired port. Try using a different port number.")
         time.sleep(1.2)  # Allow CLI to catch up.
 

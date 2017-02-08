@@ -25,12 +25,12 @@ def process():
 def install_from_exchange():
     ''' Install from experiment exchange. '''
     parser = argparse.ArgumentParser(
-        description='Download experiment from the psiturk.org experiment\
-        exchange (http://psiturk.org/ee).'
+        description='Download experiment from the psiturk.org experiment' \
+        'exchange (http://psiturk.org/ee).'
     )
     parser.add_argument(
-        'exp_id', metavar='exp_id', type=str, help='the id number of the\
-        experiment in the exchange'
+        'exp_id', metavar='exp_id', type=str, help='the id number of the' \
+        'experiment in the exchange'
     )
     args = parser.parse_args()
     exp_exch = ExperimentExchangeServices()
@@ -39,8 +39,8 @@ def install_from_exchange():
 def setup_example():
     ''' Add commands for testing, etc. '''
     parser = argparse.ArgumentParser(
-        description='Creates a simple default project (stroop) in the current\
-        directory with the necessary psiTurk files.'
+        description='Creates a simple default project (stroop) in the current' \
+        'directory with the necessary psiTurk files.'
     )
 
     # Optional flags
@@ -51,7 +51,7 @@ def setup_example():
 
     # If requested version just print and quite
     if args.version:
-        print version_number
+        print(version_number)
     else:
         import psiturk.setup_example as se
         se.setup_example()
@@ -59,8 +59,8 @@ def setup_example():
 def launch_server():
     ''' Add commands for testing, etc.. '''
     parser = argparse.ArgumentParser(
-        description='Launch psiTurk experiment webserver process on the\
-        host/port defined in config.txt.'
+        description='Launch psiTurk experiment webserver process on the' \
+                        'host/port defined in config.txt.'
     )
 
     # Optional flags
@@ -71,7 +71,7 @@ def launch_server():
 
     # If requested version just print and quite
     if args.version:
-        print version_number
+        print(version_number)
     else:
         import psiturk.experiment_server as es
         es.launch()
@@ -100,7 +100,7 @@ def launch_shell():
     args = parser.parse_args()
     # If requested version just print and quite
     if args.version:
-        print version_number
+        print(version_number)
     else:
         import psiturk.psiturk_shell as ps
         if args.script:

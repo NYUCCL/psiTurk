@@ -2,7 +2,10 @@
 from gunicorn.app.base import Application
 from gunicorn import util
 import multiprocessing
-from psiturk_config import PsiturkConfig
+try:
+    from .psiturk_config import PsiturkConfig
+except ModuleNotFoundError:
+    from psiturk_config import PsiturkConfig
 import os
 
 config = PsiturkConfig()
@@ -25,9 +28,9 @@ class ExperimentServer(Application):
         self.do_load_config()
         if 'OPENSHIFT_SECRET_TOKEN' in os.environ:
             my_ip = os.environ['OPENSHIFT_APP_DNS']
-            print "Now serving on " + os.environ['OPENSHIFT_APP_DNS']
+            print("Now serving on " + os.environ['OPENSHIFT_APP_DNS'])
         else:
-            print "Now serving on", "http://" + self.options["bind"]
+            print("Now serving on", "http://" + self.options["bind"])
 
     def init(self, *args):
         '''init method
@@ -61,8 +64,8 @@ class ExperimentServer(Application):
             has shut down until they hit `enter` and see that 
             the cmdloop prompt suddenly says "server off"
             '''
-            print 'Caught ^C, experiment server has shut down.'
-            print 'Press `enter` to continue.'
+            print('Caught ^C, experiment server has shut down.')
+            print('Press `enter` to continue.')
 
         self.user_options = {
             'bind': config.get("Server Parameters", "host") + ":" + config.get("Server Parameters", "port"),
@@ -77,7 +80,7 @@ class ExperimentServer(Application):
         }
 
         if config.has_option("Server Parameters", "certfile") and config.has_option("Server Parameters", "keyfile"):
-            print "Loading SSL certs for server..."
+            print("Loading SSL certs for server...")
             ssl_options = {
                 'certfile' : config.get("Server Parameters", "certfile"),
                 'keyfile' : config.get("Server Parameters", "keyfile")

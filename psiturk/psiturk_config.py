@@ -1,6 +1,10 @@
 import os
 from distutils import file_util
-from ConfigParser import SafeConfigParser
+try:
+    from ConfigParser import SafeConfigParser
+except ModuleNotFoundError:
+    from configparser import SafeConfigParser
+
 
 class PsiturkConfig(SafeConfigParser):
     def __init__(self, localConfig="config.txt", globalConfigName=".psiturkconfig", **kwargs):
@@ -28,16 +32,16 @@ class PsiturkConfig(SafeConfigParser):
         local_defaults_file = os.path.join(defaults_folder, "local_config_defaults.txt")
         global_defaults_file = os.path.join(defaults_folder, "global_config_defaults.txt")
         if not os.path.exists(self.localFile):
-            print "ERROR - no config.txt file in the current directory. \n\nAre you sure this directory is a valid psiTurk experiment?  If you are starting a new project run 'psiturk-setup-example' first."
+            print("ERROR - no config.txt file in the current directory. \n\nAre you sure this directory is a valid psiTurk experiment?  If you are starting a new project run 'psiturk-setup-example' first.")
             exit()
         self.localParser.read( self.localFile)
         if not os.path.exists(self.globalFile):
             if 'OPENSHIFT_SECRET_TOKEN' in os.environ:
-                print "No '.psiturkconfig' file found in your " + os.environ['OPENSHIFT_DATA_DIR'] + " directory.\nCreating default " + self.globalFile + " file."
+                print("No '.psiturkconfig' file found in your " + os.environ['OPENSHIFT_DATA_DIR'] + " directory.\nCreating default " + self.globalFile + " file.")
             elif 'PSITURK_GLOBAL_CONFIG_LOCATION' in os.environ:
-                print "No '.psiturkconfig' file found in your " + os.environ['PSITURK_GLOBAL_CONFIG_LOCATION'] + " directory.\nCreating default " + self.globalFile + " file."
+                print("No '.psiturkconfig' file found in your " + os.environ['PSITURK_GLOBAL_CONFIG_LOCATION'] + " directory.\nCreating default " + self.globalFile + " file.")
             else:
-                print "No '.psiturkconfig' file found in your home directory.\nCreating default ~/.psiturkconfig file."
+                print("No '.psiturkconfig' file found in your home directory.\nCreating default ~/.psiturkconfig file.")
             file_util.copy_file(global_defaults_file, self.globalFile)
         self.globalParser.read(self.globalFile)
         # read default global and local, then user's global and local. This way

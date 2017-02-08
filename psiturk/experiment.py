@@ -72,11 +72,11 @@ try:
     from custom import custom_code
 except ImportError as e:
     if str(e) == 'No module named custom':
-        app.logger.info("Hmm... it seems no custom code (custom.py) associated \
-                        with this project.")
+        app.logger.info("Hmm... it seems no custom code (custom.py) associated " \
+                        "with this project.")
     else:
-        app.logger.error("There is custom code (custom.py) associated with this \
-                          project but it doesn't import cleanly.  Raising exception,")
+        app.logger.error("There is custom code (custom.py) associated with this " \
+                          "project but it doesn't import cleanly.  Raising exception,")
         raise
 else:
     app.register_blueprint(custom_code)
@@ -700,7 +700,7 @@ def run_webserver():
     ''' Run web server '''
     host = "0.0.0.0"
     port = CONFIG.getint('Server Parameters', 'port')
-    print "Serving on ", "http://" +  host + ":" + str(port)
+    print("Serving on ", "http://" +  host + ":" + str(port))
     app.run(debug=True, host=host, port=port)
 
 if __name__ == '__main__':

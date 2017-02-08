@@ -2,7 +2,7 @@
 """ PsiturkShell is a commandline interface for psiTurk, which provides
 functionality for maintaining the experiment server and interacting with
 Mechanical Turk."""
-
+from __future__ import print_function
 import sys
 import subprocess
 import re
@@ -27,13 +27,13 @@ except ImportError:
 import webbrowser
 import sqlalchemy as sa
 
-from amt_services import MTurkServices, RDSServices
-from psiturk_org_services import PsiturkOrgServices, TunnelServices
-from version import version_number
-from psiturk_config import PsiturkConfig
-import experiment_server_controller as control
-from db import db_session, init_db
-from models import Participant
+from .amt_services import MTurkServices, RDSServices
+from .psiturk_org_services import PsiturkOrgServices, TunnelServices
+from .version import version_number
+from .psiturk_config import PsiturkConfig
+from . import experiment_server_controller as control
+from .db import db_session, init_db
+from .models import Participant
 
 
 def colorize(target, color, use_escape=True):
@@ -81,8 +81,8 @@ def docopt_cmd(func):
         except DocoptExit as exception:
             # The DocoptExit is thrown when the args do not match.
             # We print a message to the user and the usage block.
-            print 'Invalid Command!'
-            print exception
+            print('Invalid Command!')
+            print(exception)
             return
         except SystemExit:
             # The SystemExit exception prints the usage for --help
@@ -132,9 +132,9 @@ class PsiturkShell(Cmd, object):
                    "debug", "setup_example", "status", "tunnel", "amt_balance",
                    "download_datafiles", "exit", "hit", "load", "quit", "save",
                    "shell", "version"]
-        print "%s is not a psiTurk command. See 'help'." %(cmd)
-        print "Did you mean this?\n      %s" %(process.extractOne(cmd,
-                                                                  choices)[0])
+        print("%s is not a psiTurk command. See 'help'." %(cmd))
+        print("Did you mean this?\n      %s" %(process.extractOne(cmd,
+                                                                  choices)[0]))
 
 
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
@@ -166,7 +166,7 @@ class PsiturkShell(Cmd, object):
 
     def do_psiturk_status(self, _):
         ''' Print psiTurk news '''
-        print self.get_intro_prompt()
+        print(self.get_intro_prompt())
 
     def color_prompt(self):
         ''' Construct psiTurk shell prompt '''
@@ -234,7 +234,7 @@ class PsiturkShell(Cmd, object):
         if (self.server.is_server_running() == 'yes' or
                 self.server.is_server_running() == 'maybe'):
             self.server.shutdown()
-            print 'Please wait. This could take a few seconds.'
+            print('Please wait. This could take a few seconds.')
             time.sleep(0.5)
 
     def server_restart(self):
@@ -250,7 +250,7 @@ class PsiturkShell(Cmd, object):
         else:
             args = ["xterm", "-e", "'tail -f %s'" % logfilename]
         subprocess.Popen(args, close_fds=True)
-        print "Log program launching..."
+        print("Log program launching...")
 
     @docopt_cmd
     def do_debug(self, arg):
@@ -300,11 +300,11 @@ class PsiturkShell(Cmd, object):
     def help_debug(self):
         ''' Help for debug '''
         with open(self.help_path + 'debug.txt', 'r') as help_text:
-            print help_text.read()
+            print(help_text.read())
 
     def do_version(self, _):
         ''' Print version number '''
-        print 'psiTurk version ' + version_number
+        print('psiTurk version ' + version_number)
 
 
     @docopt_cmd
@@ -331,16 +331,16 @@ class PsiturkShell(Cmd, object):
     def help_config(self):
         ''' Help for config '''
         with open(self.help_path + 'config.txt', 'r') as help_text:
-            print help_text.read()
+            print(help_text.read())
 
     def print_config(self, _):
         ''' Print configuration. '''
         for section in self.config.sections():
-            print '[%s]' % section
+            print('[%s]' % section)
             items = dict(self.config.items(section))
             for k in items:
-                print "%(a)s=%(b)s" % {'a': k, 'b': items[k]}
-            print ''
+                print("%(a)s=%(b)s" % {'a': k, 'b': items[k]})
+            print('')
 
     def reload_config(self, _):
         ''' Reload config. '''
@@ -360,13 +360,13 @@ class PsiturkShell(Cmd, object):
         ''' Notify user of server status. '''
         server_status = self.server.is_server_running()
         if server_status == 'yes':
-            print 'Server: ' + colorize('currently online', 'green')
+            print('Server: ' + colorize('currently online', 'green'))
         elif server_status == 'no':
-            print 'Server: ' + colorize('currently offline', 'red')
+            print('Server: ' + colorize('currently offline', 'red'))
         elif server_status == 'maybe':
-            print 'Server: ' + colorize('status unknown', 'yellow')
+            print('Server: ' + colorize('status unknown', 'yellow'))
         elif server_status == 'blocked':
-            print 'Server: ' + colorize('blocked', 'red')
+            print('Server: ' + colorize('blocked', 'red'))
 
     def do_setup_example(self, _):
         ''' Load psiTurk demo.'''
@@ -379,8 +379,8 @@ class PsiturkShell(Cmd, object):
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     def db_get_config(self):
         ''' Get database config. '''
-        print "Current database setting (database_url): \n\t", \
-        self.config.get("Database Parameters", "database_url")
+        print("Current database setting (database_url): \n\t", \
+        self.config.get("Database Parameters", "database_url"))
 
     def db_use_local_file(self, arg, filename=None):
         ''' Use local file for DB. '''
@@ -394,8 +394,8 @@ class PsiturkShell(Cmd, object):
                 filename = 'participants.db'
         base_url = "sqlite:///" + filename
         self.config.set("Database Parameters", "database_url", base_url)
-        print "Updated database setting (database_url): \n\t", \
-        self.config.get("Database Parameters", "database_url")
+        print("Updated database setting (database_url): \n\t", \
+        self.config.get("Database Parameters", "database_url"))
         if self.server.is_server_running() == 'yes':
             self.server_restart()
 
@@ -475,7 +475,7 @@ class PsiturkShell(Cmd, object):
     def help_server(self):
         ''' Help for server '''
         with open(self.help_path + 'server.txt', 'r') as help_text:
-            print help_text.read()
+            print(help_text.read())
 
     def random_id_generator(self, size=6, chars=string.ascii_uppercase +
                             string.digits):
@@ -571,12 +571,12 @@ class PsiturkNetworkShell(PsiturkShell):
         if (self.server.is_server_running() == 'yes' or
                 self.server.is_server_running() == 'maybe'):
             self.server.shutdown()
-            print 'Please wait. This could take a few seconds.'
+            print('Please wait. This could take a few seconds.')
             self.clean_up()
             while self.server.is_server_running() != 'no':
                 time.sleep(0.5)
         else:
-            print 'Your server is already off.'
+            print('Your server is already off.')
 
     def server_restart(self):
         ''' Restart server '''
@@ -587,9 +587,9 @@ class PsiturkNetworkShell(PsiturkShell):
     def clean_up(self):
         ''' Clean up child and orphaned processes. '''
         if self.tunnel.is_open:
-            print 'Closing tunnel...'
+            print('Closing tunnel...')
             self.tunnel.close()
-            print 'Done.'
+            print('Done.')
         else:
             pass
 
@@ -641,11 +641,11 @@ class PsiturkNetworkShell(PsiturkShell):
         # server_status = self.server.is_server_running()  # Not used
         self.tally_hits()
         if self.sandbox:
-            print 'AMT worker site - ' + colorize('sandbox', 'bold') + ': ' \
-            + str(self.sandbox_hits) + ' HITs available'
+            print('AMT worker site - ' + colorize('sandbox', 'bold') + ': ' \
+            + str(self.sandbox_hits) + ' HITs available')
         else:
-            print 'AMT worker site - ' + colorize('live', 'bold') + ': ' \
-            + str(self.live_hits) + ' HITs available'
+            print('AMT worker site - ' + colorize('live', 'bold') + ': ' \
+            + str(self.live_hits) + ' HITs available')
 
 
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
@@ -676,17 +676,17 @@ class PsiturkNetworkShell(PsiturkShell):
         else:
             workers = self.amt_services.get_workers()
         if workers is False:
-            print colorize('*** failed to get workers', 'red')
+            print(colorize('*** failed to get workers', 'red'))
         if chosen_hit:
             workers = [worker for worker in workers if \
                        worker['hitId'] == chosen_hit]
-            print 'listing workers for HIT', chosen_hit
+            print('listing workers for HIT', chosen_hit)
         if not len(workers):
-            print "*** no workers match your request"
+            print("*** no workers match your request")
         else:
             workers = [self.add_bonus(worker)
                        for worker in workers]
-            print json.dumps(workers, indent=4,
+            print(json.dumps(workers, indent=4,),
                              separators=(',', ': '))
 
     def worker_approve(self, chosen_hit, assignment_ids=None):
@@ -695,7 +695,7 @@ class PsiturkNetworkShell(PsiturkShell):
             workers = self.amt_services.get_workers("Submitted")
             assignment_ids = [worker['assignmentId'] for worker in workers if \
                               worker['hitId'] == chosen_hit]
-            print 'approving workers for HIT', chosen_hit
+            print('approving workers for HIT', chosen_hit)
         for assignment_id in assignment_ids:
             success = self.amt_services.approve_worker(assignment_id)
             if success:
@@ -708,11 +708,11 @@ class PsiturkNetworkShell(PsiturkShell):
                     part.status = 5
                     db_session.add(part)
                     db_session.commit()
-                    print 'approved', assignment_id
+                    print('approved', assignment_id)
                 except:
-                    print "*** approved but failed to update status in db for", assignment_id
+                    print("*** approved but failed to update status in db for", assignment_id)
             else:
-                print '*** failed to approve', assignment_id
+                print('*** failed to approve', assignment_id)
 
     def worker_reject(self, chosen_hit, assignment_ids = None):
         ''' Reject worker '''
@@ -720,13 +720,13 @@ class PsiturkNetworkShell(PsiturkShell):
             workers = self.amt_services.get_workers("Submitted")
             assignment_ids = [worker['assignmentId'] for worker in workers if \
                               worker['hitId'] == chosen_hit]
-            print 'rejecting workers for HIT', chosen_hit
+            print('rejecting workers for HIT', chosen_hit)
         for assignment_id in assignment_ids:
             success = self.amt_services.reject_worker(assignment_id)
             if success:
-                print 'rejected', assignment_id
+                print('rejected', assignment_id)
             else:
-                print '*** failed to reject', assignment_id
+                print('*** failed to reject', assignment_id)
 
     def worker_unreject(self, chosen_hit, assignment_ids = None):
         ''' Unreject worker '''
@@ -737,9 +737,9 @@ class PsiturkNetworkShell(PsiturkShell):
         for assignment_id in assignment_ids:
             success = self.amt_services.unreject_worker(assignment_id)
             if success:
-                print 'unrejected %s' % (assignment_id)
+                print('unrejected %s' % (assignment_id))
             else:
-                print '*** failed to unreject', assignment_id
+                print('*** failed to unreject', assignment_id)
 
     def worker_bonus(self, chosen_hit, auto, amount, reason,
                      assignment_ids=None):
@@ -755,11 +755,11 @@ class PsiturkNetworkShell(PsiturkShell):
             override_status = False
             workers = self.amt_services.get_workers("Approved")
             if workers is False:
-                print "No approved workers for HIT", chosen_hit
+                print("No approved workers for HIT", chosen_hit)
                 return
             assignment_ids = [worker['assignmentId'] for worker in workers if \
                               worker['hitId'] == chosen_hit]
-            print 'bonusing workers for HIT', chosen_hit
+            print('bonusing workers for HIT', chosen_hit)
         for assignment_id in assignment_ids:
             try:
                 init_db()
@@ -771,35 +771,35 @@ class PsiturkNetworkShell(PsiturkShell):
                     amount = part.bonus
                 status = part.status
                 if amount <= 0:
-                    print "bonus amount <=$0, no bonus given to", assignment_id
+                    print("bonus amount <=$0, no bonus given to", assignment_id)
                 elif status == 7 and not override_status:
-                    print "bonus already awarded to ", assignment_id
+                    print("bonus already awarded to ", assignment_id)
                 else:
                     success = self.amt_services.bonus_worker(assignment_id,
                                                              amount, reason)
                     if success:
-                        print "gave bonus of $" + str(amount) + " to " + \
-                        assignment_id
+                        print("gave bonus of ${} to {}".format(amount,
+                                                               assignment_id))
                         part.status = 7
                         db_session.add(part)
                         db_session.commit()
                         db_session.remove()
                     else:
-                        print "*** failed to bonus", assignment_id
+                        print("*** failed to bonus", assignment_id)
             except:
-                print "*** failed to bonus", assignment_id
+                print("*** failed to bonus", assignment_id)
 
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #   hit management
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     def do_amt_balance(self, _):
         ''' Get MTurk balance '''
-        print self.amt_services.check_balance()
+        print(self.amt_services.check_balance())
 
     def help_amt_balance(self):
         ''' Get help for amt_balance. '''
         with open(self.help_path + 'amt.txt', 'r') as help_text:
-            print help_text.read()
+            print(help_text.read())
 
     def hit_list(self, active_hits, reviewable_hits):
         ''' List hits. '''
@@ -811,10 +811,10 @@ class PsiturkNetworkShell(PsiturkShell):
         else:
             hits_data = self.amt_services.get_all_hits()
         if not hits_data:
-            print '*** no hits retrieved'
+            print('*** no hits retrieved')
         else:
             for hit in hits_data:
-                print hit
+                print(hit)
 
     def hit_extend(self, hit_id, assignments, minutes):
         """ Add additional worker assignments or minutes to a HIT.
@@ -836,7 +836,7 @@ class PsiturkNetworkShell(PsiturkShell):
         assert type(hit_id[0]) is str
 
         if self.amt_services.extend_hit(hit_id[0], assignments, minutes):
-            print "HIT extended."
+            print("HIT extended.")
 
     def hit_dispose(self, all_hits, hit_ids=None):
         ''' Dispose HIT. '''
@@ -848,10 +848,10 @@ class PsiturkNetworkShell(PsiturkShell):
             # Check that the HIT is reviewable
             status = self.amt_services.get_hit_status(hit)
             if not status:
-                print "*** Error getting hit status"
+                print("*** Error getting hit status")
                 return
             if self.amt_services.get_hit_status(hit) != "Reviewable":
-                print("*** This hit is not 'Reviewable' and so can not be "
+                print("*** This hit is not 'Reviewable' and so can not be " \
                       "disposed of")
                 return
             else:
@@ -859,9 +859,9 @@ class PsiturkNetworkShell(PsiturkShell):
                 # self.web_services.delete_ad(hit)  # also delete the ad
                 if success:
                     if self.sandbox:
-                        print "deleting sandbox HIT", hit
+                        print("deleting sandbox HIT", hit)
                     else:
-                        print "deleting live HIT", hit
+                        print("deleting live HIT", hit)
         self.tally_hits()
 
     def hit_expire(self, all_hits, hit_ids=None):
@@ -873,9 +873,9 @@ class PsiturkNetworkShell(PsiturkShell):
             success = self.amt_services.expire_hit(hit)
             if success:
                 if self.sandbox:
-                    print "expiring sandbox HIT", hit
+                    print("expiring sandbox HIT", hit)
                 else:
-                    print "expiring live HIT", hit
+                    print("expiring live HIT", hit)
         self.tally_hits()
 
     def tally_hits(self):
@@ -895,14 +895,14 @@ class PsiturkNetworkShell(PsiturkShell):
         inaccessible_but_do_it_anyways = False
         if not self.quiet:
             if server_loc in ['localhost', '127.0.0.1']:
-                print '\n'.join(['*****************************',
+                print('\n'.join(['*****************************',
                 "  Sorry, your server is set for local debugging only.  You cannot",\
                 "  make public HITs or Ads.  Please edit the config.txt file inside",\
                 "  your project folder and set the 'host' variable in the 'Server",\
                 "  Parameters' section to something other than 'localhost' or",\
                 "  '127.0.0.1'.  This will make your psiturk server process",\
                 "  reachable by the external world.  The most useful option is",\
-                "  '0.0.0.0'", ""])
+                "  '0.0.0.0'", ""]))
 
                 user_input = raw_input(
                     '\n'.join(['  If you are using an external server process press'\
@@ -918,29 +918,29 @@ class PsiturkNetworkShell(PsiturkShell):
 
         if use_psiturk_ad_server:
             if not self.web_services.check_credentials():
-                print '\n'.join(['*****************************',
+                print('\n'.join(['*****************************',
                                 '  Sorry, your psiTurk Credentials are invalid.\n ',
                                 '  You cannot create ads and hits until you enter valid credentials in ',
                                 '  the \'psiTurk Access\' section of ~/.psiturkconfig.  You can obtain your',
-                                '  credentials or sign up at https://www.psiturk.org/login.\n'])
+                                '  credentials or sign up at https://www.psiturk.org/login.\n']))
                 return
 
         if not self.amt_services.verify_aws_login():
-            print '\n'.join(['*****************************',
+            print('\n'.join(['*****************************',
                              '  Sorry, your AWS Credentials are invalid.\n ',
                              '  You cannot create ads and hits until you enter valid credentials in ',
                              '  the \'AWS Access\' section of ~/.psiturkconfig.  You can obtain your ',
-                             '  credentials via the Amazon AMT requester website.\n'])
+                             '  credentials via the Amazon AMT requester website.\n']))
             return
 
         if not self.quiet:
             if self.server.is_server_running() != 'yes' and not inaccessible_but_do_it_anyways:
-                print '\n'.join(['*****************************',
+                print('\n'.join(['*****************************',
                                  '  Your psiTurk server is currently not running but you are trying to create ',
                                  '  an Ad/HIT.  This can cause problems for worker trying to access your ',
                                  '  hit.  Please start the server by first typing \'server on\' then try this ',
                                  '  command again.',
-                                 ''])
+                                 '']))
                 user_input = raw_input('\n'.join([
                     '  If you are using an external server process, press `y` to continue.',
                     '  Otherwise, press `n` to cancel:'
@@ -955,10 +955,10 @@ class PsiturkNetworkShell(PsiturkShell):
         try:
             numWorkers = int(numWorkers)
         except ValueError:
-            print '*** number of participants must be a whole number'
+            print('*** number of participants must be a whole number')
             return
         if numWorkers <= 0:
-            print '*** number of participants must be greater than 0'
+            print('*** number of participants must be greater than 0')
             return
 
         # reward
@@ -967,12 +967,12 @@ class PsiturkNetworkShell(PsiturkShell):
         p = re.compile('^\d*\.\d\d$')
         m = p.match(reward)
         if m is None:
-            print '*** reward must have format [dollars].[cents]'
+            print('*** reward must have format [dollars].[cents]')
             return
         try:
             reward = float(reward)
         except:
-            print '*** reward must be in format [dollars].[cents]'
+            print('*** reward must be in format [dollars].[cents]')
             return
             
         # duration
@@ -982,10 +982,10 @@ class PsiturkNetworkShell(PsiturkShell):
         try:
             duration = float(duration)
         except ValueError:
-            print '*** duration must a number'
+            print('*** duration must a number')
             return
         if duration <= 0:
-            print '*** duration must be greater than 0'
+            print('*** duration must be greater than 0')
             return
         
 
@@ -1021,17 +1021,17 @@ class PsiturkNetworkShell(PsiturkShell):
                 fail_msg = "  Unable to create HIT on Amazon Mechanical Turk."
 
         if create_failed:
-            print '\n'.join(['*****************************',
-                             '  Sorry, there was an error creating hit and registering ad.'])
+            print('\n'.join(['*****************************',
+                             '  Sorry, there was an error creating hit and registering ad.']))
             if fail_msg:
-                print fail_msg
+                print(fail_msg)
 
         else:
             if self.sandbox:
                 self.sandbox_hits += 1
             else:
                 self.live_hits += 1
-            # print results
+            # print(results)
             # fee structure changed 07.22.15:
             # 20% for HITS with < 10 assignments
             # 40% for HITS with >= 10 assignments
@@ -1047,7 +1047,7 @@ class PsiturkNetworkShell(PsiturkShell):
                 mode = 'sandbox'
             else:
                 mode = 'live'
-            print '\n'.join(['*****************************',
+            print('\n'.join(['*****************************',
                              '  Creating %s HIT' % colorize(mode, 'bold'),
                              '    HITid: %s' % str(hit_id),
                              '    Max workers: %d' % numWorkers,
@@ -1055,7 +1055,7 @@ class PsiturkNetworkShell(PsiturkShell):
                              '    Duration: %s hours' % duration,
                              '    Fee: $%.2f' % fee,
                              '    ________________________',
-                             '    Total: $%.2f' % total])
+                             '    Total: $%.2f' % total]))
 
             # Print the Ad Url
             ad_url = ''
@@ -1077,7 +1077,7 @@ class PsiturkNetworkShell(PsiturkShell):
                   }
                 ad_url = '{base}?mode={mode}&assignmentId=debug{assignmentid}&hitId=debug{hitid}&workerId=debug{workerid}'.format(**options)
             print('  Ad URL: {}'.format(ad_url) )
-            print "Note: This url cannot be used to run your full psiTurk experiment.  It is only for testing your ad."
+            print("Note: This url cannot be used to run your full psiTurk experiment.  It is only for testing your ad.")
 
             # Print the Mturk Url
             mturk_url = ''
@@ -1089,28 +1089,28 @@ class PsiturkNetworkShell(PsiturkShell):
                 mturk_url_base, urllib.quote_plus(str(self.config.get('HIT Configuration', 'title'))) )
 
             print('  MTurk URL: {}'.format(mturk_url) )
-            print "Hint: In OSX, you can open a terminal link using cmd + click"
+            print("Hint: In OSX, you can open a terminal link using cmd + click")
             if self.sandbox and use_psiturk_ad_server:
-                print "Note: This sandboxed ad will expire from the server in 16 days."
+                print("Note: This sandboxed ad will expire from the server in 16 days.")
 
     def create_psiturk_ad(self):
         # register with the ad server (psiturk.org/ad/register) using POST
         if os.path.exists('templates/ad.html'):
             ad_html = open('templates/ad.html').read()
         else:
-            print '\n'.join(['*****************************',
+            print('\n'.join(['*****************************',
                 '  Sorry, there was an error registering ad.',
                 '  The file ad.html is required to be in the templates folder',
-                '  of your project so that the ad can be served.'])
+                '  of your project so that the ad can be served.']))
             return
 
         size_of_ad = sys.getsizeof(ad_html)
         if size_of_ad >= 1048576:
-            print '\n'.join(['*****************************',
+            print('\n'.join(['*****************************',
                 '  Sorry, there was an error registering the ad.',
                 '  Your local ad.html is %s bytes, but the maximum',
                 '  template size uploadable to the ad server is',
-                '  1048576 bytes.' % size_of_ad])
+                '  1048576 bytes.' % size_of_ad]))
             return
 
         # what all do we need to send to server?
@@ -1216,7 +1216,7 @@ class PsiturkNetworkShell(PsiturkShell):
     def help_db(self):
         ''' DB help '''
         with open(self.help_path + 'db.txt', 'r') as help_text:
-            print help_text.read()
+            print(help_text.read())
 
 
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
@@ -1226,17 +1226,17 @@ class PsiturkNetworkShell(PsiturkShell):
         ''' List AWS DB regions '''
         regions = self.db_services.list_regions()
         if regions != []:
-            print "Avaliable AWS regions:"
+            print("Avaliable AWS regions:")
         for reg in regions:
-            print '\t' + reg,
+            print('\t' + reg,)
             if reg == self.db_services.get_region():
-                print "(currently selected)"
+                print("(currently selected)")
             else:
-                print ''
+                print('')
 
     def db_aws_get_region(self):
         ''' Get AWS region '''
-        print self.db_services.get_region()
+        print(self.db_services.get_region())
 
     def db_aws_set_region(self, region_name):
         ''' Set AWS region '''
@@ -1263,7 +1263,7 @@ class PsiturkNetworkShell(PsiturkShell):
                           "No changes made to regions.")
                     return
         self.db_services.set_region(region_name)
-        print "Region updated to ", region_name
+        print("Region updated to ", region_name)
         self.config.set('AWS Access', 'aws_region', region_name, True)
         if self.server.is_server_running() == 'yes':
             self.server_restart()
@@ -1278,9 +1278,9 @@ class PsiturkNetworkShell(PsiturkShell):
             print("Here are the current DB instances associated with your AWS " \
                 "account in region " + self.db_services.get_region())
             for dbinst in instances:
-                print '\t'+'-'*20
-                print "\tInstance ID: " + dbinst.id
-                print "\tStatus: " + dbinst.status
+                print('\t'+'-'*20)
+                print("\tInstance ID: " + dbinst.id)
+                print("\tStatus: " + dbinst.status)
 
     def db_aws_delete_instance(self, instance_id):
         ''' Delete AWS DB instance '''
@@ -1297,9 +1297,9 @@ class PsiturkNetworkShell(PsiturkShell):
                 print("There are no instances you can delete currently.  Use "
                       "`db aws_create_instance` to make one.")
                 return
-            print "Here are the available instances you can delete:"
+            print("Here are the available instances you can delete:")
             for inst in instances:
-                print "\t ", inst.id, "(", inst.status, ")"
+                print("\t ", inst.id, "(", inst.status, ")")
             while not valid:
                 instance_id = raw_input('Enter the instance identity you would '
                                         'like to delete: ')
@@ -1365,7 +1365,7 @@ class PsiturkNetworkShell(PsiturkShell):
             print("Here are the available instances you have.  You can only "
                 "use those listed as 'available':")
             for inst in instances:
-                print "\t ", inst.id, "(", inst.status, ")"
+                print("\t ", inst.id, "(", inst.status, ")")
             while not valid:
                 instance_id = raw_input('Enter the instance identity you would '
                                         'like to use: ')
@@ -1420,7 +1420,7 @@ class PsiturkNetworkShell(PsiturkShell):
                     print("*** Error authorizing your ip address to connect to " \
                           "server (%s)." % my_ip)
                     return
-                print "AWS RDS database instance %s selected." % instance_id
+                print("AWS RDS database instance %s selected." % instance_id)
 
                 # Using regular SQL commands list available database on this
                 # node
@@ -1448,12 +1448,12 @@ class PsiturkNetworkShell(PsiturkShell):
                         if res is True:
                             valid = True
                         else:
-                            print res + " Try again."
+                            print(res + " Try again.")
                     create_db = True
                 else:
-                    print "Here are the available database tables"
+                    print("Here are the available database tables")
                     for database in existing_dbs:
-                        print "\t" + database
+                        print("\t" + database)
                     valid = False
                     while not valid:
                         db_name = raw_input(
@@ -1464,7 +1464,7 @@ class PsiturkNetworkShell(PsiturkShell):
                         if res is True:
                             valid = True
                         else:
-                            print res + " Try again."
+                            print(res + " Try again.")
                     if db_name not in existing_dbs:
                         create_db = True
                 if create_db:
@@ -1484,11 +1484,11 @@ class PsiturkNetworkShell(PsiturkShell):
                         self.server.is_server_running() == 'yes'):
                     self.do_restart_server('')
             else:
-                print '\n'.join([
+                print('\n'.join([
                     "*** Error selecting database instance %s." % arg['<id>'],
                     "Run `db list_db_instances` for current status of instances, only `available`",
                     "instances can be used.  Also, your password may be incorrect."
-                ])
+                ]))
         else:
             return
 
@@ -1501,7 +1501,7 @@ class PsiturkNetworkShell(PsiturkShell):
             interactive = True
 
         if interactive:
-            print '\n'.join(['*************************************************',
+            print('\n'.join(['*************************************************',
                              'Ok, here are the rules on creating instances:',
                              '',
                              'instance id:',
@@ -1526,7 +1526,7 @@ class PsiturkNetworkShell(PsiturkShell):
                              '  The name for the first database on this instance.  Rules are',
                              '  1-64 alphanumeric characters, cannot be a reserved MySQL word',
                              '*************************************************',
-                             ''])
+                             '']))
 
         if interactive:
             valid = False
@@ -1537,11 +1537,11 @@ class PsiturkNetworkShell(PsiturkShell):
                 if res is True:
                     valid = True
                 else:
-                    print res + " Try again."
+                    print(res + " Try again.")
         else:
             res = self.db_services.validate_instance_id(instid)
             if res is not True:
-                print res
+                print(res)
                 return
 
         if interactive:
@@ -1552,11 +1552,11 @@ class PsiturkNetworkShell(PsiturkShell):
                 if res is True:
                     valid = True
                 else:
-                    print res + " Try again."
+                    print(res + " Try again.")
         else:
             res = self.db_services.validate_instance_size(size)
             if res is not True:
-                print res
+                print(res)
                 return
 
         if interactive:
@@ -1567,11 +1567,11 @@ class PsiturkNetworkShell(PsiturkShell):
                 if res is True:
                     valid = True
                 else:
-                    print res + " Try again."
+                    print(res + " Try again.")
         else:
             res = self.db_services.validate_instance_username(username)
             if res is not True:
-                print res
+                print(res)
                 return
 
         if interactive:
@@ -1582,27 +1582,27 @@ class PsiturkNetworkShell(PsiturkShell):
                 if res is True:
                     valid = True
                 else:
-                    print res + " Try again."
+                    print(res + " Try again.")
         else:
             res = self.db_services.validate_instance_password(password)
             if res is not True:
-                print res
+                print(res)
                 return
 
         if interactive:
             valid = False
             while not valid:
-                dbname = raw_input('name for first database on this instance \
-                                   (see rules): ')
+                dbname = raw_input('name for first database on this instance' \
+                                   '(see rules): ')
                 res = self.db_services.validate_instance_dbname(dbname)
                 if res is True:
                     valid = True
                 else:
-                    print res + " Try again."
+                    print(res + " Try again.")
         else:
             res = self.db_services.validate_instance_dbname(dbname)
             if res is not True:
-                print res
+                print(res)
                 return
 
         options = {
@@ -1614,10 +1614,10 @@ class PsiturkNetworkShell(PsiturkShell):
         }
         instance = self.db_services.create_db_instance(options)
         if not instance:
-            print '\n'.join(['*****************************',
-                             '  Sorry, there was an error creating db instance.'])
+            print('\n'.join(['*****************************',
+                             '  Sorry, there was an error creating db instance.']))
         else:
-            print '\n'.join(['*****************************',
+            print('\n'.join(['*****************************',
                              '  Creating AWS RDS MySQL Instance',
                              '    id: ' + str(options['id']),
                              '    size: ' + str(options['size']) + " GB",
@@ -1629,7 +1629,7 @@ class PsiturkNetworkShell(PsiturkShell):
                              ' Be sure to store this information in a safe place.',
                              ' Please wait 5-10 minutes while your database is created in the cloud.',
                              ' You can run \'db aws_list_instances\' to verify it was created (status',
-                             ' will say \'available\' when it is ready'])
+                             ' will say \'available\' when it is ready']))
 
 
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
@@ -1657,18 +1657,18 @@ class PsiturkNetworkShell(PsiturkShell):
             self.sandbox = False
             self.amt_services.set_sandbox(False)
             self.tally_hits()
-            print 'Entered %s mode' % colorize('live', 'bold')
+            print('Entered %s mode' % colorize('live', 'bold'))
         else:
             self.sandbox = True
             self.amt_services.set_sandbox(True)
             self.tally_hits()
-            print 'Entered %s mode' % colorize('sandbox', 'bold')
+            print('Entered %s mode' % colorize('sandbox', 'bold'))
         if restart_server:
             self.server_restart()
     def help_mode(self):
         ''' Help '''
         with open(self.help_path + 'mode.txt', 'r') as help_text:
-            print help_text.read()
+            print(help_text.read())
 
     @docopt_cmd
     def do_tunnel(self, arg):
@@ -1724,7 +1724,7 @@ class PsiturkNetworkShell(PsiturkShell):
     def help_hit(self):
         ''' HIT help '''
         with open(self.help_path + 'hit.txt', 'r') as help_text:
-            print help_text.read()
+            print(help_text.read())
 
 
     @docopt_cmd
@@ -1763,7 +1763,7 @@ class PsiturkNetworkShell(PsiturkShell):
     def help_worker(self):
         ''' Help for worker command. '''
         with open(self.help_path + 'worker.txt', 'r') as help_text:
-            print help_text.read()
+            print(help_text.read())
 
     @docopt_cmd
     def do_debug(self, arg):
@@ -1880,8 +1880,8 @@ class PsiturkNetworkShell(PsiturkShell):
     def tunnel_status(self):
         ''' Get tunnel status '''
         if self.tunnel.is_open:
-            print "For tunnel status, navigate to http://127.0.0.1:4040"
-            print "Hint: In OSX, you can open a terminal link using cmd + click"
+            print("For tunnel status, navigate to http://127.0.0.1:4040")
+            print("Hint: In OSX, you can open a terminal link using cmd + click")
         else:
             print("Sorry, you need to open a tunnel to check the status. Try" 
                   "'tunnel open' first.")
@@ -1898,21 +1898,21 @@ class PsiturkNetworkShell(PsiturkShell):
             if not stop:
                 self.intro = ''
                 self.color_prompt()
-                print "^C"
+                print("^C")
             else:
                 break
 
 def run(cabinmode=False, script=None, execute=None, quiet=False):
     using_libedit = 'libedit' in readline.__doc__
     if using_libedit:
-        print colorize('\n'.join([
+        print(colorize('\n'.join([
             'libedit version of readline detected.',
             'readline will not be well behaved, which may cause all sorts',
             'of problems for the psiTurk shell. We highly recommend installing',
             'the gnu version of readline by running "sudo pip install gnureadline".',
             'Note: "pip install readline" will NOT work because of how the OSX',
             'pythonpath is structured.'
-        ]), 'red', False)
+        ]), 'red', False))
     sys.argv = [sys.argv[0]] # Drop arguments which were already processed in command_line.py
     #opt = docopt(__doc__, sys.argv[1:])
     config = PsiturkConfig()

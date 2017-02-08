@@ -3,8 +3,8 @@ import datetime
 import io, csv, json
 from sqlalchemy import Column, Integer, String, DateTime, Float, Text
 
-from db import Base
-from psiturk_config import PsiturkConfig
+from .db import Base
+from .psiturk_config import PsiturkConfig
 
 config = PsiturkConfig()
 config.load_config()

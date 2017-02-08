@@ -65,19 +65,30 @@ class MTurkHIT(object):
     def __repr__(self):
         for opt in self.options:
             self.options[opt] = self.options[opt].encode('ascii', 'replace')
-        return "%s \n\tStatus: %s \n\tHITid: %s \
-            \n\tmax:%s/pending:%s/complete:%s/remain:%s \n\tCreated:%s \
-            \n\tExpires:%s\n" % (
-                self.options['title'],
-                self.options['status'],
-                self.options['hitid'],
-                self.options['max_assignments'],
-                self.options['number_assignments_pending'],
-                self.options['number_assignments_completed'],
-                self.options['number_assignments_available'],
-                self.options['creation_time'],
-                self.options['expiration']
-            )
+        format_string = "{title}\n"
+        format_string += "\tStatus: {status}\n"
+        format_string += "\tHITid: {hitid} \;\n"
+        format_string += "\tmax: {max}/pending:{number_assignments_pending}"
+        format_string += "/complete:{number_assignments_completed}"
+        format_string += "/remain:{number_assignments_available}\n"
+        format_string += "\tCreated: {creation_time}\n"
+        format_string += "\tExpires: {expiration}\n"
+        return format_string.format(**self.options)
+
+        # previously:
+        # "%s \n\tStatus: %s \n\tHITid: %s \;
+        #     '\n\tmax:%s/pending:%s/complete:%s/remain:%s \n\tCreated:%s \
+        #     '\n\tExpires:%s\n" % (
+        #         self.options['title'],
+        #         self.options['status'],
+        #         self.options['hitid'],
+        #         self.options['max_assignments'],
+        #         self.options['number_assignments_pending'],
+        #         self.options['number_assignments_completed'],
+        #         self.options['number_assignments_available'],
+        #         self.options['creation_time'],
+        #         self.options['expiration']
+        #     )
 
 class RDSServices(object):
     ''' Relational database services via AWS '''
@@ -131,19 +142,19 @@ class RDSServices(object):
             try:
                 self.rdsc.get_all_dbinstances()
             except MTurkRequestError as exception:
-                print exception.error_message
+                print(exception.error_message)
                 return False
             except AttributeError:
-                print "*** Unable to establish connection to AWS region %s "\
-                    "using your access key/secret key", self.region
+                print("*** Unable to establish connection to AWS region %s " \
+                    "using your access key/secret key", self.region)
                 return False
             except boto.exception.BotoServerError as e:
-                print "***********************************************************"
-                print "WARNING"
-                print "Unable to establish connection to AWS RDS (Amazon relational database services)."
-                print "See relevant psiturk docs here:"
-                print "\thttp://psiturk.readthedocs.io/en/latest/configure_databases.html#obtaining-a-low-cost-or-free-mysql-database-on-amazon-s-web-services-cloud"
-                print "***********************************************************"
+                print("***********************************************************")
+                print("WARNING")
+                print("Unable to establish connection to AWS RDS (Amazon relational database services).")
+                print("See relevant psiturk docs here:")
+                print("\thttp://psiturk.readthedocs.io/en/latest/configure_databases.html#obtaining-a-low-cost-or-free-mysql-database-on-amazon-s-web-services-cloud")
+                print("***********************************************************")
                 return False
             else:
                 return True
@@ -151,8 +162,8 @@ class RDSServices(object):
     def connect_to_aws_rds(self):
         ''' Connec to aws rds '''
         if not self.valid_login:
-            print 'Sorry, unable to connect to Amazon\'s RDS database server. "\
-                "AWS credentials invalid.'
+            print('Sorry, unable to connect to Amazon\'s RDS database server. ' \
+                'AWS credentials invalid.')
             return False
         # rdsparams = dict(
         #     aws_access_key_id = self.aws_access_key_id,
@@ -192,7 +203,7 @@ class RDSServices(object):
             default_sg = sgs[0]
             default_sg.authorize(ip_protocol='tcp', from_port=3306,
                                  to_port=3306, cidr_ip=str(ip_address)+'/32')
-        except EC2ResponseError, exception:
+        except EC2ResponseError as exception:
             if exception.error_code == "InvalidPermission.Duplicate":
                 return True  # ok it already exists
             else:
@@ -218,7 +229,7 @@ class RDSServices(object):
         try:
             database = self.rdsc.delete_dbinstance(dbid,
                                                    skip_final_snapshot=True)
-            print database
+            print(database)
         except:
             return False
         else:
@@ -231,8 +242,8 @@ class RDSServices(object):
             if len(instid) <= 63 and len(instid) >= 1:
                 if instid[0].isalpha():
                     return True
-        return "*** Error: Instance ids must be 1-63 alphanumeric characters, \
-            first is a letter."
+        return "*** Error: Instance ids must be 1-63 alphanumeric characters," \
+                            "first is a letter."
 
     def validate_instance_size(self, size):
         ''' integer between 5-1024 (inclusive) '''
@@ -253,8 +264,8 @@ class RDSServices(object):
                 if username[0].isalpha():
                     if username not in MYSQL_RESERVED_WORDS:
                         return True
-        return '*** Error: Usernames must be 1-16 alphanumeric chracters, \
-            first a letter, cannot be reserved MySQL word.'
+        return '*** Error: Usernames must be 1-16 alphanumeric chracters, ' \
+            'first a letter, cannot be reserved MySQL word.'
 
     def validate_instance_password(self, password):
         ''' Validate instance passwords '''
@@ -272,8 +283,8 @@ class RDSServices(object):
             if len(dbname) <= 41 and len(dbname) >= 1:
                 if dbname.lower() not in MYSQL_RESERVED_WORDS:
                     return True
-        return '*** Error: Database names must be 1-64 alphanumeric characters,\
-            cannot be a reserved MySQL word.'
+        return '*** Error: Database names must be 1-64 alphanumeric characters,' \
+            'cannot be a reserved MySQL word.'
 
     def create_db_instance(self, params):
         ''' Create db instance '''
@@ -304,10 +315,10 @@ class MTurkServices(object):
         self.valid_login = self.verify_aws_login()
 
         if not self.valid_login:
-            print 'WARNING *****************************'
-            print 'Sorry, AWS Credentials invalid.\nYou will only be able to '\
+            print('WARNING *****************************')
+            print('Sorry, AWS Credentials invalid.\nYou will only be able to '\
                   'test experiments locally until you enter\nvalid '\
-                  'credentials in the AWS Access section of ~/.psiturkconfig\n'
+                  'credentials in the AWS Access section of ~/.psiturkconfig\n')
 
     def update_credentials(self, aws_access_key_id, aws_secret_access_key):
         ''' Update credentials '''
@@ -444,7 +455,7 @@ class MTurkServices(object):
             self.mtc.grant_bonus(worker_id, assignment_id, bonus, reason)
             return True
         except MTurkRequestError as exception:
-            print exception
+            print(exception)
             return False
 
     def approve_worker(self, assignment_id):
@@ -492,7 +503,7 @@ class MTurkServices(object):
             try:
                 self.mtc.get_account_balance()
             except MTurkRequestError as exception:
-                print exception.error_message
+                print(exception.error_message)
                 return False
             else:
                 return True
@@ -500,8 +511,8 @@ class MTurkServices(object):
     def connect_to_turk(self):
         ''' Connect to turk '''
         if not self.valid_login:
-            print 'Sorry, unable to connect to Amazon Mechanical Turk. AWS '\
-                  'credentials invalid.'
+            print('Sorry, unable to connect to Amazon Mechanical Turk. AWS '\
+                  'credentials invalid.')
             return False
         if self.is_sandbox:
             host = 'mechanicalturk.sandbox.amazonaws.com'
@@ -618,7 +629,7 @@ class MTurkServices(object):
             self.mtc.expire_hit(hitid)
             return True
         except MTurkRequestError:
-            print "Failed to expire HIT. Please check the ID and try again."
+            print("Failed to expire HIT. Please check the ID and try again.")
             return False
 
     def dispose_hit(self, hitid):
@@ -627,9 +638,9 @@ class MTurkServices(object):
             return False
         try:
             self.mtc.dispose_hit(hitid)
-        except Exception, e:
-            print "Failed to dispose of HIT %s. Make sure there are no "\
-                "assignments remaining to be reviewed." % hitid
+        except Exception as e:
+            print("Failed to dispose of HIT %s. Make sure there are no "\
+                "assignments remaining to be reviewed." % hitid)
 
     def extend_hit(self, hitid, assignments_increment=None,
                    expiration_increment=None):
@@ -643,9 +654,9 @@ class MTurkServices(object):
                                 expiration_increment=int(expiration_increment
                                                          or 0)*60)
             return True
-        except Exception, e:
-            print "Failed to extend HIT %s. Please check the ID and try again." \
-                % hitid
+        except Exception as e:
+            print("Failed to extend HIT %s. Please check the ID and try again." 
+                % hitid)
             return False
 
     def get_hit_status(self, hitid):
@@ -665,5 +676,5 @@ class MTurkServices(object):
             summary = jsonify(balance=str(balance))
             return summary
         except MTurkRequestError as exception:
-            print exception.error_message
+            print(exception.error_message)
             return False

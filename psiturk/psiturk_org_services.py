@@ -2,7 +2,16 @@
 """ This module """
 
 import os
-import urllib2
+
+try:
+    from urllib.request import urlopen
+    from urllib.parse import urlparse
+    from urllib.error import HTTPError
+except ImportError:
+    from urlparse import urlparse
+    from urllib2 import urlopen
+    from urllib2 import HTTPError
+
 import json
 import requests
 from psiturk.version import version_number
@@ -30,12 +39,12 @@ class PsiturkOrgServices(object):
         self.sandbox_ad_server = 'https://sandbox.ad.psiturk.org'
         self.update_credentials(key, secret)
         if not self.check_credentials():
-            print 'WARNING *****************************'
-            print 'Sorry, psiTurk Credentials invalid.\nYou will only be able '\
+            print('WARNING *****************************')
+            print('Sorry, psiTurk Credentials invalid.\nYou will only be able '\
                 + 'to test experiments locally until you enter\nvalid '\
                 + 'credentials in the psiTurk Access section of ' \
                 + '~/.psiturkconfig.\n  Get your credentials at '\
-                + 'https://www.psiturk.org/login.\n'
+                + 'https://www.psiturk.org/login.\n')
 
     def check_credentials(self):
         ''' Check credentials '''
@@ -68,12 +77,12 @@ class PsiturkOrgServices(object):
         try:
             api_server_status_link = self.api_server + '/status_msg?version=' +\
                 version_number
-            response = urllib2.urlopen(api_server_status_link, timeout=1)
+            response = urlopen(api_server_status_link, timeout=1)
             status_msg = json.load(response)['status']
-        except urllib2.HTTPError:
-            status_msg = "Sorry, can't connect to psiturk.org, please check\
-                your internet connection.\nYou will not be able to create new\
-                hits, but testing locally should work.\n"
+        except HTTPError:
+            status_msg = "Sorry, can't connect to psiturk.org, please check" \
+                "your internet connection.\nYou will not be able to create new" \
+                "hits, but testing locally should work.\n"
         return status_msg
 
     @classmethod
@@ -86,7 +95,7 @@ class PsiturkOrgServices(object):
         if 'OPENSHIFT_SECRET_TOKEN' in os.environ:
             my_ip = os.environ['OPENSHIFT_APP_DNS']
         else:
-            my_ip = json.load(urllib2.urlopen(
+            my_ip = json.load(urlopen(
                 'http://httpbin.org/ip'
             ))['origin']
         return my_ip
@@ -173,9 +182,21 @@ class PsiturkOrgServices(object):
         req = self.query_records('experiment', self.access_key,
                                  self.secret_key,
                                  query='download/'+experiment_id)
-        print req.text
+        print(req.text)
         return
 
+class FormatStrings:
+
+    clone_url_success='''Downloading...
+Name: {name}
+Downloads: {downloads}
+Keywords: {keywords}
+psiTurk Version: {psiturk_version_string}
+URL: http://psiturk.org/ee/{experiment_id}
+
+Experiment downloaded into `{name}` folder of the current directory.
+Type `cd {name}` then run the `psiturk` command
+'''
 
 class ExperimentExchangeServices(object):
     """
@@ -201,41 +222,42 @@ class ExperimentExchangeServices(object):
         req = self.query_records_no_auth('experiment',
                                          query='download/'+experiment_id)
         if req.status_code == 404:
-            print "Sorry, no experiment matching id # " + experiment_id
-            print "Please double check the code you obtained on the\
-                http://psiturk.org/ee"
+            print("Sorry, no experiment matching id # " + experiment_id)
+            print("Please double check the code you obtained on the" \
+                "http://psiturk.org/ee")
         else:
             # Check if folder with same name already exists.
             expinfo = req.json()
             gitr = requests.get(expinfo['git_url']).json()
             if os.path.exists('./'+gitr['name']):
-                print "*"*20
-                print "Sorry, you already have a file or folder named\
-                    "+gitr['name']+". Please rename or delete it before trying\
-                    to download this experiment.  You can do this by typing `rm\
-                    -rf " + gitr['name'] + "`"
-                print "*"*20
+                print("*"*20)
+                print("Sorry, you already have a file or folder named {name}. " \
+                    "Please rename or delete it before trying to download this " \
+                    "experiment.  You can do this by typing `rm -rf {name}`".format(**gitr))
+                print("*"*20)
                 return
             if "clone_url" in gitr:
                 git.Git().clone(gitr["clone_url"])
-                print "="*20
-                print "Downloading..."
-                print "Name: " + expinfo['name']
-                print "Downloads: " + str(expinfo['downloads'])
-                print "Keywords: " + expinfo['keywords']
-                print "psiTurk Version: " +\
-                    str(expinfo['psiturk_version_string'])
-                print "URL: http://psiturk.org/ee/"+experiment_id
-                print "\n"
-                print "Experiment downloaded into the `" + gitr['name'] + "`\
-                    folder of the current directory"
-                print "Type 'cd " + gitr['name'] + "` then run the `psiturk`\
-                    command."
-                print "="*20
+                print("="*20)
+                info_dict = {'experiment_id': experiment_id, 'name': gitr['name']}
+                info_dict.update(expinfo)
+                print(FormatString.clone_url_success(**expinfo))
+                print("="*20)
+                # print()
+                # print("Downloading...")
+                # print("Name: " + expinfo['name'])
+                # print("Downloads: " + str(expinfo['downloads']))
+                # print("Keywords: " + expinfo['keywords'])
+                # print("psiTurk Version: ", str(expinfo['psiturk_version_string']))
+                # print("URL: http://psiturk.org/ee/"+experiment_id)
+                # print("\n")
+                # print("Experiment downloaded into the `{name}` folder of the current directory")
+                # print("Type 'cd " + gitr['name'] + "` then run the `psiturk`\
+                # command."
             else:
-                print "Sorry, experiment not located on github.  You might\
-                    contact the author of this experiment.  Experiment NOT\
-                    downloaded."
+                print("Sorry, experiment not located on github.  You could "\
+                    "contact the author of this experiment.  Experiment NOT "\
+                    "downloaded.")
             return
 
 
@@ -303,8 +325,8 @@ class TunnelServices(object):
             self.full_url = 'http://%s.%s:%s' %(tunnel_ad_url, self.tunnel_host,
                                                 self.tunnel_port)
             self.is_open = True
-            print "Tunnel URL: %s" % self.full_url
-            print "Hint: In OSX, you can open a terminal link using cmd + click"
+            print("Tunnel URL: %s" % self.full_url)
+            print("Hint: In OSX, you can open a terminal link using cmd + click")
 
     def close(self):
         ''' Close tunnel '''
