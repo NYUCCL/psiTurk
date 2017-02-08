@@ -241,7 +241,7 @@ class ExperimentExchangeServices(object):
                 print("="*20)
                 info_dict = {'experiment_id': experiment_id, 'name': gitr['name']}
                 info_dict.update(expinfo)
-                print(FormatString.clone_url_success(**expinfo))
+                print(FormatString.clone_url_success(**info_dict))
                 print("="*20)
                 # print()
                 # print("Downloading...")
