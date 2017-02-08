@@ -109,7 +109,6 @@ the psiturk gunicorn server will run with ssl. You will need
 to execute the psiturk with privileges sufficient to read 
 the keyfile (typically root). If you run `psiturk` with `sudo` and if you are using
 a virtual environment, make sure to execute the full path to the desired psiturk instance in your environment. 
-See `launch-sudo-psiturk in this gist`_ for an example.
 
 If you want to do this, you are responsible for obtaining 
 your own cert and key. It is not necessary to run the 
