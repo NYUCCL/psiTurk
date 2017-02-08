@@ -83,6 +83,7 @@ project:
     psiturk_keywords = stroop
     organization_name = New Great University
     browser_exclude_rule = MSIE, mobile, tablet
+    allow_repeats = false
 
     [Database Parameters]
     database_url = sqlite:///participants.db

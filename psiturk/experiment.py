@@ -266,7 +266,8 @@ def advertisement():
     except exc.SQLAlchemyError:
         status = None
 
-    if status == STARTED and not debug_mode:
+    allow_repeats = CONFIG.getboolean('HIT Configuration', 'allow_repeats')
+    if (status == STARTED or status == QUITEARLY) and not debug_mode:
         # Once participants have finished the instructions, we do not allow
         # them to start the task again.
         raise ExperimentError('already_started_exp_mturk')
@@ -286,7 +287,7 @@ def advertisement():
         else: 
             # Show them a thanks message and tell them to go away.
             return render_template( 'thanks.html' )
-    elif already_in_db and not debug_mode:
+    elif already_in_db and not (debug_mode or allow_repeats):
         raise ExperimentError('already_did_exp_hit')
     elif status == ALLOCATED or not status or debug_mode:
         # Participant has not yet agreed to the consent. They might not
@@ -364,9 +365,17 @@ def start_exp():
 
     # Check first to see if this hitId or assignmentId exists.  If so, check to
     # see if inExp is set
-    matches = Participant.query.\
-        filter(Participant.workerid == worker_id).\
-        all()
+    allow_repeats = CONFIG.getboolean('HIT Configuration', 'allow_repeats')
+    if allow_repeats:
+        matches = Participant.query.\
+            filter(Participant.workerid == worker_id).\
+            filter(Participant.assignmentid == assignment_id).\
+            all()
+    else:
+        matches = Participant.query.\
+            filter(Participant.workerid == worker_id).\
+            all()
+
     numrecs = len(matches)
     if numrecs == 0:
         # Choose condition and counterbalance

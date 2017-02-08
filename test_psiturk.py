@@ -53,6 +53,7 @@ class PsiturkUnitTest(unittest.TestCase):
         psiturk.experiment.app.wsgi_app = FlaskTestClientProxy(
             psiturk.experiment.app.wsgi_app)
         self.app = psiturk.experiment.app.test_client()
+        self.config = psiturk.experiment.CONFIG
         psiturk.db.init_db()
 
         # Fake MTurk data
@@ -66,6 +67,9 @@ class PsiturkUnitTest(unittest.TestCase):
         os.chdir('..')
         os.unlink(psiturk.experiment.app.config['DATABASE'])
         self.app = None
+
+    def set_config(self, section, field, value):
+        self.config.parent.set(self.config, section, field, str(value))
 
 
 class PsiTurkStandardTests(PsiturkUnitTest):
@@ -154,6 +158,198 @@ class PsiTurkStandardTests(PsiturkUnitTest):
         '''Test that favicon loads.'''
         rv = self.app.get('/favicon.ico')
         assert rv.status_code == 200
+
+    def test_complete_experiment(self):
+        '''Test that a participant can start and finish the experiment.'''
+        request = "&".join([
+            "assignmentId=debug%s" % self.assignment_id,
+            "workerId=debug%s" % self.worker_id,
+            "hitId=debug%s" % self.hit_id,
+            "mode=debug"])
+
+        # put the user in the database
+        rv = self.app.get("/exp?%s" % request)
+        assert rv.status_code == 200
+
+        # save data with sync PUT
+        uniqueid = "debug%s:debug%s" % (self.worker_id, self.assignment_id)
+        rv = self.app.put('/sync/%s' % uniqueid)
+        assert rv.status_code == 200
+
+        # complete experiment
+        rv = self.app.get('/complete?uniqueId=%s' % uniqueid)
+        assert rv.status_code == 200
+
+    def test_repeat_experiment_fail(self):
+        '''Test that a participant cannot repeat the experiment.'''
+        request = "&".join([
+            "assignmentId=%s" % self.assignment_id,
+            "workerId=%s" % self.worker_id,
+            "hitId=%s" % self.hit_id,
+            "mode=debug"])
+
+        # put the user in the database
+        rv = self.app.get("/exp?%s" % request)
+        assert rv.status_code == 200
+
+        # save data with sync PUT
+        uniqueid = "%s:%s" % (self.worker_id, self.assignment_id)
+        rv = self.app.put('/sync/%s' % uniqueid)
+        assert rv.status_code == 200
+
+        # complete experiment
+        rv = self.app.get('/complete?uniqueId=%s' % uniqueid)
+        assert rv.status_code == 200
+
+        # choose new assignment and hit ids
+        self.assignment_id = fake.md5(raw_output=False)
+        self.hit_id = fake.md5(raw_output=False)
+        request = "&".join([
+            "assignmentId=%s" % self.assignment_id,
+            "workerId=%s" % self.worker_id,
+            "hitId=%s" % self.hit_id,
+            "mode=debug"])
+
+        # make sure they are blocked on the ad page
+        rv = self.app.get('/ad?%s' % request)
+        assert ': 1010' in rv.data
+
+        # make sure they are blocked on the experiment page
+        rv = self.app.get("/exp?%s" % request)
+        assert ': 1010' in rv.data
+
+    def test_repeat_experiment_success(self):
+        '''Test that a participant can repeat the experiment.'''
+        self.set_config('HIT Configuration', 'allow_repeats', 'true')
+        request = "&".join([
+            "assignmentId=%s" % self.assignment_id,
+            "workerId=%s" % self.worker_id,
+            "hitId=%s" % self.hit_id,
+            "mode=debug"])
+
+        # put the user in the database
+        rv = self.app.get("/exp?%s" % request)
+        assert rv.status_code == 200
+
+        # save data with sync PUT
+        uniqueid = "%s:%s" % (self.worker_id, self.assignment_id)
+        rv = self.app.put('/sync/%s' % uniqueid)
+        assert rv.status_code == 200
+
+        # complete experiment
+        rv = self.app.get('/complete?uniqueId=%s' % uniqueid)
+        assert rv.status_code == 200
+
+        # choose new assignment and hit ids
+        self.assignment_id = fake.md5(raw_output=False)
+        self.hit_id = fake.md5(raw_output=False)
+        request = "&".join([
+            "assignmentId=%s" % self.assignment_id,
+            "workerId=%s" % self.worker_id,
+            "hitId=%s" % self.hit_id,
+            "mode=debug"])
+
+        # make sure they are not blocked on the ad page
+        rv = self.app.get('/ad?%s' % request)
+        assert rv.status_code == 200
+        assert ': 1010' not in rv.data
+
+        # make sure they are not blocked on the experiment page
+        rv = self.app.get("/exp?%s" % request)
+        assert rv.status_code == 200
+        assert ': 1010' not in rv.data
+
+        # save data with sync PUT
+        uniqueid = "%s:%s" % (self.worker_id, self.assignment_id)
+        rv = self.app.put('/sync/%s' % uniqueid)
+        assert rv.status_code == 200
+
+        # complete experiment
+        rv = self.app.get('/complete?uniqueId=%s' % uniqueid)
+        assert rv.status_code == 200
+
+    def test_repeat_experiment_quit(self):
+        '''Test that a participant cannot restart the experiment.'''
+        request = "&".join([
+            "assignmentId=%s" % self.assignment_id,
+            "workerId=%s" % self.worker_id,
+            "hitId=%s" % self.hit_id,
+            "mode=debug"])
+
+        # put the user in the database
+        rv = self.app.get("/exp?%s" % request)
+        assert rv.status_code == 200
+
+        # put the in the experiment
+        uniqueid = "%s:%s" % (self.worker_id, self.assignment_id)
+        rv = self.app.post("/inexp", data=dict(uniqueId=uniqueid))
+        assert rv.status_code == 200
+
+        # make sure they are blocked on the ad page
+        rv = self.app.get('/ad?%s' % request)
+        assert rv.status_code == 200
+        assert ': 1009' in rv.data
+
+        # make sure they are blocked on the experiment page
+        rv = self.app.get("/exp?%s" % request)
+        assert rv.status_code == 200
+        assert ': 1008' in rv.data
+
+        # have them quit the experiment
+        rv = self.app.post("/quitter", data=dict(uniqueId=uniqueid))
+        assert rv.status_code == 200
+
+        # make sure they are blocked on the ad page
+        rv = self.app.get('/ad?%s' % request)
+        assert rv.status_code == 200
+        assert ': 1009' in rv.data
+
+        # make sure they are blocked on the experiment page
+        rv = self.app.get("/exp?%s" % request)
+        assert rv.status_code == 200
+        assert ': 1008' in rv.data
+
+    def test_repeat_experiment_quit_allow_repeats(self):
+        '''Test that a participant cannot restart the experiment, even when repeats are allowed.'''
+        self.set_config('HIT Configuration', 'allow_repeats', 'true')
+        request = "&".join([
+            "assignmentId=%s" % self.assignment_id,
+            "workerId=%s" % self.worker_id,
+            "hitId=%s" % self.hit_id,
+            "mode=debug"])
+
+        # put the user in the database
+        rv = self.app.get("/exp?%s" % request)
+        assert rv.status_code == 200
+
+        # put the in the experiment
+        uniqueid = "%s:%s" % (self.worker_id, self.assignment_id)
+        rv = self.app.post("/inexp", data=dict(uniqueId=uniqueid))
+        assert rv.status_code == 200
+
+        # make sure they are blocked on the ad page
+        rv = self.app.get('/ad?%s' % request)
+        assert rv.status_code == 200
+        assert ': 1009' in rv.data
+
+        # make sure they are blocked on the experiment page
+        rv = self.app.get("/exp?%s" % request)
+        assert rv.status_code == 200
+        assert ': 1008' in rv.data
+
+        # have them quit the experiment
+        rv = self.app.post("/quitter", data=dict(uniqueId=uniqueid))
+        assert rv.status_code == 200
+
+        # make sure they are blocked on the ad page
+        rv = self.app.get('/ad?%s' % request)
+        assert rv.status_code == 200
+        assert ': 1009' in rv.data
+
+        # make sure they are blocked on the experiment page
+        rv = self.app.get("/exp?%s" % request)
+        assert rv.status_code == 200
+        assert ': 1008' in rv.data
 
 
 class BadUserAgent(PsiturkUnitTest):
