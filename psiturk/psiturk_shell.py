@@ -1132,6 +1132,12 @@ class PsiturkNetworkShell(PsiturkShell):
         else:
             ip_address = str(self.web_services.get_my_ip())
             port = str(self.config.get('Server Parameters', 'port'))
+
+        if self.config.has_option('HIT Configuration', 'allow_repeats'):
+            allow_repeats = self.config.getboolean('HIT Configuration', 'allow_repeats')
+        else:
+            allow_repeats = False
+
         ad_content = {
             'psiturk_external': True,
             'server': ip_address,
@@ -1144,7 +1150,8 @@ class PsiturkNetworkShell(PsiturkShell):
             'experiment_name': str(self.config.get('HIT Configuration', 'title')),
             'contact_email_on_error': str(self.config.get('HIT Configuration', 'contact_email_on_error')),
             'ad_group': str(self.config.get('HIT Configuration', 'ad_group')),
-            'keywords': str(self.config.get('HIT Configuration', 'psiturk_keywords'))
+            'keywords': str(self.config.get('HIT Configuration', 'psiturk_keywords')),
+            'allow_repeats': int(allow_repeats)
         }
         ad_id = self.web_services.create_ad(ad_content)
         return ad_id
