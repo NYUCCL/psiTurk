@@ -414,6 +414,7 @@ class PsiTurkTestPsiturkJS(PsiturkUnitTest):
         super(PsiTurkTestPsiturkJS, self).tearDown()
         os.chdir('psiturk-example')
         os.rename(self.PSITURK_JS_FILE + '.bup', self.PSITURK_JS_FILE)
+        os.chdir('..')
 
 
 class ExperimentErrorsTest(PsiturkUnitTest):
