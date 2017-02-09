@@ -185,9 +185,11 @@ def check_worker_status():
         return jsonify(**resp)
     else:
         worker_id = request.args['workerId']
+        assignment_id = request.args['assignmentId']
         try:
             part = Participant.query.\
-                filter(Participant.workerid == worker_id).one()
+                filter(Participant.workerid == worker_id).\
+                filter(Participant.assignmentid == assignment_id).one()
             status = part.status
         except exc.SQLAlchemyError:
             status = NOT_ACCEPTED
