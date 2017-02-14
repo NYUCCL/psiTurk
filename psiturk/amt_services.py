@@ -540,7 +540,7 @@ class MTurkServices(object):
             hit_config['duration'],
             keywords=hit_config['keywords'],
             approval_delay=None,
-            qual_req=None)[0]
+            qual_req=quals)[0]
 
         # Check the config file to see if notifications are wanted.
         config = PsiturkConfig()
