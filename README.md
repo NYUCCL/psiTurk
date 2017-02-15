@@ -5,7 +5,7 @@
 [![Code Health](https://landscape.io/github/NYUCCL/psiTurk/master/landscape.png)](https://landscape.io/github/NYUCCL/psiTurk/master)
 [![License](http://img.shields.io/badge/license-MIT-red.svg)](http://en.wikipedia.org/wiki/MIT_License)
 
-The current stable version is 2.1.7.
+The current stable version is 2.2.0.
 
 Please visit [psiturk.org](https://psiturk.org) for more information.
 
