@@ -165,10 +165,6 @@ the Unix curl command.
 
 `allow_repeats` [boolean]
 -------------------------
-.. warning::
-    This feature is not yet implemented on the **psiTurk** ad server. If you want to allow repeats, you will need to host your own ad. See 
-    `use_psiturk_ad_server <shell_parameters.html#use-psiturk-ad-server-true-false>`__
-
 `allow_repeats` specifies whether participants may complete the experiment more
 than once. If it is set to `false` (the default), then participants will be
 blocked from completing the experiment more than once. If it is set to `true`,
