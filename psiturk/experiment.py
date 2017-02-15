@@ -185,12 +185,27 @@ def check_worker_status():
         return jsonify(**resp)
     else:
         worker_id = request.args['workerId']
-        try:
-            part = Participant.query.\
-                filter(Participant.workerid == worker_id).one()
-            status = part.status
-        except exc.SQLAlchemyError:
-            status = NOT_ACCEPTED
+        assignment_id = request.args['assignmentId']
+        allow_repeats = CONFIG.getboolean('HIT Configuration', 'allow_repeats')
+        if allow_repeats: # if you allow repeats focus on current worker/assignment combo
+            try:
+                part = Participant.query.\
+                    filter(Participant.workerid == worker_id).\
+                    filter(Participant.assignmentid == assignment_id).one()
+                status = part.status
+            except exc.SQLAlchemyError:
+                status = NOT_ACCEPTED
+        else: # if you disallow repeats search for highest status of anything by this worker
+            try:
+                matches = Participant.query.\
+                    filter(Participant.workerid == worker_id).all()
+                numrecs = len(matches)
+                if numrecs==0: # this should be caught by exception, but just to be safe
+                    status = NOT_ACCEPTED
+                else:
+                    status = max([record.status for record in matches])
+            except exc.SQLAlchemyError:
+                status = NOT_ACCEPTED
         resp = {"status" : status}
         return jsonify(**resp)
 
