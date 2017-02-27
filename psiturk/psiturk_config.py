@@ -43,8 +43,5 @@ class PsiturkConfig(SafeConfigParser):
                 if name in os.environ:
                     self.set(section, name, os.environ[name])
                     #print 'changed ' + name + ' in ' + section + ' from ' + value + ' to ' + os.environ[name]
-
-        if 'ON_HEROKU' in os.environ:
-            self.set('Server Parameters', 'logfile', None)
       
 

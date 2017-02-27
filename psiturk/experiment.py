@@ -35,7 +35,10 @@ CONFIG = PsiturkConfig()
 CONFIG.load_config()
 
 # Setup logging
-LOG_FILE_PATH = os.path.join(os.getcwd(), CONFIG.get("Server Parameters", \
+if 'ON_HEROKU' in os.environ:
+    LOG_FILE_PATH = None
+else:
+    LOG_FILE_PATH = os.path.join(os.getcwd(), CONFIG.get("Server Parameters", \
     "logfile"))
 
 LOG_LEVELS = [logging.DEBUG, logging.INFO, logging.WARNING, logging.ERROR,
