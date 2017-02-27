@@ -36,5 +36,12 @@ class PsiturkConfig(SafeConfigParser):
         # read default global and local, then user's global and local. This way
         # any field not in the user's files will be set to the default value.
         self.read([global_defaults_file, local_defaults_file, self.globalFile, self.localFile])
+
+        # heroku reads from env vars instead of .psiturkconfig
+        for section in ['psiTurk Access', 'AWS Access']:
+            for (name, value) in self.items(section):
+                if name in os.environ:
+                    self.set(section, name, os.environ[name])
+                    #print 'changed ' + name + ' in ' + section + ' from ' + value + ' to ' + os.environ[name]
       
 
