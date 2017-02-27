@@ -44,4 +44,7 @@ class PsiturkConfig(SafeConfigParser):
                     self.set(section, name, os.environ[name])
                     #print 'changed ' + name + ' in ' + section + ' from ' + value + ' to ' + os.environ[name]
       
+        # heroku dynamically assigns your app a port, so you can't set the port to a fixed number
+        if 'ON_HEROKU' in os.environ:
+            self.set('Server Parameters', 'port', os.environ['PORT'])
 
