@@ -272,8 +272,9 @@ class PsiturkShell(Cmd, object):
                 port = self.config.get( 'Server Parameters', 'adserver_revproxy_port')
             else:
                 port = 80
-            revproxy_url =  "http://" + self.config.get('Server Parameters', 'adserver_revproxy_host')\
-            + ":" + port + "/ad"
+            revproxy_url = "http://{}:{}/ad".format(self.config.get('Server Parameters', 
+                                                                    'adserver_revproxy_host'),
+                                                    port)
 
         if revproxy_url:
             base_url = revproxy_url
@@ -1792,8 +1793,9 @@ class PsiturkNetworkShell(PsiturkShell):
                 port = self.config.get( 'Server Parameters', 'adserver_revproxy_port')
             else:
                 port = 80
-            revproxy_url = "http://" + self.config.get('Server Parameters', 'adserver_revproxy_host')\
-            + ":" + port + "/ad"
+            revproxy_url = "http://{}:{}/ad".format(self.config.get('Server Parameters', 
+                                                                    'adserver_revproxy_host'),
+                                                    port)
 
         if revproxy_url:
             base_url = revproxy_url
