@@ -85,6 +85,13 @@ class ExperimentServer(Application):
             self.user_options.update(ssl_options)
 
 
+        if 'ON_HEROKU' in os.environ:
+            self.user_options.update({
+                'accesslog' : '-',
+                'errorlog' : '-'
+                })
+
+
 def launch():
     ExperimentServer().run()
 

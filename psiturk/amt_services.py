@@ -540,7 +540,7 @@ class MTurkServices(object):
             hit_config['duration'],
             keywords=hit_config['keywords'],
             approval_delay=None,
-            qual_req=None)[0]
+            qual_req=quals)[0]
 
         # Check the config file to see if notifications are wanted.
         config = PsiturkConfig()
@@ -572,14 +572,7 @@ class MTurkServices(object):
             question=mturk_question,
             lifetime=hit_config['lifetime'],
             max_assignments=hit_config['max_assignments'],
-            title=hit_config['title'],
-            description=hit_config['description'],
-            keywords=hit_config['keywords'],
-            reward=hit_config['reward'],
-            duration=hit_config['duration'],
-            approval_delay=None,
             questions=None,
-            qualifications=quals,
             response_groups=[
                 'Minimal',
                 'HITDetail',
