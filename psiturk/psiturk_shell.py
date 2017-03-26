@@ -1,3 +1,4 @@
+
 # coding: utf-8
 """ PsiturkShell is a commandline interface for psiTurk, which provides
 functionality for maintaining the experiment server and interacting with
@@ -802,6 +803,21 @@ class PsiturkNetworkShell(PsiturkShell):
         with open(self.help_path + 'amt.txt', 'r') as help_text:
             print help_text.read()
 
+    def _estimate_expenses(self, num_workers, reward):
+        ''' Returns tuple describing expenses:
+        amount paid to workers
+        amount paid to amazon'''
+        
+        # fee structure changed 07.22.15:
+        # 20% for HITS with < 10 assignments
+        # 40% for HITS with >= 10 assignments
+        commission = 0.2
+        if float(num_workers) >= 10:
+            commission = 0.4 
+        work = float(num_workers) * float(reward)
+        fee = work * commission
+        return (work, fee, work+fee)
+    
     def hit_list(self, active_hits, reviewable_hits):
         ''' List hits. '''
         hits_data = []
@@ -891,7 +907,11 @@ class PsiturkNetworkShell(PsiturkShell):
             self.live_hits = num_hits
 
     def hit_create(self, numWorkers, reward, duration):
-
+        ''' Create a HIT '''
+        if self.sandbox:
+            mode = 'sandbox'
+        else:
+            mode = 'live'
         server_loc = str(self.config.get('Server Parameters', 'host'))
         inaccessible_but_do_it_anyways = False
         if not self.quiet:
@@ -949,8 +969,7 @@ class PsiturkNetworkShell(PsiturkShell):
                 if user_input != 'y':
                     return
 
-        # Validate arguments
-        # numWorkers
+        # Argument retrieval and validation
         if numWorkers is None:
             numWorkers = raw_input('number of participants? ').strip()
         try:
@@ -962,7 +981,6 @@ class PsiturkNetworkShell(PsiturkShell):
             print '*** number of participants must be greater than 0'
             return
 
-        # reward
         if reward is None:
             reward = raw_input('reward per HIT? ').strip()
         p = re.compile('^\d*\.\d\d$')
@@ -976,7 +994,6 @@ class PsiturkNetworkShell(PsiturkShell):
             print '*** reward must be in format [dollars].[cents]'
             return
             
-        # duration
         if duration is None:
             duration = raw_input(
                 'duration of hit (in hours, it can be decimals)? ').strip()
@@ -988,10 +1005,23 @@ class PsiturkNetworkShell(PsiturkShell):
         if duration <= 0:
             print '*** duration must be greater than 0'
             return
+
+        _, fee, total = self._estimate_expenses(numWorkers, reward)
         
-
+        if not self.quiet:
+            dialog_query = '\n'.join(['*****************************',
+                                      '    Max workers: %d' % numWorkers,
+                                      '    Reward: $%.2f' % reward,
+                                      '    Duration: %s hours' % duration,
+                                      '    Fee: $%.2f' % fee,
+                                      '    ________________________',
+                                      '    Total: $%.2f' % total,
+                                      'Create %s HIT [y/n]? ' % colorize(mode, 'bold')])
+            if not self._confirm_dialog(dialog_query):
+                print '*** Cancelling HIT creation.'
+                return
+            
         if use_psiturk_ad_server:
-
             ad_id = self.create_psiturk_ad() 
             create_failed = False
             fail_msg = None
@@ -1011,8 +1041,6 @@ class PsiturkNetworkShell(PsiturkShell):
                 fail_msg = "  Unable to create Ad on http://ad.psiturk.org."
 
         else: # not using psiturk ad server
-
-            mode = 'sandbox' if self.sandbox else 'live'
             ad_location = "{}?mode={}".format(self.config.get('Shell Parameters', 'ad_location'), mode )
             hit_config = self.generate_hit_config(ad_location, numWorkers, reward, duration)
             create_failed = False
@@ -1032,27 +1060,11 @@ class PsiturkNetworkShell(PsiturkShell):
                 self.sandbox_hits += 1
             else:
                 self.live_hits += 1
-            # print results
-            # fee structure changed 07.22.15:
-            # 20% for HITS with < 10 assignments
-            # 40% for HITS with >= 10 assignments
-            commission = 0.2
-            if float(numWorkers) >= 10:
-                commission = 0.4 
-
-            total = float(numWorkers) * float(reward)
-            fee = total * commission
-            total = total + fee
-            mode = ''
-            if self.sandbox:
-                mode = 'sandbox'
-            else:
-                mode = 'live'
             print '\n'.join(['*****************************',
                              '  Creating %s HIT' % colorize(mode, 'bold'),
                              '    HITid: %s' % str(hit_id),
                              '    Max workers: %d' % numWorkers,
-                             '    Reward: $%d' % reward,
+                             '    Reward: $%.2f' % reward,
                              '    Duration: %s hours' % duration,
                              '    Fee: $%.2f' % fee,
                              '    ________________________',
@@ -1093,6 +1105,16 @@ class PsiturkNetworkShell(PsiturkShell):
             print "Hint: In OSX, you can open a terminal link using cmd + click"
             if self.sandbox and use_psiturk_ad_server:
                 print "Note: This sandboxed ad will expire from the server in 16 days."
+    
+    def _confirm_dialog(self, prompt):
+        ''' Prompts for a 'yes' or 'no' to given prompt. '''
+        response = raw_input(prompt).strip().lower()
+        valid = {'y': True, 'ye': True, 'yes': True, 'n': False, 'no': False}
+        while True:
+            try:
+                return valid[response]
+            except:
+                response = raw_input("Please respond 'y' or 'n': ").strip().lower()
 
     def create_psiturk_ad(self):
         # register with the ad server (psiturk.org/ad/register) using POST
