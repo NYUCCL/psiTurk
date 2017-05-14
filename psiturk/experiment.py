@@ -289,12 +289,15 @@ def advertisement():
         # Once participants have finished the instructions, we do not allow
         # them to start the task again.
         raise ExperimentError('already_started_exp_mturk')
-    elif status == COMPLETED:
+    elif status == COMPLETED or (status == SUBMITTED and not already_in_db):
+        # 'or status == SUBMITTED' because we suspect that sometimes the post
+        # to mturk fails after we've set status to SUBMITTED, so really they
+        # have not successfully submitted. This gives another chance for the
+        # submit to work when not using the psiturk ad server.
         use_psiturk_ad_server = CONFIG.getboolean('Shell Parameters', 'use_psiturk_ad_server')
         if not use_psiturk_ad_server:
-            # They've finished the experiment but haven't submitted the HIT
-            # yet.. Turn asignmentId into original assignment id before sending it
-            # back to AMT
+            # They've finished the experiment but haven't successfully submitted the HIT
+            # yet.
             return render_template(
                 'thanks-mturksubmit.html',
                 using_sandbox=(mode == "sandbox"),
