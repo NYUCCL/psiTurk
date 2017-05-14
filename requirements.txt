@@ -1,5 +1,5 @@
 argparse==1.2.1
-Flask==0.10.1
+Flask==0.12.1
 SQLAlchemy==0.8.3
 gunicorn==19.4.5
 boto==2.15.0
@@ -13,5 +13,5 @@ gitpython==0.1.7
 fuzzywuzzy==0.2
 setproctitle==1.1.8
 psutil>=1.2.1
-Werkzeug==0.10.4
+Werkzeug==0.12.1
 ua-parser==0.3.6
