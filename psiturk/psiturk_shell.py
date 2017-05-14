@@ -678,6 +678,7 @@ class PsiturkNetworkShell(PsiturkShell):
             workers = self.amt_services.get_workers()
         if workers is False:
             print colorize('*** failed to get workers', 'red')
+            return
         if chosen_hit:
             workers = [worker for worker in workers if \
                        worker['hitId'] == chosen_hit]
