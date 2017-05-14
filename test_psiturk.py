@@ -177,7 +177,8 @@ class PsiTurkStandardTests(PsiturkUnitTest):
         assert rv.status_code == 200
 
         # complete experiment
-        rv = self.app.get('/complete?uniqueId=%s' % uniqueid)
+        mode = 'debug'
+        rv = self.app.get('/complete?uniqueId=%s&mode=%s' % (uniqueid, mode))
         assert rv.status_code == 200
 
     def test_repeat_experiment_fail(self):
@@ -198,7 +199,8 @@ class PsiTurkStandardTests(PsiturkUnitTest):
         assert rv.status_code == 200
 
         # complete experiment
-        rv = self.app.get('/complete?uniqueId=%s' % uniqueid)
+        mode = 'debug'
+        rv = self.app.get('/complete?uniqueId=%s&mode=%s' % (uniqueid, mode))
         assert rv.status_code == 200
 
         # choose new assignment and hit ids
@@ -237,7 +239,8 @@ class PsiTurkStandardTests(PsiturkUnitTest):
         assert rv.status_code == 200
 
         # complete experiment
-        rv = self.app.get('/complete?uniqueId=%s' % uniqueid)
+        mode = 'debug'
+        rv = self.app.get('/complete?uniqueId=%s&mode=%s' % (uniqueid, mode))
         assert rv.status_code == 200
 
         # choose new assignment and hit ids
@@ -265,7 +268,8 @@ class PsiTurkStandardTests(PsiturkUnitTest):
         assert rv.status_code == 200
 
         # complete experiment
-        rv = self.app.get('/complete?uniqueId=%s' % uniqueid)
+        mode = 'debug'
+        rv = self.app.get('/complete?uniqueId=%s&mode=%s' % (uniqueid, mode))
         assert rv.status_code == 200
 
     def test_repeat_experiment_quit(self):

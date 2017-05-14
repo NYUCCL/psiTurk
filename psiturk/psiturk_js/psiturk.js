@@ -301,7 +301,7 @@ var PsiTurk = function(uniqueId, adServerLoc, mode) {
 	self.completeHIT = function() {
 		self.teardownTask();
 		// save data one last time here?
-		window.location= self.taskdata.adServerLoc + "?uniqueId=" + self.taskdata.id;
+		window.location= self.taskdata.adServerLoc + "?uniqueId=" + self.taskdata.id + "&mode=" + self.taskdata.mode;
 	}
 
 	self.doInstructions = function(pages, callback) {

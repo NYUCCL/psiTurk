@@ -611,10 +611,7 @@ def debug_complete():
         raise ExperimentError('improper_inputs')
     else:
         unique_id = request.args['uniqueId']
-        if unique_id[:5] == "debug":
-            debug_mode = True
-        else:
-            debug_mode = False
+        mode = request.args['mode']
         try:
             user = Participant.query.\
                 filter(Participant.uniqueid == unique_id).one()
@@ -625,10 +622,10 @@ def debug_complete():
         except:
             raise ExperimentError('error_setting_worker_complete')
         else:
-            if debug_mode:
-                return render_template('complete.html')
-            else: # send them back to mturk.
+            if (mode == 'sandbox' or mode == 'live'): # send them back to mturk.
                 return render_template('closepopup.html')
+            else:
+                return render_template('complete.html')
 
 @app.route('/worker_complete', methods=['GET'])
 def worker_complete():
