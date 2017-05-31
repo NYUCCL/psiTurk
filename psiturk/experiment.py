@@ -27,7 +27,7 @@ from models import Participant
 from sqlalchemy import or_, exc
 
 from psiturk_config import PsiturkConfig
-from experiment_errors import ExperimentError
+from experiment_errors import ExperimentError, InvalidUsage
 from psiturk.user_utils import nocache
 
 # Setup config
@@ -66,6 +66,8 @@ app = Flask("Experiment_Server")
 app.config.update(SEND_FILE_MAX_AGE_DEFAULT=10)
 app.secret_key = CONFIG.get('Server Parameters', 'secret_key')
 app.logger.info("Secret key: " + app.secret_key)
+
+
 
 # Serving warm, fresh, & sweet custom, user-provided routes
 # ==========================================================
@@ -106,32 +108,19 @@ def handle_exp_error(exception):
     return exception.error_page(request, CONFIG.get('HIT Configuration',
                                                     'contact_email_on_error'))
 
-@app.teardown_request
-def shutdown_session(_=None):
-    ''' Shut down session route '''
-    db_session.remove()
-
-class InvalidUsage(Exception):
-    status_code = 400
-
-    def __init__(self, message, status_code=None, payload=None):
-        Exception.__init__(self)
-        self.message = message
-        if status_code is not None:
-            self.status_code = status_code
-        self.payload = payload
-
-    def to_dict(self):
-        rv = dict(self.payload or ())
-        rv['message'] = self.message
-        return rv
-
+# for use with API errors
 @app.errorhandler(InvalidUsage)
 def handle_invalid_usage(error):
     response = jsonify(error.to_dict())
     response.status_code = error.status_code
     app.logger.error(error.message)
     return response
+
+@app.teardown_request
+def shutdown_session(_=None):
+    ''' Shut down session route '''
+    db_session.remove()
+
 
 # Experiment counterbalancing code
 # ================================
