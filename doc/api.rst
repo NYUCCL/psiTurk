@@ -137,7 +137,7 @@ Example:
     psiturk.recordUnstructuredData('age', 24);
 
 
-``psiturk.savedata([callbacks])``
+``psiturk.saveData([callbacks])``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Sync the current **psiTurk** task data to the database.
