@@ -431,7 +431,8 @@ def start_exp():
             ipaddress=worker_ip,
             browser=browser,
             platform=platform,
-            language=language
+            language=language,
+            mode=mode
         )
         part = Participant(**participant_attributes)
         db_session.add(part)

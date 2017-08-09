@@ -34,6 +34,7 @@ class Participant(Base):
     endhit = Column(DateTime)
     bonus = Column(Float, default = 0)
     status = Column(Integer, default = 1)
+    mode = Column(String(128))
     if 'postgres://' in config.get('Database Parameters', 'database_url').lower():
         datastring = Column(Text)
     else:
