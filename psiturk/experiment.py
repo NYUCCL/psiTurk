@@ -491,7 +491,8 @@ def start_exp():
         condition=part.cond,
         counterbalance=part.counterbalance,
         adServerLoc=ad_server_location,
-        mode = mode
+        mode = mode,
+        contact_address=CONFIG.get('HIT Configuration', 'contact_email_on_error')
     )
 
 @app.route('/inexp', methods=['POST'])
