@@ -1053,7 +1053,7 @@ class PsiturkNetworkShell(PsiturkShell):
                              '  Creating %s HIT' % colorize(mode, 'bold'),
                              '    HITid: %s' % str(hit_id),
                              '    Max workers: %d' % numWorkers,
-                             '    Reward: $%d' % reward,
+                             '    Reward: $%.2f' % reward,
                              '    Duration: %s hours' % duration,
                              '    Fee: $%.2f' % fee,
                              '    ________________________',
