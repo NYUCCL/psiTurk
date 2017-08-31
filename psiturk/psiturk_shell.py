@@ -1757,8 +1757,12 @@ class PsiturkNetworkShell(PsiturkShell):
             self.worker_list(arg['--submitted'], arg['--approved'],
                              arg['--rejected'], arg['<hit_id>'])
         elif arg['bonus']:
+            if self.config.has_option('Shell Parameters', 'bonus_message'):
+                bonus_message = self.config.get('Shell Parameters', 'bonus_message')
+            else:
+                bonus_message = ""
             self.worker_bonus(arg['<hit_id>'], arg['--auto'], arg['<amount>'],
-                              "", arg['<assignment_id>'])
+                              bonus_message, arg['<assignment_id>'])
         else:
             self.help_worker()
 
