@@ -695,26 +695,48 @@ class PsiturkNetworkShell(PsiturkShell):
         ''' Approve worker '''
         if chosen_hit:
             workers = self.amt_services.get_workers("Submitted")
-            assignment_ids = [worker['assignmentId'] for worker in workers if \
-                              worker['hitId'] == chosen_hit]
+            # assignment_ids = [worker['assignmentId'] for worker in workers if \
+            #                   worker['hitId'] == chosen_hit]
+            workers = [worker for worker in workers if worker['hitId'] == chosen_hit]
             print 'approving workers for HIT', chosen_hit
-        for assignment_id in assignment_ids:
-            success = self.amt_services.approve_worker(assignment_id)
-            if success:
-                try:
-                    init_db()
-                    part = Participant.query.\
-                           filter(Participant.assignmentid == assignment_id).\
-                           filter(Participant.status == 4).\
-                           one()
-                    part.status = 5
-                    db_session.add(part)
-                    db_session.commit()
-                    print 'approved', assignment_id
-                except:
-                    print "*** approved but failed to update status in db for", assignment_id
-            else:
-                print '*** failed to approve', assignment_id
+        else:
+            workers = self.amt_services.get_workers("Submitted")
+            workers = [worker for worker in workers if worker['assignmentId'] in assignment_ids]
+        for worker in workers:
+            assignment_id = worker['assignmentId']
+            init_db()
+            found_worker = False
+            parts = Participant.query.\
+                   filter(Participant.assignmentid == assignment_id).\
+                   filter(Participant.status == 4).\
+                   all()
+            # Iterate through all the people who completed this assignment.
+            # This should be one person, and it should match the person who
+            # submitted the HIT, but that doesn't always hold.
+            for part in parts:
+                if part.workerid == worker['workerId']:
+                    found_worker = True
+                    success = self.amt_services.approve_worker(assignment_id)
+                    if success:
+                        part.status = 5
+                        db_session.add(part)
+                        print 'approved worker', part.workerid, 'for assignment', assignment_id
+                    else:
+                        print '*** failed to approve worker', part.workerid, 'for assignment', assignment_id
+                else:
+                    print 'found unexpected worker', part.workerid, 'for assignment', assignment_id
+            if not found_worker:
+                # approve workers not found in DB if the assignment id has been specified
+                if not chosen_hit:
+                    success = self.amt_services.approve_worker(assignment_id)
+                    if success:
+                        print 'approved worker', worker['workerId'], 'for assignment', assignment_id, 'but not found in DB'
+                    else:
+                        print '*** failed to approve worker', part.workerid, 'for assignment', assignment_id
+                # otherwise don't approve, and print warning
+                else:
+                    print 'worker', worker['workerId'], 'not found in DB for assignment', assignment_id + '. Consider rejecting.'
+            db_session.commit()
 
     def worker_reject(self, chosen_hit, assignment_ids = None):
         ''' Reject worker '''
@@ -751,45 +773,51 @@ class PsiturkNetworkShell(PsiturkShell):
                                    "will see this message: ")
             reason = user_input
         # Bonus already-bonused workers if the user explicitly lists their
-        # worker IDs
+        # assignment IDs
         override_status = True
         if chosen_hit:
             override_status = False
             workers = self.amt_services.get_workers("Approved")
-            if workers is False:
+            workers = [worker for worker in workers if \
+                              worker['hitId'] == chosen_hit]
+            if len(workers) == 0:
                 print "No approved workers for HIT", chosen_hit
                 return
-            assignment_ids = [worker['assignmentId'] for worker in workers if \
-                              worker['hitId'] == chosen_hit]
             print 'bonusing workers for HIT', chosen_hit
-        for assignment_id in assignment_ids:
+        else:
+            workers = self.amt_services.get_workers("Approved")
+            workers = [worker for worker in workers if \
+                              worker['assignmentId'] in assignment_ids]
+        for worker in workers:
+            assignment_id = worker['assignmentId']
             try:
                 init_db()
                 part = Participant.query.\
                        filter(Participant.assignmentid == assignment_id).\
+                       filter(Participant.workerid == worker['workerId']).\
                        filter(Participant.endhit != None).\
                        one()
                 if auto:
                     amount = part.bonus
                 status = part.status
                 if amount <= 0:
-                    print "bonus amount <=$0, no bonus given to", assignment_id
+                    print "bonus amount <=$0, no bonus given for assignment", assignment_id
                 elif status == 7 and not override_status:
-                    print "bonus already awarded to ", assignment_id
+                    print "bonus already awarded for assignment", assignment_id
                 else:
                     success = self.amt_services.bonus_worker(assignment_id,
                                                              amount, reason)
                     if success:
-                        print "gave bonus of $" + str(amount) + " to " + \
+                        print "gave bonus of $" + str(amount) + " for assignment " + \
                         assignment_id
                         part.status = 7
                         db_session.add(part)
                         db_session.commit()
                         db_session.remove()
                     else:
-                        print "*** failed to bonus", assignment_id
+                        print "*** failed to bonus assignment", assignment_id
             except:
-                print "*** failed to bonus", assignment_id
+                print "*** failed to bonus assignment", assignment_id
 
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #   hit management
