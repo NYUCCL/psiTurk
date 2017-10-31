@@ -8,6 +8,9 @@ the psiturk shell.
 
 	[Shell Parameters]
 	launch_in_sandbox_mode = true
+	bonus_message = "Thanks for participating!"
+	use_psiturk_ad_server = true
+	ad_location = false
 
 `launch_in_sandbox_mode` [ true | false]
 -----------------------------------------
@@ -20,6 +23,14 @@ to `true` to lessen the chance of accidentally posting a live HIT to mTurk.
 
    `Overview of the command-line interface <../command_line_overview.html>`__
    	  The basic features of the **psiTurk** command line.
+
+`bonus_message` [string]
+-------------------------
+
+If set to a string, automatically uses this string as the message to
+participants when bonusing them for an assignment. If not set, you will be
+prompted to type in a message each time you bonus participants. (This message is
+required by AMT.)
       
 `use_psiturk_ad_server` [true | false]
 ---------------------------------------
