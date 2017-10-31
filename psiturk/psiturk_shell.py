@@ -695,20 +695,20 @@ class PsiturkNetworkShell(PsiturkShell):
         ''' Approve worker '''
         if chosen_hit:
             workers = self.amt_services.get_workers("Submitted")
-            # assignment_ids = [worker['assignmentId'] for worker in workers if \
-            #                   worker['hitId'] == chosen_hit]
             workers = [worker for worker in workers if worker['hitId'] == chosen_hit]
             print 'approving workers for HIT', chosen_hit
         else:
             workers = self.amt_services.get_workers("Submitted")
             workers = [worker for worker in workers if worker['assignmentId'] in assignment_ids]
+            if not workers:
+                print "No submissions found for requested assignment ID's"
         for worker in workers:
             assignment_id = worker['assignmentId']
             init_db()
             found_worker = False
             parts = Participant.query.\
                    filter(Participant.assignmentid == assignment_id).\
-                   filter(Participant.status == 4).\
+                   filter(Participant.status.in_([3, 4])).\
                    all()
             # Iterate through all the people who completed this assignment.
             # This should be one person, and it should match the person who
@@ -735,7 +735,7 @@ class PsiturkNetworkShell(PsiturkShell):
                         print '*** failed to approve worker', part.workerid, 'for assignment', assignment_id
                 # otherwise don't approve, and print warning
                 else:
-                    print 'worker', worker['workerId'], 'not found in DB for assignment', assignment_id + '. Consider rejecting.'
+                    print 'worker', worker['workerId'], 'not found in DB for assignment', assignment_id + '. Not automatically approved.'
             db_session.commit()
 
     def worker_reject(self, chosen_hit, assignment_ids = None):
