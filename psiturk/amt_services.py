@@ -436,6 +436,23 @@ class MTurkServices(object):
         } for worker in workers]
         return worker_data
 
+    def get_worker(self, assignment_id):
+        if not self.connect_to_turk():
+            return False
+        try:
+            worker = self.mtc.get_assignment(assignment_id)[0]
+        except MTurkRequestError as e:
+            return False
+        worker_data = [{
+            'hitId': worker.HITId,
+            'assignmentId': worker.AssignmentId,
+            'workerId': worker.WorkerId,
+            'submit_time': worker.SubmitTime,
+            'accept_time': worker.AcceptTime,
+            'status': worker.AssignmentStatus
+        }]
+        return worker_data
+
     def bonus_worker(self, assignment_id, amount, reason=""):
         ''' Bonus worker '''
         if not self.connect_to_turk():
@@ -457,7 +474,7 @@ class MTurkServices(object):
         try:
             self.mtc.approve_assignment(assignment_id, feedback=None)
             return True
-        except MTurkRequestError:
+        except MTurkRequestError as e:
             return False
 
     def reject_worker(self, assignment_id):

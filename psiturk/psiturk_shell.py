@@ -692,9 +692,12 @@ class PsiturkNetworkShell(PsiturkShell):
     def worker_approve(self, chosen_hit, assignment_ids=None):
         ''' Approve worker '''
         if chosen_hit:
-            workers = self.amt_services.get_workers("Submitted")
-            workers = [worker for worker in workers if worker['hitId'] == chosen_hit]
+            workers = self.amt_services.get_workers("Submitted", chosen_hit)
             print 'approving workers for HIT', chosen_hit
+        elif len(assignment_ids) == 1:
+            workers = self.amt_services.get_worker(assignment_ids[0])
+            if not workers:
+                print "No submissions found for requested assignment ID"
         else:
             workers = self.amt_services.get_workers("Submitted")
             workers = [worker for worker in workers if worker['assignmentId'] in assignment_ids]
@@ -730,7 +733,7 @@ class PsiturkNetworkShell(PsiturkShell):
                     if success:
                         print 'approved worker', worker['workerId'], 'for assignment', assignment_id, 'but not found in DB'
                     else:
-                        print '*** failed to approve worker', part.workerid, 'for assignment', assignment_id
+                        print '*** failed to approve worker', worker['workerId'], 'for assignment', assignment_id
                 # otherwise don't approve, and print warning
                 else:
                     print 'worker', worker['workerId'], 'not found in DB for assignment', assignment_id + '. Not automatically approved.'
