@@ -18,6 +18,22 @@
               self.close(); // no harm, no foul here
             }
         </script>
+		</style>
+			@media print {
+				body * {
+					visibility: hidden;
+				}
+				.legal, .legal * {
+					visibility: visible;
+				}
+				.legal {
+					position: absolute;
+					left: 0;
+					top: 0;
+					overflow:visible;
+				} 
+			}
+		</style>
     </head>
     <body>
         <div id="container-consent">
