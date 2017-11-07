@@ -669,20 +669,18 @@ class PsiturkNetworkShell(PsiturkShell):
         ''' List worker stats '''
         workers = None
         if submitted:
-            workers = self.amt_services.get_workers("Submitted")
+            workers = self.amt_services.get_workers("Submitted", chosen_hit)
         elif approved:
-            workers = self.amt_services.get_workers("Approved")
+            workers = self.amt_services.get_workers("Approved", chosen_hit)
         elif rejected:
-            workers = self.amt_services.get_workers("Rejected")
+            workers = self.amt_services.get_workers("Rejected", chosen_hit)
         else:
-            workers = self.amt_services.get_workers()
+            workers = self.amt_services.get_workers(chosen_hit=chosen_hit)
         if workers is False:
             print colorize('*** failed to get workers', 'red')
             return
         if chosen_hit:
-            workers = [worker for worker in workers if \
-                       worker['hitId'] == chosen_hit]
-            print 'listing workers for HIT', chosen_hit
+            #print 'listing workers for HIT', chosen_hit # printing messes up json
         if not len(workers):
             print "*** no workers match your request"
         else:

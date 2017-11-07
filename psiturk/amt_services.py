@@ -385,13 +385,16 @@ class MTurkServices(object):
             }) for hit in active_hits]
         return hits_data
 
-    def get_workers(self, assignment_status=None):
+    def get_workers(self, assignment_status=None, chosen_hit=None):
         ''' Get workers '''
         if not self.connect_to_turk():
             return False
         try:
-            hits = self.mtc.get_all_hits()
-            hit_ids = [hit.HITId for hit in hits]
+            if chosen_hit:
+                hit_ids = [chosen_hit]
+            else:
+                hits = self.mtc.get_all_hits()
+                hit_ids = [hit.HITId for hit in hits]
            
             workers_nested = []
             page_size=100
