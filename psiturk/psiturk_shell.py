@@ -679,7 +679,7 @@ class PsiturkNetworkShell(PsiturkShell):
         if workers is False:
             print colorize('*** failed to get workers', 'red')
             return
-        if chosen_hit:
+        #if chosen_hit:
             #print 'listing workers for HIT', chosen_hit # printing messes up json
         if not len(workers):
             print "*** no workers match your request"
