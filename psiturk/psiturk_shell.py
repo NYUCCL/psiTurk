@@ -778,13 +778,15 @@ class PsiturkNetworkShell(PsiturkShell):
         override_status = True
         if chosen_hit:
             override_status = False
-            workers = self.amt_services.get_workers("Approved")
-            workers = [worker for worker in workers if \
-                              worker['hitId'] == chosen_hit]
+            workers = self.amt_services.get_workers("Approved", chosen_hit)
             if len(workers) == 0:
                 print "No approved workers for HIT", chosen_hit
                 return
             print 'bonusing workers for HIT', chosen_hit
+        elif len(assignment_ids) == 1:
+            workers = self.amt_services.get_worker(assignment_ids[0])
+            if not workers:
+                print "No submissions found for requested assignment ID"
         else:
             workers = self.amt_services.get_workers("Approved")
             workers = [worker for worker in workers if \
