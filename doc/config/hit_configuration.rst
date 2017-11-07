@@ -19,7 +19,7 @@ like this:
 	psiturk_keywords = stroop
 	organization_name = New Great University
 	browser_exclude_rule = MSIE, mobile, tablet
-    allow_repeats = false
+	allow_repeats = false
 
 
 `title` [string]

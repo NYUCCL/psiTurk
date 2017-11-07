@@ -8,6 +8,7 @@ import urllib2
 import socket
 import psutil
 import time
+import hashlib
 
 
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -136,7 +137,9 @@ class ExperimentServerController:
                 pid.send_signal(signal.SIGTERM)
 
     def is_server_running(self):
-        PROCNAME = "psiturk_experiment_server"
+        project_hash = hashlib.sha1(os.getcwd()).hexdigest()[:12]
+        # find server processes run by this user from this folder
+        PROCNAME = "psiturk_experiment_server_" + project_hash
         cmd = "ps -o pid,command | grep '"+ PROCNAME + "' | grep -v grep | awk '{print $1}'"
         psiturk_exp_processes = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
         output = psiturk_exp_processes.stdout.readlines()

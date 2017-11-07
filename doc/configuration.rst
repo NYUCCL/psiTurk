@@ -102,6 +102,8 @@ project:
     secret_key = 'this is my secret key which is hard to guess, i should change this'    
     #certfile = <path_to.crt> 
     #keyfile = <path_to.key>
+    #adserver_revproxy_host = www.location.of.your.revproxy.sans.protocol.com
+    #adserver_revproxy_port = 80 # defaults to 80
 
     [Task Parameters]
     experiment_code_version = 1.0
@@ -110,8 +112,10 @@ project:
 
     [Shell Parameters]
     launch_in_sandbox_mode = true
+    #bonus_message = "Thanks for participating!"
     use_psiturk_ad_server = true
     ad_location = false
+
 
 
 This file is divided into a few sections which are

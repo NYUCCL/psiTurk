@@ -4,6 +4,7 @@ from gunicorn import util
 import multiprocessing
 from psiturk_config import PsiturkConfig
 import os
+import hashlib
 
 config = PsiturkConfig()
 config.load_config()
@@ -64,6 +65,8 @@ class ExperimentServer(Application):
             print 'Caught ^C, experiment server has shut down.'
             print 'Press `enter` to continue.'
 
+        # add unique identifier of this psiturk project folder
+        project_hash = hashlib.sha1(os.getcwd()).hexdigest()[:12]
         self.user_options = {
             'bind': config.get("Server Parameters", "host") + ":" + config.get("Server Parameters", "port"),
             'workers': workers,
@@ -71,7 +74,7 @@ class ExperimentServer(Application):
             'loglevel': self.loglevels[config.getint("Server Parameters", "loglevel")],
             # 'accesslog': config.get("Server Parameters", "logfile"),
             'errorlog': config.get("Server Parameters", "logfile"),
-            'proc_name': 'psiturk_experiment_server',
+            'proc_name': 'psiturk_experiment_server_' + project_hash,
             'limit_request_line': '0',
             'on_exit': on_exit
         }
