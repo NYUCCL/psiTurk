@@ -546,7 +546,8 @@ class PsiturkNetworkShell(PsiturkShell):
 
         self.sandbox_hits = 0
         self.live_hits = 0
-        self.tally_hits()
+        if not quiet:
+            self.tally_hits()
         PsiturkShell.__init__(self, config, server)
 
         # Prevents running of commands by abbreviation
@@ -602,7 +603,10 @@ class PsiturkNetworkShell(PsiturkShell):
     def get_intro_prompt(self):
         ''' Overloads intro prompt with network-aware version if you can reach
         psiTurk.org, request system status message'''
-        server_msg = self.web_services.get_system_status()
+        if not self.quiet:
+            server_msg = self.web_services.get_system_status()
+        else:
+            server_msg = ''
         return server_msg + colorize('psiTurk version ' + version_number +
                                      '\nType "help" for more information.',
                                      'green', False)
@@ -779,7 +783,7 @@ class PsiturkNetworkShell(PsiturkShell):
         if chosen_hit:
             override_status = False
             workers = self.amt_services.get_workers("Approved", chosen_hit)
-            if len(workers) == 0:
+            if not workers:
                 print "No approved workers for HIT", chosen_hit
                 return
             print 'bonusing workers for HIT', chosen_hit
