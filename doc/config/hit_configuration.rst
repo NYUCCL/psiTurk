@@ -7,19 +7,20 @@ like this:
 
 ::
 
-	[HIT Configuration]
-	title = Stroop task
-	description = Judge the color of a series of words.
-	amt_keywords = Perception, Psychology
-	lifetime = 24
-	us_only = true
-	approve_requirement = 95
-	contact_email_on_error = youremail@gmail.com
-	ad_group = My research project
-	psiturk_keywords = stroop
-	organization_name = New Great University
-	browser_exclude_rule = MSIE, mobile, tablet
-	allow_repeats = false
+    [HIT Configuration]
+    title = Stroop task
+    description = Judge the color of a series of words.
+    amt_keywords = Perception, Psychology
+    lifetime = 24
+    us_only = true
+    approve_requirement = 95
+    number_hits_approved = 0
+    contact_email_on_error = youremail@gmail.com
+    ad_group = My research project
+    psiturk_keywords = stroop
+    organization_name = New Great University
+    browser_exclude_rule = MSIE, mobile, tablet
+    allow_repeats = false
 
 
 `title` [string]
@@ -71,6 +72,11 @@ to be careful with this as it tends to select more seasoned and
 expert workers.  This is desirable to avoid bots and scammers, but also
 may exclude new sign-ups to the system.
 
+`number_hits_approved` [integer]
+--------------------------------
+`number_hits_approved` is important to use in conjunction with `approved_requirement`, because
+mturk will default `approve_requirement` to 100% until a worker has at least 100 HITs approved.
+Override that behavior by setting `number_hits_approved` to something like 100.
 
 .. seealso::
 

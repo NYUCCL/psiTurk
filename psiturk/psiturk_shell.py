@@ -1204,7 +1204,8 @@ class PsiturkNetworkShell(PsiturkShell):
             "description": self.config.get('HIT Configuration', 'description'),
             "keywords": self.config.get('HIT Configuration', 'amt_keywords'),
             "reward": reward,
-            "duration": datetime.timedelta(hours=duration)
+            "duration": datetime.timedelta(hours=duration),
+            "number_hits_approved": self.config.get('HIT Configuration', 'number_hits_approved')
         }
         return hit_config
 

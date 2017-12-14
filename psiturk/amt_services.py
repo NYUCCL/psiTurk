@@ -8,7 +8,8 @@ from boto.exception import EC2ResponseError
 from boto.mturk.connection import MTurkConnection, MTurkRequestError
 from boto.mturk.question import ExternalQuestion
 from boto.mturk.qualification import LocaleRequirement, \
-    PercentAssignmentsApprovedRequirement, Qualifications
+    PercentAssignmentsApprovedRequirement, Qualifications, \
+    NumberHitsApprovedRequirement
 from flask import jsonify
 import re as re
 from psiturk.psiturk_config import PsiturkConfig
@@ -548,6 +549,10 @@ class MTurkServices(object):
         quals.add(
             PercentAssignmentsApprovedRequirement("GreaterThanOrEqualTo",
                                                   approve_requirement))
+        number_hits_approved = hit_config['number_hits_approved']
+        quals.add(
+            NumberHitsApprovedRequirement("GreaterThanOrEqualTo",
+                                            number_hits_approved))
 
         if hit_config['us_only']:
             quals.add(LocaleRequirement("EqualTo", "US"))
@@ -616,7 +621,8 @@ class MTurkServices(object):
             self.configure_hit(hit_config)
             myhit = self.mtc.create_hit(**self.param_dict)[0]
             self.hitid = myhit.HITId
-        except:
+        except MTurkRequestError as e:
+            print e
             return False
         else:
             return self.hitid
