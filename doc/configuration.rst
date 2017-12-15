@@ -79,6 +79,7 @@ project:
     us_only = true
     approve_requirement = 95
     number_hits_approved = 0
+    require_master_workers = false
     contact_email_on_error = youremail@gmail.com
     ad_group = Default psiTurk Stroop Example
     psiturk_keywords = stroop

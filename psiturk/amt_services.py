@@ -9,7 +9,7 @@ from boto.mturk.connection import MTurkConnection, MTurkRequestError
 from boto.mturk.question import ExternalQuestion
 from boto.mturk.qualification import LocaleRequirement, \
     PercentAssignmentsApprovedRequirement, Qualifications, \
-    NumberHitsApprovedRequirement
+    NumberHitsApprovedRequirement, Requirement
 from flask import jsonify
 import re as re
 from psiturk.psiturk_config import PsiturkConfig
@@ -56,6 +56,13 @@ MYSQL_RESERVED_WORDS_CAP = [
 ]
 MYSQL_RESERVED_WORDS = [word.lower() for word in MYSQL_RESERVED_WORDS_CAP]
 
+class MasterRequirement(Requirement):
+    def __init__(self, sandbox=False, required_to_preview=False):
+        comparator = "Exists"
+        sandbox_qualification_type_id = "2ARFPLSP75KLA8M8DH1HTEQVJT3SY6"
+        production_qualification_type_id = "2F1QJWKUDD8XADTFD2Q0G6UTO95ALH"
+        qualification_type_id = production_qualification_type_id if not sandbox else sandbox_qualification_type_id
+        super(MasterRequirement, self).__init__(qualification_type_id=qualification_type_id, comparator=comparator, required_to_preview=required_to_preview)
 
 class MTurkHIT(object):
     ''' Structure for dealing with MTurk HITs '''
@@ -554,6 +561,10 @@ class MTurkServices(object):
             NumberHitsApprovedRequirement("GreaterThanOrEqualTo",
                                             number_hits_approved))
 
+        require_master_workers = hit_config['require_master_workers']
+        if require_master_workers:
+            quals.add(MasterRequirement(sandbox=self.is_sandbox))
+
         if hit_config['us_only']:
             quals.add(LocaleRequirement("EqualTo", "US"))
 
@@ -686,3 +697,4 @@ class MTurkServices(object):
         except MTurkRequestError as exception:
             print exception.error_message
             return False
+

@@ -15,6 +15,7 @@ like this:
     us_only = true
     approve_requirement = 95
     number_hits_approved = 0
+    require_master_workers = false
     contact_email_on_error = youremail@gmail.com
     ad_group = My research project
     psiturk_keywords = stroop
@@ -77,6 +78,13 @@ may exclude new sign-ups to the system.
 `number_hits_approved` is important to use in conjunction with `approved_requirement`, because
 mturk will default `approve_requirement` to 100% until a worker has at least 100 HITs approved.
 Override that behavior by setting `number_hits_approved` to something like 100.
+
+`require_master_workers` [true | false]
+--------------------------------------
+`require_master_workers` will make it so that only workers with the "Master" qualification
+can take your study. See `Who Are Amazon Mechanical Turk Masters? <https://requester.mturk.com/help/faq#what_are_masters>`__
+
+Note: Master workers cost an extra 5%.
 
 .. seealso::
 
