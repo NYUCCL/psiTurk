@@ -1121,9 +1121,11 @@ class PsiturkNetworkShell(PsiturkShell):
             if self.sandbox:
                 mturk_url_base = 'https://workersandbox.mturk.com'
             else:
-                mturk_url_base = 'https://www.mturk.com'
-            mturk_url = '{}/mturk/searchbar?selectedSearchType=hitgroups&searchWords={}'.format(
-                mturk_url_base, urllib.quote_plus(str(self.config.get('HIT Configuration', 'title'))) )
+                mturk_url_base = 'https://worker.mturk.com'
+            mturk_url = '{}/projects?filters%5Bsearch_term%5D={}'.format(
+                mturk_url_base,
+                urllib.quote_plus(
+                    str(self.config.get('HIT Configuration', 'title'))))
 
             print('  MTurk URL: {}'.format(mturk_url) )
             print "Hint: In OSX, you can open a terminal link using cmd + click"
