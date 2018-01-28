@@ -1,6 +1,7 @@
 import sys
 from setuptools import setup
 from psiturk.version import version_number
+from flask import logging
 
 try:
     with open("README.md") as readmefile:
