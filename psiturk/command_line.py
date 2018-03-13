@@ -97,15 +97,19 @@ def launch_shell():
     script_group.add_argument(
         '-e', '--execute', help='Execute one command specified on the command line'
     )
-    args = parser.parse_args()
-    # If requested version just print and quite
+    args, unknownargs = parser.parse_known_args()
+    # If requested version just print and quit
     if args.version:
         print version_number
     else:
         import psiturk.psiturk_shell as ps
         if args.script:
             ps.run(cabinmode=args.cabinmode, script=args.script, quiet=True)
-        elif args.execute:
-            ps.run(cabinmode=args.cabinmode, execute=args.execute, quiet=True)
+        elif args.execute or unknownargs:
+            if unknownargs:
+                execute= ' '.join(unknownargs)
+            else:
+                execute = args.execute
+            ps.run(cabinmode=args.cabinmode, execute=execute, quiet=True)
         else:
             ps.run(cabinmode=args.cabinmode)
