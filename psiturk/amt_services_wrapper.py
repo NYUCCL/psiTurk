@@ -432,8 +432,10 @@ class MTurkServicesWrapper():
         if create_failed:
             print '\n'.join(['*****************************',
                              '  Sorry, there was an error creating hit and registering ad.'])
-            if fail_msg:
-                print fail_msg
+            
+            if fail_msg is None:
+                fail_msg = ''
+            raise Exception(fail_msg)
 
         return (hit_id, ad_id)
 
