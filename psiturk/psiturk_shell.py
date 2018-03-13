@@ -35,40 +35,7 @@ from psiturk_config import PsiturkConfig
 import experiment_server_controller as control
 from db import db_session, init_db
 from models import Participant
-
-
-def colorize(target, color, use_escape=True):
-    ''' Colorize target string. Set use_escape to false when text will not be
-    interpreted by readline, such as in intro message.'''
-    def escape(code):
-        ''' Escape character '''
-        return '\001%s\002' % code
-    if color == 'purple':
-        color_code = '\033[95m'
-    elif color == 'cyan':
-        color_code = '\033[96m'
-    elif color == 'darkcyan':
-        color_code = '\033[36m'
-    elif color == 'blue':
-        color_code = '\033[93m'
-    elif color == 'green':
-        color_code = '\033[92m'
-    elif color == 'yellow':
-        color_code = '\033[93m'
-    elif color == 'red':
-        color_code = '\033[91m'
-    elif color == 'white':
-        color_code = '\033[37m'
-    elif color == 'bold':
-        color_code = '\033[1m'
-    elif color == 'underline':
-        color_code = '\033[4m'
-    else:
-        color_code = ''
-    if use_escape:
-        return escape(color_code) + target + escape('\033[0m')
-    else:
-        return color_code + target + '\033[m'
+from utils import *
 
 def docopt_cmd(func):
     """
@@ -109,7 +76,7 @@ class PsiturkShell(Cmd, object):
         psiturk_shell -c
     """
 
-    def __init__(self, config, server):
+    def __init__(self, config, server, quiet=False):
         Cmd.__init__(self)
         self.config = config
         self.server = server
@@ -120,9 +87,12 @@ class PsiturkShell(Cmd, object):
         self.help_path = os.path.join(os.path.dirname(__file__), "shell_help/")
         self.psiturk_header = 'psiTurk command help:'
         self.super_header = 'basic CMD command help:'
-
-        self.color_prompt()
-        self.intro = self.get_intro_prompt()
+        
+        if not self.quiet:
+            self.color_prompt()
+            self.intro = self.get_intro_prompt()
+        else:
+            self.intro = ''
 
         self.already_prelooped = False
 
@@ -220,8 +190,158 @@ class PsiturkShell(Cmd, object):
         ''' Add space after a completion, makes tab completion with
         multi-word commands cleaner. '''
         return Cmd.complete(self, text, state) + ' '
+    
+    # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
+    #   hit management
+    # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
+    def _estimate_expenses(self, num_workers, reward):
+        ''' Returns tuple describing expenses:
+        amount paid to workers
+        amount paid to amazon'''
+        
+        # fee structure changed 07.22.15:
+        # 20% for HITS with < 10 assignments
+        # 40% for HITS with >= 10 assignments
+        commission = 0.2
+        if float(num_workers) >= 10:
+            commission = 0.4 
+        work = float(num_workers) * float(reward)
+        fee = work * commission
+        return (work, fee, work+fee)
+        
+    def _confirm_dialog(self, prompt):
+        ''' Prompts for a 'yes' or 'no' to given prompt. '''
+        response = raw_input(prompt).strip().lower()
+        valid = {'y': True, 'ye': True, 'yes': True, 'n': False, 'no': False}
+        while True:
+            try:
+                return valid[response]
+            except:
+                response = raw_input("Please respond 'y' or 'n': ").strip().lower()
+    
+    def hit_create(self, numWorkers, reward, duration):
+        
+        if self.sandbox:
+            mode = 'sandbox'
+        else:
+            mode = 'live'
+        
+        # Argument retrieval and validation
+        if numWorkers is None:
+            numWorkers = raw_input('number of participants? ').strip()
+        try:
+            numWorkers = int(numWorkers)
+        except ValueError:
+            print '*** number of participants must be a whole number'
+            return
+        if numWorkers <= 0:
+            print '*** number of participants must be greater than 0'
+            return
 
+        if reward is None:
+            reward = raw_input('reward per HIT? ').strip()
+        p = re.compile('^\d*\.\d\d$')
+        m = p.match(reward)
+        if m is None:
+            print '*** reward must have format [dollars].[cents]'
+            return
+        try:
+            reward = float(reward)
+        except:
+            print '*** reward must be in format [dollars].[cents]'
+            return
+            
+        if duration is None:
+            duration = raw_input(
+                'duration of hit (in hours, it can be decimals)? ').strip()
+        try:
+            duration = float(duration)
+        except ValueError:
+            print '*** duration must a number'
+            return
+        if duration <= 0:
+            print '*** duration must be greater than 0'
+            return
 
+        _, fee, total = self._estimate_expenses(numWorkers, reward)
+        
+        if not self.quiet:
+            dialog_query = '\n'.join(['*****************************',
+                                      '    Max workers: %d' % numWorkers,
+                                      '    Reward: $%.2f' % reward,
+                                      '    Duration: %s hours' % duration,
+                                      '    Fee: $%.2f' % fee,
+                                      '    ________________________',
+                                      '    Total: $%.2f' % total,
+                                      'Create %s HIT [y/n]? ' % colorize(mode, 'bold')])
+            if not self._confirm_dialog(dialog_query):
+                print '*** Cancelling HIT creation.'
+                return
+        
+        try:
+            (hit_id, ad_id) = self.amt_services_wrapper.hit_create(numWorkers, reward,
+                            duration)
+                            
+            print '\n'.join(['*****************************',
+                             '  Created %s HIT' % colorize(mode, 'bold'),
+                             '    HITid: %s' % str(hit_id),
+                             '    Max workers: %d' % numWorkers,
+                             '    Reward: $%.2f' % reward,
+                             '    Duration: %s hours' % duration,
+                             '    Fee: $%.2f' % fee,
+                             '    ________________________',
+                             '    Total: $%.2f' % total])
+                             
+            # Print the Ad Url
+            use_psiturk_ad_server = self.config.getboolean('Shell Parameters', 'use_psiturk_ad_server')
+            if use_psiturk_ad_server:
+                ad_url = ''
+                if use_psiturk_ad_server:
+                    if self.sandbox:
+                        ad_url_base = 'https://sandbox.ad.psiturk.org/view'
+                    else:
+                        ad_url_base = 'https://ad.psiturk.org/view'
+                    ad_url = '{}/{}?assignmentId=debug{}&hitId=debug{}&workerId=debug{}'.format( 
+                        ad_url_base, str(ad_id), str(self.random_id_generator()), str(self.random_id_generator()), str(self.random_id_generator()))
+
+            else:
+                options = { 
+                    'base': self.config.get('Shell Parameters', 'ad_location'), 
+                    'mode': mode,
+                    'assignmentid': str(self.random_id_generator()),
+                    'hitid': str(self.random_id_generator()),
+                    'workerid': str(self.random_id_generator())
+                  }
+                ad_url = '{base}?mode={mode}&assignmentId=debug{assignmentid}&hitId=debug{hitid}&workerId=debug{workerid}'.format(**options)
+            print('  Ad URL: {}'.format(ad_url) )
+            print "Note: This url cannot be used to run your full psiTurk experiment.  It is only for testing your ad."
+
+            # Print the Mturk Url
+            mturk_url = ''
+            if self.sandbox:
+                mturk_url_base = 'https://workersandbox.mturk.com'
+            else:
+                mturk_url_base = 'https://worker.mturk.com'
+            mturk_url = '{}/projects?filters%5Bsearch_term%5D={}'.format(
+                mturk_url_base,
+                urllib.quote_plus(
+                    str(self.config.get('HIT Configuration', 'title'))))
+
+            print('  MTurk URL: {}'.format(mturk_url) )
+            print "Hint: In OSX, you can open a terminal link using cmd + click"
+            if self.sandbox and use_psiturk_ad_server:
+                print "Note: This sandboxed ad will expire from the server in 16 days."
+        except Exception as e:
+            print e
+    
+    # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
+    #   worker management
+    # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
+    def worker_list(self, submitted, approved, rejected, chosen_hit):
+        worker_json = self.amt_services_wrapper.worker_list(submitted, approved,
+                             rejected, chosen_hit)
+        if worker_json:
+            print worker_json
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #   server management
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
@@ -535,19 +655,31 @@ class PsiturkShell(Cmd, object):
 class PsiturkNetworkShell(PsiturkShell):
     ''' Extends PsiturkShell class to include online psiTurk.org features '''
 
-    def __init__(self, config, server, sandbox):
+    _cached_web_services = None
+    
+    @property
+    def web_services(self):
+        if not self._cached_web_services:
+            self._cached_web_services = PsiturkOrgServices(
+                self.config.get('psiTurk Access', 'psiturk_access_key_id'),
+                self.config.get('psiTurk Access', 'psiturk_secret_access_id')) 
+            self.amt_services_wrapper.set_web_services(self._cached_web_services)
+        return self._cached_web_services
+    
+    def __init__(self, config, server, sandbox, quiet=False):
         self.config = config
-        self.web_services = PsiturkOrgServices(
-            config.get('psiTurk Access', 'psiturk_access_key_id'),
-            config.get('psiTurk Access', 'psiturk_secret_access_id'))        
-        self.amt_services_wrapper = MTurkServicesWrapper(web_services=self.web_services, sandbox=sandbox, quiet=False)        
+        self.quiet = quiet
+        self.amt_services_wrapper = MTurkServicesWrapper(config=config, sandbox=sandbox)        
+        
         self.sandbox = sandbox
         self.tunnel = TunnelServices()
-
+        
         self.sandbox_hits = 0
         self.live_hits = 0
-        self.update_hit_tally()
-        PsiturkShell.__init__(self, config, server)
+        
+        if not quiet:
+            self.update_hit_tally()
+        PsiturkShell.__init__(self, config, server, quiet)
 
         # Prevents running of commands by abbreviation
         self.abbrev = False
@@ -795,7 +927,7 @@ class PsiturkNetworkShell(PsiturkShell):
         """
 
         if arg['create']:
-            self.amt_services_wrapper.hit_create(arg['<numWorkers>'], arg['<reward>'],
+            self.hit_create(arg['<numWorkers>'], arg['<reward>'],
                             arg['<duration>'])
             self.update_hit_tally()
         elif arg['extend']:
@@ -842,7 +974,7 @@ class PsiturkNetworkShell(PsiturkShell):
         elif arg['unreject']:
             self.amt_services_wrapper.worker_unreject(arg['<hit_id>'], arg['<assignment_id>'])
         elif arg['list']:
-            self.amt_services_wrapper.worker_list(arg['--submitted'], arg['--approved'],
+            self.worker_list(arg['--submitted'], arg['--approved'],
                              arg['--rejected'], arg['<hit_id>'])
         elif arg['bonus']:
             self.amt_services_wrapper.worker_bonus(arg['<hit_id>'], arg['--auto'], arg['<amount>'], '',
@@ -886,7 +1018,7 @@ class PsiturkNetworkShell(PsiturkShell):
             base_url = "http://" + self.config.get('Server Parameters', 'host') + "/ad"
         else:
             if arg['--print-only']:
-                my_ip = self.web_services.get_my_ip()
+                my_ip = get_my_ip()
                 base_url = "http://" + my_ip + ":" + \
                     self.config.get('Server Parameters', 'port') + "/ad"
             else:
@@ -994,7 +1126,7 @@ class PsiturkNetworkShell(PsiturkShell):
             else:
                 break
 
-def run(cabinmode=False, script=None, execute=None):
+def run(cabinmode=False, script=None, execute=None, quiet=False):
     using_libedit = 'libedit' in readline.__doc__
     if using_libedit:
         print colorize('\n'.join([
@@ -1016,7 +1148,8 @@ def run(cabinmode=False, script=None, execute=None):
     else:
         shell = PsiturkNetworkShell(
             config, server, \
-            config.getboolean('Shell Parameters', 'launch_in_sandbox_mode'))
+            config.getboolean('Shell Parameters', 'launch_in_sandbox_mode'), 
+            quiet=quiet)
 
     if script:
         with open(script, 'r') as temp_file:

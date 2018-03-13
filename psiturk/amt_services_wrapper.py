@@ -30,70 +30,60 @@ from psiturk_org_services import PsiturkOrgServices, TunnelServices
 from psiturk_config import PsiturkConfig
 from db import db_session, init_db
 from models import Participant
-
-def colorize(target, color, use_escape=True):
-    ''' Colorize target string. Set use_escape to false when text will not be
-    interpreted by readline, such as in intro message.'''
-    def escape(code):
-        ''' Escape character '''
-        return '\001%s\002' % code
-    if color == 'purple':
-        color_code = '\033[95m'
-    elif color == 'cyan':
-        color_code = '\033[96m'
-    elif color == 'darkcyan':
-        color_code = '\033[36m'
-    elif color == 'blue':
-        color_code = '\033[93m'
-    elif color == 'green':
-        color_code = '\033[92m'
-    elif color == 'yellow':
-        color_code = '\033[93m'
-    elif color == 'red':
-        color_code = '\033[91m'
-    elif color == 'white':
-        color_code = '\033[37m'
-    elif color == 'bold':
-        color_code = '\033[1m'
-    elif color == 'underline':
-        color_code = '\033[4m'
-    else:
-        color_code = ''
-    if use_escape:
-        return escape(color_code) + target + escape('\033[0m')
-    else:
-        return color_code + target + '\033[m'    
+from utils import *
 
 class MTurkServicesWrapper():
-
-    def __init__(self, web_services=None, sandbox=None, quiet=True):
-        config = PsiturkConfig()
-        config.load_config()
+    
+    _cached_web_services = None
+    _cached_dbs_services = None
+    _cached_amt_services = None
+    
+    @property
+    def web_services(self):
+        if not self._cached_web_services:
+            self._cached_web_services = PsiturkOrgServices(
+                self.config.get('psiTurk Access', 'psiturk_access_key_id'),
+                self.config.get('psiTurk Access', 'psiturk_secret_access_id')) 
+        return self._cached_web_services
+    
+    @property
+    def db_services(self):
+        if not self._cached_dbs_services:
+            self._cached_dbs_services = RDSServices(
+                self.config.get('AWS Access', 'aws_access_key_id'), \
+                self.config.get('AWS Access', 'aws_secret_access_key'),
+                self.config.get('AWS Access', 'aws_region'))
+        return self._cached_dbs_services
+    
+    def set_web_services(self, web_services):
+        self._cached_web_services = web_services
+    
+    @property
+    def amt_services(self):
+        if not self._cached_amt_services:
+            self._cached_amt_services = MTurkServices(
+                self.config.get('AWS Access', 'aws_access_key_id'), \
+                self.config.get('AWS Access', 'aws_secret_access_key'),
+                self.config.getboolean('Shell Parameters', 'launch_in_sandbox_mode'))
+        return self._cached_amt_services
+    
+    def __init__(self, config=None, web_services=None, tunnel=None, sandbox=None):
+        
+        if not config:
+            config = PsiturkConfig()
+            config.load_config()
         self.config = config
         
-        self.quiet = quiet
+        if web_services:
+            self._cached_web_services = web_services
+        
+        if not tunnel:
+            tunnel = TunnelServices(config)
+        self.tunnel = tunnel
     
         if not sandbox:
             sandbox = config.getboolean('Shell Parameters', 'launch_in_sandbox_mode')
         self.sandbox = sandbox
-        
-        self.amt_services = MTurkServices(
-            config.get('AWS Access', 'aws_access_key_id'), \
-            config.get('AWS Access', 'aws_secret_access_key'),
-            self.sandbox)
-        
-        if not web_services:
-            web_services = PsiturkOrgServices(
-                config.get('psiTurk Access', 'psiturk_access_key_id'),
-                config.get('psiTurk Access', 'psiturk_secret_access_id')) 
-        self.web_services = web_services
-
-        self.db_services = RDSServices(
-            config.get('AWS Access', 'aws_access_key_id'), \
-            config.get('AWS Access', 'aws_secret_access_key'),
-            config.get('AWS Access', 'aws_region'))
-            
-        self.tunnel = TunnelServices()
         
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #   Miscellaneous
@@ -145,10 +135,11 @@ class MTurkServicesWrapper():
             #print 'listing workers for HIT', chosen_hit # printing messes up json
         if not len(workers):
             print "*** no workers match your request"
+            return
         else:
             workers = [self.add_bonus(worker)
                        for worker in workers]
-            print json.dumps(workers, indent=4,
+            return json.dumps(workers, indent=4,
                              separators=(',', ': '))
      
     def worker_approve(self, chosen_hit, assignment_ids=None):
@@ -298,21 +289,7 @@ class MTurkServicesWrapper():
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #   hit management
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
-    def _estimate_expenses(self, num_workers, reward):
-        ''' Returns tuple describing expenses:
-        amount paid to workers
-        amount paid to amazon'''
-        
-        # fee structure changed 07.22.15:
-        # 20% for HITS with < 10 assignments
-        # 40% for HITS with >= 10 assignments
-        commission = 0.2
-        if float(num_workers) >= 10:
-            commission = 0.4 
-        work = float(num_workers) * float(reward)
-        fee = work * commission
-        return (work, fee, work+fee)
-    
+   
     def tally_hits(self):
         hits = self.amt_services.get_active_hits()
         num_hits = 0
@@ -408,73 +385,22 @@ class MTurkServicesWrapper():
 
         if use_psiturk_ad_server:
             if not self.web_services.check_credentials():
-                print '\n'.join(['*****************************',
+                error_msg = '\n'.join(['*****************************',
                                 '  Sorry, your psiTurk Credentials are invalid.\n ',
                                 '  You cannot create ads and hits until you enter valid credentials in ',
                                 '  the \'psiTurk Access\' section of ~/.psiturkconfig.  You can obtain your',
                                 '  credentials or sign up at https://www.psiturk.org/login.\n'])
-                return
+                raise Exception(error_msg)
 
         if not self.amt_services.verify_aws_login():
-            print '\n'.join(['*****************************',
+            error_msg = '\n'.join(['*****************************',
                              '  Sorry, your AWS Credentials are invalid.\n ',
                              '  You cannot create ads and hits until you enter valid credentials in ',
                              '  the \'AWS Access\' section of ~/.psiturkconfig.  You can obtain your ',
                              '  credentials via the Amazon AMT requester website.\n'])
-            return
-
-        # Argument retrieval and validation
-        if numWorkers is None:
-            numWorkers = raw_input('number of participants? ').strip()
-        try:
-            numWorkers = int(numWorkers)
-        except ValueError:
-            print '*** number of participants must be a whole number'
-            return
-        if numWorkers <= 0:
-            print '*** number of participants must be greater than 0'
-            return
-
-        if reward is None:
-            reward = raw_input('reward per HIT? ').strip()
-        p = re.compile('^\d*\.\d\d$')
-        m = p.match(reward)
-        if m is None:
-            print '*** reward must have format [dollars].[cents]'
-            return
-        try:
-            reward = float(reward)
-        except:
-            print '*** reward must be in format [dollars].[cents]'
-            return
-            
-        if duration is None:
-            duration = raw_input(
-                'duration of hit (in hours, it can be decimals)? ').strip()
-        try:
-            duration = float(duration)
-        except ValueError:
-            print '*** duration must a number'
-            return
-        if duration <= 0:
-            print '*** duration must be greater than 0'
-            return
-
-        _, fee, total = self._estimate_expenses(numWorkers, reward)
+            raise Exception(error_msg)        
         
-        if not self.quiet:
-            dialog_query = '\n'.join(['*****************************',
-                                      '    Max workers: %d' % numWorkers,
-                                      '    Reward: $%.2f' % reward,
-                                      '    Duration: %s hours' % duration,
-                                      '    Fee: $%.2f' % fee,
-                                      '    ________________________',
-                                      '    Total: $%.2f' % total,
-                                      'Create %s HIT [y/n]? ' % colorize(mode, 'bold')])
-            if not self._confirm_dialog(dialog_query):
-                print '*** Cancelling HIT creation.'
-                return
-            
+        ad_id = None
         if use_psiturk_ad_server:
             ad_id = self.create_psiturk_ad() 
             create_failed = False
@@ -509,64 +435,7 @@ class MTurkServicesWrapper():
             if fail_msg:
                 print fail_msg
 
-        else:
-            print '\n'.join(['*****************************',
-                             '  Creating %s HIT' % colorize(mode, 'bold'),
-                             '    HITid: %s' % str(hit_id),
-                             '    Max workers: %d' % numWorkers,
-                             '    Reward: $%.2f' % reward,
-                             '    Duration: %s hours' % duration,
-                             '    Fee: $%.2f' % fee,
-                             '    ________________________',
-                             '    Total: $%.2f' % total])
-
-            # Print the Ad Url
-            ad_url = ''
-            if use_psiturk_ad_server:
-                if self.sandbox:
-                    ad_url_base = 'https://sandbox.ad.psiturk.org/view'
-                else:
-                    ad_url_base = 'https://ad.psiturk.org/view'
-                ad_url = '{}/{}?assignmentId=debug{}&hitId=debug{}&workerId=debug{}'.format( 
-                    ad_url_base, str(ad_id), str(self.random_id_generator()), str(self.random_id_generator()), str(self.random_id_generator()))
-
-            else:
-                options = { 
-                    'base': self.config.get('Shell Parameters', 'ad_location'), 
-                    'mode': mode,
-                    'assignmentid': str(self.random_id_generator()),
-                    'hitid': str(self.random_id_generator()),
-                    'workerid': str(self.random_id_generator())
-                  }
-                ad_url = '{base}?mode={mode}&assignmentId=debug{assignmentid}&hitId=debug{hitid}&workerId=debug{workerid}'.format(**options)
-            print('  Ad URL: {}'.format(ad_url) )
-            print "Note: This url cannot be used to run your full psiTurk experiment.  It is only for testing your ad."
-
-            # Print the Mturk Url
-            mturk_url = ''
-            if self.sandbox:
-                mturk_url_base = 'https://workersandbox.mturk.com'
-            else:
-                mturk_url_base = 'https://worker.mturk.com'
-            mturk_url = '{}/projects?filters%5Bsearch_term%5D={}'.format(
-                mturk_url_base,
-                urllib.quote_plus(
-                    str(self.config.get('HIT Configuration', 'title'))))
-
-            print('  MTurk URL: {}'.format(mturk_url) )
-            print "Hint: In OSX, you can open a terminal link using cmd + click"
-            if self.sandbox and use_psiturk_ad_server:
-                print "Note: This sandboxed ad will expire from the server in 16 days."
-    
-    def _confirm_dialog(self, prompt):
-        ''' Prompts for a 'yes' or 'no' to given prompt. '''
-        response = raw_input(prompt).strip().lower()
-        valid = {'y': True, 'ye': True, 'yes': True, 'n': False, 'no': False}
-        while True:
-            try:
-                return valid[response]
-            except:
-                response = raw_input("Please respond 'y' or 'n': ").strip().lower()
+        return (hit_id, ad_id)
 
     def create_psiturk_ad(self):
         # register with the ad server (psiturk.org/ad/register) using POST
@@ -605,7 +474,7 @@ class MTurkServicesWrapper():
             else:
                 port = 80
         else:
-            ip_address = str(self.web_services.get_my_ip())
+            ip_address = str(get_my_ip())
             port = str(self.config.get('Server Parameters', 'port'))
 
         if self.config.has_option('HIT Configuration', 'allow_repeats'):
@@ -843,7 +712,7 @@ class MTurkServicesWrapper():
             myinstance = self.db_services.get_db_instance_info(instance_id)
             if myinstance:
                 # Add security zone to this node to allow connections
-                my_ip = self.web_services.get_my_ip()
+                my_ip = get_my_ip()
                 if (not self.db_services.allow_access_to_instance(myinstance,
                                                                   my_ip)):
                     print("*** Error authorizing your ip address to connect to " \
