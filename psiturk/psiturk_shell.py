@@ -27,13 +27,11 @@ except ImportError:
 import webbrowser
 import sqlalchemy as sa
 
-from amt_services import MTurkServices, RDSServices
 from amt_services_wrapper import MTurkServicesWrapper
 from psiturk_org_services import PsiturkOrgServices, TunnelServices
 from version import version_number
 from psiturk_config import PsiturkConfig
 import experiment_server_controller as control
-from db import db_session, init_db
 from models import Participant
 from utils import *
 
