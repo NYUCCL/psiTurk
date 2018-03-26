@@ -129,18 +129,10 @@ class MTurkServicesWrapper():
         else:
             workers = self.amt_services.get_workers(chosen_hit=chosen_hit)
         if workers is False:
-            print colorize('*** failed to get workers', 'red')
-            return
-        #if chosen_hit:
-            #print 'listing workers for HIT', chosen_hit # printing messes up json
-        if not len(workers):
-            print "*** no workers match your request"
-            return
-        else:
-            workers = [self.add_bonus(worker)
-                       for worker in workers]
-            return json.dumps(workers, indent=4,
-                             separators=(',', ': '))
+            raise Exception('*** failed to get workers')    
+            
+        workers = [self.add_bonus(worker) for worker in workers]
+        return workers
      
     def worker_approve(self, chosen_hit, assignment_ids=None):
         ''' Approve worker '''

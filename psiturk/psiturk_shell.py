@@ -338,10 +338,20 @@ class PsiturkShell(Cmd, object):
     #   worker management
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     def worker_list(self, submitted, approved, rejected, chosen_hit):
-        worker_json = self.amt_services_wrapper.worker_list(submitted, approved,
+        try:
+            workers = self.amt_services_wrapper.worker_list(submitted, approved,
                              rejected, chosen_hit)
-        if worker_json:
-            print worker_json
+            if not len(workers):
+                print "*** no workers match your request"
+            else:
+                worker_json = json.dumps(workers, indent=4,
+                                 separators=(',', ': '))        
+                if worker_json:
+                    print worker_json
+        
+        except Exception as e:
+            print colorize(str(e), 'red')
+            
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #   server management
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
