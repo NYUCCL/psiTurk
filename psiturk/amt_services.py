@@ -451,14 +451,14 @@ class MTurkServices(object):
             worker = self.mtc.get_assignment(assignment_id)[0]
         except MTurkRequestError as e:
             return False
-        worker_data = [{
+        worker_data = {
             'hitId': worker.HITId,
             'assignmentId': worker.AssignmentId,
             'workerId': worker.WorkerId,
             'submit_time': worker.SubmitTime,
             'accept_time': worker.AcceptTime,
             'status': worker.AssignmentStatus
-        }]
+        }
         return worker_data
 
     def bonus_worker(self, assignment_id, amount, reason=""):

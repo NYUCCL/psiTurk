@@ -339,8 +339,15 @@ class PsiturkShell(Cmd, object):
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     def worker_list(self, submitted, approved, rejected, chosen_hit):
         try:
-            workers = self.amt_services_wrapper.worker_list(submitted, approved,
-                             rejected, chosen_hit)
+            status = None
+            if submitted:
+                status='Submitted'
+            elif approved:
+                status='Approved'
+            elif rejected:
+                status='Rejected'
+                
+            workers = self.amt_services_wrapper.get_workers(status,chosen_hit)
             if not len(workers):
                 print "*** no workers match your request"
             else:
@@ -350,8 +357,33 @@ class PsiturkShell(Cmd, object):
                     print worker_json
         
         except Exception as e:
-            print colorize(str(e), 'red')
-            
+            print colorize(repr(e), 'red')
+    
+    def worker_approve(self, all=False, chosen_hit=None, assignment_ids=None):
+        
+        if all:
+            print "Approving all submissions..."
+        elif chosen_hit:
+            print "Approving all submissions for HIT {}".format(chosen_hit)
+        else:
+            print "Approving all specified submissions..."
+        
+        workers = self.amt_services_wrapper.get_workers("Submitted", chosen_hit, assignment_ids)
+        if not workers:
+            if chosen_hit:
+                print "No submissions found for requested HIT ID. Are you in the right `mode`?"
+            elif assignment_ids:
+                print "No submissions found for requested assignment ID(s). Are you in the right `mode`?"
+            else:
+                print "No submissions found. Are you in the right `mode`?"
+            return        
+        
+        for worker in workers:
+            try:
+                result = self.amt_services_wrapper.approve_worker(worker, force=bool(assignment_ids))
+                print result
+            except Exception as e:
+                print colorize(str(e), 'red')
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #   server management
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
@@ -970,7 +1002,7 @@ class PsiturkNetworkShell(PsiturkShell):
     def do_worker(self, arg):
         """
         Usage:
-          worker approve (--hit <hit_id> | <assignment_id> ...)
+          worker approve (--all | --hit <hit_id> | <assignment_id> ...)
           worker reject (--hit <hit_id> | <assignment_id> ...)
           worker unreject (--hit <hit_id> | <assignment_id> ...)
           worker bonus  (--amount <amount> | --auto) (--hit <hit_id> | <assignment_id> ...)
@@ -978,7 +1010,7 @@ class PsiturkNetworkShell(PsiturkShell):
           worker help
         """
         if arg['approve']:
-            self.amt_services_wrapper.worker_approve(arg['<hit_id>'], arg['<assignment_id>'])
+            self.worker_approve(arg['--all'], arg['<hit_id>'], arg['<assignment_id>'])
         elif arg['reject']:
             self.amt_services_wrapper.worker_reject(arg['<hit_id>'], arg['<assignment_id>'])
         elif arg['unreject']:

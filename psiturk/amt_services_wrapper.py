@@ -117,77 +117,67 @@ class MTurkServicesWrapper():
             worker_dict['bonus'] = 'N/A'
         return worker_dict
         
-    def worker_list(self, submitted, approved, rejected, chosen_hit):
-        ''' List worker stats '''
-        workers = None
-        if submitted:
-            workers = self.amt_services.get_workers("Submitted", chosen_hit)
-        elif approved:
-            workers = self.amt_services.get_workers("Approved", chosen_hit)
-        elif rejected:
-            workers = self.amt_services.get_workers("Rejected", chosen_hit)
+    def get_workers(self, status=None, chosen_hit=None, assignment_ids=None):
+        '''
+        Status, if set, can be one of `Submitted`, `Approved`, or `Rejected`
+        '''
+        if assignment_ids:
+            workers = [self.get_worker(assignment_id) for assignment_id in assignment_ids] 
         else:
-            workers = self.amt_services.get_workers(chosen_hit=chosen_hit)
+            workers = self.amt_services.get_workers(assignment_status=status, chosen_hit=chosen_hit)
         if workers is False:
             raise Exception('*** failed to get workers')    
-            
         workers = [self.add_bonus(worker) for worker in workers]
         return workers
+        
+    def get_worker(self, assignment_id):
+        return self.amt_services.get_worker(assignment_id)
      
-    def worker_approve(self, chosen_hit, assignment_ids=None):
+    def approve_worker(self, worker, force=False):
         ''' Approve worker '''
-        if chosen_hit:
-            workers = self.amt_services.get_workers("Submitted", chosen_hit)
-            print 'approving workers for HIT', chosen_hit
-            if not workers:
-                print "No submissions found for requested HIT ID. Are you in the right `mode`?"
-                return
-        elif len(assignment_ids) == 1:
-            workers = self.amt_services.get_worker(assignment_ids[0])
-            if not workers:
-                print "No submissions found for requested assignment ID. Are you in the right `mode`?"
-                return
-        else:
-            workers = self.amt_services.get_workers("Submitted")
-            workers = [worker for worker in workers if worker['assignmentId'] in assignment_ids]
-            if not workers:
-                print "No submissions found for requested assignment ID's. Are you in the right `mode`?"
-                return
-        for worker in workers:
-            assignment_id = worker['assignmentId']
-            init_db()
-            found_worker = False
-            parts = Participant.query.\
-                   filter(Participant.assignmentid == assignment_id).\
-                   filter(Participant.status.in_([3, 4])).\
-                   all()
-            # Iterate through all the people who completed this assignment.
-            # This should be one person, and it should match the person who
-            # submitted the HIT, but that doesn't always hold.
-            for part in parts:
-                if part.workerid == worker['workerId']:
-                    found_worker = True
-                    success = self.amt_services.approve_worker(assignment_id)
-                    if success:
-                        part.status = 5
-                        db_session.add(part)
-                        print 'approved worker', part.workerid, 'for assignment', assignment_id
-                    else:
-                        print '*** failed to approve worker', part.workerid, 'for assignment', assignment_id
+        assignment_id = worker['assignmentId']
+        init_db()
+        found_worker = False
+        parts = Participant.query.\
+               filter(Participant.assignmentid == assignment_id).\
+               filter(Participant.status.in_([3, 4])).\
+               all()
+        # Iterate through all the people who completed this assignment.
+        # This should be one person, and it should match the person who
+        # submitted the HIT, but that doesn't always hold.
+        status_report = ''
+        for part in parts:
+            if part.workerid == worker['workerId']:
+                found_worker = True
+                success = self.amt_services.approve_worker(assignment_id)
+                if success:
+                    part.status = 5
+                    db_session.add(part)
+                    db_session.commit()
+                    status_report = 'approved worker {} for assignment {}'.format(part.workerid, assignment_id)
                 else:
-                    print 'found unexpected worker', part.workerid, 'for assignment', assignment_id
-            if not found_worker:
-                # approve workers not found in DB if the assignment id has been specified
-                if not chosen_hit:
-                    success = self.amt_services.approve_worker(assignment_id)
-                    if success:
-                        print 'approved worker', worker['workerId'], 'for assignment', assignment_id, 'but not found in DB'
-                    else:
-                        print '*** failed to approve worker', worker['workerId'], 'for assignment', assignment_id
-                # otherwise don't approve, and print warning
+                    error_msg = '*** failed to approve worker {} for assignment {}'.format(part.workerid, assignment_id)
+                    raise Exception(error_msg)
+            else:
+                status_report = 'found unexpected worker {} for assignment {}'.format(part.workerid, assignment_id)
+        if not found_worker:
+            # approve workers not found in DB if the assignment id has been specified
+            if force:
+                success = self.amt_services.approve_worker(assignment_id)
+                if success:
+                    _status_report = 'approved worker {} for assignment {} but not found in DB'.format(worker['workerId'], assignment_id)
+                    status_report = '\n'.join([status_report,_status_report])
                 else:
-                    print 'worker', worker['workerId'], 'not found in DB for assignment', assignment_id + '. Not automatically approved.'
-            db_session.commit()
+                    error_msg = '*** failed to approve worker {} for assignment {}'.format(worker['workerId'], assignment_id)
+                    raise Exception(error_msg)
+            # otherwise don't approve, and print warning
+            else:
+                _status_report = 'worker {} not found in DB for assignment {}. Not automatically approved.'.format(worker['workerId'], assignment_id)
+                if status_report:
+                    status_report = '\n'.join([status_report,_status_report])
+                else:
+                    status_report = _status_report
+        return status_report
             
     def worker_reject(self, chosen_hit, assignment_ids = None):
         ''' Reject worker '''
@@ -236,7 +226,7 @@ class MTurkServicesWrapper():
                 return
             print 'bonusing workers for HIT', chosen_hit
         elif len(assignment_ids) == 1:
-            workers = self.amt_services.get_worker(assignment_ids[0])
+            workers = [self.amt_services.get_worker(assignment_ids[0])]
             if not workers:
                 print "No submissions found for requested assignment ID"
                 return
