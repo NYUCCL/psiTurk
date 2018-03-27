@@ -37,6 +37,7 @@ User's Guide
    retrieving
    customizing
    external_surveys
+   amazon_ec2
    openshift
    error
    faq
