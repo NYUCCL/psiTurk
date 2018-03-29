@@ -1,5 +1,4 @@
-=========================================================
- Running psiTurk on Amazon's Elastic Compute Cloud (EC2)
+Running psiTurk on Amazon's Elastic Compute Cloud (EC2)
 =========================================================
 
 With `Amazon Web Services` (commonly abbreviated as `AWS`), you can host your experiment in the cloud, using `Amazon's Elastic Compute Cloud` (commonly abbreviated as `EC2`). What follows is a description of how to set up and modify `psiTurk` on `AWS` using a pre-built `EC2` image.
@@ -7,9 +6,9 @@ With `Amazon Web Services` (commonly abbreviated as `AWS`), you can host your ex
 If you don't already have an `AWS` account, first follow the
 instructions in `Getting setup with Amazon Mechanical Turk <amt_setup.html>`_.
 
-===========================================================
- Setting up a psiTurk EC2 instance using a pre-built image
-===========================================================
+
+Setting up a psiTurk EC2 instance using a pre-built image
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 #. Sign in to your Amazon Web Services account and navigate to `The AWS Console <https://console.aws.amazon.com/console/>`_, then click on EC2 under the 'Compute' section, located under the 'All services' heading.
 
@@ -57,9 +56,9 @@ instructions in `Getting setup with Amazon Mechanical Turk <amt_setup.html>`_.
 
      $ chmod 400 your-key.pem
 
-===========================================
- Connecting to your EC2 instance using SSH
-===========================================
+
+Connecting to your EC2 instance using SSH
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 #. Navigate back to the EC2 console (`AWS Console
    <https://console.aws.amazon.com/console/>`. Then click on "Instances" under the "INSTANCES" section on the left menu and click in the checkbox for the instance that you want to connect to. In the info appearing at the bottom, look for the `IPv4 Public IP` entry.
