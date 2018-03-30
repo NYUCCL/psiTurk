@@ -51,11 +51,11 @@ Running psiTurk on heroku
 
 #. Run the following commands, replacing `XYZ` with your access and secret keys (you can also use `this Python script <https://github.com/NYUCCL/psiTurk/blob/908ce7bcfc8fb6b38d94dbae480449324c5d9d51/psiturk/example/set-heroku-settings.py>`_ to automatically run these commmands, provided that you've filled out your credentials in your .psiconfig file): ::
 
-    heroku config:set ON_HEROKU=true
-    heroku config:set psiturk_access_key_id=XYZ
-    heroku config:set psiturk_secret_access_id=XYZ
-    heroku config:set aws_access_key_id=XYZ
-    heroku config:set aws_secret_access_key=XYZ
+    heroku config:set --app <name of your app> ON_HEROKU=true
+    heroku config:set --app <name of your app> psiturk_access_key_id=XYZ
+    heroku config:set --app <name of your app> psiturk_secret_access_id=XYZ
+    heroku config:set --app <name of your app> aws_access_key_id=XYZ
+    heroku config:set --app <name of your app> aws_secret_access_key=XYZ
 
 #. Initialize a Git repository inside the psiTurk example folder: ::
 
@@ -80,6 +80,8 @@ Running psiTurk on heroku
 #. Run `psiTurk` locally on your machine: ::
 
     psiturk
+
+! Explain the relationship between you running psiTurk locally and Heroku.
 
 
 My own notes (will be removed in the final commit)
