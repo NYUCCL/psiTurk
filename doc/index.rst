@@ -37,12 +37,13 @@ User's Guide
    retrieving
    customizing
    external_surveys
+   heroku
    openshift
    error
    faq
    getting_help
    disclaimer
-   
+
 
 Contributing to **psiTurk**
 ---------------------------
@@ -59,4 +60,3 @@ API Reference
 
    api
    psiturk_org_api
-
