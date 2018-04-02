@@ -13,7 +13,7 @@ The benefits of `Heroku` are that:
 
 One downside with `Heroku` is that it can get expensive if you need any kind of horsepower beyond 512MB memory and one node.
 
-What follows is a step-by-step tutorial for setting up a `psiTurk` example experiment on `Heroku` using the `psiTurk Secure Ad Server <secure_ad_server.html>`_ for hosting Ads and a `PostgreSQL` database for collecting data:
+What follows is a step-by-step tutorial for setting up a `psiTurk` example experiment on `Heroku` (both the experiment itself and ad) with a `PostgreSQL` database for collecting data:
 
 #. Go to the `Heroku website <http://www.heroku.com>`_ and create a new account if you don't already have one.
 
@@ -51,20 +51,22 @@ What follows is a step-by-step tutorial for setting up a `psiTurk` example exper
 
     heroku domains
 
-#. In your psiTurk example, open the `config.txt` file. Here, find and make the following settings for these rows (make sure to remove the `#` sign before `adserver_revproxy_host`), and then save the file: ::
+#. In your psiTurk example, open the `config.txt` file. Here, find and make the following settings for the these rows (make sure to remove the `#` sign before `adserver_revproxy_host`), and then save the file: ::
 
     database_url = <Your Postgres database URL that you retrieved above>
-    adserver_revproxy_host = <Your app URL that you retrieved above>
     host = 0.0.0.0
     threads = 1
+    adserver_revproxy_host = <Your app URL that you retrieved above>
+    ad_location = https://<Your app URL that you retrieved above>/pub
+    use_psiturk_ad_server = false
 
-#. Run the following commands, replacing `XYZ` with your access and secret keys (you can also use `this Python script <https://github.com/NYUCCL/psiTurk/blob/908ce7bcfc8fb6b38d94dbae480449324c5d9d51/psiturk/example/set-heroku-settings.py>`_ to automatically run these commmands, provided that you've filled out your credentials in your .psiconfig file): ::
+#. Run the following commands, replacing `<XYZ>` with your access and secret keys for `Amazon Web Services <amt_setup.html#obtaining-aws-credentials>`_ and `psiTurk Secure Ad Server <psiturk_org_setup.html#obtaining-psiturk-org-api-credentials>`_ (you can also use `this Python script <https://github.com/NYUCCL/psiTurk/blob/908ce7bcfc8fb6b38d94dbae480449324c5d9d51/psiturk/example/set-heroku-settings.py>`_ to automatically run these commmands, provided that you've filled out your credentials in your .psiconfig file): ::
 
     heroku config:set ON_HEROKU=true
-    heroku config:set psiturk_access_key_id=XYZ
-    heroku config:set psiturk_secret_access_id=XYZ
-    heroku config:set aws_access_key_id=XYZ
-    heroku config:set aws_secret_access_key=XYZ
+    heroku config:set psiturk_access_key_id=<XYZ>
+    heroku config:set psiturk_secret_access_id=<XYZ>
+    heroku config:set aws_access_key_id=<XYZ>
+    heroku config:set aws_secret_access_key=<XYZ>
 
 #. Stage all the files in your psiTurk example to your Git repository: ::
 
@@ -82,9 +84,4 @@ What follows is a step-by-step tutorial for setting up a `psiTurk` example exper
 
     psiturk
 
-From your local `psiTurk` session, you can now create and modify HIT's. When these are accessed by Amazon Mechanical Turk workers, the workers will be directed to the psiTurk session running on your Heroku app. This means that you safely can close your local psiTurk session once you're done creating and modifying HIT's.
-
-Note that if you're not using the `psiTurk Secure Ad Server <secure_ad_server.html>`_, but rather host your own on `Heroku`, you also have to make the following settings in the `config.txt` before pushing everything to your `Heroku` app: ::
-
-    use_psiturk_ad_server = false
-    ad_location = https://your-heroku-domain.herokuapp.com/pub
+From your local `psiTurk` session, you can now `create and modify HIT's <command_line/hit.html>`_. When these are accessed by Amazon Mechanical Turk workers, the workers will be directed to the `psiTurk` session running on your `Heroku` app. This means that you safely can close your local psiTurk session once you're done creating and modifying HIT's.
