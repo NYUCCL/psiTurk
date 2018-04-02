@@ -3,17 +3,20 @@
 
 .. contents::
 
+
 Description
 -----------
 
 The ``worker`` command is used to list, approve and reject, and bonus worker
 assignments on Amazon mechanical Turk.
 
+
 ``worker approve``
--------------------
+------------------
+
 
 Usage
-~~~~~~
+~~~~~
 
 ::
 
@@ -22,8 +25,10 @@ Usage
 Approve worker assignments for one or more assignment ID's, or use the
 ``--hit`` flag to approve all workers for a specific HIT.
 
+
 Example
-~~~~~~~~
+~~~~~~~
+
 1. Approve a single assignment::
 
      [psiTurk server:on mode:sdbx #HITs:0]$ worker approve 21A8IUB2YU98ZV9C5BUL3FBJB5B8K7
@@ -36,11 +41,13 @@ Example
      approved 2MB011K274J7PY7FQ1ZN76UXH0ECED
      approved 2UO4ZMAZHHRR1T7J8NEVUH1KJCAKBY
 
+
 ``worker reject``
-------------------
+-----------------
+
 
 Usage
-~~~~~~
+~~~~~
 
 ::
 
@@ -49,16 +56,19 @@ Usage
 Reject worker assignments for one or more assignment ID's, or use the ``--hit``
 flag to reject all workers for a specific HIT.
 
+
 Example
-~~~~~~~~
+~~~~~~~
 
 Reject a single assignment::
 
   [psiTurk server:on mode:sdbx #HITs:0]$ worker reject 2Y9OVR14IXKOIZQL1E3WD6X30CD98U
   rejected 2Y9OVR14IXKOIZQL1E3WD6X30CD98U
 
+
 ``worker unreject``
---------------------
+-------------------
+
 
 Usage
 ~~~~~
@@ -73,21 +83,22 @@ Unreject worker assignments for one or more assignment ID's, or use the
 .. note::
    Unrejecting an assignment automatically approves that assignment.
 
+
 Example
-~~~~~~~~
+~~~~~~~
 
 Unreject a single assignment::
 
   [psiTurk server:on mode:sdbx #HITs:0]$ worker unreject 2Y9OVR14IXKOIZQL1E3WD6X30CD98U
   unrejected 2Y9OVR14IXKOIZQL1E3WD6X30CD98U
 
-``worker bonus``
------------------
 
+``worker bonus``
+----------------
 
 
 Usage
-~~~~~~
+~~~~~
 
 ::
 
@@ -115,8 +126,9 @@ bonus. This message will be displayed to workers who receive the bonus.
    individual assignments the worker will be bonused regardless of whether they
    have already received one.
 
+
 Examples
-~~~~~~~~~
+~~~~~~~~
 
 1. Bonusing an individual assignment. The bonus can be granted repeatedly,
    making this risky::
@@ -154,12 +166,13 @@ Examples
    information about which workers have been bonused is stored in the
    experiment database.
 
+
 ``worker list``
 ----------------
 
 
 Usage
-~~~~~~~
+~~~~~
 
 ::
 
@@ -168,6 +181,7 @@ Usage
 List all worker assignments, or list worker assignments fitting a
 given condition using the provided flags. Use the ``--hit`` flag to
 list workers for a specific HIT.
+
 
 Examples
 ~~~~~~~~

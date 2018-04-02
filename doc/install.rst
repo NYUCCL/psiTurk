@@ -13,6 +13,7 @@ provides a number of functions to you including launching the server
 and interacting with the Mechanical Turk and Amazon Web Services (AWS)
 systems.
 
+
 Installation requirements
 -------------------------
 
@@ -30,6 +31,7 @@ Installation of **psiTurk** requires:
 An additional requirement for actually using **psiTurk** to run experiments
 is an Internet connected computer capable of receiving incoming requests.
 
+
 Installation steps
 ------------------
 
@@ -42,6 +44,7 @@ from the development branch on
 `github <https://github.com/NYUCCL/psiTurk>`__. The following
 instructions describe the general process. In addition, system specific
 notes are provided below.
+
 
 Install stable version via pypi
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -83,24 +86,26 @@ command by typing
 
     which psiturk
 
+
 Install directly from github
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You can also install the bleeding-edge development version directly 
-from github using ``pip``. To install the latest stable branch follow 
+You can also install the bleeding-edge development version directly
+from github using ``pip``. To install the latest stable branch follow
 the instructions above to install ``pip`` and:
 
 ::
 
     sudo pip install git+git://github.com/NYUCCL/psiTurk.git@master
 
-If the install was successful you will have a new command ``psiturk`` 
-available on your command line. You can check the location of this command 
+If the install was successful you will have a new command ``psiturk``
+available on your command line. You can check the location of this command
 by typing
 
 ::
 
     which psiturk
+
 
 Updating from a previous version
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -112,7 +117,7 @@ following sequence of commands:
 ::
 
     $ pip uninstall psiturk
-    $ git clone git@github.com:NYUCCL/psiTurk.git 
+    $ git clone git@github.com:NYUCCL/psiTurk.git
     $ cd psiTurk
     $ sudo python setup.py install
 
@@ -138,7 +143,7 @@ tool as well as the supplementary virtualenvwrapper tools that make
 working with virtualenvs easier. You create a virtual environment as
 follows (if mkvirtualenv is not recognized follow the instructions
 `here
-<http://virtualenvwrapper.readthedocs.org/en/latest/install.html>`) :
+<http://virtualenvwrapper.readthedocs.org/en/latest/install.html>`_) :
 
 ::
 
@@ -166,8 +171,10 @@ pip or easy_install will be installed inside your my-experiment
 virtualenv rather than system-wide. Use the `deactivate` command to
 leave the virtualenv.
 
+
 System-specific notes
 ---------------------
+
 
 Mac OS X
 ~~~~~~~~
@@ -180,6 +187,7 @@ versions of Mac OS X (e.g., Snow Leopard) you may need to install XCode
 using the installation disc that came with your computer. The command
 line tools are an option during the installation process for these
 systems.
+
 
 Linux
 ~~~~~
@@ -196,7 +204,7 @@ the name of the missing header file (which often appears in the error text
 produced by a failed pip install).  That search will likely turn up the name of
 the package for your distribution that supplies the needed header file.
 
-As an example, before installing psiTurk on a minimal Debian 7 server 
+As an example, before installing psiTurk on a minimal Debian 7 server
 (such as the one provided by many server hosting companies) you will need
 to install some additional packages, as illustrated by the following
 example command:
@@ -216,6 +224,7 @@ If you have additional specific issues, or if you can report the steps
 needed to install psiTurk on a particular Linux distribution, please help
 us update the documentation!
 
+
 Windows
 ~~~~~~~
 
@@ -223,6 +232,7 @@ Windows
 technical limitation in the ability to run server processes on Windows.
 We currently recommend that Windows users try a cloud-based install such
 as `openshift <https://www.openshift.com>`__.
+
 
 Cloud-based install (experimental)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

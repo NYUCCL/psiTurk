@@ -3,7 +3,6 @@
 
 .. contents::
 
-
 The ``db`` command is used with a number of subcommands to create and configure database
 instances. More information about database configuration can be found
 on the `Configuring Databases <../configure_databases.html>`__ page.
@@ -12,11 +11,13 @@ on the `Configuring Databases <../configure_databases.html>`__ page.
    The ``aws_`` subcommands are used to interact with the Amazon Web
    Services Relational Database Server (RDS) cloud service.
 
+
 ``db get_config``
--------------------
+-----------------
+
 
 Usage
-~~~~~~~
+~~~~~
 
 ::
 
@@ -25,8 +26,9 @@ Usage
 Display the current setting of the database (`database_url
 <../config/database_parameters.html#database-url-url-string>`__).
 
+
 Example
-~~~~~~~~
+~~~~~~~
 
 ::
 
@@ -34,11 +36,13 @@ Example
    Current database setting (database_url):
        sqlite:///participants.db
 
+
 ``db use_local_file``
-----------------------
+---------------------
+
 
 Usage
-~~~~~~~
+~~~~~
 
 ::
 
@@ -47,6 +51,7 @@ Usage
 Switch the current database to a local SQLite file with name `<filename>`
 (default is `participants.db`), or enter without filename and provide
 name when prompted.
+
 
 Example
 ~~~~~~~~
@@ -65,6 +70,7 @@ Setting database to a local SQLite file:
 ``db use_aws_instance``
 ------------------------
 
+
 Usage
 ~~~~~~
 
@@ -76,8 +82,9 @@ Switch the current database to a given instance `<instance_id>` on AWS
 RDS. Enter without an argument to display a list of instances from
 which to choose.
 
+
 Example
-~~~~~~~~
+~~~~~~~
 
 Using an RDS database instance::
 
@@ -95,6 +102,7 @@ Using an RDS database instance::
 ``db aws_list_regions``
 ------------------------
 
+
 Usage
 ~~~~~~
 
@@ -104,8 +112,9 @@ Usage
 
 Lists available AWS regions.
 
+
 Example
-~~~~~~~~
+~~~~~~~
 
 ::
 
@@ -123,10 +132,10 @@ Example
 
 
 ``db aws_get_region``
-----------------------
+---------------------
 
 Usage
-~~~~~~~~
+~~~~~
 
 ::
 
@@ -134,19 +143,22 @@ Usage
 
 Displays the current AWS region you are communicating with.
 
+
 Example
-~~~~~~~~
+~~~~~~~
 
 ::
 
    [psiTurk server:off mode:sdbx #HITs:1]$ db aws_get_region
    us-east-1
 
+
 ``db aws_set_region``
-----------------------
+---------------------
+
 
 Usage
-~~~~~~
+~~~~~
 
 ::
 
@@ -154,6 +166,7 @@ Usage
 
 Sets the AWS region you are currently using to `<region-name>`. Enter
 without an argument to display a list of regions from which to choose.
+
 
 Example
 ~~~~~~~
@@ -163,11 +176,12 @@ Setting region to `us-west-1`::
    [psiTurk server:off mode:sdbx #HITs:1]$ db aws_set_region us-west-1
    Region updated to  us-west-1
 
+
 ``db aws_list_instances``
----------------------------
+-------------------------
 
 Usage
-~~~~~~
+~~~~~
 
 ::
 
@@ -175,8 +189,9 @@ Usage
 
 List instances and statuses in the current region/AWS account.
 
+
 Example
-~~~~~~~~
+~~~~~~~
 
 1. Listing instances when there are none active in your region::
 
@@ -190,13 +205,14 @@ Example
             --------------------
             Instance ID: mydb
             Status: available
- 
+
 
 ``db aws_create_instance``
----------------------------
+--------------------------
+
 
 Usage
-~~~~~~
+~~~~~
 
 ::
 
@@ -209,14 +225,14 @@ aws_create_instance`` can also be run interactively by running the
 command without parameters.
 
 Example
-~~~~~~~~
+~~~~~~~
 
 Interactively creating a database instance::
 
   [psiTurk server:off mode:sdbx #HITs:1]$ db aws_create_instance
   *************************************************
   Ok, here are the rules on creating instances:
-  
+
   instance id:
     Each instance needs an identifier.  This is the name
     of the virtual machine created for you on AWS.
@@ -260,8 +276,10 @@ Interactively creating a database instance::
   will say 'available' when it is ready
   [psiTurk server:off mode:sdbx #HITs:1]$
 
+
 ``db aws_delete_instance``
----------------------------
+--------------------------
+
 
 Usage
 ~~~~~
@@ -273,8 +291,9 @@ Usage
 Delete the RDS instance with id `<instance_id>`. Enter without an
 argument to display a list of instances from which to choose.
 
+
 Example
-~~~~~~~~
+~~~~~~~
 
 Deleting an AWS database instance::
 
@@ -282,7 +301,7 @@ Deleting an AWS database instance::
   Here are the available instances you can delete:
               mydb ( available )
   Enter the instance identity you would like to delete: mydb
-  Deleting an instance will erase all your data associated with the 
+  Deleting an instance will erase all your data associated with the
   database in that instance. Really quit? y or n: y
   DBInstance:mydb
   AWS RDS database instance mydb deleted.  Run `db aws_list_instances` for current status.

@@ -1,5 +1,5 @@
 ``help`` command
-=================
+================
 
 Usage
 -----
@@ -12,20 +12,20 @@ Usage
 The ``help`` command displays a list of valid psiturk shell commands. Entering ``help`` followed by the name of a command brings up information about that command.
 
 Examples
----------
+--------
 
 1. List all commands::
 
    [psiTurk server:on mode:sdbx #HITs:0]$ help
 
    psiTurk command help:
-   =====================
-   amt_balance  debug               mode            server         tunnel 
+   \=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=
+   amt_balance  debug               mode            server         tunnel
    config       download_datafiles  open            setup_example  version
-   db           hit                 psiturk_status  status         worker 
+   db           hit                 psiturk_status  status         worker
 
    basic CMD command help:
-   =======================
+   \=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=
    EOF             ed    help     li     py    run    shortcuts
    _load           edit  hi       list   q     save   show
    _relative_load  eof   history  load   quit  set
@@ -38,6 +38,7 @@ python `cmd2` module. More information about `cmd2` commands can be found
 2. View the help menu for a command and its subcommands::
 
    [psiTurk server:on mode:sdbx #HITs:0]$ help server
+
    Usage:
      server on
      server off

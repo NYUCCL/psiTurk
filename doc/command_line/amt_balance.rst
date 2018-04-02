@@ -1,8 +1,9 @@
 ``amt_balance`` command
-========================
+=======================
+
 
 Usage
-------
+-----
 
 ::
 
@@ -10,8 +11,9 @@ Usage
 
 The ``amt_balance`` command displays your current AMT balance, or your worker sandbox balance (always $10,000.00) if you are in sandbox mode.
 
+
 Example
---------
+-------
 
 Checking your balance in sandbox mode::
 

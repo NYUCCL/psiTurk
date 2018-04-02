@@ -1,5 +1,6 @@
 ``mode`` command
-=============
+================
+
 
 Usage
 -----
@@ -25,6 +26,7 @@ depending on your mode.
    be correctly redirected back to either the live AMT site or the
    sandbox. Therefore, **you should not change modes while you are serving a
    live HIT to workers**.
+
 
 Examples
 --------

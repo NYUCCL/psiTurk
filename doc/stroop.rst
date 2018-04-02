@@ -1,17 +1,17 @@
 Getting up and running with the basic Stroop task
 =================================================
 
-Perhaps the best way to learn about psiTurk is to go through 
-the steps of configuring and running an experiment. This tutorial 
-will take you through the steps required to run the basic Stroop 
-experiment that ships default with psiTurk. This project can be a 
+Perhaps the best way to learn about psiTurk is to go through
+the steps of configuring and running an experiment. This tutorial
+will take you through the steps required to run the basic Stroop
+experiment that ships default with psiTurk. This project can be a
 great starting place for developing your own experiment.
 
 .. warning::
 
 	This guide assumes you already have the psiTurk command
 	line tool installed on your computer.  If you haven't
-	you should begin there and come back when it is 
+	you should begin there and come back when it is
 	installed.  Instruction `here <install.html>`__.
 
 	This guide also assumes you are using version 1.0.10dev
@@ -21,23 +21,26 @@ great starting place for developing your own experiment.
 
 
 Background
------------------------------------------
-The Stroop effect is the finding that people show interference 
-from reading while naming the font color of words. The task is used 
-to suggest that reading has become a highly "automatic" cognitive 
-skill. You can read more about the Stroop task `here <http://en.wikipedia.org/wiki/Stroop_effect>`__. 
-This guide won't comment much on the psychology of it, rather focusing on the technical 
-aspect of running such an experiment online that consists of a 
+----------
+
+The Stroop effect is the finding that people show interference
+from reading while naming the font color of words. The task is used
+to suggest that reading has become a highly "automatic" cognitive
+skill. You can read more about the Stroop task `here <http://en.wikipedia.org/wiki/Stroop_effect>`__.
+This guide won't comment much on the psychology of it, rather focusing on the technical
+aspect of running such an experiment online that consists of a
 sequence of trials and which records response time and key presses.
 
+
 Initialize the demo code
------------------------------------------
-The first step is to obtain the archive of code and resources 
-specific to the Stroop demo. Additional 
-experiments are shared on the psiTurk `experiment exchange <http://psiturk.org/ee>`__. 
+------------------------
+
+The first step is to obtain the archive of code and resources
+specific to the Stroop demo. Additional
+experiments are shared on the psiTurk `experiment exchange <http://psiturk.org/ee>`__.
 However, the Stroop demo comes bundled within the psiturk command line tool.
 
-First use the ``psiturk-setup-example`` command to place fresh copies of the files into 
+First use the ``psiturk-setup-example`` command to place fresh copies of the files into
 a new folder::
 
 	$ psiturk-setup-example
@@ -45,7 +48,7 @@ a new folder::
 	Copying /Users/gureckis/Library/Enthought/Canopy_64bit/User/lib/python2.7/site-packages/PsiTurk-1.0.10dev-py2.7.egg/psiturk/example to ./psiturk-example
 	Creating default configuration file (config.txt)
 
-afterward you should have a new folder in the current directory 
+afterward you should have a new folder in the current directory
 named "psiturk-example" with the following listing of files::
 
 	$ cd psiturk-example
@@ -68,19 +71,19 @@ named "psiturk-example" with the following listing of files::
 Configure your global **psiTurk** options
 -----------------------------------------
 When you run ``psiturk-setup-example`` the first time,
-a `global configuration file <configuration.html#global-configuration-file>`__ 
+a `global configuration file <configuration.html#global-configuration-file>`__
 is created in your local directory named ``~/.psiturkconfig``.
-In order to get access to all the psiTurk features you need to enter credentials 
-for accessing Amazon Web Services and psiturk.org. Both of these can be added 
+In order to get access to all the psiTurk features you need to enter credentials
+for accessing Amazon Web Services and psiturk.org. Both of these can be added
 to `~/.psiturkconfig`.
 
-To access Amazon Mechanical Turk and other Amazon Web Services features you needs 
-to enter your AWS Credentials (see these instructions for details). You can leave 
+To access Amazon Mechanical Turk and other Amazon Web Services features you needs
+to enter your AWS Credentials (see these instructions for details). You can leave
 the `aws_region` at the default value.
 
-To access psiTurk online features such as the Ad Server you need to create an 
-account on psiturk.org. Please visit http://psiturk.org/register to sign up or 
-http://psiturk.org/login to obtain your crediations. On your psiTurk dashboard 
+To access psiTurk online features such as the Ad Server you need to create an
+account on psiturk.org. Please visit http://psiturk.org/register to sign up or
+http://psiturk.org/login to obtain your crediations. On your psiTurk dashboard
 click "API Keys" and enter them into your file.
 
 .. seealso::
@@ -90,13 +93,15 @@ click "API Keys" and enter them into your file.
 	`getting setup with psiturk.org <psiturk_org_setup.html#obtaining-psiturk-org-api-credentials>`__
 	on their respective documentation pages.
 
+
 Configure the option for the demo experiment
------------------------------------------
-Another of the files generated by ``psiturk-setup-example`` is the ``config.txt`` file, 
-which contains a variety of experiment and server parameters. These values can be 
+--------------------------------------------
+
+Another of the files generated by ``psiturk-setup-example`` is the ``config.txt`` file,
+which contains a variety of experiment and server parameters. These values can be
 changed by altering the file in any text editor.
 
-The default ``config.txt`` file is already mostly configured to help you test 
+The default ``config.txt`` file is already mostly configured to help you test
 the Stoop demo. Three options you might want to adjust to begin with are:
 
 1. In the ``[Server Parameters]`` section ensure that the port listed is one that is available on your computer (answer is usually yes unless you have particular firewall software running).
@@ -108,11 +113,13 @@ the Stoop demo. Three options you might want to adjust to begin with are:
 	A full description of the local configuration file and the
 	meaning of the various option is available `here <configuration.html#local-configuration-file>`__.
 
+
 Launch the psiTurk shell
------------------------------------------
-All user commands to psiTurk, such as creating a HIT, launching the experiment server, 
-or approving workers, are issued through the `psiTurk command-line shell <command_line_overview.html>`__. To open the shell, run 
-``psiturk`` a valid experiment folder. You should see something like this (though probably 
+------------------------
+
+All user commands to psiTurk, such as creating a HIT, launching the experiment server,
+or approving workers, are issued through the `psiTurk command-line shell <command_line_overview.html>`__. To open the shell, run
+``psiturk`` a valid experiment folder. You should see something like this (though probably
 colorized on your display)::
 
 	$ psiturk
@@ -144,8 +151,9 @@ The psiTurk shell prompt displays several useful pieces of information: whether 
 	More documention of the shell including documentation of each available command
 	is available `here <command_line_overview.html>`__.
 
+
 Start/stop the experiment server
------------------------------------------
+--------------------------------
 
 The **psiTurk** experiment server is a separate process that acts as a custom, local
 web server (similar to Apache).  To launch the server type ``server on`` in the
@@ -157,43 +165,43 @@ command line interface::
 	[psiTurk server:on mode:sdbx #HITs:0]$
 
 Note that the command prompt has changed from showing ``server:off`` to ``server:on``
-in this example (and also changed form red to green on colorized terminals). You can 
-start or stop the server at any time using the ``server on`` and ``server off`` 
-commands. Typically you want to have the server running when you are testing locally, 
-testing on the AMT "sandbox", or running your actual experiment. If the server stops 
-when running your actual experiment, Internet users will no longer be able to 
-participate in your experiment even if you still have HITs posted on AMT's website. 
+in this example (and also changed form red to green on colorized terminals). You can
+start or stop the server at any time using the ``server on`` and ``server off``
+commands. Typically you want to have the server running when you are testing locally,
+testing on the AMT "sandbox", or running your actual experiment. If the server stops
+when running your actual experiment, Internet users will no longer be able to
+participate in your experiment even if you still have HITs posted on AMT's website.
 Thus, you should think of the experiment server as meaning your experiment is current "live."
 
 
 Debug/test the experiment locally
------------------------------------------
+---------------------------------
 
-Frequently you would like to test your experiment in your browser locally without 
-involving Amazon's servers at all. To do so, ensure that the experiment server is 
-running (the prompt should show ``server:on``). Then enter the command ``debug``. A new 
-browser tab will open with the first screen of the experiment. The URL string for this 
+Frequently you would like to test your experiment in your browser locally without
+involving Amazon's servers at all. To do so, ensure that the experiment server is
+running (the prompt should show ``server:on``). Then enter the command ``debug``. A new
+browser tab will open with the first screen of the experiment. The URL string for this
 will look something like this::
 
 	http://localhost:22362/ad?assignmentId=debug7FIXMF&hitId=debugI3XW1P&workerId=debugY3UNQY
 
-The ``http://localhost:22362/`` part is set in the configuration options under 
-``Server Parameters`` in the fields "host" and "port". The default value, 
-``http://localhost:22362/`` is a special term that refers to your own computer. 
-As mentioned above, if you wanted to run this experiment publically you would want 
-to change the host option to ``0.0.0.0``. 
+The ``http://localhost:22362/`` part is set in the configuration options under
+``Server Parameters`` in the fields "host" and "port". The default value,
+``http://localhost:22362/`` is a special term that refers to your own computer.
+As mentioned above, if you wanted to run this experiment publically you would want
+to change the host option to ``0.0.0.0``.
 
-The remaining part of the URL created random (i.e., fake) identifiers which stand-in 
-for the values that Amazon provides identifying the user, hit, etc... Since by default 
-**psiTurk** does not allow individuals to take the same experiment more than once (it 
-checks for you to see if the worker has already completed the task or read too far into 
+The remaining part of the URL created random (i.e., fake) identifiers which stand-in
+for the values that Amazon provides identifying the user, hit, etc... Since by default
+**psiTurk** does not allow individuals to take the same experiment more than once (it
+checks for you to see if the worker has already completed the task or read too far into
 the instructions) these random values are helpful during debugging.
 
 .. important::
 
 	When running in debug mode (i.e., when the ``assignmentId``, ``hitId``, and ``workerId``
 	variables are prefixed with the word "debug") everything proceeds as usual.  However,
-	the server will not block the same user from restarting the experiment 
+	the server will not block the same user from restarting the experiment
 	after finishing the instructions (as is true normally).  This helps debugging
 	since you don't have to keep inventing new fake ``workerId``.  However, good to
 	keep in mind this difference.
@@ -203,10 +211,10 @@ The first page that you see in the experiment looks something like this:
 .. image:: images/docs_psiturk_ad_screenshot.png
 	:align: center
 
-This is the page the AMT worker would see when they first accept the hit. When you 
-click the link, a full screen window will open up which will run the experiment. You can 
-test it now if you like just to get a sense of things. If you want to stop midway through 
-that is no problem. Just close that browser window. Running debug again will open a new 
+This is the page the AMT worker would see when they first accept the hit. When you
+click the link, a full screen window will open up which will run the experiment. You can
+test it now if you like just to get a sense of things. If you want to stop midway through
+that is no problem. Just close that browser window. Running debug again will open a new
 browser window and let you repeat the process.
 
 .. important::
@@ -216,8 +224,9 @@ browser window and let you repeat the process.
 	and test them.  This way the development environment is the same as the
 	one in which you will eventually deploy your experiment on Mechanical Turk.
 
+
 Experiment Structure
------------------------------------------
+--------------------
 
 The basic stroop demo lays out a pretty standard experiment sequence.  It is
 perhaps most helpful to step through this sequence yourself, but conceptually:
@@ -225,12 +234,12 @@ perhaps most helpful to step through this sequence yourself, but conceptually:
 First the users view an "ad" for the study (that is what is displayed above).
 
 Then they view a consent form and are asked to verify that they read
-and understood the consent.  
+and understood the consent.
 
 Next they are given a sequence of instruction
 screens.  The experiment logs how long they look at the each instruction
 screen as well as if they shift back and forth using the next/previous
-buttons.  
+buttons.
 
 Then the main experiment begins which dynamically re-draws
 the browser window using Javascript.  The `psiturk.js API <api.html>`__
@@ -241,21 +250,23 @@ their experiences in the task.  Finally control is returned to Amazon
 (or if debugging a stand-in message is displayed).
 
 While all this is going on the `psiturk.js API <api.html>`__ records
-if the user is changing windows and prevent them from reloading the 
+if the user is changing windows and prevent them from reloading the
 browser mid-way into the task to start over.
 
+
 Launch in AMT sandbox
------------------------------------------
-Now that you've tested the experiment locally, you may want to see how it would 
-appear on mturk before running it live with paid workers. Amazon offers this 
-ability through the worker sandbox -- a simulated environment that allows developers 
+---------------------
+
+Now that you've tested the experiment locally, you may want to see how it would
+appear on mturk before running it live with paid workers. Amazon offers this
+ability through the worker sandbox -- a simulated environment that allows developers
 to test their HITs.
 
-To create a hit in the worker sandbox, first check that the server is on and 
-that you are in sandbox mode; the psiTurk prompt should say on next to server 
-and ``sdbx`` next to mode. If you are in ``live`` mode, enter the command ``mode`` 
+To create a hit in the worker sandbox, first check that the server is on and
+that you are in sandbox mode; the psiTurk prompt should say on next to server
+and ``sdbx`` next to mode. If you are in ``live`` mode, enter the command ``mode``
 to switch to sandbox mode.  If you are in ``live`` mode it will post your task
-to the live, paid AMT website instead of the free demo site.  
+to the live, paid AMT website instead of the free demo site.
 
 When you are in sandbox mode if you type ``amt_balance`` you will see you have
 a never ending account with $10,000.00 of fake money to spend on sandbox HITs.
@@ -265,8 +276,8 @@ a never ending account with $10,000.00 of fake money to spend on sandbox HITs.
 	[psiTurk server:on mode:sdbx #HITs:0]$ amt_balance
 	$10,000.00
 
-To create a hit, enter the command ``hit create``, and then answer the prompts 
-to set up the HIT. Your choices for the prompt answers are arbitrary for now, 
+To create a hit, enter the command ``hit create``, and then answer the prompts
+to set up the HIT. Your choices for the prompt answers are arbitrary for now,
 since the HIT won't be completed by real workers.  If the ``host`` variable
 in the ``config.txt`` file for this project is set to ``localhost`` (default)
 or ``127.0.0.1`` you will get an error reminding you that you server is
@@ -298,11 +309,11 @@ ad is hosted on ``https://ad.psiturk.org`` which means it will always
 be visible to virtually all participants (see more info about the
 `Secure Ad Server <sercure_ad_server.html>`__).
 
-You can also run create_hit non-interactively by providing arguments when 
+You can also run create_hit non-interactively by providing arguments when
 you run the command, for example ``create_hit 10 1.00 4``.
 
-You should now see the number "1" next to "#HITs:" in the psiTurk prompt, 
-denoting that you have one active HIT in the worker sandbox. If you type 
+You should now see the number "1" next to "#HITs:" in the psiTurk prompt,
+denoting that you have one active HIT in the worker sandbox. If you type
 the command ``hit list active``, you should see a description of your HIT
 including the HIT id::
 
@@ -326,8 +337,9 @@ Click "view a HIT in this group" to open a hit. You should see an ad for your HI
 If you complete the HIT in this manner you it should go through all the steps of the AMT process.
 Afterwards you will have some data in your `database <configure_databases.html>`__.
 
+
 Accessing your data
------------------------------------------
+-------------------
 
 The simplest way to retrieve data is using the `download_datafiles
 command <./command_line/download_datafiles.html>`__. This creates
@@ -343,16 +355,16 @@ If you set your database to use MySQL then you maybe able to connect and export
 the data using `Sequel Pro <http://www.sequelpro.com/>`__.
 
 Automatically computing a bonus
------------------------------------------
+-------------------------------
 
 Approve/Reject Workers
------------------------------------------
+----------------------
 
 Assigning bonuses
------------------------------------------
+-----------------
 
 Launch "live" experiment
------------------------------------------
+------------------------
 
 To launch an experiment "live" you follow the same steps as launching
 in the sandbox but first set the "mode" of the command line to "live"::
@@ -368,23 +380,23 @@ in the sandbox but first set the "mode" of the command line to "live"::
 
 Now if you run ``hit create`` it will post a hit on the live website.
 You must have enough money in your AMT account to pay for the HITs you
-are requesting, otherwise an error message will be displayed. 
+are requesting, otherwise an error message will be displayed.
 The ``amt_balance`` command will let you check your current balance::
-	
+
 	[psiTurk server:on mode:live #HITs:0]$ amt_balance
 	$178.70
 
 .. danger::
-	
+
 	Remember to switch back to "sandbox" mode when you are finished
 	collecting data so that the command you type will not accidently
 	create tasks that will charge you account money!
 
 Further learning...
------------------------------------------
+-------------------
 
 This concludes the conceptual overview of the Stroop example that
 ships with **psiTurk**.  Continue reading the `decomposing the
 Stroop task <decompose_stroop.html>` section to learn more about
 the gritty details.
-This concludes the conceptual 
+This concludes the conceptual

@@ -1,5 +1,5 @@
 error.html
-===============
+==========
 
 A HTML file that handles various errors
 that can occur during your experiment.  Most

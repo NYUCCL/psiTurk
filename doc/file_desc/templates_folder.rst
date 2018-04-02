@@ -1,11 +1,10 @@
 The `templates/` directory
-==========================================
+==========================
 
 The template folder holds the HTML templates for
 different parts of your experiment.  You can add
 additional templates if needed for your project
 but this describes the basic set.
-
 
 You can learn more about templates on the `Jinja2 website <http://jinja.pocoo.org/docs/>`__.
 
@@ -27,4 +26,3 @@ so be sure to review the documentation for those.
    list_html
    postquestionnaire_html
    stage_html
-

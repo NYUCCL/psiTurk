@@ -1,6 +1,7 @@
 Frequently Asked Questions
 ==========================
 
+
 Why doesn't **psiTurk** work on Windows?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -12,7 +13,7 @@ Linux.
 
 
 I need an experiment to do X, will **psiTurk** be able to do this?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Generally any standard psychology experiment can be run using **psiTurk**.
 This means experiments with multiple trials, trials which change
@@ -37,8 +38,9 @@ not a technical limitation per-se but may require some hacking.  We'd
 be happy if someone tried to do these types of experiments and reported
 back about what we could add to the core **psiTurk** code to help with this.
 
+
 My university will not give me a static IP address.  Can I still use **psiTurk**?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 **psiTurk** requires an generally internet-addressable computer.  Some
 universities prevent this for security purposes.  There are a couple of solutions
@@ -51,8 +53,8 @@ command line "in the cloud" including Red Hat's `OpenShift <https://www.openshif
 Detailed instruction on how to do this are available `here <openshift.html>`__.
 
 
-I'm trying to run **psiTurk** at home using a cable modem or other connection.  Will it work?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+I'm trying to run **psiTurk** at home using a cable modem or other connection. Will it work?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In general this set up is definitely possible.  However, you may need to configure
 the wireless router that came with your internet service to forward particular incoming
@@ -62,45 +64,51 @@ many excellent tutorials about this `online <http://www.howtogeek.com/66214/how-
 Note: a new experimental feature called `tunnels <tunnel.html>`__ is in the works
 which may address this issue for many users.
 
+
 I'm having trouble with my AWS/AMT credentials
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In order to use your credentials you must create a requester account
 on Amazon Web Services.  This usually involves providing a credit card
 number as well as a phone verification step.  Finally, some users report
-having to log into `http://requester.mturk.com <http://requester.mturk.com>`__ 
+having to log into `http://requester.mturk.com <http://requester.mturk.com>`__
 at least once to agree to the software terms.
 
+
 What do I need to know about running **psiTurk** on a remote server?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 The **psiTurk** command line process and server generally works great over a `ssh` connection.
 Perhaps the only thing to be aware of are that you set the `host` field
 of your project's local configuration file to the ip address of the remote machine
-if you want to be able to easily access it.  In addition, while the standard 
-`debug` command automatically launches your web-browser, you usually don't 
-want this behavior on the remove machine.  Instead use `debug -p` to simply 
+if you want to be able to easily access it.  In addition, while the standard
+`debug` command automatically launches your web-browser, you usually don't
+want this behavior on the remove machine.  Instead use `debug -p` to simply
 print the correct URL and copy/paste it into a browser on your local computer.
 
 
 Can you program my experiment for me?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Nope, sorry.  Please check the `experiment exchange <https://psiturk.org/ee>`__ for 
+Nope, sorry.  Please check the `experiment exchange <https://psiturk.org/ee>`__ for
 examples you might be able to draw insight from.
 
-I'm having Javascript errors when designing my experiment.  Can you help?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Sorry, but probably not.  See the above about programming experiments.  There are many 
+I'm having Javascript errors when designing my experiment.  Can you help?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Sorry, but probably not.  See the above about programming experiments.  There are many
 ways of `getting help <getting_help.html>`__ with **psiTurk** specifically and many
 excellent tutorials online for developing web applications using Javascript.  A good
 example is `CodeAcademy's Javascript lessons <http://www.codecademy.com/tracks/javascript>`__.
 
+
 Where is the **/static/js/psiturk.js** file?  It doesn't appear in any of the experiments I have downloaded!
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-psiturk.js doesn’t actually “exists” as a file in the static folder of any project.  
-Instead, the psiturk server/command line tool automatically generates this file.  
-The best way to view it is by “view source” in your browser while debugging your experiment.  
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+psiturk.js doesn’t actually “exists” as a file in the static folder of any project.
+Instead, the psiturk server/command line tool automatically generates this file.
+The best way to view it is by “view source” in your browser while debugging your experiment.
 While somewhat unintuitive, this ensures that changes to psiturk.js are linked
-to new versions of the overall psiturk command line tool (since they are tightly 
-interdependent).  
+to new versions of the overall psiturk command line tool (since they are tightly
+interdependent).

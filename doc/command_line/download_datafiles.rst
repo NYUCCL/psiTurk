@@ -14,6 +14,7 @@ database table (defined in `config.txt
 experiment data in a csv format.  ``download_datafiles`` creates three
 files in your current folder:
 
+
 `eventdata.csv`
 ~~~~~~~~~~~~~~~
 
@@ -25,6 +26,7 @@ column 1          column 2      column 3    column 4      column 5
 ===============   ===========   ==========  ==========    =========
 unique user ID    event type    interval    value         time
 ===============   ===========   ==========  ==========    =========
+
 
 `questiondata.csv`
 ~~~~~~~~~~~~~~~~~~
@@ -48,7 +50,7 @@ unique user ID    question name    response
 <../api.html#psiturk-recordtrialdata-datalist>`__, and is formatted as follows:
 
 ===============   ===========   ==========  ===========
-column 1          column 2      column 3    column 4  
+column 1          column 2      column 3    column 4
 ===============   ===========   ==========  ===========
 unique user ID    trial #       time        trial data
 ===============   ===========   ==========  ===========
