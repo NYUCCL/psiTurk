@@ -10,6 +10,7 @@ There are three kinds of data that **psiTurk** will help you produce:
 
 3. `Browser events <recording.html#browser-event-data>`__
 
+
 Recording trial data
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -25,8 +26,8 @@ The list of values that you supply to ``recordTrialData`` will then be
 appended to the log. It is up to you how to structure those lists; you
 will have to parse them as part of your analysis.
 
-
 .. _recording-unstructured-data-label:
+
 
 Recording unstructured data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -44,6 +45,7 @@ Like the trial-by-trial data, it is up to you to decide whether or not
 to use this function. For some kinds of experiments (like simple
 surveys), this might be the only function you need.
 
+
 Saving the data
 ~~~~~~~~~~~~~~~
 
@@ -57,6 +59,7 @@ the server (e.g., after every block, or once at the end of the
 experiment). Using ``saveData`` frequently will limit the loss of data
 if the participant runs into an error, but keep in mind that it involves
 a new request to the server each time it is called.
+
 
 Browser event data
 ~~~~~~~~~~~~~~~~~~

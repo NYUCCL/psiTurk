@@ -3,7 +3,7 @@ participants.db
 
 By default, **psiTurk** will create a local SQLLite database
 for storing data.  You can also use a different database file
-or a MySQL database.  
+or a MySQL database.
 
 .. seealso::
 

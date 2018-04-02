@@ -1,5 +1,5 @@
 custom.html
-===============
+===========
 
 A placeholder example of adding custom URLs/routes
 to your **psiTurk** application.

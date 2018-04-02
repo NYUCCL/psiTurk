@@ -1,5 +1,5 @@
 default.html
-===============
+============
 
 A placeholder file that is shown
 when someone accesses the top-level
