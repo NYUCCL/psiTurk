@@ -117,16 +117,22 @@ class MTurkServicesWrapper():
             worker_dict['bonus'] = 'N/A'
         return worker_dict
         
-    def get_workers(self, status=None, chosen_hit=None, assignment_ids=None):
+    def get_workers(self, status=None, chosen_hits=None, assignment_ids=None, all_studies=False):
         '''
         Status, if set, can be one of `Submitted`, `Approved`, or `Rejected`
         '''
         if assignment_ids:
             workers = [self.get_worker(assignment_id) for assignment_id in assignment_ids] 
         else:
-            workers = self.amt_services.get_workers(assignment_status=status, chosen_hit=chosen_hit)
+            workers = self.amt_services.get_workers(assignment_status=status, chosen_hits=chosen_hits)
+        
         if workers is False:
             raise Exception('*** failed to get workers')    
+        
+        if not all_studies:
+            my_hitids = self._get_my_hitids()
+            workers = [worker for worker in workers if worker['hitId'] in my_hitids]
+        
         workers = [self.add_bonus(worker) for worker in workers]
         return workers
         
@@ -172,7 +178,7 @@ class MTurkServicesWrapper():
                     raise Exception(error_msg)
             # otherwise don't approve, and print warning
             else:
-                _status_report = 'worker {} not found in DB for assignment {}. Not automatically approved.'.format(worker['workerId'], assignment_id)
+                _status_report = 'worker {} not found in DB for assignment {}. Not automatically approved. Use --force to approve anyway.'.format(worker['workerId'], assignment_id)
                 if status_report:
                     status_report = '\n'.join([status_report,_status_report])
                 else:
@@ -228,7 +234,7 @@ class MTurkServicesWrapper():
         elif len(assignment_ids) == 1:
             workers = [self.amt_services.get_worker(assignment_ids[0])]
             if not workers:
-                print "No submissions found for requested assignment ID"
+                print "No submissions found for requested assignment ID"    
                 return
         else:
             workers = self.amt_services.get_workers("Approved")
@@ -273,26 +279,38 @@ class MTurkServicesWrapper():
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
    
     def tally_hits(self):
-        hits = self.amt_services.get_active_hits()
+        hits = self.get_active_hits(all_studies=False)
         num_hits = 0
         if hits:
             num_hits = len(hits)
         return num_hits
     
-    def hit_list(self, active_hits, reviewable_hits):
-        ''' List hits. '''
-        hits_data = []
-        if active_hits:
-            hits_data = self.amt_services.get_active_hits()
-        elif reviewable_hits:
-            hits_data = self.amt_services.get_reviewable_hits()
-        else:
-            hits_data = self.amt_services.get_all_hits()
-        if not hits_data:
-            print '*** no hits retrieved'
-        else:
-            for hit in hits_data:
-                print hit
+    def _get_my_hitids(self):
+        my_hitids = [part.hitid for part in Participant.query.distinct(Participant.hitid)]
+        return my_hitids
+        
+    def _get_hits(self, all_studies=False):
+        amt_hits = self.amt_services.get_all_hits()
+        # get list of unique hitids from database
+        if not all_studies:
+            my_hitids = self._get_my_hitids()
+            amt_hits = [hit for hit in amt_hits if hit.options['hitid'] in my_hitids]
+        return amt_hits
+    
+    def get_active_hits(self, all_studies=False):
+        hits = self._get_hits(all_studies)
+        active_hits = [hit for hit in hits if not hit.options['is_expired']]
+        return active_hits
+        
+    def get_reviewable_hits(self, all_studies=False):
+        hits = self._get_hits(all_studies)
+        reviewable_hits = [hit for hit in hits if hit.options['status'] == "Reviewable" \
+                           or hit.options['status'] == "Reviewing"]
+        return reviewable_hits
+        
+    def get_all_hits(self, all_studies=False):
+        hits = self._get_hits(all_studies)
+        return hits
 
     def hit_extend(self, hit_id, assignments, minutes):
         """ Add additional worker assignments or minutes to a HIT.
