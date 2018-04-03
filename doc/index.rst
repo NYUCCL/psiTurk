@@ -13,9 +13,9 @@ Afterwards, head over to our `quickstart guide <https://www.psiturk.org/quick_st
 or for a more detailed tutorial demonstrating how to setup a simple experiment
 with **psiTurk**, visit `Getting up and running with the basic Stroop task <stroop.html>`__.
 
-User's Guide
-------------------
 
+User's Guide
+------------
 
 .. toctree::
    :maxdepth: 2
@@ -43,7 +43,7 @@ User's Guide
    faq
    getting_help
    disclaimer
-   
+
 
 Contributing to **psiTurk**
 ---------------------------
@@ -53,11 +53,12 @@ Contributing to **psiTurk**
    contribute
    roadmap
 
+
 API Reference
---------------
+-------------
+
 .. toctree::
    :maxdepth: 2
 
    api
    psiturk_org_api
-

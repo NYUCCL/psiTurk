@@ -1,5 +1,5 @@
 config.txt
-===========
+==========
 
 This is the basic configuration file for the project.
 
