@@ -27,13 +27,11 @@ except ImportError:
 import webbrowser
 import sqlalchemy as sa
 
-from amt_services import MTurkServices, RDSServices
 from amt_services_wrapper import MTurkServicesWrapper
 from psiturk_org_services import PsiturkOrgServices, TunnelServices
 from version import version_number
 from psiturk_config import PsiturkConfig
 import experiment_server_controller as control
-from db import db_session, init_db
 from models import Participant
 from utils import *
 
@@ -194,6 +192,20 @@ class PsiturkShell(Cmd, object):
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #   hit management
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
+    def hit_list(self, active_hits, reviewable_hits, all_studies):
+        ''' List hits. '''
+        if active_hits:
+            hits_data = self.amt_services_wrapper.get_active_hits(all_studies)
+        elif reviewable_hits:
+            hits_data = self.amt_services_wrapper.get_reviewable_hits(all_studies)
+        else:
+            hits_data = self.amt_services_wrapper.get_all_hits(all_studies)
+        if not hits_data:
+            print '*** no hits retrieved'
+        else:
+            for hit in hits_data:
+                print hit
+    
     def _estimate_expenses(self, num_workers, reward):
         ''' Returns tuple describing expenses:
         amount paid to workers
@@ -337,7 +349,7 @@ class PsiturkShell(Cmd, object):
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #   worker management
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
-    def worker_list(self, submitted, approved, rejected, chosen_hit):
+    def worker_list(self, submitted, approved, rejected, chosen_hits, all_studies=False):
         try:
             status = None
             if submitted:
@@ -347,7 +359,7 @@ class PsiturkShell(Cmd, object):
             elif rejected:
                 status='Rejected'
                 
-            workers = self.amt_services_wrapper.get_workers(status,chosen_hit)
+            workers = self.amt_services_wrapper.get_workers(status, chosen_hits, all_studies=all_studies)
             if not len(workers):
                 print "*** no workers match your request"
             else:
@@ -359,28 +371,40 @@ class PsiturkShell(Cmd, object):
         except Exception as e:
             print colorize(repr(e), 'red')
     
-    def worker_approve(self, all=False, chosen_hit=None, assignment_ids=None):
+    def worker_approve(self, all=False, chosen_hits=None, assignment_ids=None, all_studies=False, force=False):        
+        
+        if all_studies and not force:
+            print 'option --all-studies must be used along with --force'
+            return
+        
+        all_studies_msg = ' for the current study'
+        if all_studies:
+            all_studies_msg = ' from all studies'
+        
+        force_msg = ''
+        if force:
+            force_msg = " even if they're not found in the local psiturk db"
         
         if all:
-            print "Approving all submissions..."
-        elif chosen_hit:
-            print "Approving all submissions for HIT {}".format(chosen_hit)
+            print "Approving all submissions{}{}...".format(all_studies_msg, force_msg)
+        elif chosen_hits:
+            print "Approving submissions for HITs {}{}{}".format(' '.join(chosen_hits), all_studies_msg, force_msg)
         else:
-            print "Approving all specified submissions..."
-        
-        workers = self.amt_services_wrapper.get_workers("Submitted", chosen_hit, assignment_ids)
+            print "Approving specified submissions{}{}...".format(all_studies_msg, force_msg)
+            
+        workers = self.amt_services_wrapper.get_workers("Submitted", chosen_hits, assignment_ids, all_studies=all_studies)
         if not workers:
-            if chosen_hit:
-                print "No submissions found for requested HIT ID. Are you in the right `mode`?"
+            if chosen_hits:
+                print "No submissions found for requested HIT ID(s). Are you in the right `mode`? Do you need to pass `--all-studies --force`?"
             elif assignment_ids:
-                print "No submissions found for requested assignment ID(s). Are you in the right `mode`?"
+                print "No submissions found for requested assignment ID(s). Are you in the right `mode`? Do you need to pass `--all-studies --force`?"
             else:
-                print "No submissions found. Are you in the right `mode`?"
+                print "No submissions found. Are you in the right `mode`? Do you need to pass `--all-studies`?"
             return        
         
         for worker in workers:
             try:
-                result = self.amt_services_wrapper.approve_worker(worker, force=bool(assignment_ids))
+                result = self.amt_services_wrapper.approve_worker(worker, force=force)
                 print result
             except Exception as e:
                 print colorize(str(e), 'red')
@@ -964,7 +988,7 @@ class PsiturkNetworkShell(PsiturkShell):
           hit extend <HITid> [(--assignments <number>)] [(--expiration <minutes>)]
           hit expire (--all | <HITid> ...)
           hit dispose (--all | <HITid> ...)
-          hit list [--active | --reviewable]
+          hit list [--active | --reviewable] [--all-studies]
           hit help
         """
 
@@ -981,7 +1005,7 @@ class PsiturkNetworkShell(PsiturkShell):
             self.amt_services_wrapper.hit_dispose(arg['--all'], arg['<HITid>'])
             self.update_hit_tally()
         elif arg['list']:
-            self.amt_services_wrapper.hit_list(arg['--active'], arg['--reviewable'])
+            self.hit_list(arg['--active'], arg['--reviewable'], arg['--all-studies'])
         else:
             self.help_hit()
 
@@ -1002,22 +1026,21 @@ class PsiturkNetworkShell(PsiturkShell):
     def do_worker(self, arg):
         """
         Usage:
-          worker approve (--all | --hit <hit_id> | <assignment_id> ...)
+          worker approve (--all | --hit <hit_id> ... | <assignment_id> ...) [--all-studies] [--force]
           worker reject (--hit <hit_id> | <assignment_id> ...)
           worker unreject (--hit <hit_id> | <assignment_id> ...)
           worker bonus  (--amount <amount> | --auto) (--hit <hit_id> | <assignment_id> ...)
-          worker list [--submitted | --approved | --rejected] [(--hit <hit_id>)]
+          worker list [--submitted | --approved | --rejected] [(--hit <hit_id>)] [--all-studies]
           worker help
         """
         if arg['approve']:
-            self.worker_approve(arg['--all'], arg['<hit_id>'], arg['<assignment_id>'])
+            self.worker_approve(arg['--all'], arg['<hit_id>'], arg['<assignment_id>'], arg['--all-studies'], arg['--force'])
         elif arg['reject']:
             self.amt_services_wrapper.worker_reject(arg['<hit_id>'], arg['<assignment_id>'])
         elif arg['unreject']:
             self.amt_services_wrapper.worker_unreject(arg['<hit_id>'], arg['<assignment_id>'])
         elif arg['list']:
-            self.worker_list(arg['--submitted'], arg['--approved'],
-                             arg['--rejected'], arg['<hit_id>'])
+            self.worker_list(arg['--submitted'], arg['--approved'], arg['--rejected'], arg['<hit_id>'], arg['--all-studies'])
         elif arg['bonus']:
             self.amt_services_wrapper.worker_bonus(arg['<hit_id>'], arg['--auto'], arg['<amount>'], '',
                               arg['<assignment_id>'])

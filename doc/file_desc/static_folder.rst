@@ -1,10 +1,10 @@
 The `static/` directory
-==========================================
+=======================
 
 The static folder holds files which are not
 dynamically altered by the **psiTurk** server (i.e., templated).  This
 includes images, javascript libraries, CSS style
-sheets etc...  
+sheets etc...
 You can add additional files and folders for static files if you
 need in your project.
 
@@ -23,6 +23,3 @@ In addition, there are typically four sub-directories:
    static_js_folder
    static_lib_folder
    static_fonts_folder
-
-
-

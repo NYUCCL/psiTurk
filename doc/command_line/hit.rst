@@ -3,16 +3,19 @@
 
 .. contents::
 
+
 Description
 -----------
 
 The ``hit`` command is used to create, view, delete, and modify Human Intelligence Tasks ("HITs") on Amazon Mechanical Turk.
 
+
 ``hit create``
 --------------
 
+
 Usage
-~~~~~~
+~~~~~
 
 ::
 
@@ -29,8 +32,9 @@ worth a lot of money but come back and do the work later in the
 day. You can specify a shorter duration if you want workers to
 complete your HIT immediately.
 
+
 Example
-~~~~~~~~
+~~~~~~~
 
 Creating a HIT in the sandbox with three assignments that pays $2.00 and has a
 1.5 hour time limit::
@@ -52,6 +56,7 @@ Creating a HIT in the sandbox with three assignments that pays $2.00 and has a
 ``hit extend``
 --------------
 
+
 Usage
 ~~~~~
 
@@ -63,8 +68,10 @@ Extend an existing HIT by increasing the amount of time before the HIT expires
 (and and is no longer available to workers) or by increasing the number of
 workers who can complete the HIT.
 
+
 Example
 ~~~~~~~
+
 Adding both time and assignments to a HIT::
 
   psiTurk server:on mode:sdbx #HITs:1]$ hit list --active
@@ -89,8 +96,10 @@ Note that both the remaining number of assignments and the expiration time of
 the HIT have increased. One can also increase the number of assignments or the
 expiration independently.
 
+
 ``hit expire``
 --------------
+
 
 Usage
 ~~~~~
@@ -102,8 +111,10 @@ Usage
 Expire one or more existing HITs, or expire all HITs using the ``--all``
 flag.
 
+
 Example
 ~~~~~~~
+
 1. Expiring two HITs at once::
 
      [psiTurk server:on mode:sdbx #HITs:4]$ hit expire 2Y0T3HVWAVKIMG42A2S75Z9943NNFG 2RVZXR24SMEZFG314ME9X8P9CPPH0X
@@ -121,6 +132,7 @@ Example
 ``hit dispose``
 ---------------
 
+
 Usage
 ~~~~~
 
@@ -134,6 +146,7 @@ Dispose of one ore more HITs, or dispose of all HITs using the ``--all`` flag.
    To dispose of a HIT, it must not be active or have any unreviewed
    assignments
 
+
 Example
 ~~~~~~~
 
@@ -143,8 +156,10 @@ Example
    deleting sandbox HIT 241KM05BMJTUXCDL0TG9UA7SJI3JEQ
    [psiTurk server:off mode:sdbx #HITs:0]$
 
+
 ``hit list``
 ------------
+
 
 Usage
 ~~~~~
@@ -154,6 +169,7 @@ Usage
   hit list [--active | --reviewable]
 
 List all HITs, or list all active or reviewable HITs using the provided flags.
+
 
 Examples
 ~~~~~~~~

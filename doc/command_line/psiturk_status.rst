@@ -1,5 +1,6 @@
 ``psiturk_status`` command
-===========================
+==========================
+
 
 Usage
 ------
@@ -10,12 +11,13 @@ Usage
 
 Display startup screen with message from `psiturk.org <http://psiturk.org>`__.
 
+
 Example
 -------
 
 ::
 
-   
+
    [psiTurk server:off mode:sdbx #HITs:1]$ psiturk_status
 
 

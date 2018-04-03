@@ -7,6 +7,7 @@ painlessly and quickly. This section will also tell you what problems
 **psiTurk** does and does not solve to help you gauge whether it will be
 useful to you.
 
+
 Understanding the **psiTurk** design philosophy: An analogy
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -16,17 +17,17 @@ walkman or boombox). People would trade tapes, make copies of tapes,
 make mixtapes of their favorite songs. It was awesome.
 
 **psiTurk** is like a player but instead of playing music, it plays
-(i.e., runs) experiments.  You download and install the psiTurk application 
+(i.e., runs) experiments.  You download and install the psiTurk application
 to your computer. This installs a command line tool ``psiturk`` which serves as a
 multi-function "player." It can (figuratively speaking) run, pause,
 eject, and configure a given experiment.
 
-To make it useful though **psiTurk** needs something to play. You can download 
-from our `experiment exchange <http://psiturk.org/ee>`__ library an archive 
-which contains all the files specific to a given experiment. You basically 
-“play” the downloaded experiment using the ``psiturk`` command. You can easily 
-switch experiments by downloading another experiment archive and “playing” it. 
-Even better, you can make your own experiments by remixing others (borrowing 
+To make it useful though **psiTurk** needs something to play. You can download
+from our `experiment exchange <http://psiturk.org/ee>`__ library an archive
+which contains all the files specific to a given experiment. You basically
+“play” the downloaded experiment using the ``psiturk`` command. You can easily
+switch experiments by downloading another experiment archive and “playing” it.
+Even better, you can make your own experiments by remixing others (borrowing
 code from projects in the experiment exchange) or building your own from scratch.
 
 The goal of psiturk was to build the “player” so you can spend more of
@@ -36,6 +37,7 @@ mix tape)!
 Oh, and in case you missed it, "playing" someone else's experiment
 posted to the `experiment exchange <http://psiturk.org/ee>`__ basically
 means independently replicating it!
+
 
 What is Mechanical Turk?
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -55,6 +57,7 @@ Workers get paid a fixed amount for each HIT which is determined by the
 requester. Requesters can also make bonus payments to specific workers.
 Amazon collects a 10% fee for each payment.
 
+
 What is psiTurk?
 ~~~~~~~~~~~~~~~~
 
@@ -73,6 +76,7 @@ Specifically, it allows you to:
 **psiTurk** also includes a powerful interactive command interface that
 lets you manage most of your AMT activity.
 
+
 How do I host a **psiTurk** experiment?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -85,6 +89,7 @@ URL to their dynamic IP. Here's a list of `free DDNS
 providers <http://dnslookup.me/dynamic-dns/>`__.  You also may need
 to `forward a port <http://www.howtogeek.com/66214/how-to-forward-ports-on-your-router/>`__
 from your home routers to you personal computer.
+
 
 Do I have to learn how to code?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

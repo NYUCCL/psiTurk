@@ -67,12 +67,12 @@ class MasterRequirement(Requirement):
 class MTurkHIT(object):
     ''' Structure for dealing with MTurk HITs '''
 
-    def __init__(self, json_options):
-        self.options = json_options
+    def __init__(self, options):
+        self.options = options
 
     def __repr__(self):
         for opt in self.options:
-            self.options[opt] = self.options[opt].encode('ascii', 'replace')
+            self.options[opt] = str(self.options[opt]).encode('ascii', 'replace')
         return "%s \n\tStatus: %s \n\tHITid: %s \
             \n\tmax:%s/pending:%s/complete:%s/remain:%s \n\tCreated:%s \
             \n\tExpires:%s\n" % (
@@ -325,17 +325,9 @@ class MTurkServices(object):
     def set_sandbox(self, is_sandbox):
         ''' Set sandbox '''
         self.is_sandbox = is_sandbox
-
-    def get_reviewable_hits(self):
-        ''' Get reviewable HITs '''
-        if not self.connect_to_turk():
-            return False
-        try:
-            hits = self.mtc.get_all_hits()
-        except MTurkRequestError:
-            return False
-        reviewable_hits = [hit for hit in hits if hit.HITStatus == "Reviewable" \
-                           or hit.HITStatus == "Reviewing"]
+    
+    @staticmethod
+    def _hit_xml_to_object(hits):
         hits_data = [MTurkHIT({
             'hitid': hit.HITId,
             'title': hit.Title,
@@ -345,8 +337,9 @@ class MTurkServices(object):
             'number_assignments_pending': hit.NumberOfAssignmentsPending,
             'number_assignments_available': hit.NumberOfAssignmentsAvailable,
             'creation_time': hit.CreationTime,
-            'expiration': hit.Expiration
-        }) for hit in reviewable_hits]
+            'expiration': hit.Expiration,
+            'is_expired': hit.expired
+        }) for hit in hits]
         return hits_data
 
     def get_all_hits(self):
@@ -357,49 +350,16 @@ class MTurkServices(object):
             hits = self.mtc.get_all_hits()
         except MTurkRequestError:
             return False
-        hits_data = [MTurkHIT({
-            'hitid': hit.HITId,
-            'title': hit.Title,
-            'status': hit.HITStatus,
-            'max_assignments': hit.MaxAssignments,
-            'number_assignments_completed': hit.NumberOfAssignmentsCompleted,
-            'number_assignments_pending': hit.NumberOfAssignmentsPending,
-            'number_assignments_available': hit.NumberOfAssignmentsAvailable,
-            'creation_time': hit.CreationTime,
-            'expiration': hit.Expiration,
-            }) for hit in hits]
+        hits_data = self._hit_xml_to_object(hits)
         return hits_data
 
-    def get_active_hits(self):
-        ''' Get active HITs '''
-        if not self.connect_to_turk():
-            return False
-        # hits = self.mtc.search_hits()
-        try:
-            hits = self.mtc.get_all_hits()
-        except MTurkRequestError:
-            return False
-        active_hits = [hit for hit in hits if not hit.expired]
-        hits_data = [MTurkHIT({
-            'hitid': hit.HITId,
-            'title': hit.Title,
-            'status': hit.HITStatus,
-            'max_assignments': hit.MaxAssignments,
-            'number_assignments_completed': hit.NumberOfAssignmentsCompleted,
-            'number_assignments_pending': hit.NumberOfAssignmentsPending,
-            'number_assignments_available': hit.NumberOfAssignmentsAvailable,
-            'creation_time': hit.CreationTime,
-            'expiration': hit.Expiration,
-            }) for hit in active_hits]
-        return hits_data
-
-    def get_workers(self, assignment_status=None, chosen_hit=None):
+    def get_workers(self, assignment_status=None, chosen_hits=None):
         ''' Get workers '''
         if not self.connect_to_turk():
             return False
         try:
-            if chosen_hit:
-                hit_ids = [chosen_hit]
+            if chosen_hits:
+                hit_ids = chosen_hits
             else:
                 hits = self.mtc.get_all_hits()
                 hit_ids = [hit.HITId for hit in hits]
@@ -432,7 +392,8 @@ class MTurkServices(object):
                 workers_nested.append(hit_assignments)
 
             workers = [val for subl in workers_nested for val in subl]  # Flatten nested lists
-        except MTurkRequestError:
+        except MTurkRequestError as e:
+            print e
             return False
         worker_data = [{
             'hitId': worker.HITId,

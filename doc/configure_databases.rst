@@ -1,8 +1,8 @@
 Configuring Databases
-======================
+=====================
 
 Databases provide a critical aspect of psiTurk as they store data from experiments and help to prevent the same user from completing your experiment more than once.   Databases provide an important function for web-based experiments.  Because multiple
-people can complete your experiment at the same time, you need a system which can simultaneously write/read data. 
+people can complete your experiment at the same time, you need a system which can simultaneously write/read data.
 Databases are optimized for this type of environment and are thus very useful for experiments.
 
 Databases can be configured via the command line or by editing the configuration files directly.
@@ -24,7 +24,7 @@ in the command line shell.
 
 
 Using SQLite
---------------
+~~~~~~~~~~~~
 
 Perhaps the simplest solution is to use SQLite.  This is a simple, easy to use database solution that is written to a local file on the same computer as is running the psiTurk shell/server.  By default **psiTurk** will use a local `SQLite <http://www.sqlite.org/>`__ database.
 
@@ -68,7 +68,7 @@ less likely using SQLite.
 	if you plan to run many participants simultaneously.
 
 Using a self-hosted MySQL database (recommended)
--------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 A more robust solution is to set up a `MySQL <http://www.mysql.com/>`__ database.  **psiTurk** relies on `SQLAlchemy <http://www.sqlalchemy.org/>`__ for interfacing with database which means it is easy to switch between MySQL, PostgreSQL, or SQLite.  We recommend
 MySQL because we have tested it, but other relational database engines may works as well.
@@ -117,23 +117,24 @@ The table specified in config.txt, `turkdemo` by default
 
 will be created automatically when running the psiturk shell.
 MySQL is (fairly) easy to install and free.  However, a variety of web hosting
-services offer managed MySQL databases.  Some are even 
+services offer managed MySQL databases.  Some are even
 `free <https://www.google.com/search?q=free+mysql+hosting>`__.  Your university
 may be able to provide this as well.  MySQL is a very ubiquitous piece of software.
 
-Obtaining a low-cost (or free) MySQL database on Amazon's Web Services Cloud
----------------------------------------------------------------------------
 
-While not terribly difficult, installing and mangaging a MySQL database can be 
+Obtaining a low-cost (or free) MySQL database on Amazon's Web Services Cloud
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+While not terribly difficult, installing and mangaging a MySQL database can be
 an extra hassle.  Interestingly, when you sign up with Amazon Mechanical Turk
 as a requester, you also are signing up for Amazon's Web Services a very powerful
 cloud-based computing platform that is used by many large web companies.  One of
 the services Amazon provides is a fully hosted `relational database server (RDS) <http://aws.amazon.com/rds/>`__.
 
-According to Amazon, "Amazon Relational Database Service (Amazon RDS) is a web 
-service that makes it easy to set up, operate, and scale a relational database in 
-the cloud. It provides cost-efficient and resizable capacity while managing 
-time-consuming database administration tasks, freeing you up to focus on your 
+According to Amazon, "Amazon Relational Database Service (Amazon RDS) is a web
+service that makes it easy to set up, operate, and scale a relational database in
+the cloud. It provides cost-efficient and resizable capacity while managing
+time-consuming database administration tasks, freeing you up to focus on your
 applications and business."
 
 .. danger::
@@ -162,7 +163,7 @@ interface with the Amazon cloud.
     Of course, you must have valid AWS credentials to use this system.  See
     `Getting setup with Amazon Mechanical Turk <amt_setup.html>`__ and
     `Global configuration file <configuration.html#global-configuration-file>`__.
-    
+
     If you are using psiturk with an IAM user, and if you want to use AWS RDB services via psiturk,
     add the *AmazonRDSFullAccess* AWS policy or an equivalent custom policy to your IAM user.
     See AWS docs `here <http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.IAM.AccessControl.IdentityBased.html#UsingWithRDS.IAM.AccessControl.ManagedPolicies>`__.
@@ -201,7 +202,7 @@ started on (i.e., which data center).
 
 
 Creating an RDS Instance
-~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 After you have decided on a region, it is fairly easy to create a database instance.
 Type::
@@ -217,7 +218,7 @@ To create a new instance use the `db aws_create_instance` command::
 
 	[psiTurk server:off mode:sdbx #HITs:0]$ db aws_create_instance [<instance_id> <size> <username> <password> <dbname>]
 
-The optional arguments allow you to create the database in one command.  If you 
+The optional arguments allow you to create the database in one command.  If you
 prefer you can use an interactive mode by just typing::
 
 	[psiTurk server:off mode:sdbx #HITs:0]$ db aws_create_instance
@@ -285,8 +286,8 @@ now see your database in the cloud::
 
 Notice the status is "creating" (this means the database is not available yet).  Just
 wait a bit longer.  It really can take 10-15 minutes!  Other possible status messages
-for an instance include `backing-up` (AWS automatically backs up your database in case 
-of data loss.  At this time **psiTurk** does not help you access those backups, you'll 
+for an instance include `backing-up` (AWS automatically backs up your database in case
+of data loss.  At this time **psiTurk** does not help you access those backups, you'll
 have to do that from the AWS web console.)
 
 When your database is ready the message from `db aws_list_instances` should look like::
@@ -297,7 +298,7 @@ When your database is ready the message from `db aws_list_instances` should look
 		Instance ID: mydb
 		Status: available
 
-If you have multiple instances they will also appear in this list. 
+If you have multiple instances they will also appear in this list.
 
 .. danger::
 
@@ -308,8 +309,8 @@ Once your instance is created and "available" if you type `db get_config` you'll
 notice that your experiment is still configured to use whatever setting you had
 previously::
 
-	[psiTurk server:off mode:sdbx #HITs:0]$ db get_config 
-	Current database setting (database_url): 
+	[psiTurk server:off mode:sdbx #HITs:0]$ db get_config
+	Current database setting (database_url):
 		sqlite:///participants.db
 
 To actually **use** your instance you need to tell **psiTurk** which instance::
@@ -321,52 +322,52 @@ To actually **use** your instance you need to tell **psiTurk** which instance::
 	Here are the available database tables
 		myexp
 	Enter the name of the database you want to use or a new name to create a new one: myexp
-	Successfully set your current database (database_url) to 
+	Successfully set your current database (database_url) to
 		mysql://UsernameXXXXX:PasswordXXXXX@mydb.cdukgn44bkrv.us-east-1.rds.amazonaws.com:3306/myexp
 
 And now your experiment will save data to this MySQL database in the Amazon cloud!
 Notice that Amazon has assigned your computer a random looking hostname/ip (mydb.cdukgn44bkrv.us-east-1.rds.amazonaws.com).
-You can connect using any standard MySQL client (e.g., `Sequel Pro <http://www.sequelpro.com/>`__) 
+You can connect using any standard MySQL client (e.g., `Sequel Pro <http://www.sequelpro.com/>`__)
 which is running on the same computer as you **psiTurk** process
 
 .. note::
 
-	**psiTurk** automatically makes instances so that only the current computer's ip address 
-	can access the database for security reasons.  To modify that you can use the Amazon Web 
+	**psiTurk** automatically makes instances so that only the current computer's ip address
+	can access the database for security reasons.  To modify that you can use the Amazon Web
 	Services control panel or simple delete and spin up a new database instance.
 
 
 To switch back to a local SQLite file::
 
 	[psiTurk server:off mode:sdbx #HITs:0]$ db use_local_file FILENAME.db
-	Updated database setting (database_url): 
+	Updated database setting (database_url):
 		sqlite:///FILENAME.db
 
 It is **important** that you delete your instance when you are finished using it.
 Otherwise you will be charged (usually fractions of a penny per hour).  Assuming
 I wanted to delete my new `mydb` instance here is an example session::
 
-	[psiTurk server:off mode:sdbx #HITs:0]$ db aws_list_instances 
+	[psiTurk server:off mode:sdbx #HITs:0]$ db aws_list_instances
 	Here are the current DB instances associated with your AWS account in region  us-east-1
 		--------------------
 		Instance ID: mydb
 		Status: available
-	[psiTurk server:off mode:sdbx #HITs:0]$ db aws_delete_instance 
+	[psiTurk server:off mode:sdbx #HITs:0]$ db aws_delete_instance
 	Here are the available instances you can delete:
 		  mydb ( available )
 	Enter the instance identity you would like to delete: mydb
 	Deleting an instance will erase all your data associated with the database in that instance. Really quit? y or n: y
 	DBInstance:mydb
-	AWS RDS database instance mydb deleted.  Run `db aws_list_instances` for current status.	
-	[psiTurk server:off mode:sdbx #HITs:0]$ db aws_list_instances 
+	AWS RDS database instance mydb deleted.  Run `db aws_list_instances` for current status.
+	[psiTurk server:off mode:sdbx #HITs:0]$ db aws_list_instances
 	Here are the current DB instances associated with your AWS account in region  us-east-1
 		--------------------
 		Instance ID: mydb
-		Status: deleting		
+		Status: deleting
 
 After waiting a bit verify that you instance actually has been deleted::
 
-	[psiTurk server:off mode:sdbx #HITs:0]$ db aws_list_instances 
+	[psiTurk server:off mode:sdbx #HITs:0]$ db aws_list_instances
 	There are no DB instances associated with your AWS account in region  us-east-1
 
 Overall we think this is pretty cool and nicely leverages the fact that you already
@@ -375,17 +376,18 @@ However, remember, this **can incur hosting charges**.  We have set things up so
 process creates very small, very simple RDS instances (which are the cheapest kind).
 However, leaving an instance running -- or multiple instances -- for a really long
 time can incur service charges which will be billed to your account by Amazon at the
-end of the month (you may not realize the charges until later).  
+end of the month (you may not realize the charges until later).
 
 The point is that using a free MySQL database hosted by your university or another
-provider may be better, but this solution is available for researchers who can 
+provider may be better, but this solution is available for researchers who can
 afford to pay the hosting fee and would like everything in one place.
 
+
 Obtaining a free MySQL database via OpenShift
--------------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If you are hosting your experiment on OpenShift, if you add a `MySQL` cartridge to your gear, **psiTurk** will automatically
-save data to that db instead of to whatever is specified in your `database_url` config. OpenShift gears, including using MySQL 
+save data to that db instead of to whatever is specified in your `database_url` config. OpenShift gears, including using MySQL
 cartridges, are free unless you change default configuration settings.
 
 .. seealso ::
