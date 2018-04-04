@@ -14,7 +14,7 @@ Usage:
   	      interactively by entering the command without parameters.
   extend      Extend an existing HIT by a number of assignments and/or amount
   	      of time before the HIT expires.
-  expire      Dispose of one or more existing HITs, or expire all HITs using
+  expire      Expire one or more existing HITs, or expire all HITs using
   	      the '--all' flag.
   dispose     Dispose of one or more existing HITs, or dispose of all HITs
     	      using the '--all' flag.
