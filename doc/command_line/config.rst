@@ -1,7 +1,8 @@
 ``config`` command + subcommands
-==================================
+================================
 
 .. contents::
+
 
 Description
 -----------
@@ -9,8 +10,9 @@ Description
 The ``config`` command is used with a variety of subcommands to control the
 current configuration context
 
+
 ``config print``
--------------
+----------------
 
 Prints the current configuration context (both local and global config options).
 
@@ -35,10 +37,13 @@ Example
 	launch_in_sandbox_mode=true
    [psiTurk server:on mode:sdbx #HITs:0]$
 
+
 ``config reload``
---------------
+-----------------
+
 Reloads the current config context (both local and global files).  This will
 cause the server to restart.
+
 
 Example
 ~~~~~~~
@@ -55,7 +60,6 @@ Example
 
 
 ``config help``
-------------------
+---------------
 
 Display a help message concerning the config subcommand.
-

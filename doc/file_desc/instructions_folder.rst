@@ -1,5 +1,5 @@
 The instructions/ folder
-===============
+========================
 
 This is is a folder of instruction screen you
 can configure for your experiment.  You can add

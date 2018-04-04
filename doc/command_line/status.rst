@@ -1,8 +1,8 @@
 ``status`` command
-===================
+==================
 
 Usage
-------
+-----
 
 ::
 
@@ -17,8 +17,9 @@ number of HITs available on AMT or in the worker sandbox.
    requires contacting the AMT server). ``status`` provides a
    way to make sure the prompt is up-to-date.
 
+
 Example
---------
+-------
 
 Using the ``status`` command in sandbox mode::
 

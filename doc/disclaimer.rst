@@ -6,7 +6,7 @@ to aid in research.  Because it helps you run paid experiments online
 using Amazon Mechanical Turk errors in the software, or in your
 use of the software, can lead to **loss of money**.  This is the very
 nature of online research (errors may mean someone will actually
-do your task and you need to pay them as a result).  
+do your task and you need to pay them as a result).
 
 Our belief is that these types of errors can be best limited
 by having open, peer-reviewable software and sharing bug reports
@@ -17,7 +17,7 @@ cost you money when getting started.
 .. danger::
 
 	**We take no responsibility for your use of the software**. We make
-	no claims that it is bug-free and any errors are not our 
+	no claims that it is bug-free and any errors are not our
 	responsibility.  This is a community-run, community-supported
 	system and not a company selling a product.  We use
 	the software in our lab and, when used correctly, has never caused

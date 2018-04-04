@@ -1,8 +1,9 @@
 ``quit`` command
 =================
 
+
 Usage
-------
+-----
 
 ::
 
@@ -12,8 +13,9 @@ The ``quit`` command quits the psiTurk shell. If you have a server running,
 psiTurk will confirm that you want to quit before exiting, since quitting
 psiTurk turns off the server.
 
+
 Example
---------
+-------
 
 Quitting psiTurk with the server running::
 

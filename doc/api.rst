@@ -1,5 +1,5 @@
 psiturk.js API
-=======
+==============
 
 Everything in the **psiturk.js** API is scoped under the ``psiturk``
 namespace.
@@ -9,7 +9,7 @@ Creating the **psiTurk** object
 
 To use the **psiTurk** library, a ``psiturk`` object must be created at
 the beginning of your experiment.  It takes two key arguments ``uniqueId``
-and ``adServerLoc``.  These two variables are first created in 
+and ``adServerLoc``.  These two variables are first created in
 `exp.html <file_desc/exp_html.html>`.  They tell **psiTurk** which unique
 number/code corresponds to the current participant (allowing updating
 of data as the task progresses) and the location of the `ad <secure_ad_server.html>`__
@@ -89,6 +89,7 @@ Example:
 Retrieve a stored HTML object that has been preloaded using
 ``psiturk.preLoadPages``.
 
+
 ``psiturk.showPage(pagename)``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -107,6 +108,7 @@ Example:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Cache each image in ``imagelist`` for use later.
+
 
 ``psiturk.recordTrialData(datalist)``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -148,14 +150,13 @@ success or failure of the saving.
 .. code-block:: javascript
 
     psiturk.saveData({
-       success: function() { 
+       success: function() {
           // function to run if the data is saved
        },
-       error: function() { 
+       error: function() {
           // function to run if there was an error
        }
     });
-
 
 
 ``psiturk.completeHIT()``
@@ -170,9 +171,9 @@ and the user's browser will correctly finish the HIT on Amazon's
 site.
 
 
-
 ``psiturk.doInstructions(pages, callback)``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 **psiTurk** includes a basic method for showing a sequence of
 instructions.  You are always free to write your own instructions
 code (and may need to).  However, this provides a basic template
@@ -196,7 +197,6 @@ Within each HTML page there should be a button or other HTML
 element with class equal to ``continue`` which the user
 can click to move to the next screen.
 
-
 An `Bootstrap <http://getbootstrap.com>`__ example is::
 
     <button type="button" id="next" value="next" class="btn btn-primary btn-lg continue">
@@ -208,7 +208,7 @@ with class ``previous`` it will, when clicked, go to the previous
 page.  As a result you should not include a previous button on the
 first HTML page.
 
-An example previous button using `Bootstrap <http://getbootstrap.com>`__ is:
+An example previous button using `Bootstrap <http://getbootstrap.com>`__ is: ::
 
     <button type="button" id="next" value="next" class="btn btn-primary btn-lg previous">
         <span class="glyphicon glyphicon-arrow-left"></span> Previous
@@ -231,7 +231,7 @@ Example
         "instructions/instruct-1.html",
         "instructions/instruct-2.html",
         "instructions/instruct-3.html"]; // however, you can have as many as you like
-    psiturk.doInstructions(instructionPages, 
+    psiturk.doInstructions(instructionPages,
                             function() { currentview = new StroopExperiment(); });
 
 The last line in this example uses an anonymous function
@@ -239,7 +239,7 @@ to launch the `Stroop Experiment <stroop.html>`__.
 
 
 ``psiturk.finishInstructions()``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ``finishInstructions`` is used to change the participant's status code
 to ``2`` in the database, indicating that they have begun the actual
