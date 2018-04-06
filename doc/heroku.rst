@@ -84,4 +84,16 @@ What follows is a step-by-step tutorial for setting up a `psiTurk` example exper
 
     psiturk
 
-From your local `psiTurk` session, you can now `create and modify HIT's <command_line/hit.html>`_. When these are accessed by Amazon Mechanical Turk workers, the workers will be directed to the `psiTurk` session running on your `Heroku` app. This means that you safely can close your local psiTurk session once you're done creating and modifying HIT's.
+#. Generate a link to a debugging session of the example experiment: ::
+
+    debug
+
+#. Copy and paste the link into your browser and complete the whole example experiment.
+
+#. You should now have some data in the database. To extract it into `csv` files, type: ::
+
+    download_datafiles
+
+This should generate three datafiles for you in your local directory: `trialdata.csv`, `questiondata.csv`, and `eventdata.csv`. Congratulations, you've now gathered data from an experiment running on `Heroku`!
+
+From your local `psiTurk` session, you can now `create and modify HIT's <command_line/hit.html>`_. When these are accessed by Amazon Mechanical Turk workers, the workers will be directed to the `psiTurk` session running on your `Heroku` app (this means that even if you close your local psiTurk session once you're done creating and modifying HIT's, workers can still access your experiment).
