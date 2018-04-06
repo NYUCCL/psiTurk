@@ -38,6 +38,7 @@ User's Guide
    customizing
    external_surveys
    heroku
+   amazon_ec2
    openshift
    error
    faq
