@@ -37,6 +37,7 @@ User's Guide
    retrieving
    customizing
    external_surveys
+   heroku
    openshift
    error
    faq
