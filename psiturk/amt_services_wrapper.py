@@ -286,6 +286,7 @@ class MTurkServicesWrapper():
         return num_hits
     
     def _get_my_hitids(self):
+        init_db()
         my_hitids = [part.hitid for part in Participant.query.distinct(Participant.hitid)]
         return my_hitids
         
