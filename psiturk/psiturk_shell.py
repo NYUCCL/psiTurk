@@ -848,11 +848,12 @@ class PsiturkNetworkShell(PsiturkShell):
 
     def update_hit_tally(self):
         ''' Tally hits '''
-        num_hits = self.amt_services_wrapper.tally_hits()
-        if self.sandbox:
-            self.sandbox_hits = num_hits
-        else:
-            self.live_hits = num_hits
+        if not self.quiet:            
+            num_hits = self.amt_services_wrapper.tally_hits()
+            if self.sandbox:
+                self.sandbox_hits = num_hits
+            else:
+                self.live_hits = num_hits
 
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #   hit management
