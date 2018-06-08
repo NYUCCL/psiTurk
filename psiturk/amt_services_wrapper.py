@@ -292,6 +292,8 @@ class MTurkServicesWrapper():
         
     def _get_hits(self, all_studies=False):
         amt_hits = self.amt_services.get_all_hits()
+        if not amt_hits:
+            return []
         # get list of unique hitids from database
         if not all_studies:
             my_hitids = self._get_my_hitids()
