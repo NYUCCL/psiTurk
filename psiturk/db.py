@@ -16,7 +16,7 @@ else:
 
 if 'mysql' in config.get('Database Parameters', 'database_url').lower():
 	try:
-		 __import__('imp').find_module('MySQLdb')
+		 __import__('imp').find_module('pymysql')
 	except ImportError:
 		print("Sorry, to use a MySQL database you need to install "
 			  "the `mysql-python` python package.  Try `pip install "
