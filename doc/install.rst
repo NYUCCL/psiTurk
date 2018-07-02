@@ -218,7 +218,7 @@ be done at any time), further packages are needed.  On a Debian system, they are
 
 ::
 
-    aptitude install python-mysqldb python-mysqldb-dbg python-sqlalchemy libmysqlclient-dev
+    aptitude install python-pymysql python-sqlalchemy libmysqlclient-dev
 
 If you have additional specific issues, or if you can report the steps
 needed to install psiTurk on a particular Linux distribution, please help

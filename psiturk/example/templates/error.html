@@ -26,6 +26,13 @@
                         <p>Because this is a Psychology experiment, you can only complete this HIT once.</p>
                         <p>Please release the HIT so someone else can perform the experiment.</p>
 
+				<!-- The below error is to prevent repeat participants (if enabled) from completing any condition more than once. -->
+                {% elif errornum == 1021 %}
+
+                        <p>Sorry, our records indicate that you have already completed (or attempted to complete) all of the possible conditions for this experiment.</p>
+                        <p>Because this is a Psychology experiment, you can participate in each condition only once.</p>
+                        <p>Please release the HIT so someone else can perform the experiment.</p>
+
                 {% else %}
 
                         <p>Sorry, there was an unexpected error in our processing of your HIT.</p>

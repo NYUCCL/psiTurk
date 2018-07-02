@@ -20,7 +20,9 @@ While the ``download_datafiles`` shell command is the simplest way to retrieve
 experiment data, a more powerful and flexible solution is to retrieve the data
 programmatically. Many languages offer libraries for interfacing with mysql and
 sqlite databases - below is an example using python and the sqlalchemy package
-to retrieve data from a mysql database. By including code such as this at the
+to retrieve data from a mysql database. We add `+pymysql` to the `db_url` to let
+sqlalchemy make use of pymysql package. (You can leave the database_url in config.txt
+as `mysql://` though -- psiturk adds `+pymysql` internally). By including code such as this at the
 beginning of your analysis script, you can be sure the the data you're analyzing is
 always complete and up-to-date.
 
@@ -30,7 +32,7 @@ always complete and up-to-date.
    import json
    import pandas as pd
 
-   db_url = "mysql://username:password@host.org/database_name"
+   db_url = "mysql+pymysql://username:password@host.org/database_name"
    table_name = 'my_experiment_table'
    data_column_name = 'datastring'
    # boilerplace sqlalchemy setup
