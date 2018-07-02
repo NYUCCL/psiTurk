@@ -9,7 +9,13 @@ var psiTurk = new PsiTurk(uniqueId, adServerLoc, mode);
 
 var mycondition = condition;  // these two variables are passed by the psiturk server process
 var mycounterbalance = counterbalance;  // they tell you which condition you have been assigned to
+var didAlready = didAlready;  // if they did the experiment already, this will be true (will be false otherwise)
+var num_conds = num_conds;  // this is the number of conditions specified in the config.txt file
+var num_counters = num_counters;  // this is the number of counterbalances specified in the config.txt file
+var num_conds_completed = num_conds_completed;  // if they did the experiment already, how many conditions they completed (will be 0 by default)
 // they are not used in the stroop code but may be useful to you
+var always_show_instructions = always_show_instructions;  // if this is false, then if the participant repeats, it will skip over instructions
+// always_show_instructions is used to skip over instructions if the participant repeats (below)
 
 // All pages to be loaded
 var pages = [
@@ -220,8 +226,12 @@ var currentview;
  * Run Task
  ******************/
 $(window).load( function(){
-    psiTurk.doInstructions(
-    	instructionPages, // a list of pages you want to display in sequence
-    	function() { currentview = new StroopExperiment(); } // what you want to do when you are done with instructions
+    if ( (didAlready == true) & (always_show_instructions == false) ) {
+            currentview = new StroopExperiment();
+        } else {
+            psiTurk.doInstructions(
+	            instructionPages, // a list of pages you want to display in sequence
+    	        function() { currentview = new StroopExperiment(); } // what you want to do when you are done with instructions
+        };
     );
 });

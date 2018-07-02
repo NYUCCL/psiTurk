@@ -25,6 +25,7 @@ class ExperimentError(Exception):
         already_started_exp=1008,
         already_started_exp_mturk=1009,
         already_did_exp_hit=1010,
+        already_did_all_conds=1021,
         tried_to_quit=1011,
         intermediate_save=1012,
         improper_inputs=1013,
@@ -85,6 +86,11 @@ class ExperimentError(Exception):
     error_descriptions['already_did_exp_hit'] = unwrap(
         """
         The experiment has already been completed.
+        """)
+
+    error_descriptions['already_did_all_conds'] = unwrap(
+        """
+        The participant has already completed all conditions.
         """)
 
     error_descriptions['tried_to_quit'] = unwrap(

@@ -26,6 +26,11 @@
 			var counterbalance = {{ counterbalance }}; // a number indexing counterbalancing conditions
 			var adServerLoc = "{{ adServerLoc }}"; // the location of your ad (so you can send user back at end of experiment)
 			var mode = "{{ mode }}";
+			var didAlready = {{ didAlready }}; // this will indicate whether they did already (for repeats, to skip instructions, etc.)
+			var always_show_instructions = {{ always_show_instructions }}; // if this is false, then if the participant repeats, it will skip over instructions
+			var num_conds = {{ num_conds }}; // this is the number of conditions specified in the config.txt file
+			var num_counters = {{ num_counters }}; // this is the number of counterbalances specified in the config.txt file
+			var num_conds_completed = {{ num_conds_completed }}; // this is the number of counterbalances specified in the config.txt file
 		</script>
 				
 		<!-- utils.js and psiturk.js provide the basic psiturk functionality -->

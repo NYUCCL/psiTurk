@@ -1,6 +1,6 @@
 argparse==1.2.1
 Flask==0.12.2
-SQLAlchemy==0.8.3
+SQLAlchemy==1.1.18
 gunicorn==19.4.5
 boto==2.15.0
 cmd2==0.6.7

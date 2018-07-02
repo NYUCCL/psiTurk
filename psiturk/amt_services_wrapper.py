@@ -728,7 +728,7 @@ class MTurkServicesWrapper():
                 # Using regular SQL commands list available database on this
                 # node
                 try:
-                    db_url = 'mysql://' + myinstance.master_username + ":" \
+                    db_url = 'mysql+pymysql://' + myinstance.master_username + ":" \
                         + password + "@" + myinstance.endpoint[0] + ":" + \
                         str(myinstance.endpoint[1])
                     engine = sa.create_engine(db_url, echo=False)
@@ -777,7 +777,7 @@ class MTurkServicesWrapper():
                         print("*** Error creating database %s on instance " \
                               "%s" % (db_name, instance_id))
                         return
-                base_url = 'mysql://' + myinstance.master_username + ":" + \
+                base_url = 'mysql+pymysql://' + myinstance.master_username + ":" + \
                     password + "@" + myinstance.endpoint[0] + ":" + \
                     str(myinstance.endpoint[1]) + "/" + db_name
                 self.config.set("Database Parameters", "database_url", base_url)

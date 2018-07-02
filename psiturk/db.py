@@ -14,15 +14,17 @@ if matches:
 else:
     DATABASE = config.get('Database Parameters', 'database_url')
 
-if 'mysql' in config.get('Database Parameters', 'database_url').lower():
+if 'mysql://' in DATABASE.lower():
 	try:
-		 __import__('imp').find_module('MySQLdb')
+		 __import__('imp').find_module('pymysql')
 	except ImportError:
-		print("Sorry, to use a MySQL database you need to install "
-			  "the `mysql-python` python package.  Try `pip install "
-			  "mysql-python`. Hopefully it goes smoothly for you. "
-			  "Installation can be tricky on some systems.")
+		print("To use a MySQL database you need to install "
+			  "the `pymysql` python package.  Try `pip install "
+			  "pymysql`.")
 		exit()
+	# internally use `mysql+pymysql://` so sqlalchemy talks to
+	# the pymysql package
+	DATABASE = DATABASE.replace('mysql://', 'mysql+pymysql://')
 
 engine = create_engine(DATABASE, echo=False, pool_recycle=3600) 
 db_session = scoped_session(sessionmaker(autocommit=False,

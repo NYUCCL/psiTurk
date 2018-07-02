@@ -44,7 +44,12 @@ var PsiTurk = function(uniqueId, adServerLoc, mode) {
 			questiondata: {},
 			eventdata: [],
 			useragent: "",
-			mode: ""
+			mode: "",
+			didAlready: false,
+			always_show_instructions: true,
+			num_conds: 1,
+			num_counters: 1,
+			num_conds_completed: 0
 		},
 		
 		initialize: function() {
