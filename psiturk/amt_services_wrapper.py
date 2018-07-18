@@ -365,7 +365,7 @@ class MTurkServicesWrapper():
     def hit_expire(self, all_hits, hit_ids=None):
         ''' Expire all HITs. '''
         if all_hits:
-            hits_data = self.amt_services.get_active_hits()
+            hits_data = self.get_active_hits()
             hit_ids = [hit.options['hitid'] for hit in hits_data]
         for hit in hit_ids:
             success = self.amt_services.expire_hit(hit)
