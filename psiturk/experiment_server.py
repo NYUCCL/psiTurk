@@ -87,6 +87,8 @@ class ExperimentServer(Application):
             }
             self.user_options.update(ssl_options)
 
+        if config.has_option("Server Parameters", "server_timeout"):
+            self.user_options.update({'timeout': config.get("Server Parameters", "server_timeout")})
 
         if 'ON_HEROKU' in os.environ:
             self.user_options.update({

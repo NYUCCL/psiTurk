@@ -106,6 +106,7 @@ project:
     #keyfile = <path_to.key>
     #adserver_revproxy_host = www.location.of.your.revproxy.sans.protocol.com
     #adserver_revproxy_port = 80 # defaults to 80
+    #server_timeout = 30
 
     [Task Parameters]
     experiment_code_version = 1.0

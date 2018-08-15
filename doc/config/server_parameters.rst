@@ -21,6 +21,7 @@ command line.  An example looks like this:
     #keyfile = <path_to.key>
     #adserver_revproxy_host = www.location.of.your.revproxy.sans.protocol.com
     #adserver_revproxy_port = 80
+    #server_timeout = 30
 
 
 `host` [string]
@@ -193,3 +194,15 @@ See the documentation for `adserver_revproxy_port` for more information.
 
 .. note::
     If you are hosting your experiment on `rhcloud.com`, this setting is ignored and 80 will always be used.
+
+
+`server_timeout` [ integer ]
+----------------------------------------
+Number of seconds gunicorn will wait before killing an unresponsive worker. This timeout applies to any individual request.
+
+If you expect that your experiment may take more than 30 seconds to respond to a request, you may want to increase this.
+
+Defaults to 30 seconds.
+
+.. note::
+    See http://docs.gunicorn.org/en/stable/settings.html#timeout for more information.
