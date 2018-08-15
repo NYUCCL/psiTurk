@@ -838,7 +838,7 @@ class PsiturkNetworkShell(PsiturkShell):
     def do_status(self, arg): # overloads do_status with AMT info
         super(PsiturkNetworkShell, self).do_status(arg)
         # server_status = self.server.is_server_running()  # Not used
-        self.tally_hits()
+        self.update_hit_tally()
         if self.sandbox:
             print 'AMT worker site - ' + colorize('sandbox', 'bold') + ': ' \
             + str(self.sandbox_hits) + ' HITs available'
