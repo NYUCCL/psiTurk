@@ -14,6 +14,9 @@ DEFAULT_GLOBAL_CONFIG_FILE = os.path.join(os.path.dirname(__file__), \
 # If working in OpenShift, global config file lives in data directory
 if 'OPENSHIFT_SECRET_TOKEN' in os.environ:
     GLOBAL_CONFIG_PATH = os.environ['OPENSHIFT_DATA_DIR'] + ".psiturkconfig"
+elif 'PSITURK_GLOBAL_CONFIG_LOCATION' in os.environ:
+    GLOBAL_CONFIG_PATH = os.path.join(os.environ['PSITURK_GLOBAL_CONFIG_LOCATION'],
+                                      ".psiturkconfig")
 else:
     GLOBAL_CONFIG_PATH = "~/.psiturkconfig"
 
@@ -39,8 +42,9 @@ def setup_example():
         os.rename('custom.py.txt', 'custom.py')
 
         if not os.path.exists(GLOBAL_CONFIG_FILE):
-            print "No '.psiturkconfig' file found in your home \
-                directory.\nCreating default '~/.psiturkconfig' file."
+            print "The following config file does not exist:\n{}\
+                \nCreating default config file at that \
+                location.".format(GLOBAL_CONFIG_FILE)
             file_util.copy_file(DEFAULT_GLOBAL_CONFIG_FILE, GLOBAL_CONFIG_FILE)
 
 
