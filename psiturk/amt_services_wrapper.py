@@ -25,6 +25,7 @@ except ImportError:
 import webbrowser
 import sqlalchemy as sa
 
+from sqlalchemy import or_, and_
 from amt_services import MTurkServices, RDSServices
 from psiturk_org_services import PsiturkOrgServices, TunnelServices
 from psiturk_config import PsiturkConfig
@@ -116,7 +117,21 @@ class MTurkServicesWrapper():
             # assignment is found on mturk but not in local database.
             worker_dict['bonus'] = 'N/A'
         return worker_dict
-
+        
+    def count_workers(self, codeversion=None, mode='live', status='completed'):
+        ''' 
+        Counts the number of participants in the database who have made it through
+        the experiment.
+        '''
+        if not codeversion:
+            codeversion = self.config.get('Task Parameters', 'experiment_code_version')
+            
+        return Participant.query.filter( and_(
+                    Participant.status.in_( [3,4,5,7] ),
+                    Participant.codeversion == codeversion,
+                    Participant.mode == mode
+                ) ).count()            
+    
     def get_workers(self, status=None, chosen_hits=None, assignment_ids=None, all_studies=False):
         '''
         Status, if set, can be one of `Submitted`, `Approved`, or `Rejected`

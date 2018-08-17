@@ -1034,6 +1034,7 @@ class PsiturkNetworkShell(PsiturkShell):
           worker unreject (--hit <hit_id> | <assignment_id> ...)
           worker bonus  (--amount <amount> | --auto) (--hit <hit_id> | <assignment_id> ...)
           worker list [--submitted | --approved | --rejected] [(--hit <hit_id>)] [--all-studies]
+          worker count [--completed]
           worker help
         """
         if arg['approve']:
@@ -1047,11 +1048,24 @@ class PsiturkNetworkShell(PsiturkShell):
         elif arg['bonus']:
             self.amt_services_wrapper.worker_bonus(arg['<hit_id>'], arg['--auto'], arg['<amount>'], '',
                               arg['<assignment_id>'])
+        elif arg['count']:
+            if arg['--completed']:
+                status = 'completed'
+            self.count_workers( status )
         else:
             self.help_worker()
-
+    
     worker_commands = ('approve', 'reject', 'unreject', 'bonus', 'list', 'help')
 
+    def count_workers(self, status):
+        ''' Count the number of workers in the database'''
+        if self.sandbox:
+            mode = 'sandbox'
+        else:
+            mode = 'live'
+        codeversion = self.config.get('Task Parameters', 'experiment_code_version')
+        print self.amt_services_wrapper.count_workers(mode=mode, codeversion=codeversion, status=status)
+    
     def complete_worker(self, text, line, begidx, endidx):
         ''' Tab-complete worker command. '''
         return  [i for i in PsiturkNetworkShell.worker_commands if \
