@@ -125,7 +125,7 @@ def shutdown_session(_=None):
 # Experiment counterbalancing code
 # ================================
 
-def get_random_condcount():
+def get_random_condcount(mode):
     """
     HITs can be in one of three states:
         - jobs that are finished
@@ -141,12 +141,18 @@ def get_random_condcount():
                                                            'cutoff_time'))
     starttime = datetime.datetime.now() + cutofftime
 
-    numconds = CONFIG.getint('Task Parameters', 'num_conds')
-    numcounts = CONFIG.getint('Task Parameters', 'num_counters')
+    try: 
+        conditions = json.load(open(os.path.join(app.root_path, 'conditions.json')))
+        numconds = len(conditions.keys())
+        numcounts = 1
+    except IOError as e:
+        numconds = CONFIG.getint('Task Parameters', 'num_conds')
+        numcounts = CONFIG.getint('Task Parameters', 'num_counters')
 
     participants = Participant.query.\
         filter(Participant.codeversion == \
                CONFIG.get('Task Parameters', 'experiment_code_version')).\
+        filter(Participant.mode == mode).\
         filter(or_(Participant.status == COMPLETED,
                    Participant.status == CREDITED,
                    Participant.status == SUBMITTED,
@@ -410,7 +416,7 @@ def start_exp():
     numrecs = len(matches)
     if numrecs == 0:
         # Choose condition and counterbalance
-        subj_cond, subj_counter = get_random_condcount()
+        subj_cond, subj_counter = get_random_condcount(mode)
 
         worker_ip = "UNKNOWN" if not request.remote_addr else \
             request.remote_addr
@@ -731,6 +737,8 @@ def run_webserver():
     host = "0.0.0.0"
     port = CONFIG.getint('Server Parameters', 'port')
     print "Serving on ", "http://" +  host + ":" + str(port)
+    app.config['TEMPLATES_AUTO_RELOAD'] = True
+    app.jinja_env.auto_reload = True
     app.run(debug=True, host=host, port=port)
 
 if __name__ == '__main__':
