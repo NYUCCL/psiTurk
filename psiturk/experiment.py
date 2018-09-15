@@ -125,7 +125,7 @@ def shutdown_session(_=None):
 # Experiment counterbalancing code
 # ================================
 
-def get_random_condcount():
+def get_random_condcount(condsAlreadyDone):
     """
     HITs can be in one of three states:
         - jobs that are finished
@@ -160,13 +160,22 @@ def get_random_condcount():
         condcount = (participant.cond, participant.counterbalance)
         if condcount in counts:
             counts[condcount] += 1
-    mincount = min(counts.values())
-    minima = [hsh for hsh, count in counts.iteritems() if count == mincount]
-    chosen = choice(minima)
-    #conds += [ 0 for _ in range(1000) ]
-    #conds += [ 1 for _ in range(1000) ]
-    app.logger.info("given %(a)s chose %(b)s" % {'a': counts, 'b': chosen})
-
+    # below is to exclude the cond/counterbalance combos
+    # that this participant has already done
+    allow_repeat_conditions = CONFIG.getboolean('HIT Configuration', 'allow_repeat_conditions')
+    if not allow_repeat_conditions:
+        unwanted = [x for x in counts if x in condsAlreadyDone]
+        for unwanted_key in unwanted: del counts[unwanted_key]
+    if bool(counts):
+        mincount = min(counts.values())
+        minima = [hsh for hsh, count in counts.iteritems() if count == mincount]
+        chosen = choice(minima)
+        #conds += [ 0 for _ in range(1000) ]
+        #conds += [ 1 for _ in range(1000) ]
+        app.logger.info("given %(a)s chose %(b)s" % {'a': counts, 'b': chosen})
+    else:
+        # there are no more conditions for this subject to do, so raise error
+        raise ExperimentError('already_did_all_conds')
     return chosen
 
 
@@ -402,16 +411,36 @@ def start_exp():
             filter(Participant.workerid == worker_id).\
             filter(Participant.assignmentid == assignment_id).\
             all()
+        # added for repeats
+        matchesConds = Participant.query.\
+            filter(Participant.workerid == worker_id).\
+            all()
+        # get all the conditions they have done and submitted or completed already
+        condsAlreadyDone = [(record.cond, record.counterbalance) \
+            for record in matchesConds \
+            if (record.status in [COMPLETED,SUBMITTED,CREDITED,BONUSED])]
     else:
         matches = Participant.query.\
             filter(Participant.workerid == worker_id).\
             all()
-
+        # added for repeats
+        condsAlreadyDone = []
+    
+    # record number of conditions completed (if repeats are allowed) in order to prevent
+    # a subject from repeating again if they have completed all possible conditions
+    # and also if we want to inform the participant how many they have completed)
+    num_conds_completed = len(condsAlreadyDone)
+    # this is so we can skip instructions, certain questionnaires, etc. fif we want
+    didAlready = 'false'
+    if num_conds_completed > 0:
+        didAlready = 'true'
+    
     numrecs = len(matches)
     if numrecs == 0:
         # Choose condition and counterbalance
-        subj_cond, subj_counter = get_random_condcount()
-
+        # (Will exclude conditions the subject has already done)
+        subj_cond, subj_counter = get_random_condcount(condsAlreadyDone)
+        
         worker_ip = "UNKNOWN" if not request.remote_addr else \
             request.remote_addr
         browser = "UNKNOWN" if not request.user_agent.browser else \
@@ -492,6 +521,11 @@ def start_exp():
         counterbalance=part.counterbalance,
         adServerLoc=ad_server_location,
         mode = mode,
+        didAlready = didAlready,
+        always_show_instructions = CONFIG.get('HIT Configuration', 'always_show_instructions'),
+        num_conds = CONFIG.get('Task Parameters', 'num_conds'),
+        num_counters = CONFIG.get('Task Parameters', 'num_counters'),
+        num_conds_completed = num_conds_completed,
         contact_address=CONFIG.get('HIT Configuration', 'contact_email_on_error')
     )
 
