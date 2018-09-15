@@ -150,7 +150,18 @@ class MTurkServicesWrapper():
 
         workers = [self.add_bonus(worker) for worker in workers]
         return workers
-
+    
+    def approve_all_workers_for_study(self):
+        workers = self.get_workers(status="Submitted")
+        status_reports = []
+        for worker in workers:
+            try:
+                report = self.approve_worker(worker)
+            except Exception as e:
+                report = str(e)
+            status_reports.append( report )
+        return status_reports
+    
     def get_worker(self, assignment_id):
         return self.amt_services.get_worker(assignment_id)
 

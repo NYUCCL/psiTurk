@@ -1,7 +1,7 @@
 
 import datetime
 import io, csv, json
-from sqlalchemy import Column, Integer, String, DateTime, Float, Text
+from sqlalchemy import Column, Integer, String, DateTime, Float, Text, and_, or_
 
 from db import Base
 from psiturk_config import PsiturkConfig
@@ -118,4 +118,17 @@ class Participant(Base):
         except:
             print("Error reading record:", self)
             return("")
+    
+    @classmethod       
+    def count_completed(cls, _codeversion=None, mode=None):
+        if not codeversion:
+            _codeversion = CODE_VERSION
+        if not mode:
+            mode = 'sandbox' if self.sandbox else 'live'
+        return cls.query.filter( and_(
+                    cls.status.in_( [3,4,5,7] ),
+                    cls.codeversion == _codeversion,
+                    cls.mode == mode
+                ) ).count()            
+        
 

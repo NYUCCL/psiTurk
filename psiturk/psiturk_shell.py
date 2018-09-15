@@ -440,6 +440,9 @@ class PsiturkShell(Cmd, object):
         subprocess.Popen(args, close_fds=True)
         print "Log program launching..."
 
+
+        
+        
     @docopt_cmd
     def do_debug(self, arg):
         """
@@ -495,7 +498,15 @@ class PsiturkShell(Cmd, object):
         ''' Print version number '''
         print 'psiTurk version ' + version_number
 
-
+    @docopt_cmd
+    def do_dev(self, arg):
+        '''
+        Usage: dev
+            dev 
+        '''
+        results = self.amt_services_wrapper.approve_all_workers_for_study()
+        print '\n'.join(results)
+    
     @docopt_cmd
     def do_config(self, arg):
         """
@@ -1049,22 +1060,23 @@ class PsiturkNetworkShell(PsiturkShell):
             self.amt_services_wrapper.worker_bonus(arg['<hit_id>'], arg['--auto'], arg['<amount>'], '',
                               arg['<assignment_id>'])
         elif arg['count']:
+            kw = {}
             if arg['--completed']:
-                status = 'completed'
-            self.count_workers( status )
+                kw['status'] = 'completed'
+            self.count_workers( **kw )
         else:
             self.help_worker()
     
     worker_commands = ('approve', 'reject', 'unreject', 'bonus', 'list', 'help')
 
-    def count_workers(self, status):
+    def count_workers(self, status=None):
         ''' Count the number of workers in the database'''
-        if self.sandbox:
-            mode = 'sandbox'
-        else:
-            mode = 'live'
+        mode = 'sandbox' if self.sandbox else 'live'
         codeversion = self.config.get('Task Parameters', 'experiment_code_version')
-        print self.amt_services_wrapper.count_workers(mode=mode, codeversion=codeversion, status=status)
+        kw = { 'mode': mode, 'codeversion': codeversion }
+        if status:
+            kw['status'] = status
+        print Participant.count_completed(**kw)
     
     def complete_worker(self, text, line, begidx, endidx):
         ''' Tab-complete worker command. '''
