@@ -23,7 +23,7 @@ What follows is a step-by-step tutorial for setting up a `psiTurk` example exper
 
     psiturk-setup-example
     
-If you're starting from a preexisting psiturk app, you need to grab three files from `/psiturk/example`: `requirements.txt`, `herokuapp.py`, and `Procfile`. Place them in your project root, next to your `config.txt`
+If you're starting from a preexisting psiturk app, you need to grab three files from `/psiturk/example`: `requirements.txt`, `herokuapp.py`, `runtime.txt`, and `Procfile`. Place them in your project root, next to your `config.txt`
 
 #. Navigate into your newly created psiTurk example folder: ::
 
