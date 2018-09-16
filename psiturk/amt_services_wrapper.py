@@ -496,7 +496,7 @@ class MTurkServicesWrapper():
             'ad_html': ad_html,
             # 'amt_hit_id': hitid, Don't know this yet
             'organization_name': str(self.config.get('HIT Configuration', 'organization_name')),
-            'experiment_name': str(self.config.get('HIT Configuration', 'title'. raw=True)),
+            'experiment_name': str(self.config.get('HIT Configuration', 'title', raw=True)),
             'contact_email_on_error': str(self.config.get('HIT Configuration', 'contact_email_on_error')),
             'ad_group': str(self.config.get('HIT Configuration', 'ad_group')),
             'keywords': str(self.config.get('HIT Configuration', 'psiturk_keywords')),
