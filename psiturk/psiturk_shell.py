@@ -337,7 +337,7 @@ class PsiturkShell(Cmd, object):
             mturk_url = '{}/projects?filters%5Bsearch_term%5D={}'.format(
                 mturk_url_base,
                 urllib.quote_plus(
-                    str(self.config.get('HIT Configuration', 'title'))))
+                    str(self.config.get('HIT Configuration', 'title', raw=True))))
 
             print('  MTurk URL: {}'.format(mturk_url) )
             print "Hint: In OSX, you can open a terminal link using cmd + click"
