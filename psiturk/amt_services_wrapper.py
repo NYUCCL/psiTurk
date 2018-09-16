@@ -295,7 +295,8 @@ class MTurkServicesWrapper():
         if not amt_hits:
             return []
         # get list of unique hitids from database
-        if not all_studies:
+        if False: # this is broken right now because it only will find a hit which has one person logged to it in the db
+        #if not all_studies:
             my_hitids = self._get_my_hitids()
             amt_hits = [hit for hit in amt_hits if hit.options['hitid'] in my_hitids]
         return amt_hits
