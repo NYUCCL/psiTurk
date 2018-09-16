@@ -13,8 +13,8 @@
                     type: "GET",
                     url: "/worker_submitted?uniqueId={{ workerid }}:{{ assignmentid }}",
                     success: function (data) {
-                        $( "#mturk_form" ).submit();
                         $(window).off('beforeunload');
+                        $( "#mturk_form" ).submit();
                     }
                 });
             };
