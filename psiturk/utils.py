@@ -13,7 +13,7 @@ def get_my_ip():
     else:
         my_ip = json.load(urllib2.urlopen(
             'http://httpbin.org/ip'
-        ))['origin']
+        ))['origin'].split(',')[0]
     return my_ip
     
 def colorize(target, color, use_escape=True):
