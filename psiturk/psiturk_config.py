@@ -1,4 +1,5 @@
 import os
+import sys
 from distutils import file_util
 from ConfigParser import SafeConfigParser
 
@@ -36,7 +37,7 @@ class PsiturkConfig(SafeConfigParser):
                    "is a valid psiTurk experiment?  "
                    "If you are starting a new project run "
                    "'psiturk-setup-example' first.")
-            exit()
+            sys.exit()
         if not os.path.exists(self.globalFile):
             if 'OPENSHIFT_SECRET_TOKEN' in os.environ:
                 print ("No '.psiturkconfig' file found "

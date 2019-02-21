@@ -123,7 +123,7 @@ class PsiturkShell(Cmd, object):
                 "Please change this to localhost while in cabin mode.")
             quit_on_start = True
         if quit_on_start:
-            exit()
+            sys.exit()
 
     def get_intro_prompt(self):
         ''' Print cabin mode message '''

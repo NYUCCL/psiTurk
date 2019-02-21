@@ -2,7 +2,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.ext.declarative import declarative_base
 from psiturk_config import PsiturkConfig
-import re, os
+import re, os, sys
 
 config = PsiturkConfig()
 config.load_config()
@@ -21,7 +21,7 @@ if 'mysql://' in DATABASE.lower():
 		print("To use a MySQL database you need to install "
 			  "the `pymysql` python package.  Try `pip install "
 			  "pymysql`.")
-		exit()
+		sys.exit()
 	# internally use `mysql+pymysql://` so sqlalchemy talks to
 	# the pymysql package
 	DATABASE = DATABASE.replace('mysql://', 'mysql+pymysql://')
