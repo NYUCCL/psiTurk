@@ -16,7 +16,7 @@ Usage:
   	      of time before the HIT expires.
   expire      Expire one or more existing HITs, or expire all HITs using
   	      the '--all' flag.
-  dispose     Dispose of one or more existing HITs, or dispose of all HITs
+  delete     Delete of one or more existing HITs, or delete of all HITs
     	      using the '--all' flag.
   list	      List all HITs, or list all active or reviewable HITs using the
               provided flags.
