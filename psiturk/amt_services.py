@@ -1,19 +1,14 @@
 # -*- coding: utf-8 -*-
 """ This module is a facade for AMT (Boto) services. """
 
-import boto.rds
-import boto.ec2
-from boto.exception import EC2ResponseError
-# from boto.rds import RDSConnection
-from boto.mturk.connection import MTurkConnection, MTurkRequestError
-from boto.mturk.question import ExternalQuestion
-from boto.mturk.qualification import LocaleRequirement, \
-    PercentAssignmentsApprovedRequirement, Qualifications, \
-    NumberHitsApprovedRequirement, Requirement
+import boto3
+import botocore
+import datetime
+import dateutil.tz
+
 from flask import jsonify
 import re as re
 from psiturk.psiturk_config import PsiturkConfig
-
 
 MYSQL_RESERVED_WORDS_CAP = [
     'ACCESSIBLE', 'ADD', 'ALL', 'ALTER', 'ANALYZE', 'AND', 'AS', 'ASC',
@@ -56,13 +51,13 @@ MYSQL_RESERVED_WORDS_CAP = [
 ]
 MYSQL_RESERVED_WORDS = [word.lower() for word in MYSQL_RESERVED_WORDS_CAP]
 
-class MasterRequirement(Requirement):
-    def __init__(self, sandbox=False, required_to_preview=False):
-        comparator = "Exists"
-        sandbox_qualification_type_id = "2ARFPLSP75KLA8M8DH1HTEQVJT3SY6"
-        production_qualification_type_id = "2F1QJWKUDD8XADTFD2Q0G6UTO95ALH"
-        qualification_type_id = production_qualification_type_id if not sandbox else sandbox_qualification_type_id
-        super(MasterRequirement, self).__init__(qualification_type_id=qualification_type_id, comparator=comparator, required_to_preview=required_to_preview)
+PERCENT_ASSIGNMENTS_APPROVED_QUAL_ID = '000000000000000000L0'
+NUMBER_HITS_APPROVED_QUAL_ID = '00000000000000000040'
+LOCALE_QUAL_ID = '00000000000000000071'
+MASTERS_QUAL_ID = '2F1QJWKUDD8XADTFD2Q0G6UTO95ALH'
+MASTERS_SANDBOX_QUAL_ID = '2ARFPLSP75KLA8M8DH1HTEQVJT3SY6'
+
+NOTIFICATION_VERSION = '2006-05-05'
 
 class MTurkHIT(object):
     ''' Structure for dealing with MTurk HITs '''
@@ -71,11 +66,9 @@ class MTurkHIT(object):
         self.options = options
 
     def __repr__(self):
-        for opt in self.options:
-            self.options[opt] = str(self.options[opt]).encode('ascii', 'replace')
         return "%s \n\tStatus: %s \n\tHITid: %s \
             \n\tmax:%s/pending:%s/complete:%s/remain:%s \n\tCreated:%s \
-            \n\tExpires:%s\n" % (
+            \n\tExpires:%s\n\tIs Expired:%s\n" % (
                 self.options['title'],
                 self.options['status'],
                 self.options['hitid'],
@@ -84,7 +77,8 @@ class MTurkHIT(object):
                 self.options['number_assignments_completed'],
                 self.options['number_assignments_available'],
                 self.options['creation_time'],
-                self.options['expiration']
+                self.options['expiration'],
+                self.options['is_expired']
             )
 
 class RDSServices(object):
@@ -94,6 +88,13 @@ class RDSServices(object):
                  region='us-east-1', quiet=False):
         self.update_credentials(aws_access_key_id, aws_secret_access_key)
         self.set_region(region)
+
+        self.rdsc = boto3.client(
+            'rds',
+            region_name=self.region,
+            aws_access_key_id=self.aws_access_key_id,
+            aws_secret_access_key=self.aws_secret_access_key,
+        )
         if not quiet:
             self.valid_login = self.verify_aws_login()
 
@@ -109,8 +110,8 @@ class RDSServices(object):
 
     def list_regions(self):
         ''' List regions '''
-        regions = boto.rds.regions()
-        return [reg.name for reg in regions]
+        regions = boto3.session.Session().get_available_regions('s3')
+        return regions
 
     def get_region(self):
         ''' Get regions '''
@@ -126,22 +127,13 @@ class RDSServices(object):
                 (self.aws_secret_access_key == 'YourSecretAccessKey')):
             return False
         else:
-            # rdsparams = dict(
-            #     aws_access_key_id=self.aws_access_key_id,
-            #     aws_secret_access_key=self.aws_secret_access_key,
-            #     region=self.region)
-            # self.rdsc = RDSConnection(**rdsparams)
-            self.rdsc = boto.rds.connect_to_region(
-                self.region,
-                aws_access_key_id=self.aws_access_key_id,
-                aws_secret_access_key=self.aws_secret_access_key
-            )
             try:
-                self.rdsc.get_all_dbinstances()
-            except MTurkRequestError as exception:
-                print exception.error_message
+                self.rdsc.describe_db_instances()
+            except botocore.exceptions.ClientError as exception:
+                print exception
                 return False
-            except AttributeError:
+            except AttributeError as e:
+                print e
                 print "*** Unable to establish connection to AWS region %s "\
                     "using your access key/secret key", self.region
                 return False
@@ -162,16 +154,7 @@ class RDSServices(object):
             print 'Sorry, unable to connect to Amazon\'s RDS database server. "\
                 "AWS credentials invalid.'
             return False
-        # rdsparams = dict(
-        #     aws_access_key_id = self.aws_access_key_id,
-        #     aws_secret_access_key = self.aws_secret_access_key,
-        #     region=self.region)
-        # self.rdsc = RDSConnection(**rdsparams)
-        self.rdsc = boto.rds.connect_to_region(
-            self.region,
-            aws_access_key_id=self.aws_access_key_id,
-            aws_secret_access_key=self.aws_secret_access_key
-        )
+
         return True
 
     def get_db_instance_info(self, dbid):
@@ -179,7 +162,7 @@ class RDSServices(object):
         if not self.connect_to_aws_rds():
             return False
         try:
-            instances = self.rdsc.get_all_dbinstances(dbid)
+            instances = self.rdsc.describe_db_instances(dbid).get('DBInstances')
         except:
             return False
         else:
@@ -213,7 +196,7 @@ class RDSServices(object):
         if not self.connect_to_aws_rds():
             return False
         try:
-            instances = self.rdsc.get_all_dbinstances()
+            instances = self.rdsc.describe_db_instances().get('DBInstances')
         except:
             return False
         else:
@@ -309,6 +292,7 @@ class MTurkServices(object):
     def __init__(self, aws_access_key_id, aws_secret_access_key, is_sandbox):
         self.update_credentials(aws_access_key_id, aws_secret_access_key)
         self.set_sandbox(is_sandbox)
+        self.setup_mturk_connection()
         self.valid_login = self.verify_aws_login()
 
         if not self.valid_login:
@@ -325,20 +309,20 @@ class MTurkServices(object):
     def set_sandbox(self, is_sandbox):
         ''' Set sandbox '''
         self.is_sandbox = is_sandbox
-    
+
     @staticmethod
     def _hit_xml_to_object(hits):
         hits_data = [MTurkHIT({
-            'hitid': hit.HITId,
-            'title': hit.Title,
-            'status': hit.HITStatus,
-            'max_assignments': hit.MaxAssignments,
-            'number_assignments_completed': hit.NumberOfAssignmentsCompleted,
-            'number_assignments_pending': hit.NumberOfAssignmentsPending,
-            'number_assignments_available': hit.NumberOfAssignmentsAvailable,
-            'creation_time': hit.CreationTime,
-            'expiration': hit.Expiration,
-            'is_expired': hit.expired
+            'hitid': hit['HITId'],
+            'title': hit['Title'],
+            'status': hit['HITStatus'],
+            'max_assignments': hit['MaxAssignments'],
+            'number_assignments_completed': hit['NumberOfAssignmentsCompleted'],
+            'number_assignments_pending': hit['NumberOfAssignmentsPending'],
+            'number_assignments_available': hit['NumberOfAssignmentsAvailable'],
+            'creation_time': hit['CreationTime'],
+            'expiration': hit['Expiration'],
+            'is_expired': datetime.datetime.now(hit['Expiration'].tzinfo) >= hit['Expiration']
         }) for hit in hits]
         return hits_data
 
@@ -347,8 +331,12 @@ class MTurkServices(object):
         if not self.connect_to_turk():
             return False
         try:
-            hits = self.mtc.get_all_hits()
-        except MTurkRequestError:
+            hits = []
+            paginator = self.mtc.get_paginator('list_hits')
+            for page in paginator.paginate():
+                hits.extend(page['HITs'])
+        except Exception as e:
+            print e
             return False
         hits_data = self._hit_xml_to_object(hits)
         return hits_data
@@ -361,64 +349,48 @@ class MTurkServices(object):
             if chosen_hits:
                 hit_ids = chosen_hits
             else:
-                hits = self.mtc.get_all_hits()
-                hit_ids = [hit.HITId for hit in hits]
-           
-            workers_nested = []
-            page_size=100
+                hits = self.get_all_hits()
+                hit_ids = [hit.options['hitid'] for hit in hits]
+
+            assignments = []
             for hit_id in hit_ids:
-                current_page_number=1
-                hit_assignments = self.mtc.get_assignments(
-                    hit_id,
-                    status=assignment_status,
-                    sort_by='SubmitTime',
-                    page_size=page_size,
-                    page_number=current_page_number
+                paginator = self.mtc.get_paginator('list_assignments_for_hit')
+                args = dict(
+                    HITId=hit_id
                 )
+                if assignment_status:
+                    args['AssignmentStatuses'] = [assignment_status]
 
-                totalNumResults = int(hit_assignments.TotalNumResults)
-                total_pages = (totalNumResults // page_size) + (totalNumResults % page_size > 0) #do integer division then round up if necessary
+                for page in paginator.paginate(**args):
+                    assignments.extend(page['Assignments'])
 
-                while current_page_number < total_pages:
-                    current_page_number += 1
-                    hit_assignments += self.mtc.get_assignments(
-                        hit_id,
-                        status=assignment_status,
-                        sort_by='SubmitTime',
-                        page_size=page_size,
-                        page_number=current_page_number
-                    )
-
-                workers_nested.append(hit_assignments)
-
-            workers = [val for subl in workers_nested for val in subl]  # Flatten nested lists
-        except MTurkRequestError as e:
+        except Exception as e:
             print e
             return False
-        worker_data = [{
-            'hitId': worker.HITId,
-            'assignmentId': worker.AssignmentId,
-            'workerId': worker.WorkerId,
-            'submit_time': worker.SubmitTime,
-            'accept_time': worker.AcceptTime,
-            'status': worker.AssignmentStatus
-        } for worker in workers]
-        return worker_data
+        workers = [{
+            'hitId': assignment['HITId'],
+            'assignmentId': assignment['AssignmentId'],
+            'workerId': assignment['WorkerId'],
+            'submit_time': assignment['SubmitTime'],
+            'accept_time': assignment['AcceptTime'],
+            'status': assignment['AssignmentStatus'],
+        } for assignment in assignments]
+        return workers
 
     def get_worker(self, assignment_id):
         if not self.connect_to_turk():
             return False
         try:
-            worker = self.mtc.get_assignment(assignment_id)[0]
-        except MTurkRequestError as e:
+            assignment = self.mtc.get_assignment(AssignmentId=assignment_id)['Assignment']
+        except Exception as e:
             return False
         worker_data = {
-            'hitId': worker.HITId,
-            'assignmentId': worker.AssignmentId,
-            'workerId': worker.WorkerId,
-            'submit_time': worker.SubmitTime,
-            'accept_time': worker.AcceptTime,
-            'status': worker.AssignmentStatus
+            'hitId': assignment['HITId'],
+            'assignmentId': assignment['AssignmentId'],
+            'workerId': assignment['WorkerId'],
+            'submit_time': assignment['SubmitTime'],
+            'accept_time': assignment['AcceptTime'],
+            'status': assignment['AssignmentStatus'],
         }
         return worker_data
 
@@ -427,23 +399,22 @@ class MTurkServices(object):
         if not self.connect_to_turk():
             return False
         try:
-            bonus = MTurkConnection.get_price_as_price(amount)
-            assignment = self.mtc.get_assignment(assignment_id)[0]
-            worker_id = assignment.WorkerId
-            self.mtc.grant_bonus(worker_id, assignment_id, bonus, reason)
+            assignment = self.mtc.get_assignment(AssignmentId=assignment_id)['Assignment']
+            worker_id = assignment['WorkerId']
+            self.mtc.send_bonus(WorkerId=worker_id, AssignmentId=assignment_id, BonusAmount=amount, Reason=reason)
             return True
-        except MTurkRequestError as exception:
+        except Exception as exception:
             print exception
             return False
 
-    def approve_worker(self, assignment_id):
+    def approve_worker(self, assignment_id, override_rejection = False):
         ''' Approve worker '''
         if not self.connect_to_turk():
             return False
         try:
-            self.mtc.approve_assignment(assignment_id, feedback=None)
-            return True
-        except MTurkRequestError as e:
+            self.mtc.approve_assignment(AssignmentId=assignment_id,
+                OverrideRejection=override_rejection)
+        except Exception as e:
             return False
 
     def reject_worker(self, assignment_id):
@@ -451,93 +422,94 @@ class MTurkServices(object):
         if not self.connect_to_turk():
             return False
         try:
-            self.mtc.reject_assignment(assignment_id, feedback=None)
+            self.mtc.reject_assignment(AssignmentId=assignment_id)
             return True
-        except MTurkRequestError:
+        except Exception:
             return False
 
     def unreject_worker(self, assignment_id):
         ''' Unreject worker '''
-        if not self.connect_to_turk():
-            return False
-        try:
-            self.mtc.approve_rejected_assignment(assignment_id)
-            return True
-        except MTurkRequestError:
-            return False
+        return self.approve_worker(assignment_id, True)
 
-    def verify_aws_login(self):
-        ''' Verify AWS login '''
+    def setup_mturk_connection(self):
+        ''' Connect to turk '''
         if ((self.aws_access_key_id == 'YourAccessKeyId') or
                 (self.aws_secret_access_key == 'YourSecretAccessKey')):
             return False
+
+        if self.is_sandbox:
+            endpoint_url = 'https://mturk-requester-sandbox.us-east-1.amazonaws.com'
         else:
-            host = 'mechanicalturk.amazonaws.com'
-            mturkparams = dict(
+            endpoint_url = 'https://mturk-requester.us-east-1.amazonaws.com'
+
+        self.mtc = boto3.client('mturk',
+                region_name='us-east-1',
                 aws_access_key_id=self.aws_access_key_id,
                 aws_secret_access_key=self.aws_secret_access_key,
-                host=host)
-            self.mtc = MTurkConnection(**mturkparams)
-            try:
-                self.mtc.get_account_balance()
-            except MTurkRequestError as exception:
-                print exception.error_message
-                return False
-            else:
-                return True
+                endpoint_url=endpoint_url)
+        return True
+
+    def verify_aws_login(self):
+        ''' Verify AWS login '''
+        if not self.mtc:
+            return False
+
+        try:
+            self.mtc.get_account_balance()
+        except Exception as exception:
+            print exception
+            return False
+        else:
+            return True
 
     def connect_to_turk(self):
         ''' Connect to turk '''
-        if not self.valid_login:
+        if not self.valid_login or not self.mtc:
             print 'Sorry, unable to connect to Amazon Mechanical Turk. AWS '\
                   'credentials invalid.'
             return False
-        if self.is_sandbox:
-            host = 'mechanicalturk.sandbox.amazonaws.com'
-        else:
-            host = 'mechanicalturk.amazonaws.com'
 
-        mturkparams = dict(
-            aws_access_key_id=self.aws_access_key_id,
-            aws_secret_access_key=self.aws_secret_access_key,
-            host=host)
-        self.mtc = MTurkConnection(**mturkparams)
         return True
 
     def configure_hit(self, hit_config):
         ''' Configure HIT '''
-        # configure question_url based on the id
-        experiment_portal_url = hit_config['ad_location']
-        frame_height = 600
-        mturk_question = ExternalQuestion(experiment_portal_url, frame_height)
 
         # Qualification:
-        quals = Qualifications()
-        approve_requirement = hit_config['approve_requirement']
-        quals.add(
-            PercentAssignmentsApprovedRequirement("GreaterThanOrEqualTo",
-                                                  approve_requirement))
-        number_hits_approved = hit_config['number_hits_approved']
-        quals.add(
-            NumberHitsApprovedRequirement("GreaterThanOrEqualTo",
-                                            number_hits_approved))
+        quals = []
+        quals.append(dict(
+            QualificationTypeId=PERCENT_ASSIGNMENTS_APPROVED_QUAL_ID,
+            Comparator='GreaterThanOrEqualTo',
+            IntegerValues=[int(hit_config['approve_requirement'])]
+        ))
 
-        require_master_workers = hit_config['require_master_workers']
-        if require_master_workers:
-            quals.add(MasterRequirement(sandbox=self.is_sandbox))
+        quals.append(dict(
+            QualificationTypeId=NUMBER_HITS_APPROVED_QUAL_ID,
+            Comparator='GreaterThanOrEqualTo',
+            IntegerValues=[int(hit_config['number_hits_approved'])]
+        ))
+
+        if hit_config['require_master_workers']:
+            master_qualId = MASTERS_SANDBOX_QUAL_ID if self.is_sandbox else MASTERS_QUAL_ID
+            quals.append(dict(
+                QualificationTypeId=master_qualId,
+                Comparator='Exists'
+            ))
 
         if hit_config['us_only']:
-            quals.add(LocaleRequirement("EqualTo", "US"))
+            quals.append(dict(
+                QualificationTypeId=LOCALE_QUAL_ID,
+                Comparator='EqualTo',
+                LocaleValues=[{'Country': 'US'}]
+            ))
 
         # Create a HIT type for this HIT.
-        hit_type = self.mtc.register_hit_type(
-            hit_config['title'],
-            hit_config['description'],
-            hit_config['reward'],
-            hit_config['duration'],
-            keywords=hit_config['keywords'],
-            approval_delay=None,
-            qual_req=quals)[0]
+        hit_type = self.mtc.create_hit_type(
+            Title=hit_config['title'],
+            Description=hit_config['description'],
+            Reward=str(hit_config['reward']),
+            AssignmentDurationInSeconds=int(hit_config['duration'].total_seconds()),
+            Keywords=hit_config['keywords'],
+            QualificationRequirements=quals)
 
         # Check the config file to see if notifications are wanted.
         config = PsiturkConfig()
@@ -555,33 +527,48 @@ class MTurkServices(object):
                 "HITExpired",
             ]
 
-            self.mtc.set_rest_notification(
-                hit_type.HITTypeId,
-                url,
-                event_types=all_event_types)
+            # TODO: not sure if this works. Can't find documentation in PsiTurk or MTurk
+            self.mtc.update_notification_settings(
+                HitTypeId=hit_type['HITTypeId'],
+                Notification=dict(
+                    Destination=url,
+                    Transport='REST',
+                    Version=NOTIFICATION_VERSION,
+                    EventTypes=all_event_types,
+                ),
+            )
 
-        except:
+        except Exception as e:
             pass
+
+        schema_url = "http://mechanicalturk.amazonaws.com/AWSMechanicalTurkDataSchemas/2006-07-14/ExternalQuestion.xsd"
+        template = '<ExternalQuestion xmlns="%(schema_url)s"><ExternalURL>%%(external_url)s</ExternalURL><FrameHeight>%%(frame_height)s</FrameHeight></ExternalQuestion>' % vars()
+        question = template % dict(
+            external_url=hit_config['ad_location'],
+            frame_height=600,
+        )
+
 
         # Specify all the HIT parameters
         self.param_dict = dict(
-            hit_type=hit_type.HITTypeId,
-            question=mturk_question,
-            lifetime=hit_config['lifetime'],
-            max_assignments=hit_config['max_assignments'],
-            questions=None,
-            response_groups=[
-                'Minimal',
-                'HITDetail',
-                'HITQuestion',
-                'HITAssignmentSummary'
-            ])
+            HITTypeId=hit_type['HITTypeId'],
+            Question=question,
+            LifetimeInSeconds=int(hit_config['lifetime'].total_seconds()),
+            MaxAssignments=hit_config['max_assignments'],
+            # TODO
+            # ResponseGroups=[
+            #     'Minimal',
+            #     'HITDetail',
+            #     'HITQuestion',
+            #     'HITAssignmentSummary'
+            # ]
+            )
 
     def check_balance(self):
         ''' Check balance '''
         if not self.connect_to_turk():
             return '-'
-        return self.mtc.get_account_balance()[0]
+        return self.mtc.get_account_balance()['AvailableBalance']
 
     # TODO (if valid AWS credentials haven't been provided then
     # connect_to_turk() will fail, not error checking here and elsewhere)
@@ -591,9 +578,9 @@ class MTurkServices(object):
             if not self.connect_to_turk():
                 return False
             self.configure_hit(hit_config)
-            myhit = self.mtc.create_hit(**self.param_dict)[0]
-            self.hitid = myhit.HITId
-        except MTurkRequestError as e:
+            myhit = self.mtc.create_hit_with_hit_type(**self.param_dict)['HIT']
+            self.hitid = myhit['HITId']
+        except Exception as e:
             print e
             return False
         else:
@@ -606,20 +593,24 @@ class MTurkServices(object):
         if not self.connect_to_turk():
             return False
         try:
-            self.mtc.expire_hit(hitid)
+            self.mtc.update_expiration_for_hit(
+                HITId=hitid,
+                ExpireAt=datetime.datetime.now()
+            )
             return True
-        except MTurkRequestError:
+        except Exception as e:
             print "Failed to expire HIT. Please check the ID and try again."
+            print e
             return False
 
-    def dispose_hit(self, hitid):
-        ''' Dispose HIT '''
+    def delete_hit(self, hitid):
+        ''' Delete HIT '''
         if not self.connect_to_turk():
             return False
         try:
-            self.mtc.dispose_hit(hitid)
+            self.mtc.delete_hit(HITId=hitid)
         except Exception, e:
-            print "Failed to dispose of HIT %s. Make sure there are no "\
+            print "Failed to delete of HIT %s. Make sure there are no "\
                 "assignments remaining to be reviewed." % hitid
 
     def extend_hit(self, hitid, assignments_increment=None,
@@ -627,27 +618,41 @@ class MTurkServices(object):
         if not self.connect_to_turk():
             return False
         try:
-            self.mtc.extend_hit(hitid,
-                                assignments_increment=int(assignments_increment
-                                                          or 0))
-            self.mtc.extend_hit(hitid,
-                                expiration_increment=int(expiration_increment
-                                                         or 0)*60)
+            if assignments_increment:
+                self.mtc.create_additional_assignments_for_hit(HITId=hitid,
+                    NumberOfAdditionalAssignments=int(assignments_increment))
+
+            if expiration_increment:
+                hit = self.get_hit(hitid)
+                print 'got hit', hit
+                expiration = hit['Expiration'] + datetime.timedelta(minutes=int(expiration_increment))
+                self.mtc.update_expiration_for_hit(HITId=hitid, ExpireAt=expiration)
+
             return True
         except Exception, e:
+            print e
             print "Failed to extend HIT %s. Please check the ID and try again." \
                 % hitid
             return False
 
-    def get_hit_status(self, hitid):
-        ''' Get HIT status '''
+    def get_hit(self, hitid):
+        ''' Get HIT '''
         if not self.connect_to_turk():
             return False
         try:
-            hitdata = self.mtc.get_hit(hitid)
-        except:
+            hitdata = self.mtc.get_hit(HITId=hitid)
+        except Exception as e:
+            print e
             return False
-        return hitdata[0].HITStatus
+        return hitdata['HIT']
+
+    def get_hit_status(self, hitid):
+        ''' Get HIT status '''
+        hit = self.get_hit(hitid)
+        if not hit:
+            return False
+
+        return hitdata['HITStatus']
 
     def get_summary(self):
         ''' Get summary '''

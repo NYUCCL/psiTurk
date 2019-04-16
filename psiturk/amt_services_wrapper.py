@@ -1,6 +1,6 @@
 # coding: utf-8
-""" 
-The initial motivation for this wrapper is to abstract away 
+"""
+The initial motivation for this wrapper is to abstract away
 the mturk functionality from the shell
 """
 
@@ -33,19 +33,19 @@ from models import Participant
 from utils import *
 
 class MTurkServicesWrapper():
-    
+
     _cached_web_services = None
     _cached_dbs_services = None
     _cached_amt_services = None
-    
+
     @property
     def web_services(self):
         if not self._cached_web_services:
             self._cached_web_services = PsiturkOrgServices(
                 self.config.get('psiTurk Access', 'psiturk_access_key_id'),
-                self.config.get('psiTurk Access', 'psiturk_secret_access_id')) 
+                self.config.get('psiTurk Access', 'psiturk_secret_access_id'))
         return self._cached_web_services
-    
+
     @property
     def db_services(self):
         if not self._cached_dbs_services:
@@ -54,10 +54,10 @@ class MTurkServicesWrapper():
                 self.config.get('AWS Access', 'aws_secret_access_key'),
                 self.config.get('AWS Access', 'aws_region'))
         return self._cached_dbs_services
-    
+
     def set_web_services(self, web_services):
         self._cached_web_services = web_services
-    
+
     @property
     def amt_services(self):
         if not self._cached_amt_services:
@@ -66,41 +66,41 @@ class MTurkServicesWrapper():
                 self.config.get('AWS Access', 'aws_secret_access_key'),
                 self.config.getboolean('Shell Parameters', 'launch_in_sandbox_mode'))
         return self._cached_amt_services
-    
+
     def __init__(self, config=None, web_services=None, tunnel=None, sandbox=None):
-        
+
         if not config:
             config = PsiturkConfig()
             config.load_config()
         self.config = config
-        
+
         if web_services:
             self._cached_web_services = web_services
-        
+
         if not tunnel:
             tunnel = TunnelServices(config)
         self.tunnel = tunnel
-    
+
         if not sandbox:
             sandbox = config.getboolean('Shell Parameters', 'launch_in_sandbox_mode')
         self.sandbox = sandbox
-        
+
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #   Miscellaneous
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     def amt_balance(self):
         ''' Get MTurk balance '''
         return self.amt_services.check_balance()
-        
+
     def set_sandbox(self, is_sandbox):
         self.sandbox = is_sandbox
         self.amt_services.set_sandbox(is_sandbox)
-        
+
     def random_id_generator(self, size=6, chars=string.ascii_uppercase +
                             string.digits):
         ''' Generate random id numbers '''
         return ''.join(random.choice(chars) for x in range(size))
-        
+
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #   worker management
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
@@ -116,29 +116,29 @@ class MTurkServicesWrapper():
             # assignment is found on mturk but not in local database.
             worker_dict['bonus'] = 'N/A'
         return worker_dict
-        
+
     def get_workers(self, status=None, chosen_hits=None, assignment_ids=None, all_studies=False):
         '''
         Status, if set, can be one of `Submitted`, `Approved`, or `Rejected`
         '''
         if assignment_ids:
-            workers = [self.get_worker(assignment_id) for assignment_id in assignment_ids] 
+            workers = [self.get_worker(assignment_id) for assignment_id in assignment_ids]
         else:
             workers = self.amt_services.get_workers(assignment_status=status, chosen_hits=chosen_hits)
-        
+
         if workers is False:
-            raise Exception('*** failed to get workers')    
-        
+            raise Exception('*** failed to get workers')
+
         if not all_studies:
             my_hitids = self._get_my_hitids()
             workers = [worker for worker in workers if worker['hitId'] in my_hitids]
-        
+
         workers = [self.add_bonus(worker) for worker in workers]
         return workers
-        
+
     def get_worker(self, assignment_id):
         return self.amt_services.get_worker(assignment_id)
-     
+
     def approve_worker(self, worker, force=False):
         ''' Approve worker '''
         assignment_id = worker['assignmentId']
@@ -184,7 +184,7 @@ class MTurkServicesWrapper():
                 else:
                     status_report = _status_report
         return status_report
-            
+
     def worker_reject(self, chosen_hit, assignment_ids = None):
         ''' Reject worker '''
         if chosen_hit:
@@ -223,6 +223,7 @@ class MTurkServicesWrapper():
             reason = user_input
         # Bonus already-bonused workers if the user explicitly lists their
         # assignment IDs
+
         override_status = True
         if chosen_hit:
             override_status = False
@@ -234,15 +235,17 @@ class MTurkServicesWrapper():
         elif len(assignment_ids) == 1:
             workers = [self.amt_services.get_worker(assignment_ids[0])]
             if not workers:
-                print "No submissions found for requested assignment ID"    
+                print "No submissions found for requested assignment ID"
                 return
         else:
             workers = self.amt_services.get_workers("Approved")
             if not workers:
                 print "No approved workers found."
                 return
+
             workers = [worker for worker in workers if \
                               worker['assignmentId'] in assignment_ids]
+
         for worker in workers:
             assignment_id = worker['assignmentId']
             try:
@@ -271,25 +274,26 @@ class MTurkServicesWrapper():
                         db_session.remove()
                     else:
                         print "*** failed to bonus assignment", assignment_id
-            except:
+            except Exception as e:
+                print e
                 print "*** failed to bonus assignment", assignment_id
-        
+
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #   hit management
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
-   
+
     def tally_hits(self):
         hits = self.get_active_hits(all_studies=False)
         num_hits = 0
         if hits:
             num_hits = len(hits)
         return num_hits
-    
+
     def _get_my_hitids(self):
         init_db()
         my_hitids = [part.hitid for part in Participant.query.distinct(Participant.hitid)]
         return my_hitids
-        
+
     def _get_hits(self, all_studies=False):
         amt_hits = self.amt_services.get_all_hits()
         if not amt_hits:
@@ -300,18 +304,18 @@ class MTurkServicesWrapper():
             my_hitids = self._get_my_hitids()
             amt_hits = [hit for hit in amt_hits if hit.options['hitid'] in my_hitids]
         return amt_hits
-    
+
     def get_active_hits(self, all_studies=False):
         hits = self._get_hits(all_studies)
         active_hits = [hit for hit in hits if not hit.options['is_expired']]
         return active_hits
-        
+
     def get_reviewable_hits(self, all_studies=False):
         hits = self._get_hits(all_studies)
         reviewable_hits = [hit for hit in hits if hit.options['status'] == "Reviewable" \
                            or hit.options['status'] == "Reviewing"]
         return reviewable_hits
-        
+
     def get_all_hits(self, all_studies=False):
         hits = self._get_hits(all_studies)
         return hits
@@ -338,8 +342,8 @@ class MTurkServicesWrapper():
         if self.amt_services.extend_hit(hit_id[0], assignments, minutes):
             print "HIT extended."
 
-    def hit_dispose(self, all_hits, hit_ids=None):
-        ''' Dispose HIT. '''
+    def hit_delete(self, all_hits, hit_ids=None):
+        ''' Delete HIT. '''
         if all_hits:
             hits_data = self.amt_services.get_all_hits()
             hit_ids = [hit.options['hitid'] for hit in hits_data if \
@@ -352,10 +356,10 @@ class MTurkServicesWrapper():
                 return
             if self.amt_services.get_hit_status(hit) != "Reviewable":
                 print("*** This hit is not 'Reviewable' and so can not be "
-                      "disposed of")
+                      "deleted")
                 return
             else:
-                success = self.amt_services.dispose_hit(hit)
+                success = self.amt_services.delete_hit(hit)
                 # self.web_services.delete_ad(hit)  # also delete the ad
                 if success:
                     if self.sandbox:
@@ -375,7 +379,7 @@ class MTurkServicesWrapper():
                     print "expiring sandbox HIT", hit
                 else:
                     print "expiring live HIT", hit
-    
+
 
     def hit_create(self, numWorkers, reward, duration):
         ''' Create a HIT '''
@@ -384,7 +388,7 @@ class MTurkServicesWrapper():
         else:
             mode = 'live'
         server_loc = str(self.config.get('Server Parameters', 'host'))
-        
+
         use_psiturk_ad_server = self.config.getboolean('Shell Parameters', 'use_psiturk_ad_server')
 
         if use_psiturk_ad_server:
@@ -402,11 +406,11 @@ class MTurkServicesWrapper():
                              '  You cannot create ads and hits until you enter valid credentials in ',
                              '  the \'AWS Access\' section of ~/.psiturkconfig.  You can obtain your ',
                              '  credentials via the Amazon AMT requester website.\n'])
-            raise Exception(error_msg)        
-        
+            raise Exception(error_msg)
+
         ad_id = None
         if use_psiturk_ad_server:
-            ad_id = self.create_psiturk_ad() 
+            ad_id = self.create_psiturk_ad()
             create_failed = False
             fail_msg = None
             if ad_id is not False:
@@ -436,7 +440,7 @@ class MTurkServicesWrapper():
         if create_failed:
             print '\n'.join(['*****************************',
                              '  Sorry, there was an error creating hit and registering ad.'])
-            
+
             if fail_msg is None:
                 fail_msg = ''
             raise Exception(fail_msg)
@@ -505,7 +509,7 @@ class MTurkServicesWrapper():
         }
         ad_id = self.web_services.create_ad(ad_content)
         return ad_id
-    
+
     def generate_hit_config(self, ad_location, numWorkers, reward, duration):
         hit_config = {
             "ad_location": ad_location,
@@ -522,7 +526,7 @@ class MTurkServicesWrapper():
             "require_master_workers": self.config.getboolean('HIT Configuration','require_master_workers')
         }
         return hit_config
- 
+
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #   AWS RDS commands
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
@@ -622,7 +626,7 @@ class MTurkServicesWrapper():
         else:
             res = self.db_services.validate_instance_id(instance_id)
             if res is not True:
-                print("*** Error, instance name either not valid.  Try again " 
+                print("*** Error, instance name either not valid.  Try again "
                      "checking for typos.")
                 return
             if instance_id not in instance_list:
@@ -934,5 +938,5 @@ class MTurkServicesWrapper():
                              ' Please wait 5-10 minutes while your database is created in the cloud.',
                              ' You can run \'db aws_list_instances\' to verify it was created (status',
                              ' will say \'available\' when it is ready'])
- 
-    
+
+

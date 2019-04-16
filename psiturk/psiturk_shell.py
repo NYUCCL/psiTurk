@@ -85,7 +85,7 @@ class PsiturkShell(Cmd, object):
         self.help_path = os.path.join(os.path.dirname(__file__), "shell_help/")
         self.psiturk_header = 'psiTurk command help:'
         self.super_header = 'basic CMD command help:'
-        
+
         if not self.quiet:
             self.color_prompt()
             self.intro = self.get_intro_prompt()
@@ -115,11 +115,11 @@ class PsiturkShell(Cmd, object):
         database_url = self.config.get('Database Parameters', 'database_url')
         host = self.config.get('Server Parameters', 'host', 'localhost')
         if database_url[:6] != 'sqlite':
-            print("*** Error: config.txt option 'database_url' set to use " 
+            print("*** Error: config.txt option 'database_url' set to use "
                 "mysql://.  Please change this sqllite:// while in cabin mode.")
             quit_on_start = True
         if host != 'localhost':
-            print("*** Error: config option 'host' is not set to localhost. " 
+            print("*** Error: config option 'host' is not set to localhost. "
                 "Please change this to localhost while in cabin mode.")
             quit_on_start = True
         if quit_on_start:
@@ -188,7 +188,7 @@ class PsiturkShell(Cmd, object):
         ''' Add space after a completion, makes tab completion with
         multi-word commands cleaner. '''
         return Cmd.complete(self, text, state) + ' '
-    
+
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #   hit management
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
@@ -205,22 +205,22 @@ class PsiturkShell(Cmd, object):
         else:
             for hit in hits_data:
                 print hit
-    
+
     def _estimate_expenses(self, num_workers, reward):
         ''' Returns tuple describing expenses:
         amount paid to workers
         amount paid to amazon'''
-        
+
         # fee structure changed 07.22.15:
         # 20% for HITS with < 10 assignments
         # 40% for HITS with >= 10 assignments
         commission = 0.2
         if float(num_workers) >= 10:
-            commission = 0.4 
+            commission = 0.4
         work = float(num_workers) * float(reward)
         fee = work * commission
         return (work, fee, work+fee)
-        
+
     def _confirm_dialog(self, prompt):
         ''' Prompts for a 'yes' or 'no' to given prompt. '''
         response = raw_input(prompt).strip().lower()
@@ -230,14 +230,14 @@ class PsiturkShell(Cmd, object):
                 return valid[response]
             except:
                 response = raw_input("Please respond 'y' or 'n': ").strip().lower()
-    
+
     def hit_create(self, numWorkers, reward, duration):
-        
+
         if self.sandbox:
             mode = 'sandbox'
         else:
             mode = 'live'
-        
+
         # Argument retrieval and validation
         if numWorkers is None:
             numWorkers = raw_input('number of participants? ').strip()
@@ -262,7 +262,7 @@ class PsiturkShell(Cmd, object):
         except:
             print '*** reward must be in format [dollars].[cents]'
             return
-            
+
         if duration is None:
             duration = raw_input(
                 'duration of hit (in hours, it can be decimals)? ').strip()
@@ -276,7 +276,7 @@ class PsiturkShell(Cmd, object):
             return
 
         _, fee, total = self._estimate_expenses(numWorkers, reward)
-        
+
         if not self.quiet:
             dialog_query = '\n'.join(['*****************************',
                                       '    Max workers: %d' % numWorkers,
@@ -289,11 +289,11 @@ class PsiturkShell(Cmd, object):
             if not self._confirm_dialog(dialog_query):
                 print '*** Cancelling HIT creation.'
                 return
-        
+
         try:
             (hit_id, ad_id) = self.amt_services_wrapper.hit_create(numWorkers, reward,
                             duration)
-                            
+
             print '\n'.join(['*****************************',
                              '  Created %s HIT' % colorize(mode, 'bold'),
                              '    HITid: %s' % str(hit_id),
@@ -303,7 +303,7 @@ class PsiturkShell(Cmd, object):
                              '    Fee: $%.2f' % fee,
                              '    ________________________',
                              '    Total: $%.2f' % total])
-                             
+
             # Print the Ad Url
             use_psiturk_ad_server = self.config.getboolean('Shell Parameters', 'use_psiturk_ad_server')
             if use_psiturk_ad_server:
@@ -313,12 +313,12 @@ class PsiturkShell(Cmd, object):
                         ad_url_base = 'https://sandbox.ad.psiturk.org/view'
                     else:
                         ad_url_base = 'https://ad.psiturk.org/view'
-                    ad_url = '{}/{}?assignmentId=debug{}&hitId=debug{}&workerId=debug{}'.format( 
+                    ad_url = '{}/{}?assignmentId=debug{}&hitId=debug{}&workerId=debug{}'.format(
                         ad_url_base, str(ad_id), str(self.random_id_generator()), str(self.random_id_generator()), str(self.random_id_generator()))
 
             else:
-                options = { 
-                    'base': self.config.get('Shell Parameters', 'ad_location'), 
+                options = {
+                    'base': self.config.get('Shell Parameters', 'ad_location'),
                     'mode': mode,
                     'assignmentid': str(self.random_id_generator()),
                     'hitid': str(self.random_id_generator()),
@@ -345,7 +345,7 @@ class PsiturkShell(Cmd, object):
                 print "Note: This sandboxed ad will expire from the server in 16 days."
         except Exception as e:
             print e
-    
+
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #   worker management
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
@@ -358,41 +358,42 @@ class PsiturkShell(Cmd, object):
                 status='Approved'
             elif rejected:
                 status='Rejected'
-                
+
             workers = self.amt_services_wrapper.get_workers(status, chosen_hits, all_studies=all_studies)
             if not len(workers):
                 print "*** no workers match your request"
             else:
                 worker_json = json.dumps(workers, indent=4,
-                                 separators=(',', ': '))        
+                                 separators=(',', ': '), default=str)
                 if worker_json:
                     print worker_json
-        
+
         except Exception as e:
             print colorize(repr(e), 'red')
-    
-    def worker_approve(self, all=False, chosen_hits=None, assignment_ids=None, all_studies=False, force=False):        
-        
+
+    def worker_approve(self, all=False, chosen_hits=None, assignment_ids=None, all_studies=False, force=False):
+
         if all_studies and not force:
             print 'option --all-studies must be used along with --force'
             return
-        
+
         all_studies_msg = ' for the current study'
         if all_studies:
             all_studies_msg = ' from all studies'
-        
+
         force_msg = ''
         if force:
             force_msg = " even if they're not found in the local psiturk db"
-        
+
         if all:
             print "Approving all submissions{}{}...".format(all_studies_msg, force_msg)
         elif chosen_hits:
             print "Approving submissions for HITs {}{}{}".format(' '.join(chosen_hits), all_studies_msg, force_msg)
         else:
             print "Approving specified submissions{}{}...".format(all_studies_msg, force_msg)
-            
+
         workers = self.amt_services_wrapper.get_workers("Submitted", chosen_hits, assignment_ids, all_studies=all_studies)
+        print 'taco', workers
         if not workers:
             if chosen_hits:
                 print "No submissions found for requested HIT ID(s). Are you in the right `mode`? Do you need to pass `--all-studies --force`?"
@@ -400,8 +401,8 @@ class PsiturkShell(Cmd, object):
                 print "No submissions found for requested assignment ID(s). Are you in the right `mode`? Do you need to pass `--all-studies --force`?"
             else:
                 print "No submissions found. Are you in the right `mode`? Do you need to pass `--all-studies`?"
-            return        
-        
+            return
+
         for worker in workers:
             try:
                 result = self.amt_services_wrapper.approve_worker(worker, force=force)
@@ -459,7 +460,7 @@ class PsiturkShell(Cmd, object):
                 port = self.config.get( 'Server Parameters', 'adserver_revproxy_port')
             else:
                 port = 80
-            revproxy_url = "http://{}:{}/ad".format(self.config.get('Server Parameters', 
+            revproxy_url = "http://{}:{}/ad".format(self.config.get('Server Parameters',
                                                                     'adserver_revproxy_host'),
                                                     port)
 
@@ -625,7 +626,7 @@ class PsiturkShell(Cmd, object):
         ''' Execute on quit '''
         if (self.server.is_server_running() == 'yes' or
                 self.server.is_server_running() == 'maybe'):
-            user_input = raw_input("Quitting shell will shut down experiment " 
+            user_input = raw_input("Quitting shell will shut down experiment "
                                     "server.  Really quit? y or n: ")
             if user_input == 'y':
                 self.server_off()
@@ -722,27 +723,27 @@ class PsiturkNetworkShell(PsiturkShell):
     ''' Extends PsiturkShell class to include online psiTurk.org features '''
 
     _cached_web_services = None
-    
+
     @property
     def web_services(self):
         if not self._cached_web_services:
             self._cached_web_services = PsiturkOrgServices(
                 self.config.get('psiTurk Access', 'psiturk_access_key_id'),
-                self.config.get('psiTurk Access', 'psiturk_secret_access_id')) 
+                self.config.get('psiTurk Access', 'psiturk_secret_access_id'))
             self.amt_services_wrapper.set_web_services(self._cached_web_services)
         return self._cached_web_services
-    
+
     def __init__(self, config, server, sandbox, quiet=False):
         self.config = config
         self.quiet = quiet
-        self.amt_services_wrapper = MTurkServicesWrapper(config=config, sandbox=sandbox)        
-        
+        self.amt_services_wrapper = MTurkServicesWrapper(config=config, sandbox=sandbox)
+
         self.sandbox = sandbox
         self.tunnel = TunnelServices()
-        
+
         self.sandbox_hits = 0
         self.live_hits = 0
-        
+
         if not quiet:
             self.update_hit_tally()
         PsiturkShell.__init__(self, config, server, quiet)
@@ -758,7 +759,7 @@ class PsiturkNetworkShell(PsiturkShell):
         '''Override do_quit for network clean up.'''
         if (self.server.is_server_running() == 'yes' or
                 self.server.is_server_running() == 'maybe'):
-            user_input = raw_input("Quitting shell will shut down experiment " 
+            user_input = raw_input("Quitting shell will shut down experiment "
                                     "server. Really quit? y or n: ")
             if user_input == 'y':
                 self.server_off()
@@ -848,7 +849,7 @@ class PsiturkNetworkShell(PsiturkShell):
 
     def update_hit_tally(self):
         ''' Tally hits '''
-        if not self.quiet:            
+        if not self.quiet:
             num_hits = self.amt_services_wrapper.tally_hits()
             if self.sandbox:
                 self.sandbox_hits = num_hits
@@ -867,7 +868,7 @@ class PsiturkNetworkShell(PsiturkShell):
         with open(self.help_path + 'amt.txt', 'r') as help_text:
             print help_text.read()
 
-    
+
 
     @docopt_cmd
     def do_db(self, arg):
@@ -958,11 +959,11 @@ class PsiturkNetworkShell(PsiturkShell):
         ''' Help '''
         with open(self.help_path + 'mode.txt', 'r') as help_text:
             print help_text.read()
-    
+
     def set_sandbox(self, is_sandbox):
         self.sandbox = is_sandbox
         self.amt_services_wrapper.set_sandbox(is_sandbox)
-            
+
     @docopt_cmd
     def do_tunnel(self, arg):
         """
@@ -989,6 +990,7 @@ class PsiturkNetworkShell(PsiturkShell):
           hit extend <HITid> [(--assignments <number>)] [(--expiration <minutes>)]
           hit expire (--all | <HITid> ...)
           hit dispose (--all | <HITid> ...)
+          hit delete (--all | <HITid> ...)
           hit list [--active | --reviewable] [--all-studies]
           hit help
         """
@@ -1002,15 +1004,15 @@ class PsiturkNetworkShell(PsiturkShell):
         elif arg['expire']:
             self.amt_services_wrapper.hit_expire(arg['--all'], arg['<HITid>'])
             self.update_hit_tally()
-        elif arg['dispose']:
-            self.amt_services_wrapper.hit_dispose(arg['--all'], arg['<HITid>'])
+        elif arg['delete'] or arg['dispose']:
+            self.amt_services_wrapper.hit_delete(arg['--all'], arg['<HITid>'])
             self.update_hit_tally()
         elif arg['list']:
             self.hit_list(arg['--active'], arg['--reviewable'], arg['--all-studies'])
         else:
             self.help_hit()
 
-    hit_commands = ('create', 'extend', 'expire', 'dispose', 'list')
+    hit_commands = ('create', 'extend', 'expire', 'delete', 'dispose', 'list')
 
     def complete_hit(self, text, line, begidx, endidx):
         ''' Tab-complete hit command. '''
@@ -1074,7 +1076,7 @@ class PsiturkNetworkShell(PsiturkShell):
                 port = self.config.get( 'Server Parameters', 'adserver_revproxy_port')
             else:
                 port = 80
-            revproxy_url = "http://{}:{}/ad".format(self.config.get('Server Parameters', 
+            revproxy_url = "http://{}:{}/ad".format(self.config.get('Server Parameters',
                                                                     'adserver_revproxy_host'),
                                                     port)
 
@@ -1173,7 +1175,7 @@ class PsiturkNetworkShell(PsiturkShell):
             print "For tunnel status, navigate to http://127.0.0.1:4040"
             print "Hint: In OSX, you can open a terminal link using cmd + click"
         else:
-            print("Sorry, you need to open a tunnel to check the status. Try" 
+            print("Sorry, you need to open a tunnel to check the status. Try"
                   "'tunnel open' first.")
 
     def tunnel_change(self):
@@ -1184,7 +1186,7 @@ class PsiturkNetworkShell(PsiturkShell):
 
     def cmdloop(self):
         while True:
-            stop = Cmd._cmdloop(self) 
+            stop = Cmd._cmdloop(self)
             if not stop:
                 self.intro = ''
                 self.color_prompt()
@@ -1214,7 +1216,7 @@ def run(cabinmode=False, script=None, execute=None, quiet=False):
     else:
         shell = PsiturkNetworkShell(
             config, server, \
-            config.getboolean('Shell Parameters', 'launch_in_sandbox_mode'), 
+            config.getboolean('Shell Parameters', 'launch_in_sandbox_mode'),
             quiet=quiet)
 
     if script:
