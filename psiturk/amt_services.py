@@ -437,7 +437,8 @@ class MTurkServices(object):
         ''' Connect to turk '''
         if ((self.aws_access_key_id == 'YourAccessKeyId') or
                 (self.aws_secret_access_key == 'YourSecretAccessKey')):
-            return False
+            print "AWS access key not set in ~/.psiturkconfig; please enter a valid access key."
+            assert False
 
         if self.is_sandbox:
             endpoint_url = 'https://mturk-requester-sandbox.us-east-1.amazonaws.com'
