@@ -29,8 +29,9 @@ from sqlalchemy import or_, and_
 from amt_services import MTurkServices, RDSServices
 from psiturk_org_services import PsiturkOrgServices, TunnelServices
 from psiturk_config import PsiturkConfig
+from psiturk_statuses import *
 from db import db_session, init_db
-from models import Participant
+from models import Participant, Hit
 from utils import *
 
 class MTurkServicesWrapper():
@@ -238,8 +239,11 @@ class MTurkServicesWrapper():
             else:
                 print '*** failed to unreject', assignment_id
 
-    def worker_bonus(self, chosen_hit, auto, amount, reason='',
+    def worker_bonus(self, all, chosen_hit, auto, amount, reason='',
                      assignment_ids=None):
+        
+        mode = 'sandbox' if self.sandbox else 'live'
+        
         ''' Bonus worker '''
         if self.config.has_option('Shell Parameters', 'bonus_message'):
             reason = self.config.get('Shell Parameters', 'bonus_message')
@@ -247,6 +251,21 @@ class MTurkServicesWrapper():
             user_input = raw_input("Type the reason for the bonus. Workers "
                                    "will see this message: ")
             reason = user_input
+            
+            
+        if all:
+            workers = Participant.get_approved(mode=mode)
+            for worker in workers:
+                if auto:
+                    amount = worker.bonus
+                success = self.amt_services.bonus_worker(worker.assignmentid, amount, reason)
+                if success:
+                    print "gave bonus of $" + str(amount) + " for assignment " + worker.assignmentid
+                    worker.status = BONUSED
+                    db_session.add(worker)
+                    db_session.commit()
+            return
+            
         # Bonus already-bonused workers if the user explicitly lists their
         # assignment IDs
 
@@ -471,6 +490,11 @@ class MTurkServicesWrapper():
                 fail_msg = ''
             raise Exception(fail_msg)
 
+        # stash hit id in psiturk database
+        hit = Hit(hitid=hit_id)
+        db_session.add(hit)
+        db_session.commit()
+        
         return (hit_id, ad_id)
 
     def create_psiturk_ad(self):

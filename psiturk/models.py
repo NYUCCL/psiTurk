@@ -5,6 +5,7 @@ from sqlalchemy import Column, Integer, String, DateTime, Float, Text, and_, or_
 
 from db import Base
 from psiturk_config import PsiturkConfig
+from psiturk_statuses import *
 
 config = PsiturkConfig()
 config.load_config()
@@ -119,9 +120,21 @@ class Participant(Base):
             print("Error reading record:", self)
             return("")
     
+    @classmethod
+    def count_workers(cls, status=None):
+        if status == 'completed':
+            return cls.count_completed()
+            
+    @classmethod
+    def get_approved(cls, mode=None):
+        result = cls.query.filter( cls.status == CREDITED )
+        if mode:
+            result = result.filter( cls.mode == mode)
+        return result
+    
     @classmethod       
     def count_completed(cls, _codeversion=None, mode=None):
-        if not codeversion:
+        if not _codeversion:
             _codeversion = CODE_VERSION
         if not mode:
             mode = 'sandbox' if self.sandbox else 'live'
@@ -131,4 +144,11 @@ class Participant(Base):
                     cls.mode == mode
                 ) ).count()            
         
+class Hit(Base):
 
+    ''' db cache of hits created for this experiment through psiturk '''
+    
+    __tablename__ = 'hit_ids'
+    
+    HITId = Column(String(128), primary_key=True)
+    

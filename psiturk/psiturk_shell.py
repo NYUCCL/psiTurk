@@ -34,6 +34,7 @@ from psiturk_config import PsiturkConfig
 import experiment_server_controller as control
 from models import Participant
 from utils import *
+from psiturk_statuses import *
 
 def docopt_cmd(func):
     """
@@ -1043,7 +1044,7 @@ class PsiturkNetworkShell(PsiturkShell):
           worker approve (--all | --hit <hit_id> ... | <assignment_id> ...) [--all-studies] [--force]
           worker reject (--hit <hit_id> | <assignment_id> ...)
           worker unreject (--hit <hit_id> | <assignment_id> ...)
-          worker bonus  (--amount <amount> | --auto) (--hit <hit_id> | <assignment_id> ...)
+          worker bonus  (--amount <amount> | --auto) (--all | --hit <hit_id> | <assignment_id> ...)
           worker list [--submitted | --approved | --rejected] [(--hit <hit_id>)] [--all-studies]
           worker count [--completed]
           worker help
@@ -1057,8 +1058,7 @@ class PsiturkNetworkShell(PsiturkShell):
         elif arg['list']:
             self.worker_list(arg['--submitted'], arg['--approved'], arg['--rejected'], arg['<hit_id>'], arg['--all-studies'])
         elif arg['bonus']:
-            self.amt_services_wrapper.worker_bonus(arg['<hit_id>'], arg['--auto'], arg['<amount>'], '',
-                              arg['<assignment_id>'])
+            self.amt_services_wrapper.worker_bonus(arg['--all'], arg['<hit_id>'], arg['--auto'], arg['<amount>'], arg['<assignment_id>'])
         elif arg['count']:
             kw = {}
             if arg['--completed']:

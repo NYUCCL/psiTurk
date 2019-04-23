@@ -30,6 +30,7 @@ from psiturk_config import PsiturkConfig
 from experiment_errors import ExperimentError, InvalidUsage
 from psiturk.user_utils import nocache
 
+
 # Setup config
 CONFIG = PsiturkConfig()
 CONFIG.load_config()
@@ -48,14 +49,7 @@ logging.basicConfig(filename=LOG_FILE_PATH, format='%(asctime)s %(message)s',
                     level=LOG_LEVEL)
 
 # Status codes
-NOT_ACCEPTED = 0
-ALLOCATED = 1
-STARTED = 2
-COMPLETED = 3
-SUBMITTED = 4
-CREDITED = 5
-QUITEARLY = 6
-BONUSED = 7
+from psiturk_statuses import *
 
 
 # Let's start
