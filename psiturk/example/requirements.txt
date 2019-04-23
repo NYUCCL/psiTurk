@@ -1,2 +1,2 @@
 PsiTurk
-psycopg2==2.7.7
+psycopg2-binary
