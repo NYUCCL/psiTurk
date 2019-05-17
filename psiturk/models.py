@@ -1,11 +1,10 @@
 
 import datetime
 import io, csv, json
-from sqlalchemy import Column, Integer, String, DateTime, Float, Text, and_, or_
+from sqlalchemy import Column, Integer, String, DateTime, Float, Text
 
 from db import Base
 from psiturk_config import PsiturkConfig
-from psiturk_statuses import *
 
 config = PsiturkConfig()
 config.load_config()
@@ -49,12 +48,12 @@ class Participant(Base):
         self.codeversion = CODE_VERSION
         self.beginhit = datetime.datetime.now()
 
-    def __repr__(self):
-        return "Subject(%s, %s, %s, %s)" % (
-            self.uniqueid,
-            self.cond,
-            self.status,
-            self.codeversion)
+    # def __repr__(self):
+        # return "Subject(%s, %s, %s, %s)" % (
+            # self.uniqueid,
+            # self.cond,
+            # self.status,
+            # self.codeversion)
 
     def get_trial_data(self):
         try:
@@ -119,36 +118,12 @@ class Participant(Base):
         except:
             print("Error reading record:", self)
             return("")
-    
-    @classmethod
-    def count_workers(cls, status=None):
-        if status == 'completed':
-            return cls.count_completed()
-            
-    @classmethod
-    def get_approved(cls, mode=None):
-        result = cls.query.filter( cls.status == CREDITED )
-        if mode:
-            result = result.filter( cls.mode == mode)
-        return result
-    
-    @classmethod       
-    def count_completed(cls, _codeversion=None, mode=None):
-        if not _codeversion:
-            _codeversion = CODE_VERSION
-        if not mode:
-            mode = 'sandbox' if self.sandbox else 'live'
-        return cls.query.filter( and_(
-                    cls.status.in_( [3,4,5,7] ),
-                    cls.codeversion == _codeversion,
-                    cls.mode == mode
-                ) ).count()            
-        
-class Hit(Base):
 
-    ''' db cache of hits created for this experiment through psiturk '''
+
+class Hit(Base):
+    '''
+    '''
+    __tablename__ = 'amt_hit'
+    hitid = Column(String(128), primary_key=True)
     
-    __tablename__ = 'hit_ids'
-    
-    HITId = Column(String(128), primary_key=True)
     

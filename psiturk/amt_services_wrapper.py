@@ -336,19 +336,20 @@ class MTurkServicesWrapper():
 
     def _get_my_hitids(self):
         init_db()
-        my_hitids = [part.hitid for part in Participant.query.distinct(Participant.hitid)]
+        participant_hitids = [part.hitid for part in Participant.query.distinct(Participant.hitid)]
+        hit_hitids = [hit.hitid for hit in Hit.query.distinct(Hit.hitid)]
+        my_hitids = list(set(participant_hitids + hit_hitids))
         return my_hitids
 
     def _get_hits(self, all_studies=False):
-        amt_hits = self.amt_services.get_all_hits()
-        if not amt_hits:
-            return []
-        # get list of unique hitids from database
-        if False: # this is broken right now because it only will find a hit which has one person logged to it in the db
-        #if not all_studies:
-            my_hitids = self._get_my_hitids()
-            amt_hits = [hit for hit in amt_hits if hit.options['hitid'] in my_hitids]
-        return amt_hits
+        # get list of unique hitids from database, joined with 
+        if not all_studies:
+            hit_ids = self._get_my_hitids()
+        else:
+            hit_ids = self.amt_services.get_all_hits()
+            if not hit_ids:
+                hit_ids = []           
+        return hit_ids
 
     def get_active_hits(self, all_studies=False):
         hits = self._get_hits(all_studies)
