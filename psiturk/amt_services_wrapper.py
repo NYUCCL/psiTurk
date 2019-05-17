@@ -564,7 +564,7 @@ class MTurkServicesWrapper():
     def generate_hit_config(self, ad_location, numWorkers, reward, duration):
         hit_config = {
             "ad_location": ad_location,
-            "approve_requirement": self.config.get('HIT Configuration', 'Approve_Requirement'),
+            "approve_requirement": self.config.getint('HIT Configuration', 'Approve_Requirement'),
             "us_only": self.config.getboolean('HIT Configuration', 'US_only'),
             "lifetime": datetime.timedelta(hours=self.config.getfloat('HIT Configuration', 'lifetime')),
             "max_assignments": numWorkers,
@@ -573,7 +573,7 @@ class MTurkServicesWrapper():
             "keywords": self.config.get('HIT Configuration', 'amt_keywords'),
             "reward": reward,
             "duration": datetime.timedelta(hours=duration),
-            "number_hits_approved": self.config.get('HIT Configuration', 'number_hits_approved'),
+            "number_hits_approved": self.config.getint('HIT Configuration', 'number_hits_approved'),
             "require_master_workers": self.config.getboolean('HIT Configuration','require_master_workers')
         }
         return hit_config
