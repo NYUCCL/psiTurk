@@ -64,7 +64,7 @@ class MTurkServicesWrapper():
             self._cached_amt_services = MTurkServices(
                 self.config.get('AWS Access', 'aws_access_key_id'), \
                 self.config.get('AWS Access', 'aws_secret_access_key'),
-                self.config.getboolean('Shell Parameters', 'launch_in_sandbox_mode'))
+                self.sandbox)
         return self._cached_amt_services
 
     def __init__(self, config=None, web_services=None, tunnel=None, sandbox=None):

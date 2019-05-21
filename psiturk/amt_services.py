@@ -291,7 +291,7 @@ class MTurkServices(object):
     ''' MTurk services '''
     def __init__(self, aws_access_key_id, aws_secret_access_key, is_sandbox):
         self.update_credentials(aws_access_key_id, aws_secret_access_key)
-        self.set_sandbox(is_sandbox)
+        self.is_sandbox = is_sandbox
         self.setup_mturk_connection()
         self.valid_login = self.verify_aws_login()
 
@@ -309,6 +309,7 @@ class MTurkServices(object):
     def set_sandbox(self, is_sandbox):
         ''' Set sandbox '''
         self.is_sandbox = is_sandbox
+        self.setup_mturk_connection()
 
     @staticmethod
     def _hit_xml_to_object(hits):
