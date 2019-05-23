@@ -42,11 +42,11 @@ class Participant(Base):
 
     def __init__(self, **kwargs):
         self.uniqueid = "{workerid}:{assignmentid}".format(**kwargs)
-        for key in kwargs:
-            setattr(self, key, kwargs[key])
         self.status = 1
         self.codeversion = CODE_VERSION
         self.beginhit = datetime.datetime.now()
+        for key in kwargs:
+            setattr(self, key, kwargs[key])
 
     # def __repr__(self):
         # return "Subject(%s, %s, %s, %s)" % (

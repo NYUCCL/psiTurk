@@ -26,7 +26,7 @@ import webbrowser
 import sqlalchemy as sa
 
 from sqlalchemy import or_, and_
-from amt_services import MTurkServices, RDSServices
+from amt_services import MTurkServices
 from psiturk_org_services import PsiturkOrgServices, TunnelServices
 from psiturk_config import PsiturkConfig
 from psiturk_statuses import *
@@ -47,15 +47,6 @@ class MTurkServicesWrapper():
                 self.config.get('psiTurk Access', 'psiturk_access_key_id'),
                 self.config.get('psiTurk Access', 'psiturk_secret_access_id'))
         return self._cached_web_services
-
-    @property
-    def db_services(self):
-        if not self._cached_dbs_services:
-            self._cached_dbs_services = RDSServices(
-                self.config.get('AWS Access', 'aws_access_key_id'), \
-                self.config.get('AWS Access', 'aws_secret_access_key'),
-                self.config.get('AWS Access', 'aws_region'))
-        return self._cached_dbs_services
 
     def set_web_services(self, web_services):
         self._cached_web_services = web_services
@@ -107,17 +98,17 @@ class MTurkServicesWrapper():
     #   worker management
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     @staticmethod
-    def add_bonus(worker_dict):
+    def add_bonus_info(assignment_dict):
         " Adds DB-logged worker bonus to worker list data "
         try:
-            unique_id = '{}:{}'.format(worker_dict['workerId'], worker_dict['assignmentId'])
+            unique_id = '{}:{}'.format(assignment_dict['workerId'], assignment_dict['assignmentId'])
             worker = Participant.query.filter(
                 Participant.uniqueid == unique_id).one()
-            worker_dict['bonus'] = worker.bonus
+            assignment_dict['bonus'] = worker.bonus
         except sa.exc.InvalidRequestError:
             # assignment is found on mturk but not in local database.
-            worker_dict['bonus'] = 'N/A'
-        return worker_dict
+            assignment_dict['bonus'] = 'not-found-in-study-database'
+        return assignment_dict
         
     def count_workers(self, codeversion=None, mode='live', status='completed'):
         ''' 
@@ -133,44 +124,76 @@ class MTurkServicesWrapper():
                     Participant.mode == mode
                 ) ).count()            
     
-    def get_workers(self, status=None, chosen_hits=None, assignment_ids=None, all_studies=False):
+    def get_assignments_for_assignment_ids(self, assignment_ids, all_studies=False):
+        assignments = [self.amt_services.get_assignment(assignment_id) for assignment_id in assignment_ids]
+        return self._get_assignments(assignments, all_studies=all_studies)
+        
+    def get_assignments_for_hits(self, hit_ids=None, assignment_status=None, all_studies=False):
         '''
-        Status, if set, can be one of `Submitted`, `Approved`, or `Rejected`
+        assignment_status, if set, can be one of `Submitted`, `Approved`, or `Rejected`
         '''
-        if assignment_ids:
-            workers = [self.get_worker(assignment_id) for assignment_id in assignment_ids]
-        else:
-            workers = self.amt_services.get_workers(assignment_status=status, chosen_hits=chosen_hits)
-
-        if workers is False:
-            raise Exception('*** failed to get workers')
+        assignments = self.amt_services.get_assignments(assignment_status=assignment_status, chosen_hits=hit_ids)
+        return self._get_assignments(assignments, all_studies=all_studies)
+        
+    def _filter_assignments_for_current_study(self, assignments):
+        my_hitids = self._get_local_hitids()
+        assignments_filtered = [assignment for assignment in assignments if assignment['hitId'] in my_hitids]
+        return assignments_filtered
+    
+    def _get_assignments(self, assignments, all_studies=False):
+        if assignments is False:
+            raise Exception('*** failed to get assignments')
 
         if not all_studies:
-            my_hitids = self._get_my_hitids()
-            workers = [worker for worker in workers if worker['hitId'] in my_hitids]
+            assignments = self._filter_assignments_for_current_study(assignments)
 
-        workers = [self.add_bonus(worker) for worker in workers]
-        return workers
-    
-    def approve_all_workers_for_study(self):
-        workers = self.get_workers(status="Submitted")
-        status_reports = []
-        for worker in workers:
-            try:
-                report = self.approve_worker(worker)
-            except Exception as e:
-                report = str(e)
-            status_reports.append( report )
-        return status_reports
-    
-    def get_worker(self, assignment_id):
-        return self.amt_services.get_worker(assignment_id)
-
-    def approve_worker(self, worker, force=False):
-        ''' Approve worker '''
-        assignment_id = worker['assignmentId']
+        assignments = [self.add_bonus_info(assignment) for assignment in assignments]
+        return assignments
+        
+    def _get_local_submitted_assignments(self):
         init_db()
-        found_worker = False
+        assignments = Participant.query.filter( \
+            Participant.status == COMPLETED
+        ).all()
+        return assignments
+    
+    def approve_all_assignments(self, all_studies=False):
+        if all_studies:
+            result = self._approve_all_assignments_from_mturk()
+        else:
+            result = self._approve_all_assignments_from_local_records()
+        return result
+        
+    def _approve_all_assignments_from_local_records(self):
+        assignments = self._get_local_submitted_assignments()
+        results = []
+        for assignment in assignments:
+            try:
+                self.amt_services.approve_assignment(assignment.assignmentid)
+                assignment.status = CREDITED
+                db_session.add(assignment)
+                db_session.commit()
+                results.append({'status':'success'})
+            except:
+                raise
+        return results
+        
+    def _approve_all_assignments_from_mturk(self):
+        assignments = self.amt_services.get_assignments(assignment_status="Submitted")
+        results = []
+        for assignment in assignments:
+            try:
+                self.approve_assignment(assignment)
+                results.append({'status':'success'})
+            except:
+                raise
+        return results
+
+    def approve_assignment(self, assignment, force=False):
+        ''' Approve assignment '''
+        assignment_id = assignment['assignmentId']
+        init_db()
+        found_assignment = False
         parts = Participant.query.\
                filter(Participant.assignmentid == assignment_id).\
                filter(Participant.status.in_([3, 4])).\
@@ -180,9 +203,9 @@ class MTurkServicesWrapper():
         # submitted the HIT, but that doesn't always hold.
         status_report = ''
         for part in parts:
-            if part.workerid == worker['workerId']:
-                found_worker = True
-                success = self.amt_services.approve_worker(assignment_id)
+            if part.workerid == assignment['workerId']:
+                found_assignment = True
+                success = self.amt_services.approve_assignment(assignment_id)
                 if success:
                     part.status = 5
                     db_session.add(part)
@@ -193,58 +216,58 @@ class MTurkServicesWrapper():
                     raise Exception(error_msg)
             else:
                 status_report = 'found unexpected worker {} for assignment {}'.format(part.workerid, assignment_id)
-        if not found_worker:
-            # approve workers not found in DB if the assignment id has been specified
+        if not found_assignment:
+            # approve assignments not found in DB if the assignment id has been specified
             if force:
-                success = self.amt_services.approve_worker(assignment_id)
+                success = self.amt_services.approve_assignment(assignment_id)
                 if success:
                     _status_report = 'approved worker {} for assignment {} but not found in DB'.format(worker['workerId'], assignment_id)
                     status_report = '\n'.join([status_report,_status_report])
                 else:
-                    error_msg = '*** failed to approve worker {} for assignment {}'.format(worker['workerId'], assignment_id)
+                    error_msg = '*** failed to approve worker {} for assignment {}'.format(assignment['workerId'], assignment_id)
                     raise Exception(error_msg)
             # otherwise don't approve, and print warning
             else:
-                _status_report = 'worker {} not found in DB for assignment {}. Not automatically approved. Use --force to approve anyway.'.format(worker['workerId'], assignment_id)
+                _status_report = 'worker {} not found in DB for assignment {}. Not automatically approved. Use --force to approve anyway.'.format(assignment['workerId'], assignment_id)
                 if status_report:
                     status_report = '\n'.join([status_report,_status_report])
                 else:
                     status_report = _status_report
         return status_report
 
-    def worker_reject(self, chosen_hit, assignment_ids = None):
-        ''' Reject worker '''
+    def reject_assignment(self, chosen_hit, assignment_ids = None):
+        ''' Reject assignment '''
         if chosen_hit:
-            workers = self.amt_services.get_workers("Submitted")
-            assignment_ids = [worker['assignmentId'] for worker in workers if \
-                              worker['hitId'] == chosen_hit]
-            print 'rejecting workers for HIT', chosen_hit
+            assignments = self.amt_services.get_assignments("Submitted")
+            assignment_ids = [assignment['assignmentId'] for assignment in assignments if \
+                              assignment['hitId'] == chosen_hit]
+            print 'rejecting assignments for HIT', chosen_hit
         for assignment_id in assignment_ids:
-            success = self.amt_services.reject_worker(assignment_id)
+            success = self.amt_services.reject_assignment(assignment_id)
             if success:
                 print 'rejected', assignment_id
             else:
                 print '*** failed to reject', assignment_id
 
-    def worker_unreject(self, chosen_hit, assignment_ids = None):
-        ''' Unreject worker '''
+    def unreject_assignment(self, chosen_hit, assignment_ids = None):
+        ''' Unreject assignment '''
         if chosen_hit:
-            workers = self.amt_services.get_workers("Rejected")
-            assignment_ids = [worker['assignmentId'] for worker in workers if \
-                              worker['hitId'] == chosen_hit]
+            assignments = self.amt_services.get_assignments("Rejected")
+            assignment_ids = [assignment['assignmentId'] for assignment in assignments if \
+                              assignment['hitId'] == chosen_hit]
         for assignment_id in assignment_ids:
-            success = self.amt_services.unreject_worker(assignment_id)
+            success = self.amt_services.unreject_assignment(assignment_id)
             if success:
                 print 'unrejected %s' % (assignment_id)
             else:
                 print '*** failed to unreject', assignment_id
 
-    def worker_bonus(self, all, chosen_hit, auto, amount, reason='',
+    def bonus_assignment(self, all, chosen_hit, auto, amount, reason='',
                      assignment_ids=None):
         
         mode = 'sandbox' if self.sandbox else 'live'
         
-        ''' Bonus worker '''
+        ''' Bonus assignment '''
         if self.config.has_option('Shell Parameters', 'bonus_message'):
             reason = self.config.get('Shell Parameters', 'bonus_message')
         while not reason:
@@ -258,7 +281,7 @@ class MTurkServicesWrapper():
             for worker in workers:
                 if auto:
                     amount = worker.bonus
-                success = self.amt_services.bonus_worker(worker.assignmentid, amount, reason)
+                success = self.amt_services.bonus_assignment(worker.assignmentid, amount, reason)
                 if success:
                     print "gave bonus of $" + str(amount) + " for assignment " + worker.assignmentid
                     worker.status = BONUSED
@@ -272,32 +295,32 @@ class MTurkServicesWrapper():
         override_status = True
         if chosen_hit:
             override_status = False
-            workers = self.amt_services.get_workers("Approved", chosen_hit)
-            if not workers:
-                print "No approved workers for HIT", chosen_hit
+            assignments = self.amt_services.get_assignments("Approved", chosen_hit)
+            if not assignments:
+                print "No approved assignments for HIT", chosen_hit
                 return
-            print 'bonusing workers for HIT', chosen_hit
+            print 'bonusing assignments for HIT', chosen_hit
         elif len(assignment_ids) == 1:
-            workers = [self.amt_services.get_worker(assignment_ids[0])]
-            if not workers:
+            assignments = [self.amt_services.get_assignment(assignment_ids[0])]
+            if not assignments:
                 print "No submissions found for requested assignment ID"
                 return
         else:
-            workers = self.amt_services.get_workers("Approved")
-            if not workers:
-                print "No approved workers found."
+            assignments = self.amt_services.get_assignments("Approved")
+            if not assignments:
+                print "No approved assignments found."
                 return
 
-            workers = [worker for worker in workers if \
-                              worker['assignmentId'] in assignment_ids]
+            assignments = [assignment for assignment in assignments if \
+                              assignment['assignmentId'] in assignment_ids]
 
-        for worker in workers:
-            assignment_id = worker['assignmentId']
+        for assignment in assignments:
+            assignment_id = assignment['assignmentId']
             try:
                 init_db()
                 part = Participant.query.\
                        filter(Participant.assignmentid == assignment_id).\
-                       filter(Participant.workerid == worker['workerId']).\
+                       filter(Participant.workerid == assignment['workerId']).\
                        filter(Participant.endhit != None).\
                        one()
                 if auto:
@@ -308,7 +331,7 @@ class MTurkServicesWrapper():
                 elif status == 7 and not override_status:
                     print "bonus already awarded for assignment", assignment_id
                 else:
-                    success = self.amt_services.bonus_worker(assignment_id,
+                    success = self.amt_services.bonus_assignment(assignment_id,
                                                              amount, reason)
                     if success:
                         print "gave bonus of $" + str(amount) + " for assignment " + \
@@ -334,7 +357,7 @@ class MTurkServicesWrapper():
             num_hits = len(hits)
         return num_hits
 
-    def _get_my_hitids(self):
+    def _get_local_hitids(self):
         init_db()
         participant_hitids = [part.hitid for part in Participant.query.distinct(Participant.hitid)]
         hit_hitids = [hit.hitid for hit in Hit.query.distinct(Hit.hitid)]
@@ -342,14 +365,12 @@ class MTurkServicesWrapper():
         return my_hitids
 
     def _get_hits(self, all_studies=False):
-        # get list of unique hitids from database, joined with 
+        # get all hits from amt
+        # then filter to just the ones that have an id that appears in either local Hit or Worker tables
+        hits = self.amt_services.get_all_hits()
         if not all_studies:
-            hit_ids = self._get_my_hitids()
-        else:
-            hit_ids = self.amt_services.get_all_hits()
-            if not hit_ids:
-                hit_ids = []           
-        return hit_ids
+            hits = [hit for hit in hits if hit.options['hitid'] in self._get_local_hitids()]
+        return hits
 
     def get_active_hits(self, all_studies=False):
         hits = self._get_hits(all_studies)
@@ -366,7 +387,7 @@ class MTurkServicesWrapper():
         hits = self._get_hits(all_studies)
         return hits
 
-    def hit_extend(self, hit_id, assignments, minutes):
+    def extend_hit(self, hit_id, assignments=None, minutes=None):
         """ Add additional worker assignments or minutes to a HIT.
 
         Args:
@@ -382,52 +403,58 @@ class MTurkServicesWrapper():
 
         """
 
-        assert type(hit_id) is list
-        assert type(hit_id[0]) is str
-
-        if self.amt_services.extend_hit(hit_id[0], assignments, minutes):
+        if self.amt_services.extend_hit(hit_id, assignments_increment=assignments, expiration_increment=minutes):
             print "HIT extended."
-
-    def hit_delete(self, all_hits, hit_ids=None):
-        ''' Delete HIT. '''
-        if all_hits:
-            hits_data = self.amt_services.get_all_hits()
-            hit_ids = [hit.options['hitid'] for hit in hits_data if \
-                       hit.options['status'] == "Reviewable"]
+                        
+    def delete_all_hits(self):
+        '''
+        Deletes all reviewable hits
+        '''
+        hits = self.amt_services.get_all_hits()
+        hit_ids = [hit.options['hitid'] for hit in hits if \
+                   hit.options['status'] == "Reviewable"]
         for hit in hit_ids:
-            # Check that the HIT is reviewable
-            status = self.amt_services.get_hit_status(hit)
-            if not status:
-                print "*** Error getting hit status"
-                return
-            if self.amt_services.get_hit_status(hit) != "Reviewable":
-                print("*** This hit is not 'Reviewable' and so can not be "
-                      "deleted")
-                return
-            else:
-                success = self.amt_services.delete_hit(hit)
-                # self.web_services.delete_ad(hit)  # also delete the ad
-                if success:
-                    if self.sandbox:
-                        print "deleting sandbox HIT", hit
-                    else:
-                        print "deleting live HIT", hit
-
-    def hit_expire(self, all_hits, hit_ids=None):
-        ''' Expire all HITs. '''
-        if all_hits:
-            hits_data = self.get_active_hits()
-            hit_ids = [hit.options['hitid'] for hit in hits_data]
-        for hit in hit_ids:
-            success = self.amt_services.expire_hit(hit)
+            self.delete_hit(hit_id)
+        
+    def delete_hit(self, hit_id):
+        '''
+        Deletes a single hit if it is reviewable
+        '''
+        # Check that the HIT is reviewable
+        status = self.amt_services.get_hit_status(hit_id)
+        if not status:
+            print "*** Error getting hit status"
+            return
+        if status != "Reviewable":
+            print("*** This hit is not 'Reviewable' and so can not be "
+                  "deleted")
+            return
+        else:
+            success = self.amt_services.delete_hit(hit_id)
+            # self.web_services.delete_ad(hit)  # also delete the ad
             if success:
                 if self.sandbox:
-                    print "expiring sandbox HIT", hit
+                    print "deleting sandbox HIT", hit_id
                 else:
-                    print "expiring live HIT", hit
+                    print "deleting live HIT", hit_id
 
+    def expire_hit(self, hit_id):
+        success = self.amt_services.expire_hit(hit_id)
+        if success:
+            if self.sandbox:
+                print "expiring sandbox HIT", hit_id
+            else:
+                print "expiring live HIT", hit_id
+                
+    def expire_all_hits(self):
+        hits_data = self.get_active_hits()
+        hit_ids = [hit.options['hitid'] for hit in hits_data]
+        for hit_id in hit_ids:
+            self.expire_hit(hit_id)
 
-    def hit_create(self, numWorkers, reward, duration):
+    def create_hit(self, num_workers, reward, duration):
+        if not num_workers or not reward or not duration:
+            raise Exception('Missing arguments')
         ''' Create a HIT '''
         if self.sandbox:
             mode = 'sandbox'
@@ -461,7 +488,7 @@ class MTurkServicesWrapper():
             fail_msg = None
             if ad_id is not False:
                 ad_location = self.web_services.get_ad_url(ad_id, int(self.sandbox))
-                hit_config = self.generate_hit_config(ad_location, numWorkers, reward, duration)
+                hit_config = self.generate_hit_config(ad_location, num_workers, reward, duration)
                 hit_id = self.amt_services.create_hit(hit_config)
                 if hit_id is not False:
                     if not self.web_services.set_ad_hitid(ad_id, hit_id, int(self.sandbox)):
@@ -476,7 +503,7 @@ class MTurkServicesWrapper():
 
         else: # not using psiturk ad server
             ad_location = "{}?mode={}".format(self.config.get('Shell Parameters', 'ad_location'), mode )
-            hit_config = self.generate_hit_config(ad_location, numWorkers, reward, duration)
+            hit_config = self.generate_hit_config(ad_location, num_workers, reward, duration)
             create_failed = False
             hit_id = self.amt_services.create_hit(hit_config)
             if hit_id is False:
@@ -561,13 +588,13 @@ class MTurkServicesWrapper():
         ad_id = self.web_services.create_ad(ad_content)
         return ad_id
 
-    def generate_hit_config(self, ad_location, numWorkers, reward, duration):
+    def generate_hit_config(self, ad_location, num_workers, reward, duration):
         hit_config = {
             "ad_location": ad_location,
             "approve_requirement": self.config.getint('HIT Configuration', 'Approve_Requirement'),
             "us_only": self.config.getboolean('HIT Configuration', 'US_only'),
             "lifetime": datetime.timedelta(hours=self.config.getfloat('HIT Configuration', 'lifetime')),
-            "max_assignments": numWorkers,
+            "max_assignments": num_workers,
             "title": self.config.get('HIT Configuration', 'title', raw=True),
             "description": self.config.get('HIT Configuration', 'description', raw=True),
             "keywords": self.config.get('HIT Configuration', 'amt_keywords'),
@@ -577,417 +604,4 @@ class MTurkServicesWrapper():
             "require_master_workers": self.config.getboolean('HIT Configuration','require_master_workers')
         }
         return hit_config
-
-    # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
-    #   AWS RDS commands
-    # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
-    def db_aws_list_regions(self):
-        ''' List AWS DB regions '''
-        regions = self.db_services.list_regions()
-        if regions != []:
-            print "Avaliable AWS regions:"
-        for reg in regions:
-            print '\t' + reg,
-            if reg == self.db_services.get_region():
-                print "(currently selected)"
-            else:
-                print ''
-
-    def db_aws_get_region(self):
-        ''' Get AWS region '''
-        print self.db_services.get_region()
-
-    def db_aws_set_region(self, region_name):
-        ''' Set AWS region '''
-        # interactive = False # Not used
-        if region_name is None:
-            # interactive = True  # Not used
-            self.db_aws_list_regions()
-            allowed_regions = self.db_services.list_regions()
-            region_name = "NONSENSE WORD1234"
-            tries = 0
-            while region_name not in allowed_regions:
-                if tries == 0:
-                    region_name = raw_input('Enter the name of the region you '
-                                            'would like to use: ')
-                else:
-                    print("*** The region name (%s) you entered is not allowed, " \
-                          "please choose from the list printed above (use type 'db " \
-                          "aws_list_regions'." % region_name)
-                    region_name = raw_input('Enter the name of the region you '
-                                            'would like to use: ')
-                tries += 1
-                if tries > 5:
-                    print("*** Error, region you are requesting not available.  "
-                          "No changes made to regions.")
-                    return
-        self.db_services.set_region(region_name)
-        print "Region updated to ", region_name
-        self.config.set('AWS Access', 'aws_region', region_name, True)
-        if self.server.is_server_running() == 'yes':
-            self.server_restart()
-
-    def db_aws_list_instances(self):
-        ''' List AWS DB instances '''
-        instances = self.db_services.get_db_instances()
-        if not instances:
-            print("There are no DB instances associated with your AWS account " \
-                "in region " + self.db_services.get_region())
-        else:
-            print("Here are the current DB instances associated with your AWS " \
-                "account in region " + self.db_services.get_region())
-            for dbinst in instances:
-                print '\t'+'-'*20
-                print "\tInstance ID: " + dbinst.id
-                print "\tStatus: " + dbinst.status
-
-    def db_aws_delete_instance(self, instance_id):
-        ''' Delete AWS DB instance '''
-        interactive = False
-        if instance_id is None:
-            interactive = True
-
-        instances = self.db_services.get_db_instances()
-        instance_list = [dbinst.id for dbinst in instances]
-
-        if interactive:
-            valid = False
-            if len(instances) == 0:
-                print("There are no instances you can delete currently.  Use "
-                      "`db aws_create_instance` to make one.")
-                return
-            print "Here are the available instances you can delete:"
-            for inst in instances:
-                print "\t ", inst.id, "(", inst.status, ")"
-            while not valid:
-                instance_id = raw_input('Enter the instance identity you would '
-                                        'like to delete: ')
-                res = self.db_services.validate_instance_id(instance_id)
-                if res is True:
-                    valid = True
-                else:
-                    print(res + " Try again, instance name not valid.  Check " \
-                        "for typos.")
-                if instance_id in instance_list:
-                    valid = True
-                else:
-                    valid = False
-                    print("Try again, instance not present in this account.  "
-                          "Try again checking for typos.")
-        else:
-            res = self.db_services.validate_instance_id(instance_id)
-            if res is not True:
-                print("*** Error, instance name either not valid.  Try again "
-                     "checking for typos.")
-                return
-            if instance_id not in instance_list:
-                print("*** Error, This instance not present in this account.  "
-                     "Try again checking for typos.  Run `db aws_list_instances` to "
-                     "see valid list.")
-                return
-
-        user_input = raw_input(
-            "Deleting an instance will erase all your data associated with the "
-            "database in that instance.  Really quit? y or n:"
-        )
-        if user_input == 'y':
-            res = self.db_services.delete_db_instance(instance_id)
-            if res:
-                print("AWS RDS database instance %s deleted.  Run `db " \
-                    "aws_list_instances` for current status." % instance_id)
-            else:
-                print("*** Error deleting database instance %s.  " \
-                    "It maybe because it is still being created, deleted, or is " \
-                    "being backed up.  Run `db aws_list_instances` for current " \
-                    "status." % instance_id)
-        else:
-            return
-
-    def db_use_aws_instance(self, instance_id, arg):
-        ''' set your database info to use the current instance configure a
-        security zone for this based on your ip '''
-        interactive = False
-        if instance_id is None:
-            interactive = True
-
-        instances = self.db_services.get_db_instances()
-        instance_list = [dbinst.id for dbinst in instances]
-
-        if len(instances) == 0:
-            print("There are no instances in this region/account.  Use `db "
-                "aws_create_instance` to make one first.")
-            return
-
-        # show list of available instances, if there are none cancel immediately
-        if interactive:
-            valid = False
-            print("Here are the available instances you have.  You can only "
-                "use those listed as 'available':")
-            for inst in instances:
-                print "\t ", inst.id, "(", inst.status, ")"
-            while not valid:
-                instance_id = raw_input('Enter the instance identity you would '
-                                        'like to use: ')
-                res = self.db_services.validate_instance_id(instance_id)
-                if res is True:
-                    valid = True
-                else:
-                    print(res + " Try again, instance name not valid.  Check "
-                          "for typos.")
-                if instance_id in instance_list:
-                    valid = True
-                else:
-                    valid = False
-                    print("Try again, instance not present in this account. "
-                          "Try again checking for typos.")
-        else:
-            res = self.db_services.validate_instance_id(instance_id)
-            if res != True:
-                print("*** Error, instance name either not valid.  Try again "
-                      "checking for typos.")
-                return
-            if instance_id not in instance_list:
-                print("*** Error, This instance not present in this account. "
-                      "Try again checking for typos.  Run `db aws_list_instances` to "
-                      "see valid list.")
-                return
-
-        user_input = raw_input(
-            "Switching your DB settings to use this instance. Are you sure you "
-            "want to do this? "
-        )
-        if user_input == 'y':
-            # ask for password
-            valid = False
-            while not valid:
-                password = raw_input('enter the master password for this '
-                                     'instance: ')
-                res = self.db_services.validate_instance_password(password)
-                if res != True:
-                    print("*** Error: password seems incorrect, doesn't "
-                          "conform to AWS rules.  Try again")
-                else:
-                    valid = True
-
-            # Get instance
-            myinstance = self.db_services.get_db_instance_info(instance_id)
-            if myinstance:
-                # Add security zone to this node to allow connections
-                my_ip = get_my_ip()
-                if (not self.db_services.allow_access_to_instance(myinstance,
-                                                                  my_ip)):
-                    print("*** Error authorizing your ip address to connect to " \
-                          "server (%s)." % my_ip)
-                    return
-                print "AWS RDS database instance %s selected." % instance_id
-
-                # Using regular SQL commands list available database on this
-                # node
-                try:
-                    db_url = 'mysql+pymysql://' + myinstance.master_username + ":" \
-                        + password + "@" + myinstance.endpoint[0] + ":" + \
-                        str(myinstance.endpoint[1])
-                    engine = sa.create_engine(db_url, echo=False)
-                    eng = engine.connect().execute
-                    db_names = eng("show databases").fetchall()
-                except:
-                    print("***  Error connecting to instance.  Your password "
-                          "might be incorrect.")
-                    return
-                existing_dbs = [db[0] for db in db_names if db not in \
-                                [('information_schema',), ('innodb',), \
-                                 ('mysql',), ('performance_schema',)]]
-                create_db = False
-                if len(existing_dbs) == 0:
-                    valid = False
-                    while not valid:
-                        db_name = raw_input("No existing DBs in this instance. "
-                                            "Enter a new name to create one: ")
-                        res = self.db_services.validate_instance_dbname(db_name)
-                        if res is True:
-                            valid = True
-                        else:
-                            print res + " Try again."
-                    create_db = True
-                else:
-                    print "Here are the available database tables"
-                    for database in existing_dbs:
-                        print "\t" + database
-                    valid = False
-                    while not valid:
-                        db_name = raw_input(
-                            "Enter the name of the database you want to use or "
-                            "a new name to create  a new one: "
-                        )
-                        res = self.db_services.validate_instance_dbname(db_name)
-                        if res is True:
-                            valid = True
-                        else:
-                            print res + " Try again."
-                    if db_name not in existing_dbs:
-                        create_db = True
-                if create_db:
-                    try:
-                        connection.execute("CREATE DATABASE %s;" % db_name)
-                    except:
-                        print("*** Error creating database %s on instance " \
-                              "%s" % (db_name, instance_id))
-                        return
-                base_url = 'mysql+pymysql://' + myinstance.master_username + ":" + \
-                    password + "@" + myinstance.endpoint[0] + ":" + \
-                    str(myinstance.endpoint[1]) + "/" + db_name
-                self.config.set("Database Parameters", "database_url", base_url)
-                print("Successfully set your current database (database_url) " \
-                      "to \n\t%s" % base_url)
-                if (self.server.is_server_running() == 'maybe' or
-                        self.server.is_server_running() == 'yes'):
-                    self.do_restart_server('')
-            else:
-                print '\n'.join([
-                    "*** Error selecting database instance %s." % arg['<id>'],
-                    "Run `db list_db_instances` for current status of instances, only `available`",
-                    "instances can be used.  Also, your password may be incorrect."
-                ])
-        else:
-            return
-
-
-    def db_create_aws_db_instance(self, instid=None, size=None, username=None,
-                                  password=None, dbname=None):
-        ''' Create db instance on AWS '''
-        interactive = False
-        if instid is None:
-            interactive = True
-
-        if interactive:
-            print '\n'.join(['*************************************************',
-                             'Ok, here are the rules on creating instances:',
-                             '',
-                             'instance id:',
-                             '  Each instance needs an identifier.  This is the name',
-                             '  of the virtual machine created for you on AWS.',
-                             '  Rules are 1-63 alphanumeric characters, first must',
-                             '  be a letter, must be unique to this AWS account.',
-                             '',
-                             'size:',
-                             '  The maximum size of you database in GB.  Enter an',
-                             '  integer between 5-1024',
-                             '',
-                             'master username:',
-                             '  The username you will use to connect.  Rules are',
-                             '  1-16 alphanumeric characters, first must be a letter,',
-                             '  cannot be a reserved MySQL word/phrase',
-                             '',
-                             'master password:',
-                             '  Rules are 8-41 alphanumeric characters',
-                             '',
-                             'database name:',
-                             '  The name for the first database on this instance.  Rules are',
-                             '  1-64 alphanumeric characters, cannot be a reserved MySQL word',
-                             '*************************************************',
-                             ''])
-
-        if interactive:
-            valid = False
-            while not valid:
-                instid = raw_input('enter an identifier for the instance (see '
-                                   'rules above): ')
-                res = self.db_services.validate_instance_id(instid)
-                if res is True:
-                    valid = True
-                else:
-                    print res + " Try again."
-        else:
-            res = self.db_services.validate_instance_id(instid)
-            if res is not True:
-                print res
-                return
-
-        if interactive:
-            valid = False
-            while not valid:
-                size = raw_input('size of db in GB (5-1024): ')
-                res = self.db_services.validate_instance_size(size)
-                if res is True:
-                    valid = True
-                else:
-                    print res + " Try again."
-        else:
-            res = self.db_services.validate_instance_size(size)
-            if res is not True:
-                print res
-                return
-
-        if interactive:
-            valid = False
-            while not valid:
-                username = raw_input('master username (see rules above): ')
-                res = self.db_services.validate_instance_username(username)
-                if res is True:
-                    valid = True
-                else:
-                    print res + " Try again."
-        else:
-            res = self.db_services.validate_instance_username(username)
-            if res is not True:
-                print res
-                return
-
-        if interactive:
-            valid = False
-            while not valid:
-                password = raw_input('master password (see rules above): ')
-                res = self.db_services.validate_instance_password(password)
-                if res is True:
-                    valid = True
-                else:
-                    print res + " Try again."
-        else:
-            res = self.db_services.validate_instance_password(password)
-            if res is not True:
-                print res
-                return
-
-        if interactive:
-            valid = False
-            while not valid:
-                dbname = raw_input('name for first database on this instance \
-                                   (see rules): ')
-                res = self.db_services.validate_instance_dbname(dbname)
-                if res is True:
-                    valid = True
-                else:
-                    print res + " Try again."
-        else:
-            res = self.db_services.validate_instance_dbname(dbname)
-            if res is not True:
-                print res
-                return
-
-        options = {
-            'id': instid,
-            'size': size,
-            'username': username,
-            'password': password,
-            'dbname': dbname
-        }
-        instance = self.db_services.create_db_instance(options)
-        if not instance:
-            print '\n'.join(['*****************************',
-                             '  Sorry, there was an error creating db instance.'])
-        else:
-            print '\n'.join(['*****************************',
-                             '  Creating AWS RDS MySQL Instance',
-                             '    id: ' + str(options['id']),
-                             '    size: ' + str(options['size']) + " GB",
-                             '    username: ' + str(options['username']),
-                             '    password: ' + str(options['password']),
-                             '    dbname: ' +  str(options['dbname']),
-                             '    type: MySQL/db.t1.micro',
-                             '    ________________________',
-                             ' Be sure to store this information in a safe place.',
-                             ' Please wait 5-10 minutes while your database is created in the cloud.',
-                             ' You can run \'db aws_list_instances\' to verify it was created (status',
-                             ' will say \'available\' when it is ready'])
-
 

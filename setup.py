@@ -35,13 +35,14 @@ if __name__ == "__main__":
                 'psiturk-install = psiturk.command_line:process'
             ]
         },
-        setup_requires = [],
+        setup_requires = ['pytest-runner'],
+        tests_require=['pytest'],
         author = "NYU Computation and Cognition Lab",
         author_email = "authors@psiturk.org",
         description = "An open platform for science on Amazon Mechanical Turk",
         long_description = long_description,
         url = "https://github.com/NYUCCL/psiturk",
-        test_suite='test_psiturk'
+        test_suite='test_psiturk',
     )
 
     # read in requirements.txt for dependencies
@@ -59,3 +60,4 @@ if __name__ == "__main__":
         install_requires.append('gnureadline==6.3.3')
 
     setup(**setup_args)
+    

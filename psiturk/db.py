@@ -37,3 +37,9 @@ Base.query = db_session.query_property()
 def init_db():
     #print "Initalizing db if necessary."
     Base.metadata.create_all(bind=engine)
+    
+def truncate_tables():
+    for table in Base.metadata.sorted_tables:
+        db_session.execute(table.delete(bind=engine))
+    db_session.commit()
+    

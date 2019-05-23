@@ -25,7 +25,7 @@ class FlaskTestClientProxy(object):
         return self.app(environ, start_response)
 
 
-class BadFlaskTestClientProxy(object):
+class BadFlaskTestClientProxy():
     '''Spoof user agent (iPad)'''
     def __init__(self, app):
         self.app = app
@@ -42,19 +42,13 @@ class PsiturkUnitTest(unittest.TestCase):
 
     def setUp(self, case=None):
         '''Build up fixtures'''
-        os.chdir('psiturk-example')
-        import psiturk.db
         import psiturk.experiment
         reload(psiturk.experiment)
-
-        fd, db_path = tempfile.mkstemp()
-        self.db_fd = fd
-        psiturk.experiment.app.config['DATABASE'] = db_path
+        
         psiturk.experiment.app.wsgi_app = FlaskTestClientProxy(
             psiturk.experiment.app.wsgi_app)
         self.app = psiturk.experiment.app.test_client()
         self.config = psiturk.experiment.CONFIG
-        psiturk.db.init_db()
 
         # Fake MTurk data
         self.worker_id = fake.md5(raw_output=False)
@@ -63,9 +57,6 @@ class PsiturkUnitTest(unittest.TestCase):
 
     def tearDown(self):
         '''Tear down fixtures'''
-        os.close(self.db_fd)
-        os.chdir('..')
-        os.unlink(psiturk.experiment.app.config['DATABASE'])
         self.app = None
 
     def set_config(self, section, field, value):
@@ -104,6 +95,7 @@ class PsiTurkStandardTests(PsiturkUnitTest):
 
     def test_exp_with_all_url_vars_not_registered_on_ad_server(self):
         '''Test that exp page throws Error #1018 with all url vars but not registered.'''
+        self.set_config('Shell Parameters', 'use_psiturk_ad_server', 'true')
         args = '&'.join([
             'assignmentId=debug%s' % self.assignment_id,
             'workerId=debug%s' % self.worker_id,
@@ -361,18 +353,12 @@ class BadUserAgent(PsiturkUnitTest):
 
     def setUp(self):
         '''Build up fixtures'''
-        os.chdir('psiturk-example')
-        import psiturk.db
         import psiturk.experiment
         reload(psiturk.experiment)
-
-        fd, db_path = tempfile.mkstemp()
-        self.db_fd = fd
-        psiturk.experiment.app.config['DATABASE'] = db_path
+        
         psiturk.experiment.app.wsgi_app = BadFlaskTestClientProxy(
             psiturk.experiment.app.wsgi_app)
         self.app = psiturk.experiment.app.test_client()
-        psiturk.db.init_db()
 
         # Fake MTurk data
         self.worker_id = fake.md5(raw_output=False)
@@ -394,19 +380,13 @@ class PsiTurkTestPsiturkJS(PsiturkUnitTest):
     def setUp(self):
         '''Build up fixtures'''
         self.PSITURK_JS_FILE = '../psiturk/psiturk_js/psiturk.js'
-        os.chdir('psiturk-example')
         os.rename(self.PSITURK_JS_FILE, self.PSITURK_JS_FILE + '.bup')
-        import psiturk.db
         import psiturk.experiment
         reload(psiturk.experiment)
-
-        fd, db_path = tempfile.mkstemp()
-        self.db_fd = fd
-        psiturk.experiment.app.config['DATABASE'] = db_path
+        
         psiturk.experiment.app.wsgi_app = FlaskTestClientProxy(
             psiturk.experiment.app.wsgi_app)
         self.app = psiturk.experiment.app.test_client()
-        psiturk.db.init_db()
 
     def test_psiturk_js_is_missing(self):
         ''' Test for missing psiturk.js '''
@@ -416,9 +396,7 @@ class PsiTurkTestPsiturkJS(PsiturkUnitTest):
     def tearDown(self):
         '''Tear down fixtures'''
         super(PsiTurkTestPsiturkJS, self).tearDown()
-        os.chdir('psiturk-example')
         os.rename(self.PSITURK_JS_FILE + '.bup', self.PSITURK_JS_FILE)
-        os.chdir('..')
 
 
 class ExperimentErrorsTest(PsiturkUnitTest):

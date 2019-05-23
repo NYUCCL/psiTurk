@@ -292,8 +292,8 @@ class PsiturkShell(Cmd, object):
                 return
 
         try:
-            (hit_id, ad_id) = self.amt_services_wrapper.hit_create(numWorkers, reward,
-                            duration)
+            (hit_id, ad_id) = self.amt_services_wrapper.create_hit(num_workers=numWorkers, reward=reward,
+                            duration=duration)
 
             print '\n'.join(['*****************************',
                              '  Created %s HIT' % colorize(mode, 'bold'),
@@ -1001,7 +1001,6 @@ class PsiturkNetworkShell(PsiturkShell):
           hit create [<numWorkers> <reward> <duration>]
           hit extend <HITid> [(--assignments <number>)] [(--expiration <minutes>)]
           hit expire (--all | <HITid> ...)
-          hit dispose (--all | <HITid> ...)
           hit delete (--all | <HITid> ...)
           hit list [--active | --reviewable] [--all-studies]
           hit help
@@ -1012,13 +1011,29 @@ class PsiturkNetworkShell(PsiturkShell):
                             arg['<duration>'])
             self.update_hit_tally()
         elif arg['extend']:
-            self.amt_services_wrapper.hit_extend(arg['<HITid>'], arg['<number>'], arg['<minutes>'])
+            self.amt_services_wrapper.extend_hit(arg['<HITid>'][0], assignments=arg['<number>'], minutes=arg['<minutes>'])
         elif arg['expire']:
-            self.amt_services_wrapper.hit_expire(arg['--all'], arg['<HITid>'])
-            self.update_hit_tally()
-        elif arg['delete'] or arg['dispose']:
-            self.amt_services_wrapper.hit_delete(arg['--all'], arg['<HITid>'])
-            self.update_hit_tally()
+            did_something = False
+            if arg['--all']:
+                self.amt_services_wrapper.expire_all_hits()
+                did_something = True
+            elif arg['<HITId>'}:
+                did_something = True
+                for hit_id in arg['<HITId>']:
+                    self.amt_services_wrapper.expire_hit(hit_id)
+            if did_something:
+                self.update_hit_tally()
+        elif arg['delete']:
+            did_something = False
+            if arg['--all']:
+                self.amt_services_wrapper.delete_all_hits()
+                did_something = True
+            elif arg['<HITid>']:
+                did_something = True
+                for hit_id in arg['<HITid>']:
+                    self.amt_services_wrapper.delete_hit(hit_id)
+            if did_something:
+                self.update_hit_tally()
         elif arg['list']:
             self.hit_list(arg['--active'], arg['--reviewable'], arg['--all-studies'])
         else:

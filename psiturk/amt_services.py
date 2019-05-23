@@ -10,47 +10,6 @@ from flask import jsonify
 import re as re
 from psiturk.psiturk_config import PsiturkConfig
 
-MYSQL_RESERVED_WORDS_CAP = [
-    'ACCESSIBLE', 'ADD', 'ALL', 'ALTER', 'ANALYZE', 'AND', 'AS', 'ASC',
-    'ASENSITIVE', 'BEFORE', 'BETWEEN', 'BIGINT', 'BINARY', 'BLOB', 'BOTH',
-    'BY', 'CALL', 'CASCADE', 'CASE', 'CHANGE', 'CHAR', 'CHARACTER', 'CHECK',
-    'COLLATE', 'COLUMN', 'CONDITION', 'CONSTRAINT', 'CONTINUE', 'CONVERT',
-    'CREATE', 'CROSS', 'CURRENT_DATE', 'CURRENT_TIME', 'CURRENT_TIMESTAMP',
-    'CURRENT_USER', 'CURSOR', 'DATABASE', 'DATABASES', 'DAY_HOUR',
-    'DAY_MICROSECOND', 'DAY_MINUTE', 'DAY_SECOND', 'DEC', 'DECIMAL', 'DECLARE',
-    'DEFAULT', 'DELAYED', 'DELETE', 'DESC', 'DESCRIBE', 'DETERMINISTIC',
-    'DISTINCT', 'DISTINCTROW', 'DIV', 'DOUBLE', 'DROP', 'DUAL', 'EACH', 'ELSE',
-    'ELSEIF', 'ENCLOSED', 'ESCAPED', 'EXISTS', 'EXIT', 'EXPLAIN', 'FALSE',
-    'FETCH', 'FLOAT', 'FLOAT4', 'FLOAT8', 'FOR', 'FORCE', 'FOREIGN', 'FROM',
-    'FULLTEXT', 'GET', 'GRANT', 'GROUP', 'HAVING', 'HIGH_PRIORITY',
-    'HOUR_MICROSECOND', 'HOUR_MINUTE', 'HOUR_SECOND', 'IF', 'IGNORE', 'IN',
-    'INDEX', 'INFILE', 'INNER', 'INOUT', 'INSENSITIVE', 'INSERT', 'INT',
-    'INT1', 'INT2', 'INT3', 'INT4', 'INT8', 'INTEGER', 'INTERVAL', 'INTO',
-    'IO_AFTER_GTIDS', 'IO_BEFORE_GTIDS', 'IS', 'ITERATE', 'JOIN', 'KEY',
-    'KEYS', 'KILL', 'LEADING', 'LEAVE', 'LEFT', 'LIKE', 'LIMIT', 'LINEAR',
-    'LINES', 'LOAD', 'LOCALTIME', 'LOCALTIMESTAMP', 'LOCK', 'LONG', 'LONGBLOB',
-    'LONGTEXT', 'LOOP', 'LOW_PRIORITY', 'MASTER_BIND',
-    'MASTER_SSL_VERIFY_SERVER_CERT', 'MATCH', 'MAXVALUE', 'MEDIUMBLOB',
-    'MEDIUMINT', 'MEDIUMTEXT', 'MIDDLEINT', 'MINUTE_MICROSECOND',
-    'MINUTE_SECOND', 'MOD', 'MODIFIES', 'NATURAL', 'NOT', 'NO_WRITE_TO_BINLOG',
-    'NULL', 'NUMERIC', 'ON', 'OPTIMIZE', 'OPTION', 'OPTIONALLY', 'OR', 'ORDER',
-    'OUT', 'OUTER', 'OUTFILE', 'PARTITION', 'PRECISION', 'PRIMARY',
-    'PROCEDURE', 'PURGE', 'RANGE', 'READ', 'READS', 'READ_WRITE', 'REAL',
-    'REFERENCES', 'REGEXP', 'RELEASE', 'RENAME', 'REPEAT', 'REPLACE',
-    'REQUIRE', 'RESIGNAL', 'RESTRICT', 'RETURN', 'REVOKE', 'RIGHT', 'RLIKE',
-    'SCHEMA', 'SCHEMAS', 'SECOND_MICROSECOND', 'SELECT', 'SENSITIVE',
-    'SEPARATOR', 'SET', 'SHOW', 'SIGNAL', 'SMALLINT', 'SPATIAL', 'SPECIFIC',
-    'SQL', 'SQLEXCEPTION', 'SQLSTATE', 'SQLWARNING', 'SQL_BIG_RESULT',
-    'SQL_CALC_FOUND_ROWS', 'SQL_SMALL_RESULT', 'SSL', 'STARTING',
-    'STRAIGHT_JOIN', 'TABLE', 'TERMINATED', 'THEN', 'TINYBLOB', 'TINYINT',
-    'TINYTEXT', 'TO', 'TRAILING', 'TRIGGER', 'TRUE', 'UNDO', 'UNION', 'UNIQUE',
-    'UNLOCK', 'UNSIGNED', 'UPDATE', 'USAGE', 'USE', 'USING', 'UTC_DATE',
-    'UTC_TIME', 'UTC_TIMESTAMP', 'VALUES', 'VARBINARY', 'VARCHAR',
-    'VARCHARACTER', 'VARYING', 'WHEN', 'WHERE', 'WHILE', 'WITH', 'WRITE',
-    'XOR', 'YEAR_MONTH', 'ZEROFILL'
-]
-MYSQL_RESERVED_WORDS = [word.lower() for word in MYSQL_RESERVED_WORDS_CAP]
-
 PERCENT_ASSIGNMENTS_APPROVED_QUAL_ID = '000000000000000000L0'
 NUMBER_HITS_APPROVED_QUAL_ID = '00000000000000000040'
 LOCALE_QUAL_ID = '00000000000000000071'
@@ -80,212 +39,6 @@ class MTurkHIT(object):
                 self.options['expiration'],
                 self.options['is_expired']
             )
-
-class RDSServices(object):
-    ''' Relational database services via AWS '''
-
-    def __init__(self, aws_access_key_id, aws_secret_access_key,
-                 region='us-east-1', quiet=False):
-        self.update_credentials(aws_access_key_id, aws_secret_access_key)
-        self.set_region(region)
-
-        self.rdsc = boto3.client(
-            'rds',
-            region_name=self.region,
-            aws_access_key_id=self.aws_access_key_id,
-            aws_secret_access_key=self.aws_secret_access_key,
-        )
-        if not quiet:
-            self.valid_login = self.verify_aws_login()
-
-        # if not self.valid_login:
-        #     print 'Sorry, AWS Credentials invalid.\nYou will only be able to
-        #     '\ + 'test experiments locally until you enter\nvalid '\ +
-        #     'credentials in the AWS Access section of config.txt.'
-
-    def update_credentials(self, aws_access_key_id, aws_secret_access_key):
-        ''' Update credentials '''
-        self.aws_access_key_id = aws_access_key_id
-        self.aws_secret_access_key = aws_secret_access_key
-
-    def list_regions(self):
-        ''' List regions '''
-        regions = boto3.session.Session().get_available_regions('s3')
-        return regions
-
-    def get_region(self):
-        ''' Get regions '''
-        return self.region
-
-    def set_region(self, region):
-        ''' Set regions '''
-        self.region = region
-
-    def verify_aws_login(self):
-        '''Verify AWS login '''
-        if ((self.aws_access_key_id == 'YourAccessKeyId') or
-                (self.aws_secret_access_key == 'YourSecretAccessKey')):
-            return False
-        else:
-            try:
-                self.rdsc.describe_db_instances()
-            except botocore.exceptions.ClientError as exception:
-                print exception
-                return False
-            except AttributeError as e:
-                print e
-                print "*** Unable to establish connection to AWS region %s "\
-                    "using your access key/secret key", self.region
-                return False
-            except boto.exception.BotoServerError as e:
-                print "***********************************************************"
-                print "WARNING"
-                print "Unable to establish connection to AWS RDS (Amazon relational database services)."
-                print "See relevant psiturk docs here:"
-                print "\thttp://psiturk.readthedocs.io/en/latest/configure_databases.html#obtaining-a-low-cost-or-free-mysql-database-on-amazon-s-web-services-cloud"
-                print "***********************************************************"
-                return False
-            else:
-                return True
-
-    def connect_to_aws_rds(self):
-        ''' Connec to aws rds '''
-        if not self.valid_login:
-            print 'Sorry, unable to connect to Amazon\'s RDS database server. "\
-                "AWS credentials invalid.'
-            return False
-
-        return True
-
-    def get_db_instance_info(self, dbid):
-        ''' Get DB instance info '''
-        if not self.connect_to_aws_rds():
-            return False
-        try:
-            instances = self.rdsc.describe_db_instances(dbid).get('DBInstances')
-        except:
-            return False
-        else:
-            myinstance = instances[0]
-            return myinstance
-
-    def allow_access_to_instance(self, _, ip_address):
-        ''' Allow access to instance. '''
-        if not self.connect_to_aws_rds():
-            return False
-        try:
-            conn = boto.ec2.connect_to_region(
-                self.region,
-                aws_access_key_id=self.aws_access_key_id,
-                aws_secret_access_key=self.aws_secret_access_key
-            )
-            sgs = conn.get_all_security_groups('default')
-            default_sg = sgs[0]
-            default_sg.authorize(ip_protocol='tcp', from_port=3306,
-                                 to_port=3306, cidr_ip=str(ip_address)+'/32')
-        except EC2ResponseError, exception:
-            if exception.error_code == "InvalidPermission.Duplicate":
-                return True  # ok it already exists
-            else:
-                return False
-        else:
-            return True
-
-    def get_db_instances(self):
-        '''  DB instance '''
-        if not self.connect_to_aws_rds():
-            return False
-        try:
-            instances = self.rdsc.describe_db_instances().get('DBInstances')
-        except:
-            return False
-        else:
-            return instances
-
-    def delete_db_instance(self, dbid):
-        ''' Delete DB '''
-        if not self.connect_to_aws_rds():
-            return False
-        try:
-            database = self.rdsc.delete_dbinstance(dbid,
-                                                   skip_final_snapshot=True)
-            print database
-        except:
-            return False
-        else:
-            return True
-
-    def validate_instance_id(self, instid):
-        ''' Validate instance ID '''
-        # 1-63 alphanumeric characters, first must be a letter.
-        if re.match('[\w-]+$', instid) is not None:
-            if len(instid) <= 63 and len(instid) >= 1:
-                if instid[0].isalpha():
-                    return True
-        return "*** Error: Instance ids must be 1-63 alphanumeric characters, \
-            first is a letter."
-
-    def validate_instance_size(self, size):
-        ''' integer between 5-1024 (inclusive) '''
-        try:
-            int(size)
-        except ValueError:
-            return '*** Error: size must be a whole number between 5 and 1024.'
-        if int(size) < 5 or int(size) > 1024:
-            return '*** Error: size must be between 5-1024 GB.'
-        return True
-
-    def validate_instance_username(self, username):
-        ''' Validate instance username '''
-        # 1-16 alphanumeric characters - first character must be a letter -
-        # cannot be a reserved MySQL word
-        if re.match('[\w-]+$', username) is not None:
-            if len(username) <= 16 and len(username) >= 1:
-                if username[0].isalpha():
-                    if username not in MYSQL_RESERVED_WORDS:
-                        return True
-        return '*** Error: Usernames must be 1-16 alphanumeric chracters, \
-            first a letter, cannot be reserved MySQL word.'
-
-    def validate_instance_password(self, password):
-        ''' Validate instance passwords '''
-        # 1-16 alphanumeric characters - first character must be a letter -
-        # cannot be a reserved MySQL word
-        if re.match('[\w-]+$', password) is not None:
-            if len(password) <= 41 and len(password) >= 8:
-                return True
-        return '*** Error: Passwords must be 8-41 alphanumeric characters'
-
-    def validate_instance_dbname(self, dbname):
-        ''' Validate instance database name '''
-        # 1-64 alphanumeric characters, cannot be a reserved MySQL word
-        if re.match('[\w-]+$', dbname) is not None:
-            if len(dbname) <= 41 and len(dbname) >= 1:
-                if dbname.lower() not in MYSQL_RESERVED_WORDS:
-                    return True
-        return '*** Error: Database names must be 1-64 alphanumeric characters,\
-            cannot be a reserved MySQL word.'
-
-    def create_db_instance(self, params):
-        ''' Create db instance '''
-        if not self.connect_to_aws_rds():
-            return False
-        try:
-            database = self.rdsc.create_dbinstance(
-                id=params['id'],
-                allocated_storage=params['size'],
-                instance_class='db.t1.micro',
-                engine='MySQL',
-                master_username=params['username'],
-                master_password=params['password'],
-                db_name=params['dbname'],
-                multi_az=False
-            )
-        except:
-            return False
-        else:
-            return True
-
 
 class MTurkServices(object):
     ''' MTurk services '''
@@ -337,12 +90,11 @@ class MTurkServices(object):
             for page in paginator.paginate():
                 hits.extend(page['HITs'])
         except Exception as e:
-            print e
-            return False
+            raise e
         hits_data = self._hit_xml_to_object(hits)
         return hits_data
 
-    def get_workers(self, assignment_status=None, chosen_hits=None):
+    def get_assignments(self, assignment_status=None, chosen_hits=None):
         ''' Get workers '''
         if not self.connect_to_turk():
             return False
@@ -367,7 +119,7 @@ class MTurkServices(object):
 
         except Exception as e:
             print e
-            return False
+            raise
         workers = [{
             'hitId': assignment['HITId'],
             'assignmentId': assignment['AssignmentId'],
@@ -378,7 +130,7 @@ class MTurkServices(object):
         } for assignment in assignments]
         return workers
 
-    def get_worker(self, assignment_id):
+    def get_assignment(self, assignment_id):
         if not self.connect_to_turk():
             return False
         try:
@@ -395,7 +147,7 @@ class MTurkServices(object):
         }
         return worker_data
 
-    def bonus_worker(self, assignment_id, amount, reason=""):
+    def bonus_assignment(self, assignment_id, amount, reason=""):
         ''' Bonus worker '''
         if not self.connect_to_turk():
             return False
@@ -408,7 +160,7 @@ class MTurkServices(object):
             print exception
             return False
 
-    def approve_worker(self, assignment_id, override_rejection = False):
+    def approve_assignment(self, assignment_id, override_rejection = False):
         ''' Approve worker '''
         if not self.connect_to_turk():
             return False
@@ -419,7 +171,7 @@ class MTurkServices(object):
         except Exception as e:
             return False
 
-    def reject_worker(self, assignment_id):
+    def reject_assignment(self, assignment_id):
         ''' Reject worker '''
         if not self.connect_to_turk():
             return False
@@ -430,7 +182,7 @@ class MTurkServices(object):
             print e
             return False
 
-    def unreject_worker(self, assignment_id):
+    def unreject_assignment(self, assignment_id):
         ''' Unreject worker '''
         return self.approve_worker(assignment_id, True)
 
