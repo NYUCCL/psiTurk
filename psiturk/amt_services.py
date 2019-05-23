@@ -583,12 +583,12 @@ class MTurkServices(object):
                 return False
             self.configure_hit(hit_config)
             myhit = self.mtc.create_hit_with_hit_type(**self.param_dict)['HIT']
-            self.hitid = myhit['HITId']
+            hitid = myhit['HITId']
         except Exception as e:
             print e
             return False
         else:
-            return self.hitid
+            return hitid
 
     # TODO(Jay): Have a wrapper around functions that serializes them.
     # Default output should not be serialized.
