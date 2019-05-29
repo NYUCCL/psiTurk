@@ -1017,7 +1017,7 @@ class PsiturkNetworkShell(PsiturkShell):
             if arg['--all']:
                 self.amt_services_wrapper.expire_all_hits()
                 did_something = True
-            elif arg['<HITId>'}:
+            elif arg['<HITId>']:
                 did_something = True
                 for hit_id in arg['<HITId>']:
                     self.amt_services_wrapper.expire_hit(hit_id)
