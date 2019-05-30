@@ -260,7 +260,7 @@ class TestAmtServices(object):
         
     def test_wrapper_get_assignments_for_hits(self, stubber, amt_services_wrapper, helpers, create_dummy_hit, get_submitted_assignment_json):
         assignments_data = helpers.get_boto3_return('list_assignments_for_hit.json')
-        hit_ids = [assignment['HITId'] for assignment in assignments_data['Assignments']]
+        hit_ids = list(set([assignment['HITId'] for assignment in assignments_data['Assignments']]))
         [ create_dummy_hit(hit_id) for hit_id in hit_ids ]
         [ stubber.add_response('list_assignments_for_hit', assignments_data) for hit_id in hit_ids]
         assignments = amt_services_wrapper.get_assignments_for_hits(hit_ids)
@@ -325,31 +325,64 @@ class TestAmtServices(object):
         results = amt_services_wrapper.approve_all_assignments(all_studies=True)
         assert len([result for result in results if result['status'] == 'success']) == number_approved
         
-    def test_wrapper_reject_assignment(self, stubber, amt_services_wrapper, create_dummy_assignment, helpers):
+    def test_wrapper_reject_unreject_assignments(self, stubber, amt_services_wrapper, create_dummy_assignment, helpers):
         
-        # local only...
-        assignment_1 = create_dummy_assignment({'hitid':'abc'})
+        # reject all for a given hit, local only...
+        assignment_1 = create_dummy_assignment({'hitid':'abc','status':4})
+        stubber.add_response('reject_assignment',{})
         result = amt_services_wrapper.reject_assignments_for_hit('abc', all_studies=False)
         assert len(result) == 1
         
-        # all studies...
         hits_data = helpers.get_boto3_return('list_hits.json')
-        stubber.add_response('list_hits', helpers.get_boto3_return('list_hits.json'))
         assignments_data = helpers.get_boto3_return('list_assignments_for_hit.json')
-        for i in range(len(hits_data['HITs'])):
-            stubber.add_response('list_assignments_for_hit', assignments_data)
+        
+        def prep_list_hits():
+            stubber.add_response('list_hits', hits_data)
+            for i in range(len(hits_data['HITs'])):
+                stubber.add_response('list_assignments_for_hit', assignments_data)
+        
+        # reject all for a given hit,, all studies...
+        prep_list_hits()
+        
+        def prep_operation_all_for_hit(operation=None):
+            number_to_be_operated_on = 0
+            for i in range(len(hits_data['HITs'])):
+                for j in range(len(assignments_data['Assignments'])):
+                    stubber.add_response(operation,{})
+                    number_to_be_operated_on += 1
+            return number_to_be_operated_on
+        
+        number_to_be_approved = prep_operation_all_for_hit('reject_assignment')
+        
+        results = amt_services_wrapper.reject_assignments_for_hit('abc', all_studies=True)
+        assert len(results) == number_to_be_approved
+        for result in results:
+            assert result['success'] == True
             
-        number_approved = 0
-        for i in range(len(hits_data['HITs'])):
-            for j in range(len(assignments_data['Assignments'])):
-                    stubber.add_response('reject_assignment',{})
-                    number_approved += 1
-        result = amt_services_wrapper.reject_assignments_for_hit('abc', all_studies=True)
-        assert len(result) == number_approved
+        # reject one at a time
+        reject_these = ['abc','123']
+        [ stubber.add_response('reject_assignment',{}) for i in reject_these ]
+        result = amt_services_wrapper.reject_assignments(reject_these)
         
         
-        result = amt_services_wrapper.reject_assignments(['abc','123'])
+        # unreject one at a time
+        [ stubber.add_response('approve_assignment',{}) for i in reject_these ]
+        results = amt_services_wrapper.unreject_assignments(reject_these)
+        assert len(results) == len(reject_these)
+        
+        # unreject all for a given hit for local study only
+        results = amt_services_wrapper.unreject_assignments_for_hit(['abc'], all_studies=False)
+        assert len(results) == 1        
+        
+        # unreject all for a given hit across all studies
+        prep_list_hits()
+        number_to_be_unrejected = prep_operation_all_for_hit('approve_assignment')
+        results = amt_services_wrapper.unreject_assignments_for_hit('abc', all_studies=True)
+        assert len(results) == number_to_be_unrejected
+        for result in results:
+            assert result['success'] == True
+            
+    def test_wrapper_bonus_assignment(self):
         pass
         
-    def test_wrapper_unreject_assignment(self):
-        pass
+        

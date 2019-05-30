@@ -184,7 +184,7 @@ class MTurkServices(object):
 
     def unreject_assignment(self, assignment_id):
         ''' Unreject worker '''
-        return self.approve_worker(assignment_id, True)
+        return self.approve_assignment(assignment_id, override_rejection=True)
 
     def setup_mturk_connection(self):
         ''' Connect to turk '''
