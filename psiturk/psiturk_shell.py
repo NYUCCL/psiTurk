@@ -1074,7 +1074,8 @@ class PsiturkNetworkShell(PsiturkShell):
                 result = self.amt_services_wrapper.reject_assignments(arg['<assignment_id>'])
             if result:
                 if isinstance(result, list):
-                    print(_result['message'] for _result in results]
+                    for _result in results:
+                        print(_result['message'])
                 else:
                     print( result['message'])
         elif arg['unreject']:
