@@ -150,11 +150,12 @@ class MTurkServicesWrapper():
         assignments = [self.add_bonus_info(assignment) for assignment in assignments]
         return assignments
         
-    def _get_local_submitted_assignments(self):
+    def _get_local_submitted_assignments(self, hit_id=None):
         init_db()
-        assignments = Participant.query.filter( \
-            Participant.status == COMPLETED
-        ).all()
+        query = Participant.query.filter(or_(Participant.status == COMPLETED, Participant.status == SUBMITTED))
+        if hit_id:
+            query.filter(Participant.hitid == hit_id)
+        assignments = query.all()
         return assignments
     
     def approve_all_assignments(self, all_studies=False):
@@ -234,20 +235,31 @@ class MTurkServicesWrapper():
                 else:
                     status_report = _status_report
         return status_report
-
-    def reject_assignment(self, chosen_hit, assignment_ids = None):
-        ''' Reject assignment '''
-        if chosen_hit:
+    
+    def reject_assignments_for_hit(self, hit_id, all_studies=False):
+        if all_studies:
             assignments = self.amt_services.get_assignments("Submitted")
             assignment_ids = [assignment['assignmentId'] for assignment in assignments if \
-                              assignment['hitId'] == chosen_hit]
-            print 'rejecting assignments for HIT', chosen_hit
+                              assignment['hitId'] == hit_id]
+        else:
+            assignments = self._get_local_submitted_assignments()
+            assignment_ids = [assignment['assignmentid'] for assignment in assignments]
+        return self.reject_assignments(assignment_ids)
+        
+    def reject_assignments(self, assignment_ids):
+        results = []
         for assignment_id in assignment_ids:
-            success = self.amt_services.reject_assignment(assignment_id)
-            if success:
-                print 'rejected', assignment_id
-            else:
-                print '*** failed to reject', assignment_id
+            result = self.reject_assignment(assignment_id)
+            results.append(result)
+        return results
+                
+    def reject_assignment(self, assignment_id):
+        success = self.amt_services.reject_assignment(assignment_id)
+        if success:
+            message = 'rejected {}'.format(assignment_id)
+        else:
+            message = '*** failed to reject {}'.format(assignment_id)
+        return {'success': success, 'message': message } 
 
     def unreject_assignment(self, chosen_hit, assignment_ids = None):
         ''' Unreject assignment '''

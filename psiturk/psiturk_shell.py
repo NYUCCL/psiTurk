@@ -1067,7 +1067,16 @@ class PsiturkNetworkShell(PsiturkShell):
         if arg['approve']:
             self.worker_approve(arg['--all'], arg['<hit_id>'], arg['<assignment_id>'], arg['--all-studies'], arg['--force'])
         elif arg['reject']:
-            self.amt_services_wrapper.worker_reject(arg['<hit_id>'], arg['<assignment_id>'])
+            result = None
+            if arg['<hit_id>']:
+                result = self.amt_services_wrapper.reject_assignments_for_hit(arg['<hit_id>'])
+            elif arg['<assignment_id>']:
+                result = self.amt_services_wrapper.reject_assignments(arg['<assignment_id>'])
+            if result:
+                if isinstance(result, list):
+                    print(_result['message'] for _result in results]
+                else:
+                    print( result['message'])
         elif arg['unreject']:
             self.amt_services_wrapper.worker_unreject(arg['<hit_id>'], arg['<assignment_id>'])
         elif arg['list']:

@@ -308,8 +308,9 @@ class TestAmtServices(object):
         results = amt_services_wrapper.approve_all_assignments(all_studies=False)
         assert len([result for result in results if result['status'] == 'success']) == 2
         
-        assignments_data = helpers.get_boto3_return('list_assignments_for_hit.json')
         stubber.add_response('list_hits',hits_json)
+        
+        assignments_data = helpers.get_boto3_return('list_assignments_for_hit.json')
         
         number_approved = 0
         
@@ -324,7 +325,30 @@ class TestAmtServices(object):
         results = amt_services_wrapper.approve_all_assignments(all_studies=True)
         assert len([result for result in results if result['status'] == 'success']) == number_approved
         
-    def test_wrapper_reject_assignment(self):
+    def test_wrapper_reject_assignment(self, stubber, amt_services_wrapper, create_dummy_assignment, helpers):
+        
+        # local only...
+        assignment_1 = create_dummy_assignment({'hitid':'abc'})
+        result = amt_services_wrapper.reject_assignments_for_hit('abc', all_studies=False)
+        assert len(result) == 1
+        
+        # all studies...
+        hits_data = helpers.get_boto3_return('list_hits.json')
+        stubber.add_response('list_hits', helpers.get_boto3_return('list_hits.json'))
+        assignments_data = helpers.get_boto3_return('list_assignments_for_hit.json')
+        for i in range(len(hits_data['HITs'])):
+            stubber.add_response('list_assignments_for_hit', assignments_data)
+            
+        number_approved = 0
+        for i in range(len(hits_data['HITs'])):
+            for j in range(len(assignments_data['Assignments'])):
+                    stubber.add_response('reject_assignment',{})
+                    number_approved += 1
+        result = amt_services_wrapper.reject_assignments_for_hit('abc', all_studies=True)
+        assert len(result) == number_approved
+        
+        
+        result = amt_services_wrapper.reject_assignments(['abc','123'])
         pass
         
     def test_wrapper_unreject_assignment(self):
