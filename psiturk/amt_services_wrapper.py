@@ -30,6 +30,7 @@ from amt_services import MTurkServices
 from psiturk_org_services import PsiturkOrgServices, TunnelServices
 from psiturk_config import PsiturkConfig
 from psiturk_statuses import *
+from psiturk_exceptions import *
 from db import db_session, init_db
 from models import Participant, Hit
 from utils import *
@@ -297,175 +298,144 @@ class MTurkServicesWrapper():
         else:
             result['message'] = '*** failed to unreject {}'.format(assignment_id)
         result['success'] = success
-        return result
-        
-    def get_participants_for_assignment_ids(self, assignment_ids):
-        participants = []
-        for assignment_id in assignment_ids:
-            participant = self.get_participant_for_assignment_id(assignment_id)
-            participants.append(participant)
-        return participants
-        
-    def get_participant_for_assignment_id(self, assignment_id):
-        participant = Participant.query\
-                .filter(Participant.assignmentid == assignment_id)\
-                .order_by(Participant.beginhit.desc()).first()
-        return participant
-
-    def bonus_local_assignments_for_hit(self, amount, hit_id, reason=''):
-        
-        pass
-        
-    def bonus_all_local_assignments(self, amount=None, auto=False, reason=''):
-        
+        return result    
+    
+    def bonus_all_local_assignments(self, amount, reason, override_bonused_status=False):
         mode = 'sandbox' if self.sandbox else 'live'
-        
-        auto = amount == 'auto'
         assignments = Participant.query.filter(Participant.status == CREDITED)\
-            .filter(Participant.mode == mode)
+            .filter(Participant.mode == mode)\
             .all()
             
+        results = []
         for assignment in assignments:
-            result = self.bonus_local_assignment(assignment, amount, auto, reason)
-            
-            
-            if auto:
-                amount = worker.bonus
-            success = self.amt_services.bonus_assignment(worker.assignmentid, amount, reason)
-            if success:
-                print "gave bonus of $" + str(amount) + " for assignment " + worker.assignmentid
-                worker.status = BONUSED
-                db_session.add(worker)
-                db_session.commit()
-        
-    def bonus_local_assignment(self, assignment):
-        '''
-        `assignment` can be an assignment_id, an assignment_dict from mturk, or a Participant object
-        '''
-        '''
-        assume a Participant object...
-        
-        '''
-        # if is_instance(assignment, Participant):
-            # pass
-        # elif is_instance(assignment, str):
-            # assume assignment_id
-            # assignment = Participant.query\
-                # .filter(Participant.assignmentid == assignment)\
-                # .filter(Participant.status == CREDITED)\
-                # .order_by(Participant.beginhit.desc())\
-                # .first()
-        pass
-        
-    def bonus_assignments(self, amount=None, auto=False, assignment_ids, all_studies=False):
-        pass
-        
-    
-        
-    
-    def bonus_assignment(self, assignment, amount=None, auto=False, reason=''):
-        if not amount and not auto:
-            raise Exception('Either specify `auto`, or specify a static bonus amount.')
-        if amount and auto:
-            raise Exception('Either specify `auto` or a static bonus amount, but not both.')
-            
-        mode = 'sandbox' if self.sandbox else 'live'
-        
-        
-        
-        if auto:
-            if isinstance(assignment, Participant):
-                amount = assignment.bonus
-            elif isinstance(assignment, dict):
-                assignment = self.add_bonus_info(assignment)
-                amount = assignment['bonus']
-        
-        ''' Bonus assignment '''
-        if not reason:
-            if self.config.has_option('Shell Parameters', 'bonus_message'):
-                reason = self.config.get('Shell Parameters', 'bonus_message')
-            while not reason:
-                user_input = raw_input("Type the reason for the bonus. Workers "
-                                       "will see this message: ")
-                reason = user_input
+            result = self._bonus_local_assignment(assignment, amount, reason, override_bonused_status)
+            results.append(result)
+        return results
                 
-        success = self.amt_services.bonus_assignment(assignment.assignmentid, amount, reason)
-        if success:
-            print "gave bonus of $" + str(amount) + " for assignment " + assignment.assignmentid
-            assignment.status = BONUSED
-            db_session.add(assignment)
-            db_session.commit()
+    def _bonus_local_assignment(self, local_assignment, amount, reason, override_bonused_status=False):
+        result = {'assignment_id': local_assignment.assignmentid}
+        try:
+            if local_assignment.status == BONUSED and not override_bonused_status:
+                message = 'Participant with assignment_id {} already bonused, and override not set. Not bonusing.'.format(local_assignment.assignmentid)
+                raise AssignmentAlreadyBonusedError(message)
+            if amount == 'auto':
+                amount = local_assignment.bonus
+            
+            result.update(self.bonus_assignment(local_assignment.assignmentid, local_assignment.workerid, amount, reason))
+            if result['success']:
+                result['message'] = "gave bonus of ${} for assignment {}".format(str(amount), local_assignment.assignmentid)
+                
+                local_assignment.status = BONUSED
+                db_session.add(local_assignment)
+                db_session.commit()
+        except Exception as e:
+            result['success'] = False
+            result['exception'] = e
+        return result
+        
+    def _try_fetch_local_credited_assignments(self, try_these):
+        '''
+        Can accept either an assignment_id or the return of a local assignment...
+        '''
+        attempts_were_made = []
+        for try_this in try_these:
+            query = Participant.query\
+                        .filter(Participant.status == CREDITED)\
+                        .order_by(Participant.beginhit.desc())
+            if isinstance(try_this, str): # then assume that it's an assignment_id
+                assignment_id = try_this
+                query = query.filter(Participant.assignmentid == assignment_id)
+            elif isinstance(try_this, dict): # then assume that it's a return from mturk
+                assignment = try_this
+                assignment_id = assignment['assignmentId']
+                query = query.filter(Participant.workerid == assignment['workerId'])\
+                            .filter(Participant.assignmentid == assignment_id)
+            local_assignment = query.first()
+            if local_assignment:
+                attempts_were_made.append(local_assignment)
+            else:
+                attempts_were_made.append(try_this)
+        return attempts_were_made
+    
+    def bonus_assignments_for_hit(self, hit_id, amount, reason, all_studies=False, override_bonused_status=False):
+        '''
+        Fetch assignments for local hit. 
+        * If all_studies, try to map them to a local_assignment.
+        * If not all_studies, just pull from local db. Already a Participant.
+        
+        For each, if isinstance Participant, assignment, then send to `_bonus_local_assignment`.
+        Otherwise, send directly to bonus_assignment. Record the result either way.
+        '''
+        if all_studies:
+            mturk_assignments = self.amt_services.get_assignments(assignment_status="Approved", hit_ids=[hit_id])
+            assignments = self._try_fetch_local_credited_assignments(mturk_assignments)
+        else:
+            assignments = Participant.query\
+                .filter(Participant.status.in_([CREDITED, BONUSED]))\
+                .filter(Participant.hitid == hit_id)\
+                .all()
+        results = self._bonus_list(assignments, amount, reason, override_bonused_status)
+        return results
+        
+    def _bonus_list(self, bonus_these, amount, reason, override_bonused_status=False):
+        results = []
+        for bonus_this in bonus_these:
+            if isinstance(bonus_this, Participant):
+                result = self._bonus_local_assignment(bonus_this, amount, reason, override_bonused_status)
+                results.append(result)
+            elif isinstance(bonus_this, str):
+                # assume that the str is just an assignment_id
+                assignment_id = bonus_this
+                result = self.bonus_assignment(assignment_id=bonus_this, worker_id=None, amount=amount, reason=reason)
+                results.append(result)
+        return results
         
             
-            
-        if all:
-            workers = Participant.get_approved(mode=mode)
-            for worker in workers:
-                if auto:
-                    amount = worker.bonus
-                success = self.amt_services.bonus_assignment(worker.assignmentid, amount, reason)
-                if success:
-                    print "gave bonus of $" + str(amount) + " for assignment " + worker.assignmentid
-                    worker.status = BONUSED
-                    db_session.add(worker)
-                    db_session.commit()
-            
-        # Bonus already-bonused workers if the user explicitly lists their
-        # assignment IDs
-
-        override_status = True
-        if chosen_hit:
-            override_status = False
-            assignments = self.amt_services.get_assignments("Approved", chosen_hit)
-            if not assignments:
-                print "No approved assignments for HIT", chosen_hit
-                return
-            print 'bonusing assignments for HIT', chosen_hit
-        elif len(assignment_ids) == 1:
-            assignments = [self.amt_services.get_assignment(assignment_ids[0])]
-            if not assignments:
-                print "No submissions found for requested assignment ID"
-                return
-        else:
-            assignments = self.amt_services.get_assignments("Approved")
-            if not assignments:
-                print "No approved assignments found."
-                return
-
-            assignments = [assignment for assignment in assignments if \
-                              assignment['assignmentId'] in assignment_ids]
-
-        for assignment in assignments:
-            assignment_id = assignment['assignmentId']
-            try:
-                init_db()
-                part = Participant.query.\
-                       filter(Participant.assignmentid == assignment_id).\
-                       filter(Participant.workerid == assignment['workerId']).\
-                       filter(Participant.endhit != None).\
-                       one()
-                if auto:
-                    amount = part.bonus
-                status = part.status
-                if amount <= 0:
-                    print "bonus amount <=$0, no bonus given for assignment", assignment_id
-                elif status == 7 and not override_status:
-                    print "bonus already awarded for assignment", assignment_id
+    def bonus_assignments_for_assignment_ids(self, assignment_ids, amount, reason, all_studies=False):
+        assignments = self._try_fetch_local_credited_assignments(assignment_ids)
+        results = []
+        if not all_studies:
+            local_assignments = []
+            for assignment in assignments:
+                if isinstance(assignment, Participant):
+                    local_assignments.append(assignment)
                 else:
-                    success = self.amt_services.bonus_assignment(assignment_id,
-                                                             amount, reason)
-                    if success:
-                        print "gave bonus of $" + str(amount) + " for assignment " + \
-                        assignment_id
-                        part.status = 7
-                        db_session.add(part)
-                        db_session.commit()
-                        db_session.remove()
-                    else:
-                        print "*** failed to bonus assignment", assignment_id
-            except Exception as e:
-                print e
-                print "*** failed to bonus assignment", assignment_id
+                    results.append({
+                        'success': False, 
+                        'assignment_id': assignment,
+                        'message': "assignment not found in local study db"
+                        })
+            assignments = local_assignments
+            
+        results = results + self._bonus_list(assignments, amount, reason)
+        return results
+            
+    
+    def bonus_assignment(self, assignment_id, worker_id, amount, reason):
+        ''' Bonus assignment '''
+        
+        '''
+        If this is supposed to bonus a local_assignment, then call `_bonus_local_assignment`, 
+        passing the local assignment.
+        
+        Try to match up local_assignments with whatever arguments are passed (assignment_ids, hit_id) 
+        before coming into this function.
+        `amount` has to be greater than 0
+        ''' 
+        mode = 'sandbox' if self.sandbox else 'live'
+                
+        result = {}        
+        try:
+            if amount <= 0:
+                raise BadBonusAmountError(amount, assignment_id=assignment_id)
+            success = self.amt_services.bonus_assignment(assignment_id, worker_id, amount, reason)
+            result['success'] = success
+            if not reason:
+                raise BonusReasonMissingError
+        except Exception as e:
+            result['success'] = False
+            result['exception'] = e
+        return result
 
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #   hit management

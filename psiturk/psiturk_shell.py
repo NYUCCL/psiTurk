@@ -1059,9 +1059,8 @@ class PsiturkNetworkShell(PsiturkShell):
           worker approve (--all | --hit <hit_id> ... | <assignment_id> ...) [--all-studies] [--force]
           worker reject (--hit <hit_id> | <assignment_id> ...)
           worker unreject (--hit <hit_id> | <assignment_id> ...)
-          worker bonus  (--amount <amount> | --auto) (--all | --hit <hit_id> | <assignment_id> ...)
+          worker bonus  (--amount <amount> | --auto) (--reason) (--all | --hit <hit_id> | <assignment_id> ...) [--override-bonused-status]
           worker list [--submitted | --approved | --rejected] [(--hit <hit_id>)] [--all-studies]
-          worker count [--completed]
           worker help
         """
         if arg['approve']:
@@ -1083,12 +1082,31 @@ class PsiturkNetworkShell(PsiturkShell):
         elif arg['list']:
             self.worker_list(arg['--submitted'], arg['--approved'], arg['--rejected'], arg['<hit_id>'], arg['--all-studies'])
         elif arg['bonus']:
-            self.amt_services_wrapper.worker_bonus(arg['--all'], arg['<hit_id>'], arg['--auto'], arg['<amount>'], arg['<assignment_id>'])
-        elif arg['count']:
-            kw = {}
-            if arg['--completed']:
-                kw['status'] = 'completed'
-            self.count_workers( **kw )
+            reason = arg['--reason']
+            if not reason:
+                if self.config.has_option('Shell Parameters', 'bonus_message'):
+                    reason = self.config.get('Shell Parameters', 'bonus_message')
+                    print('Using bonus `reason` from config file: "{}"'.format(reason))
+                while not reason:
+                    user_input = raw_input("Type the reason for the bonus. Workers "
+                                           "will see this message: ")
+                    reason = user_input
+            
+            override_bonused_status = arg['--override-bonused-status']
+            
+            if arg['--auto']:
+                amount = 'auto'
+            else:
+                amount = arg['<amount>']
+            
+            if arg['<hit_id>']:
+                self.amt_services_wrapper.bonus_assignments_for_hit(arg['<hit_id>'][0], amount, reason, override_bonused_status)
+            
+            elif arg['--all']:
+                self.amt_services_wrapper.bonus_all_local_assignments(amount, reason, override_bonused_status)
+                
+            elif arg['<assignment_id>']:
+                self.amt_services_wrapper.bonus_assignments_for_assignment_ids(arg['<assignment_id>'], amount, reason, override_bonused_status)
         else:
             self.help_worker()
     

@@ -8,6 +8,7 @@ from botocore.stub import Stubber
 import datetime
 import ciso8601
 from psiturk import psiturk_statuses
+from psiturk.psiturk_exceptions import *
         
 SANDBOX_ENDPOINT_URL = 'https://mturk-requester-sandbox.us-east-1.amazonaws.com'
 LIVE_ENDPOINT_URL = 'https://mturk-requester.us-east-1.amazonaws.com'
@@ -382,7 +383,67 @@ class TestAmtServices(object):
         for result in results:
             assert result['success'] == True
             
-    def test_wrapper_bonus_assignment(self):
-        pass
+    def test_wrapper_bonus_assignment(self, create_dummy_assignment, amt_services_wrapper, stubber):        
+        
+        from psiturk.db import db_session
+        
+        # ## filters
+        # with hit_id
+        hit_id = '123'
+        # amount = 0.01
+        amount = 'auto'
+        reason = 'yee'
+        override_bonused_status=False
+        def edit_assignment(assignment, new_config):
+            for k, v in new_config.items():
+                setattr(assignment, k, v)
+            db_session.add(assignment)
+            db_session.commit()
+        
+        assignment_1 = create_dummy_assignment({'hitid':hit_id})
+        edit_assignment(assignment_1, { 'status': psiturk_statuses.BONUSED })
+        results = amt_services_wrapper.bonus_assignments_for_hit('123', amount, reason, override_bonused_status)
+        assert isinstance(results[0]['exception'], AssignmentAlreadyBonusedError)
+        
+        edit_assignment(assignment_1, { 'status': psiturk_statuses.CREDITED, 'bonus': 0.00 })
+        results = amt_services_wrapper.bonus_assignments_for_hit('123', amount, reason)
+        assert isinstance(results[0]['exception'], BadBonusAmountError)
+        
+        stubber.add_response('send_bonus', {})
+        edit_assignment(assignment_1, { 'status': psiturk_statuses.BONUSED, 'bonus': 0.50})
+        results = amt_services_wrapper.bonus_assignments_for_hit('123', amount, reason, override_bonused_status=True)
+        assert results[0]['success']
         
         
+        assignment_id = 'abc'
+        amount = 0.50
+        reason = 'yee'
+        assignment_2 = create_dummy_assignment({   
+            'hitid':hit_id, 
+            'assignmentid': assignment_id, 
+            'status': psiturk_statuses.CREDITED
+        })
+        stubber.add_response('send_bonus', {})
+        stubber.add_response('send_bonus', {})
+        results = amt_services_wrapper.bonus_assignments_for_assignment_ids([assignment_id, '123'], amount, reason)
+        assert len([result for result in results if result['success']]) == 1
+        
+        for assignment in [assignment_1, assignment_2]:
+            edit_assignment(assignment, {'status': psiturk_statuses.CREDITED, 'mode':'sandbox', 'bonus': 0.50})
+            stubber.add_response('send_bonus', {})
+        amount = 'auto'
+        reason = 'yee'
+        results = amt_services_wrapper.bonus_all_local_assignments(amount, reason)
+        assert len([result for result in results if result['success']]) == 2
+        
+        for i, assignment in enumerate([assignment_1, assignment_2]):
+            edit_assignment(assignment, {
+                'assignmentid': '{}bc'.format(i+1),
+                'status': psiturk_statuses.CREDITED,
+                'mode':'sandbox',
+                'bonus': 0.50
+                })
+            stubber.add_response('send_bonus', {})
+        results = amt_services_wrapper.bonus_assignments_for_assignment_ids(['1bc','2bc'], amount=amount, reason='')
+        for result in results:
+            assert isinstance(result['exception'], BonusReasonMissingError) 

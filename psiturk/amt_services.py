@@ -94,13 +94,13 @@ class MTurkServices(object):
         hits_data = self._hit_xml_to_object(hits)
         return hits_data
 
-    def get_assignments(self, assignment_status=None, chosen_hits=None):
+    def get_assignments(self, assignment_status=None, hit_ids=None):
         ''' Get workers '''
         if not self.connect_to_turk():
             return False
         try:
-            if chosen_hits:
-                hit_ids = chosen_hits
+            if hit_ids and not isinstance(hit_ids, list):
+                hit_ids = [hit_ids]
             else:
                 hits = self.get_all_hits()
                 hit_ids = [hit.options['hitid'] for hit in hits]
@@ -147,17 +147,20 @@ class MTurkServices(object):
         }
         return worker_data
 
-    def bonus_assignment(self, assignment_id, amount, reason=""):
+    def bonus_assignment(self, assignment_id, worker_id, amount, reason=""):
         ''' Bonus worker '''
         if not self.connect_to_turk():
             return False
         try:
-            assignment = self.mtc.get_assignment(AssignmentId=assignment_id)['Assignment']
-            worker_id = assignment['WorkerId']
+            if not worker_id:
+                assignment = self.mtc.get_assignment(AssignmentId=assignment_id)['Assignment']
+                worker_id = assignment['WorkerId']
             self.mtc.send_bonus(WorkerId=worker_id, AssignmentId=assignment_id, BonusAmount=str(amount), Reason=reason)
             return True
-        except Exception as exception:
-            print exception
+        except Exception as e:
+            import traceback
+            traceback.print_stack()
+            raise e
             return False
 
     def approve_assignment(self, assignment_id, override_rejection = False):
