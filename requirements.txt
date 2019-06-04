@@ -15,4 +15,4 @@ setproctitle==1.1.8
 psutil>=1.2.1
 Werkzeug==0.12.1
 ua-parser==0.3.6
-certifi
+urllib3[secure]==1.24.3

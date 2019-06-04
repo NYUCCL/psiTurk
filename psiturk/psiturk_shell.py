@@ -13,8 +13,16 @@ import string
 import random
 import datetime
 import urllib
+import urllib3.contrib.pyopenssl; urllib3.contrib.pyopenssl.inject_into_urllib3()
+import certifi
+import urllib3;
+http = urllib3.PoolManager(
+    cert_reqs='CERT_REQUIRED',
+    ca_certs=certifi.where())
+
 import signal
 from fuzzywuzzy import process
+
 
 from cmd2 import Cmd
 from docopt import docopt, DocoptExit
@@ -88,12 +96,10 @@ class PsiturkShell(Cmd, object):
         self.super_header = 'basic CMD command help:'
 
         if not self.quiet:
-            self.color_prompt()
+            self.prompt = self.color_prompt()
             self.intro = self.get_intro_prompt()
         else:
             self.intro = ''
-
-        self.already_prelooped = False
 
     def default(self, cmd):
         ''' Collect incorrect and mistyped commands '''
@@ -154,7 +160,7 @@ class PsiturkShell(Cmd, object):
         prompt += ' server:' + server_string
         prompt += ' mode:' + colorize('cabin', 'bold')
         prompt += ']$ '
-        self.prompt = prompt
+        return prompt
 
     def onecmd_plus_hooks(self, line):
         ''' Trigger hooks after command. '''
@@ -162,14 +168,14 @@ class PsiturkShell(Cmd, object):
             return self.emptyline()
         return Cmd.onecmd_plus_hooks(self, line)
 
-    def postcmd(self, stop, line):
-        ''' Exit cmd cleanly. '''
-        self.color_prompt()
-        return Cmd.postcmd(self, stop, line)
+    # def postcmd(self, stop, line):
+        # ''' Exit cmd cleanly. '''
+        # self.color_prompt()
+        # return Cmd.postcmd(self, stop, line)
 
-    def emptyline(self):
-        ''' Refresh the prompt after an empty line is entered. '''
-        self.color_prompt()
+    # def emptyline(self):
+        # ''' Refresh the prompt after an empty line is entered. '''
+        # self.color_prompt()
 
     def complete(self, text, state):
         ''' Add space after a completion, makes tab completion with
@@ -746,13 +752,6 @@ class PsiturkNetworkShell(PsiturkShell):
             self.update_hit_tally()
         PsiturkShell.__init__(self, config, server, quiet)
 
-        # Prevents running of commands by abbreviation
-        self.abbrev = False
-        self.debug = True
-        self.help_path = os.path.join(os.path.dirname(__file__), "shell_help/")
-        self.psiturk_header = 'psiTurk command help:'
-        self.super_header = 'basic CMD command help:'
-
     def do_quit(self, _):
         '''Override do_quit for network clean up.'''
         if (self.server.is_server_running() == 'yes' or
@@ -799,8 +798,11 @@ class PsiturkNetworkShell(PsiturkShell):
     def get_intro_prompt(self):
         ''' Overloads intro prompt with network-aware version if you can reach
         psiTurk.org, request system status message'''
-        server_msg = self.web_services.get_system_status()
-        return server_msg + colorize('psiTurk version ' + version_number +
+        status_msg_url = 'https://raw.githubusercontent.com/NYUCCL/psiTurk/master/status_msg.json'
+        r = http.request('GET', status_msg_url)
+        status_message = json.loads(r.data.decode('utf-8'))['status']
+        
+        return status_message + colorize('psiTurk version ' + version_number +
                                      '\nType "help" for more information.',
                                      'green', False)
 
@@ -857,10 +859,9 @@ class PsiturkNetworkShell(PsiturkShell):
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #   hit management
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
-    def do_amt_balance(self):
+    def do_amt_balance(self, _):
         ''' Get MTurk balance '''
         self.poutput(self.amt_services_wrapper.amt_balance())
-        print 'balanced...'
 
     def help_amt_balance(self):
         ''' Get help for amt_balance. '''
@@ -1271,4 +1272,3 @@ def run(cabinmode=False, script=None, execute=None, quiet=False):
         shell.onecmd_plus_hooks(execute)
     else:
         shell.cmdloop()
-
