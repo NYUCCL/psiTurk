@@ -27,7 +27,7 @@ import sqlalchemy as sa
 
 from sqlalchemy import or_, and_
 from amt_services import MTurkServices
-from psiturk_org_services import PsiturkOrgServices, TunnelServices
+from psiturk_org_services import PsiturkOrgServices
 from psiturk_config import PsiturkConfig
 from psiturk_statuses import *
 from psiturk_exceptions import *
@@ -61,7 +61,7 @@ class MTurkServicesWrapper():
                 self.sandbox)
         return self._cached_amt_services
 
-    def __init__(self, config=None, web_services=None, tunnel=None, sandbox=None):
+    def __init__(self, config=None, web_services=None, sandbox=None):
 
         if not config:
             config = PsiturkConfig()
@@ -70,10 +70,6 @@ class MTurkServicesWrapper():
 
         if web_services:
             self._cached_web_services = web_services
-
-        if not tunnel:
-            tunnel = TunnelServices(config)
-        self.tunnel = tunnel
 
         if not sandbox:
             sandbox = config.getboolean('Shell Parameters', 'launch_in_sandbox_mode')
@@ -133,7 +129,7 @@ class MTurkServicesWrapper():
         '''
         assignment_status, if set, can be one of `Submitted`, `Approved`, or `Rejected`
         '''
-        assignments = self.amt_services.get_assignments(assignment_status=assignment_status, chosen_hits=hit_ids)
+        assignments = self.amt_services.get_assignments(assignment_status=assignment_status, hit_ids=hit_ids)
         return self._get_assignments(assignments, all_studies=all_studies)
         
     def _filter_assignments_for_current_study(self, assignments):
@@ -643,10 +639,7 @@ class MTurkServicesWrapper():
         # 4. ad.html template
         # 5. contact_email in case an error happens
 
-        if self.tunnel.is_open:
-            ip_address = self.tunnel.url
-            port = str(self.tunnel.tunnel_port)  # Set by tunnel server.
-        elif self.config.has_option('Server Parameters','adserver_revproxy_host'):
+        if self.config.has_option('Server Parameters','adserver_revproxy_host'):
             ip_address = self.config.get('Server Parameters', 'adserver_revproxy_host') # misnomer, could actually be a fqdn sans protocol
             if self.config.has_option('Server Parameters','adserver_revproxy_port'):
                 port = self.config.getint('Server Parameters','adserver_revproxy_port')

@@ -20,7 +20,7 @@ Examples
 
    psiTurk command help:
    \=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=
-   amt_balance  debug               mode            server         tunnel
+   amt_balance  debug               mode            server         
    config       download_datafiles  open            setup_example  version
    db           hit                 psiturk_status  status         worker
 

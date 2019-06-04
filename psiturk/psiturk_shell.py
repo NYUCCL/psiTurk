@@ -36,7 +36,7 @@ import webbrowser
 import sqlalchemy as sa
 
 from amt_services_wrapper import MTurkServicesWrapper
-from psiturk_org_services import PsiturkOrgServices, TunnelServices
+from psiturk_org_services import PsiturkOrgServices
 from version import version_number
 from psiturk_config import PsiturkConfig
 import experiment_server_controller as control
@@ -105,7 +105,7 @@ class PsiturkShell(Cmd, object):
         ''' Collect incorrect and mistyped commands '''
         choices = ["help", "mode", "psiturk_status", "server", "shortcuts",
                    "worker", "db", "edit", "open", "config", "show",
-                   "debug", "setup_example", "status", "tunnel", "amt_balance",
+                   "debug", "setup_example", "status", "amt_balance",
                    "download_datafiles", "exit", "hit", "load", "quit", "save",
                    "shell", "version"]
         print "%s is not a psiTurk command. See 'help'." %(cmd)
@@ -162,11 +162,11 @@ class PsiturkShell(Cmd, object):
         prompt += ']$ '
         return prompt
 
-    def onecmd_plus_hooks(self, line):
-        ''' Trigger hooks after command. '''
-        if not line:
-            return self.emptyline()
-        return Cmd.onecmd_plus_hooks(self, line)
+    # def onecmd_plus_hooks(self, line):
+        # ''' Trigger hooks after command. '''
+        # if not line:
+            # return self.emptyline()
+        # return Cmd.onecmd_plus_hooks(self, line)
 
     # def postcmd(self, stop, line):
         # ''' Exit cmd cleanly. '''
@@ -743,7 +743,6 @@ class PsiturkNetworkShell(PsiturkShell):
         self.amt_services_wrapper = MTurkServicesWrapper(config=config, sandbox=sandbox)
 
         self.sandbox = sandbox
-        self.tunnel = TunnelServices()
 
         self.sandbox_hits = 0
         self.live_hits = 0
@@ -751,6 +750,7 @@ class PsiturkNetworkShell(PsiturkShell):
         if not quiet:
             self.update_hit_tally()
         PsiturkShell.__init__(self, config, server, quiet)
+        
 
     def do_quit(self, _):
         '''Override do_quit for network clean up.'''
@@ -780,15 +780,6 @@ class PsiturkNetworkShell(PsiturkShell):
         self.server_off()
         self.clean_up()
         self.server_on()
-
-    def clean_up(self):
-        ''' Clean up child and orphaned processes. '''
-        if self.tunnel.is_open:
-            print 'Closing tunnel...'
-            self.tunnel.close()
-            print 'Done.'
-        else:
-            pass
 
 
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
@@ -823,14 +814,12 @@ class PsiturkNetworkShell(PsiturkShell):
             prompt += ' mode:' + colorize('sdbx', 'bold')
         else:
             prompt += ' mode:' + colorize('live', 'bold')
-        if self.tunnel.is_open:
-            prompt += ' tunnel:' + colorize('✓', 'green')
         if self.sandbox:
             prompt += ' #HITs:' + str(self.sandbox_hits)
         else:
             prompt += ' #HITs:' + str(self.live_hits)
         prompt += ']$ '
-        self.prompt = prompt
+        return prompt
 
     def server_on(self):
         self.server.startup()
@@ -963,24 +952,6 @@ class PsiturkNetworkShell(PsiturkShell):
     def set_sandbox(self, is_sandbox):
         self.sandbox = is_sandbox
         self.amt_services_wrapper.set_sandbox(is_sandbox)
-
-    @docopt_cmd
-    def do_tunnel(self, arg):
-        """
-        Usage: tunnel open
-               tunnel change
-               tunnel status
-        """
-        if arg['open']:
-            self.tunnel_open()
-        elif arg['change']:
-            self.tunnel_change()
-        elif arg['status']:
-            self.tunnel_status()
-
-    # def help_tunnel(self):
-    #     with open(self.help_path + 'tunnel.txt', 'r') as helpText:
-    #         print helpText.read()
 
     @docopt_cmd
     def do_hit(self, arg):
@@ -1212,34 +1183,6 @@ class PsiturkNetworkShell(PsiturkShell):
             self.print_topics(self.psiturk_header, cmds_psiTurk, 15, 80)
             self.print_topics(self.misc_header, help_struct.keys(), 15, 80)
             self.print_topics(self.super_header, cmds_super, 15, 80)
-
-    # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
-    #   tunnel
-    # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
-
-    def tunnel_open(self):
-        ''' Open tunnel '''
-        if (self.server.is_server_running() == 'no' or
-                self.server.is_server_running() == 'maybe'):
-            print("Error: Sorry, you need to have the server running to open a "
-                  "tunnel.  Try 'server on' first.")
-        else:
-            self.tunnel.open()
-
-    def tunnel_status(self):
-        ''' Get tunnel status '''
-        if self.tunnel.is_open:
-            print "For tunnel status, navigate to http://127.0.0.1:4040"
-            print "Hint: In OSX, you can open a terminal link using cmd + click"
-        else:
-            print("Sorry, you need to open a tunnel to check the status. Try"
-                  "'tunnel open' first.")
-
-    def tunnel_change(self):
-        ''' Change tunnel url '''
-        print('Tearing down old tunnel if present...')
-        self.tunnel.change_tunnel_ad_url()
-        print("New tunnel ready. Run 'tunnel open' to start.")
 
 def run(cabinmode=False, script=None, execute=None, quiet=False):
     using_libedit = 'libedit' in readline.__doc__
