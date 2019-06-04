@@ -3,7 +3,7 @@ Flask==0.12.2
 SQLAlchemy>=1.1.18
 gunicorn==19.4.5
 boto3==1.9.130
-cmd2==0.6.7
+cmd2==0.8.9
 docopt==0.6.2
 requests==2.5.0
 user-agents==0.2.0

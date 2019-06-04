@@ -1253,16 +1253,6 @@ class PsiturkNetworkShell(PsiturkShell):
         self.tunnel.change_tunnel_ad_url()
         print("New tunnel ready. Run 'tunnel open' to start.")
 
-    def cmdloop(self):
-        while True:
-            stop = Cmd._cmdloop(self)
-            if not stop:
-                self.intro = ''
-                self.color_prompt()
-                print "^C"
-            else:
-                break
-
 def run(cabinmode=False, script=None, execute=None, quiet=False):
     using_libedit = 'libedit' in readline.__doc__
     if using_libedit:
