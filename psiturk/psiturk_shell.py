@@ -76,7 +76,7 @@ class PsiturkShell(Cmd, object):
     """
 
     def __init__(self, config, server, quiet=False):
-        Cmd.__init__(self)
+        Cmd.__init__(self, persistent_history_file='.psiturk_history')
         self.config = config
         self.server = server
 
@@ -155,20 +155,6 @@ class PsiturkShell(Cmd, object):
         prompt += ' mode:' + colorize('cabin', 'bold')
         prompt += ']$ '
         self.prompt = prompt
-
-    def preloop(self):
-        ''' Keep persistent command history. '''
-        if not self.already_prelooped:
-            self.already_prelooped = True
-            open('.psiturk_history', 'a').close()  # create file if it doesn't exist
-            readline.read_history_file('.psiturk_history')
-            for i in range(readline.get_current_history_length()):
-                if readline.get_history_item(i) is not None:
-                    self.history.append(readline.get_history_item(i))
-
-    def postloop(self):
-        ''' Save history on exit. '''
-        readline.write_history_file('.psiturk_history')
 
     def onecmd_plus_hooks(self, line):
         ''' Trigger hooks after command. '''
@@ -871,9 +857,10 @@ class PsiturkNetworkShell(PsiturkShell):
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #   hit management
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
-    def do_amt_balance(self, _):
+    def do_amt_balance(self):
         ''' Get MTurk balance '''
-        print self.amt_services_wrapper.amt_balance()
+        self.poutput(self.amt_services_wrapper.amt_balance())
+        print 'balanced...'
 
     def help_amt_balance(self):
         ''' Get help for amt_balance. '''
@@ -1279,9 +1266,7 @@ def run(cabinmode=False, script=None, execute=None, quiet=False):
             quiet=quiet)
 
     if script:
-        with open(script, 'r') as temp_file:
-            for line in temp_file:
-                shell.onecmd_plus_hooks(line)
+        shell.do_load(script)
     elif execute:
         shell.onecmd_plus_hooks(execute)
     else:
