@@ -1,10 +1,17 @@
+from __future__ import print_function
+from future import standard_library
+standard_library.install_aliases()
 import os
 import sys
 from distutils import file_util
-from ConfigParser import SafeConfigParser
+import six
+if six.PY3:
+    from configparser import ConfigParser
+else:
+    from configparser import SafeConfigParser as ConfigParser
 
 
-class PsiturkConfig(SafeConfigParser):
+class PsiturkConfig(ConfigParser):
 
     def __init__(self, localConfig="config.txt",
                  globalConfigName=".psiturkconfig", **kwargs):
@@ -14,7 +21,7 @@ class PsiturkConfig(SafeConfigParser):
                 os.environ['PSITURK_GLOBAL_CONFIG_LOCATION'], globalConfigName)
         else:  # if nothing is set default to user's home directory
             globalConfig = "~/" + globalConfigName
-        self.parent = SafeConfigParser
+        self.parent = ConfigParser
         self.parent.__init__(self, **kwargs)
         self.localFile = localConfig
         self.globalFile = os.path.expanduser(globalConfig)

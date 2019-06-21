@@ -1,10 +1,12 @@
+from __future__ import print_function
+from __future__ import absolute_import
 
 import datetime
 import io, csv, json
 from sqlalchemy import Column, Integer, String, DateTime, Float, Text
 
-from db import Base
-from psiturk_config import PsiturkConfig
+from .db import Base
+from .psiturk_config import PsiturkConfig
 
 config = PsiturkConfig()
 config.load_config()
@@ -60,7 +62,7 @@ class Participant(Base):
             trialdata = json.loads(self.datastring)["data"]
         except (TypeError, ValueError):
             # There was no data to return.
-            print("No trial data found in record:", self)
+            print(("No trial data found in record:", self))
             return("")
 
         try:
@@ -76,7 +78,7 @@ class Participant(Base):
                 ret = outstring.getvalue()
             return ret
         except:
-            print("Error reading record:", self)
+            print(("Error reading record:", self))
             return("")
 
     def get_event_data(self):
@@ -84,7 +86,7 @@ class Participant(Base):
             eventdata = json.loads(self.datastring)["eventdata"]
         except (ValueError, TypeError):
             # There was no data to return.
-            print("No event data found in record:", self)
+            print(("No event data found in record:", self))
             return("")
 
         try:
@@ -96,7 +98,7 @@ class Participant(Base):
                 ret = outstring.getvalue()
             return ret
         except:
-            print("Error reading record:", self)
+            print(("Error reading record:", self))
             return("")
 
     def get_question_data(self):
@@ -104,7 +106,7 @@ class Participant(Base):
             questiondata = json.loads(self.datastring)["questiondata"]
         except (TypeError, ValueError):
             # There was no data to return.
-            print("No question data found in record:", self)
+            print(("No question data found in record:", self))
             return("")
 
         try:
@@ -116,7 +118,7 @@ class Participant(Base):
                 ret = outstring.getvalue()
             return ret
         except:
-            print("Error reading record:", self)
+            print(("Error reading record:", self))
             return("")
 
 

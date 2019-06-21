@@ -1,5 +1,7 @@
+from future import standard_library
+standard_library.install_aliases()
 import os
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import json
 
 def get_my_ip():
@@ -8,7 +10,7 @@ def get_my_ip():
         running from behind a NAT/wifi router).  Of course, incoming port
         to the router must be forwarded correctly.
     """    
-    my_ip = json.load(urllib2.urlopen(
+    my_ip = json.load(urllib.request.urlopen(
         'http://httpbin.org/ip'
     ))['origin'].split(',')[0]
     return my_ip

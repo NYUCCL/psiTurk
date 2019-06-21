@@ -1,4 +1,5 @@
 ''' This module supports commandline functionality '''
+from __future__ import print_function
 
 import argparse
 import sys
@@ -51,7 +52,7 @@ def setup_example():
 
     # If requested version just print and quite
     if args.version:
-        print version_number
+        print(version_number)
     else:
         import psiturk.setup_example as se
         se.setup_example()
@@ -71,7 +72,7 @@ def launch_server():
 
     # If requested version just print and quite
     if args.version:
-        print version_number
+        print(version_number)
     else:
         import psiturk.experiment_server as es
         es.launch()
@@ -103,7 +104,7 @@ def launch_shell():
     args, unknownargs = parser.parse_known_args()
     # If requested version just print and quit
     if args.version:
-        print version_number
+        print(version_number)
     else:
         import psiturk.psiturk_shell as ps
         if args.script:

@@ -1,8 +1,11 @@
+from __future__ import print_function
+from __future__ import absolute_import
 # myapp.mycustomapplication
+from builtins import str
 from gunicorn.app.base import Application
 from gunicorn import util
 import multiprocessing
-from psiturk_config import PsiturkConfig
+from .psiturk_config import PsiturkConfig
 import os
 import hashlib
 
@@ -24,7 +27,7 @@ class ExperimentServer(Application):
         self.options = self.user_options
         self.prog = None
         self.do_load_config()
-        print "Now serving on", "http://" + self.options["bind"]
+        print("Now serving on", "http://" + self.options["bind"])
 
     def init(self, *args):
         '''init method
@@ -32,7 +35,7 @@ class ExperimentServer(Application):
         dict which specifies custom settings.
         '''
         cfg = {}
-        for k, v in self.options.items():
+        for k, v in list(self.options.items()):
             if k.lower() in self.cfg.settings and v is not None:
                 cfg[k.lower()] = v
         return cfg
@@ -58,8 +61,8 @@ class ExperimentServer(Application):
             has shut down until they hit `enter` and see that 
             the cmdloop prompt suddenly says "server off"
             '''
-            print 'Caught ^C, experiment server has shut down.'
-            print 'Press `enter` to continue.'
+            print('Caught ^C, experiment server has shut down.')
+            print('Press `enter` to continue.')
 
         # add unique identifier of this psiturk project folder
         project_hash = hashlib.sha1(os.getcwd()).hexdigest()[:12]
@@ -76,7 +79,7 @@ class ExperimentServer(Application):
         }
 
         if config.has_option("Server Parameters", "certfile") and config.has_option("Server Parameters", "keyfile"):
-            print "Loading SSL certs for server..."
+            print("Loading SSL certs for server...")
             ssl_options = {
                 'certfile' : config.get("Server Parameters", "certfile"),
                 'keyfile' : config.get("Server Parameters", "keyfile")

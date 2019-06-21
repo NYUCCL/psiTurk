@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 """ This module provides the backend Flask server used by psiTurk. """
+from __future__ import print_function
+from __future__ import absolute_import
 
+from builtins import str
+from builtins import range
 import os
 import sys
 import datetime
@@ -15,19 +19,19 @@ import json
 try:
     from collections import Counter
 except ImportError:
-    from counter import Counter
+    from .counter import Counter
 
 # Setup flask
 from flask import Flask, render_template, render_template_string, request, \
     jsonify
 
 # Setup database
-from db import db_session, init_db
-from models import Participant
+from .db import db_session, init_db
+from .models import Participant
 from sqlalchemy import or_, exc
 
-from psiturk_config import PsiturkConfig
-from experiment_errors import ExperimentError, InvalidUsage
+from .psiturk_config import PsiturkConfig
+from .experiment_errors import ExperimentError, InvalidUsage
 from psiturk.user_utils import nocache
 
 # Setup config
@@ -48,7 +52,7 @@ logging.basicConfig(filename=LOG_FILE_PATH, format='%(asctime)s %(message)s',
                     level=LOG_LEVEL)
 
 # Status codes
-from psiturk_statuses import *
+from .psiturk_statuses import *
 
 # Let's start
 # ===========
@@ -135,7 +139,7 @@ def get_random_condcount(mode):
 
     try: 
         conditions = json.load(open(os.path.join(app.root_path, 'conditions.json')))
-        numconds = len(conditions.keys())
+        numconds = len(list(conditions.keys()))
         numcounts = 1
     except IOError as e:
         numconds = CONFIG.getint('Task Parameters', 'num_conds')
@@ -159,7 +163,7 @@ def get_random_condcount(mode):
         if condcount in counts:
             counts[condcount] += 1
     mincount = min(counts.values())
-    minima = [hsh for hsh, count in counts.iteritems() if count == mincount]
+    minima = [hsh for hsh, count in counts.items() if count == mincount]
     chosen = choice(minima)
     #conds += [ 0 for _ in range(1000) ]
     #conds += [ 1 for _ in range(1000) ]
@@ -728,7 +732,7 @@ def run_webserver():
     ''' Run web server '''
     host = "0.0.0.0"
     port = CONFIG.getint('Server Parameters', 'port')
-    print "Serving on ", "http://" +  host + ":" + str(port)
+    print("Serving on ", "http://" +  host + ":" + str(port))
     app.config['TEMPLATES_AUTO_RELOAD'] = True
     app.jinja_env.auto_reload = True
     app.run(debug=True, host=host, port=port)

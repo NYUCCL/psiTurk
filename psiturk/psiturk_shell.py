@@ -2,7 +2,14 @@
 """ PsiturkShell is a commandline interface for psiTurk, which provides
 functionality for maintaining the experiment server and interacting with
 Mechanical Turk."""
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import input
+from builtins import str
+from builtins import range
 import sys
 import subprocess
 import re
@@ -12,7 +19,7 @@ import os
 import string
 import random
 import datetime
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import urllib3.contrib.pyopenssl; urllib3.contrib.pyopenssl.inject_into_urllib3()
 import certifi
 import urllib3;
@@ -35,14 +42,14 @@ except ImportError:
 import webbrowser
 import sqlalchemy as sa
 
-from amt_services_wrapper import MTurkServicesWrapper
-from psiturk_org_services import PsiturkOrgServices
-from version import version_number
-from psiturk_config import PsiturkConfig
-import experiment_server_controller as control
-from models import Participant
-from utils import *
-from psiturk_statuses import *
+from .amt_services_wrapper import MTurkServicesWrapper
+from .psiturk_org_services import PsiturkOrgServices
+from .version import version_number
+from .psiturk_config import PsiturkConfig
+from . import experiment_server_controller as control
+from .models import Participant
+from .utils import *
+from .psiturk_statuses import *
 
 def docopt_cmd(func):
     """
@@ -212,13 +219,13 @@ class PsiturkShell(Cmd, object):
 
     def _confirm_dialog(self, prompt):
         ''' Prompts for a 'yes' or 'no' to given prompt. '''
-        response = raw_input(prompt).strip().lower()
+        response = input(prompt).strip().lower()
         valid = {'y': True, 'ye': True, 'yes': True, 'n': False, 'no': False}
         while True:
             try:
                 return valid[response]
             except:
-                response = raw_input("Please respond 'y' or 'n': ").strip().lower()
+                response = input("Please respond 'y' or 'n': ").strip().lower()
 
     def hit_create(self, numWorkers, reward, duration):
 
@@ -229,7 +236,7 @@ class PsiturkShell(Cmd, object):
 
         # Argument retrieval and validation
         if numWorkers is None:
-            numWorkers = raw_input('number of participants? ').strip()
+            numWorkers = input('number of participants? ').strip()
         try:
             numWorkers = int(numWorkers)
         except ValueError:
@@ -240,7 +247,7 @@ class PsiturkShell(Cmd, object):
             return
 
         if reward is None:
-            reward = raw_input('reward per HIT? ').strip()
+            reward = input('reward per HIT? ').strip()
         p = re.compile('^\d*\.\d\d$')
         m = p.match(reward)
         if m is None:
@@ -253,7 +260,7 @@ class PsiturkShell(Cmd, object):
             return
 
         if duration is None:
-            duration = raw_input(
+            duration = input(
                 'duration of hit (in hours, it can be decimals)? ').strip()
         try:
             duration = float(duration)
@@ -284,7 +291,8 @@ class PsiturkShell(Cmd, object):
                             duration=duration)
             
             if create_hit_response.status != 'success':
-                self.poutput('Error during hit createion.')
+                self.poutput('Error during hit creation.')
+                print(create_hit_response)
                 return
             else:
                 self.maybe_update_hit_tally()
@@ -335,7 +343,7 @@ class PsiturkShell(Cmd, object):
                 mturk_url_base = 'https://worker.mturk.com'
             mturk_url = '{}/projects?filters%5Bsearch_term%5D={}'.format(
                 mturk_url_base,
-                urllib.quote_plus(
+                urllib.parse.quote_plus(
                     str(self.config.get('HIT Configuration', 'title', raw=True))))
 
             self.poutput('  MTurk URL: {}'.format(mturk_url) )
@@ -518,14 +526,14 @@ class PsiturkShell(Cmd, object):
             items = dict(self.config.items(section))
             for k in items:
                 self.poutput("%(a)s=%(b)s" % {'a': k, 'b': items[k]})
-            print ''
+            print('')
 
     def reload_config(self, _):
         ''' Reload config. '''
         restart_server = False
         if (self.server.is_server_running() == 'yes' or
                 self.server.is_server_running() == 'maybe'):
-            user_input = raw_input("Reloading configuration requires the server "
+            user_input = input("Reloading configuration requires the server "
                                    "to restart. Really reload? y or n: ")
             if user_input != 'y':
                 return
@@ -548,7 +556,7 @@ class PsiturkShell(Cmd, object):
 
     def do_setup_example(self, _):
         ''' Load psiTurk demo.'''
-        import setup_example as se
+        from . import setup_example as se
         se.setup_example()
 
 
@@ -565,7 +573,7 @@ class PsiturkShell(Cmd, object):
         # interactive = False  # Never used
         if filename is None:
             # interactive = True  # Never used
-            filename = raw_input('Enter the filename of the local SQLLite '
+            filename = input('Enter the filename of the local SQLLite '
                                  'database you would like to use '
                                  '[default=participants.db]: ')
             if filename == '':
@@ -615,7 +623,7 @@ class PsiturkShell(Cmd, object):
         ''' Execute on quit '''
         if (self.server.is_server_running() == 'yes' or
                 self.server.is_server_running() == 'maybe'):
-            user_input = raw_input("Quitting shell will shut down experiment "
+            user_input = input("Quitting shell will shut down experiment "
                                     "server.  Really quit? y or n: ")
             if user_input == 'y':
                 self.server_off()
@@ -704,7 +712,7 @@ class PsiturkShell(Cmd, object):
                         cmds_super.append(cmd)
             self.stdout.write("%s\n" % str(self.doc_leader))
             self.print_topics(self.psiturk_header, cmds_psiturk, 15, 80)
-            self.print_topics(self.misc_header, help_struct.keys(), 15, 80)
+            self.print_topics(self.misc_header, list(help_struct.keys()), 15, 80)
             self.print_topics(self.super_header, cmds_super, 15, 80)
 
 
@@ -740,7 +748,7 @@ class PsiturkNetworkShell(PsiturkShell):
         '''Override do_quit for network clean up.'''
         if (self.server.is_server_running() == 'yes' or
                 self.server.is_server_running() == 'maybe'):
-            user_input = raw_input("Quitting shell will shut down experiment "
+            user_input = input("Quitting shell will shut down experiment "
                                     "server. Really quit? y or n: ")
             if user_input == 'y':
                 self.server_off()
@@ -936,7 +944,7 @@ class PsiturkNetworkShell(PsiturkShell):
             restart_server = False
             if self.server.is_server_running() == 'yes' or self.server.is_server_running() == 'maybe':
                 if not self.quiet:
-                    r = raw_input("Switching modes requires the server to restart. Really "
+                    r = input("Switching modes requires the server to restart. Really "
                                   "switch modes? y or n: ")
                     if r != 'y':
                         return
@@ -1083,7 +1091,7 @@ class PsiturkNetworkShell(PsiturkShell):
                     reason = self.config.get('Shell Parameters', 'bonus_message')
                     self.poutput('Using bonus `reason` from config file: "{}"'.format(reason))
                 while not reason:
-                    user_input = raw_input("Type the reason for the bonus. Workers "
+                    user_input = input("Type the reason for the bonus. Workers "
                                            "will see this message: ")
                     reason = user_input
             
@@ -1206,7 +1214,7 @@ class PsiturkNetworkShell(PsiturkShell):
                         cmds_super.append(cmd)
             self.stdout.write("%s\n" % str(self.doc_leader))
             self.print_topics(self.psiturk_header, cmds_psiTurk, 15, 80)
-            self.print_topics(self.misc_header, help_struct.keys(), 15, 80)
+            self.print_topics(self.misc_header, list(help_struct.keys()), 15, 80)
             self.print_topics(self.super_header, cmds_super, 15, 80)
 
 def run(cabinmode=False, script=None, execute=None, testfile=None, quiet=False):

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """ This module provides additional tools for psiTurk users. """
 
+from builtins import object
 from functools import wraps, update_wrapper
 from flask import request, Response, make_response, current_app
 

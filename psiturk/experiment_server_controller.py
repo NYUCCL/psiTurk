@@ -1,10 +1,14 @@
+from __future__ import print_function
+from future import standard_library
+standard_library.install_aliases()
+from builtins import object
 import os
 import sys
 import subprocess
 import signal
 import webbrowser
 from threading import Thread, Event
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import socket
 import psutil
 import time
@@ -23,9 +27,9 @@ def is_port_available(ip, port):
         s.shutdown(2)
         return False
     except socket.timeout:
-        print "*** Failed to test port availability. Check that host\nis set properly in config.txt"
+        print("*** Failed to test port availability. Check that host\nis set properly in config.txt")
         return True
-    except socket.error,e:
+    except socket.error as e:
         return True
 
 def wait_until_online(function, ip, port):
@@ -91,7 +95,7 @@ class ExperimentServerControllerException(Exception):
 # simple wrapper class to control the
 # starting/stopping of experiment server
 #----------------------------------------------
-class ExperimentServerController:
+class ExperimentServerController(object):
     def __init__(self, config):
         self.config = config
         self.server_running = False
@@ -99,8 +103,8 @@ class ExperimentServerController:
     def get_ppid(self):
         if not self.is_port_available():
             url = "http://{hostname}:{port}/ppid".format(hostname=self.config.get("Server Parameters", "host"), port=self.config.getint("Server Parameters", "port"))
-            ppid_request = urllib2.Request(url)
-            ppid =  urllib2.urlopen(ppid_request).read()
+            ppid_request = urllib.request.Request(url)
+            ppid =  urllib.request.urlopen(ppid_request).read()
             return ppid
         else:
             raise ExperimentServerControllerException("Cannot shut down experiment server, server not online")
@@ -117,7 +121,7 @@ class ExperimentServerController:
             os.kill(int(ppid), signal.SIGKILL)
             self.server_running = False
         except ExperimentServerControllerException:
-            print ExperimentServerControllerException
+            print(ExperimentServerControllerException)
         else:
             self.server_running = False
 
@@ -173,13 +177,13 @@ class ExperimentServerController:
         if server_status == 'no':
             #print "Running experiment server with command:", server_command
             subprocess.Popen(server_command, shell=True, close_fds=True)
-            print "Experiment server launching..."
+            print("Experiment server launching...")
             self.server_running = True
         elif server_status == 'maybe':
-            print "Error: Not sure what to tell you..."
+            print("Error: Not sure what to tell you...")
         elif server_status == 'yes':
-            print "Experiment server may be already running..."
+            print("Experiment server may be already running...")
         elif server_status == 'blocked':
-            print "Another process is running on the desired port. Try using a different port number."
+            print("Another process is running on the desired port. Try using a different port number.")
         time.sleep(1.2)  # Allow CLI to catch up.
 

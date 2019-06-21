@@ -1,7 +1,9 @@
+from __future__ import print_function
+from __future__ import absolute_import
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.ext.declarative import declarative_base
-from psiturk_config import PsiturkConfig
+from .psiturk_config import PsiturkConfig
 import re, os, sys
 
 config = PsiturkConfig()

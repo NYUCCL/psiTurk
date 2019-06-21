@@ -1,4 +1,6 @@
+from __future__ import print_function
 # https://docs.pytest.org/en/latest/fixture.html#using-fixtures-from-classes-modules-or-projects
+from builtins import object
 import pytest
 import os
 import sys
@@ -30,7 +32,7 @@ def experiment_dir():
     os.environ['AWS_DEFAULT_REGION'] = 'us-west-2'
     os.environ.pop('AWS_PROFILE', None)
     
-class Helpers:
+class Helpers(object):
 
     
     @staticmethod
@@ -38,7 +40,7 @@ class Helpers:
         
         # https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat
         def date_hook(json_dict):
-            for (key, value) in json_dict.items():
+            for (key, value) in list(json_dict.items()):
                 try:
                     # json_dict[key] = dateutil.parser.parse(value)
                     # json_dict[key] = datetime.datetime.fromisoformat(value)

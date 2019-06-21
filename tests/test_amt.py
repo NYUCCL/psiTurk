@@ -1,7 +1,13 @@
+from builtins import range
+from builtins import object
 import pytest
 from faker import Faker
-import mock
-from mock import patch, PropertyMock
+try:
+    import mock
+    from mock import patch, PropertyMock
+except ImportError:
+    from unittest import mock
+    from unittest.mock import patch, PropertyMock
 import pickle, os
 import boto3
 from botocore.stub import Stubber
@@ -279,7 +285,7 @@ class TestAmtServices(object):
                 'assignmentid': faker.md5(raw_output=False),
             }
             
-            participant_attributes = dict(participant_attribute_defaults.items() + participant_attributes.items())
+            participant_attributes = dict(list(participant_attribute_defaults.items()) + list(participant_attributes.items()))
             init_db()
             
             participant = Participant(**participant_attributes)
@@ -395,7 +401,7 @@ class TestAmtServices(object):
         reason = 'yee'
         override_bonused_status=False
         def edit_assignment(assignment, new_config):
-            for k, v in new_config.items():
+            for k, v in list(new_config.items()):
                 setattr(assignment, k, v)
             db_session.add(assignment)
             db_session.commit()

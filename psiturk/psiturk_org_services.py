@@ -1,8 +1,13 @@
 # -*- coding: utf-8 -*-
 """ This module """
+from __future__ import print_function
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import object
 import os
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import json
 import requests
 from psiturk.version import version_number
@@ -30,12 +35,12 @@ class PsiturkOrgServices(object):
         self.sandbox_ad_server = 'https://sandbox.ad.psiturk.org'
         self.update_credentials(key, secret)
         if not self.check_credentials():
-            print 'WARNING *****************************'
-            print 'Sorry, psiTurk Credentials invalid.\nYou will only be able '\
+            print('WARNING *****************************')
+            print('Sorry, psiTurk Credentials invalid.\nYou will only be able '\
                 + 'to test experiments locally until you enter\nvalid '\
                 + 'credentials in the psiTurk Access section of ' \
                 + '~/.psiturkconfig.\n  Get your credentials at '\
-                + 'https://www.psiturk.org/login.\n'
+                + 'https://www.psiturk.org/login.\n')
 
     def check_credentials(self):
         ''' Check credentials '''
@@ -68,9 +73,9 @@ class PsiturkOrgServices(object):
         try:
             api_server_status_link = self.api_server + '/status_msg?version=' +\
                 version_number
-            response = urllib2.urlopen(api_server_status_link, timeout=1)
+            response = urllib.request.urlopen(api_server_status_link, timeout=1)
             status_msg = json.load(response)['status']
-        except urllib2.HTTPError:
+        except urllib.error.HTTPError:
             status_msg = "Sorry, can't connect to psiturk.org, please check\
                 your internet connection.\nYou will not be able to create new\
                 hits, but testing locally should work.\n"
@@ -158,7 +163,7 @@ class PsiturkOrgServices(object):
         req = self.query_records('experiment', self.access_key,
                                  self.secret_key,
                                  query='download/'+experiment_id)
-        print req.text
+        print(req.text)
         return
 
 
@@ -186,40 +191,40 @@ class ExperimentExchangeServices(object):
         req = self.query_records_no_auth('experiment',
                                          query='download/'+experiment_id)
         if req.status_code == 404:
-            print "Sorry, no experiment matching id # " + experiment_id
-            print "Please double check the code you obtained on the\
-                http://psiturk.org/ee"
+            print("Sorry, no experiment matching id # " + experiment_id)
+            print("Please double check the code you obtained on the\
+                http://psiturk.org/ee")
         else:
             # Check if folder with same name already exists.
             expinfo = req.json()
             gitr = requests.get(expinfo['git_url']).json()
             if os.path.exists('./'+gitr['name']):
-                print "*"*20
-                print "Sorry, you already have a file or folder named\
+                print("*"*20)
+                print("Sorry, you already have a file or folder named\
                     "+gitr['name']+". Please rename or delete it before trying\
                     to download this experiment.  You can do this by typing `rm\
-                    -rf " + gitr['name'] + "`"
-                print "*"*20
+                    -rf " + gitr['name'] + "`")
+                print("*"*20)
                 return
             if "clone_url" in gitr:
                 git.Git().clone(gitr["clone_url"])
-                print "="*20
-                print "Downloading..."
-                print "Name: " + expinfo['name']
-                print "Downloads: " + str(expinfo['downloads'])
-                print "Keywords: " + expinfo['keywords']
-                print "psiTurk Version: " +\
-                    str(expinfo['psiturk_version_string'])
-                print "URL: http://psiturk.org/ee/"+experiment_id
-                print "\n"
-                print "Experiment downloaded into the `" + gitr['name'] + "`\
-                    folder of the current directory"
-                print "Type 'cd " + gitr['name'] + "` then run the `psiturk`\
-                    command."
-                print "="*20
+                print("="*20)
+                print("Downloading...")
+                print("Name: " + expinfo['name'])
+                print("Downloads: " + str(expinfo['downloads']))
+                print("Keywords: " + expinfo['keywords'])
+                print("psiTurk Version: " +\
+                    str(expinfo['psiturk_version_string']))
+                print("URL: http://psiturk.org/ee/"+experiment_id)
+                print("\n")
+                print("Experiment downloaded into the `" + gitr['name'] + "`\
+                    folder of the current directory")
+                print("Type 'cd " + gitr['name'] + "` then run the `psiturk`\
+                    command.")
+                print("="*20)
             else:
-                print "Sorry, experiment not located on github.  You might\
+                print("Sorry, experiment not located on github.  You might\
                     contact the author of this experiment.  Experiment NOT\
-                    downloaded."
+                    downloaded.")
             return
 

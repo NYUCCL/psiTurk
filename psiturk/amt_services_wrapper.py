@@ -3,7 +3,14 @@
 The initial motivation for this wrapper is to abstract away
 the mturk functionality from the shell
 """
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import range
+from builtins import object
 import sys
 import subprocess
 import re
@@ -13,7 +20,7 @@ import os
 import string
 import random
 import datetime
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import signal
 from fuzzywuzzy import process
 
@@ -26,14 +33,14 @@ import webbrowser
 import sqlalchemy as sa
 
 from sqlalchemy import or_, and_
-from amt_services import MTurkServices
-from psiturk_org_services import PsiturkOrgServices
-from psiturk_config import PsiturkConfig
-from psiturk_statuses import *
-from psiturk_exceptions import *
-from db import db_session, init_db
-from models import Participant, Hit
-from utils import *
+from .amt_services import MTurkServices
+from .psiturk_org_services import PsiturkOrgServices
+from .psiturk_config import PsiturkConfig
+from .psiturk_statuses import *
+from .psiturk_exceptions import *
+from .db import db_session, init_db
+from .models import Participant, Hit
+from .utils import *
 
 class WrapperResponse(object):
     def __init__(self, status = None, message = '', data = {}, operation=''):
@@ -50,6 +57,8 @@ class WrapperResponse(object):
             details.append(('Status', self.status))
         if self.message:
             details.append(('Message', self.message))
+        if 'exception' in self.data:
+            details.append(('Exception', self.data['exception']))
         
         details = ' | '.join(['{}: {}'.format(key, value) for key, value in details])
             
@@ -63,7 +72,7 @@ class WrapperResponseError(WrapperResponse):
     def __init__(self, *args, **kwargs):
         super(WrapperResponseError, self).__init__(*args, status = 'error', **kwargs)
 
-class MTurkServicesWrapper():
+class MTurkServicesWrapper(object):
 
     _cached_web_services = None
     _cached_dbs_services = None
@@ -697,8 +706,8 @@ class MTurkServicesWrapper():
                 fail_msg = "  Unable to create HIT on Amazon Mechanical Turk."
 
         if create_failed:
-            print '\n'.join(['*****************************',
-                             '  Sorry, there was an error creating hit and registering ad.'])
+            print('\n'.join(['*****************************',
+                             '  Sorry, there was an error creating the hit and registering ad.']))
 
             if fail_msg is None:
                 fail_msg = ''

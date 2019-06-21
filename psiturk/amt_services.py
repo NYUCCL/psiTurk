@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 """ This module is a facade for AMT (Boto) services. """
+from __future__ import print_function
 
+from builtins import str
+from builtins import object
 import boto3
 import botocore
 import datetime
@@ -49,10 +52,10 @@ class MTurkServices(object):
         self.valid_login = self.verify_aws_login()
 
         if not self.valid_login:
-            print 'WARNING *****************************'
-            print 'Sorry, AWS Credentials invalid.\nYou will only be able to '\
+            print('WARNING *****************************')
+            print('Sorry, AWS Credentials invalid.\nYou will only be able to '\
                   'test experiments locally until you enter\nvalid '\
-                  'credentials in the AWS Access section of ~/.psiturkconfig\n'
+                  'credentials in the AWS Access section of ~/.psiturkconfig\n')
 
     def update_credentials(self, aws_access_key_id, aws_secret_access_key):
         ''' Update credentials '''
@@ -118,7 +121,7 @@ class MTurkServices(object):
                     assignments.extend(page['Assignments'])
 
         except Exception as e:
-            print e
+            print(e)
             raise
         workers = [{
             'hitId': assignment['HITId'],
@@ -182,7 +185,7 @@ class MTurkServices(object):
             self.mtc.reject_assignment(AssignmentId=assignment_id, RequesterFeedback='')
             return True
         except Exception as e:
-            print e
+            print(e)
             return False
 
     def unreject_assignment(self, assignment_id):
@@ -193,7 +196,7 @@ class MTurkServices(object):
         ''' Connect to turk '''
         if ((self.aws_access_key_id == 'YourAccessKeyId') or
                 (self.aws_secret_access_key == 'YourSecretAccessKey')):
-            print 'AWS access keys not set in ~/.psiturkconfig; please enter valid aws credentials.'
+            print('AWS access keys not set in ~/.psiturkconfig; please enter valid aws credentials.')
             return False
 
         if self.is_sandbox:
@@ -216,7 +219,7 @@ class MTurkServices(object):
         try:
             self.mtc.get_account_balance()
         except Exception as exception:
-            print exception
+            print(exception)
             return False
         else:
             return True
@@ -224,8 +227,8 @@ class MTurkServices(object):
     def connect_to_turk(self):
         ''' Connect to turk '''
         if not self.valid_login or not self.mtc:
-            print 'Sorry, unable to connect to Amazon Mechanical Turk. AWS '\
-                  'credentials invalid.'
+            print('Sorry, unable to connect to Amazon Mechanical Turk. AWS '\
+                  'credentials invalid.')
             return False
 
         return True
@@ -340,7 +343,7 @@ class MTurkServices(object):
             myhit = self.mtc.create_hit_with_hit_type(**self.param_dict)['HIT']
             hitid = myhit['HITId']
         except Exception as e:
-            print e
+            print(e)
             return False
         else:
             return hitid
@@ -358,8 +361,8 @@ class MTurkServices(object):
             )
             return True
         except Exception as e:
-            print "Failed to expire HIT. Please check the ID and try again."
-            print e
+            print("Failed to expire HIT. Please check the ID and try again.")
+            print(e)
             return False
 
     def delete_hit(self, hitid):
@@ -369,9 +372,9 @@ class MTurkServices(object):
         try:
             self.mtc.delete_hit(HITId=hitid)
             return True
-        except Exception, e:
-            print "Failed to delete of HIT %s. Make sure there are no "\
-                "assignments remaining to be reviewed." % hitid
+        except Exception as e:
+            print("Failed to delete of HIT %s. Make sure there are no "\
+                "assignments remaining to be reviewed." % hitid)
 
     def extend_hit(self, hitid, assignments_increment=None,
                    expiration_increment=None):
@@ -384,15 +387,15 @@ class MTurkServices(object):
 
             if expiration_increment:
                 hit = self.get_hit(hitid)
-                print 'got hit', hit
+                print('got hit', hit)
                 expiration = hit['Expiration'] + datetime.timedelta(minutes=int(expiration_increment))
                 self.mtc.update_expiration_for_hit(HITId=hitid, ExpireAt=expiration)
 
             return True
-        except Exception, e:
-            print e
-            print "Failed to extend HIT %s. Please check the ID and try again." \
-                % hitid
+        except Exception as e:
+            print(e)
+            print("Failed to extend HIT %s. Please check the ID and try again." \
+                % hitid)
             return False
 
     def get_hit(self, hitid):
@@ -402,7 +405,7 @@ class MTurkServices(object):
         try:
             hitdata = self.mtc.get_hit(HITId=hitid)
         except Exception as e:
-            print e
+            print(e)
             return False
         return hitdata['HIT']
 
@@ -421,6 +424,6 @@ class MTurkServices(object):
             summary = jsonify(balance=str(balance))
             return summary
         except MTurkRequestError as exception:
-            print exception.error_message
+            print(exception.error_message)
             return False
 
