@@ -36,7 +36,7 @@ if __name__ == "__main__":
             ]
         },
         setup_requires = ['pytest-runner'],
-        tests_require=['pytest','ciso8601','pytest-mock'],
+        tests_require=['pytest','ciso8601','pytest-mock','pytz'],
         author = "NYU Computation and Cognition Lab",
         author_email = "authors@psiturk.org",
         description = "An open platform for science on Amazon Mechanical Turk",
