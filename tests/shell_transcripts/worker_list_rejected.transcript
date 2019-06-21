@@ -1,0 +1,4 @@
+[[1mpsiTurk[0m server:[91moff[0m mode:[1msdbx[0m #HITs:0]$ mode sandbox
+mode is already sandbox
+[[1mpsiTurk[0m server:[91moff[0m mode:[1msdbx[0m #HITs:0]$ worker list --rejected
+[91mTypeError("get_assignments() got multiple values for keyword argument 'hit_ids'",)[0m

@@ -54,19 +54,26 @@ class TestAmtServices(object):
         return amt_services_wrapper
     
     @pytest.fixture()
-    def create_dummy_hit(self, stubber, helpers, amt_services_wrapper):
-        
+    def stubber_prepare_create_hit(self, stubber, helpers, faker):
         def do_it(with_hit_id=None):
+            if not with_hit_id:
+                with_hit_id = faker.md5(raw_output=False)
+                
             stubber.add_response('create_hit_type', helpers.get_boto3_return('create_hit_type.pickle'))
             
-            boto_return_create_hit_with_hit_type = helpers.get_boto3_return('create_hit_with_hit_type.pickle')
+            boto_return_create_hit_with_hit_type = helpers.get_boto3_return('create_hit_with_hit_type.pickle')            
             
-            if(with_hit_id):
-                boto_return_create_hit_with_hit_type['HIT']['HITId'] = with_hit_id
-            # else, returns a hit with id: 3XJOUITW8URHJMX7F00H20LGRIAQTX
+            boto_return_create_hit_with_hit_type['HIT']['HITId'] = with_hit_id
+            # used to always return a hit with id: 3XJOUITW8URHJMX7F00H20LGRIAQTX
             
             stubber.add_response('create_hit_with_hit_type', boto_return_create_hit_with_hit_type) 
-            
+        return do_it
+    
+    @pytest.fixture()
+    def create_dummy_hit(self, stubber_prepare_create_hit, amt_services_wrapper):
+        
+        def do_it(with_hit_id=None):
+            stubber_prepare_create_hit(with_hit_id)
             result = amt_services_wrapper.create_hit(1, 0.01, 1)
             
         return do_it
@@ -84,9 +91,9 @@ class TestAmtServices(object):
 
             stubber.add_response('list_hits', hits_json)
             if active:
-                results = amt_services_wrapper.get_active_hits(all_studies=all_studies)
+                results = (amt_services_wrapper.get_active_hits(all_studies=all_studies)).data['active_hits']
             else:
-                results = amt_services_wrapper.get_all_hits(all_studies=all_studies)
+                results = (amt_services_wrapper.get_all_hits(all_studies=all_studies)).data['hits']
             return results
         
         return do_it
@@ -107,7 +114,7 @@ class TestAmtServices(object):
             return hits_json
         return do_it
         
-    def test_wrapper_hit_create(self, amt_services_wrapper, helpers, create_dummy_hit):
+    def test_wrapper_hit_create(self, amt_services_wrapper, helpers, create_dummy_hit, stubber_prepare_create_hit, run_in_psiturk_shell):
         
         create_dummy_hit('3XJOUITW8URHJMX7F00H20LGRIAQTX')
         create_dummy_hit('ABCDUITW8URHJMX7F00H20LGRIAQTX')
@@ -115,6 +122,9 @@ class TestAmtServices(object):
         from psiturk.models import Hit
         assert Hit.query.get('3XJOUITW8URHJMX7F00H20LGRIAQTX') is not None # confirm that it's in the local db...
         assert Hit.query.get('ABCDUITW8URHJMX7F00H20LGRIAQTX') is not None # confirm that it's in the local db...
+        
+        stubber_prepare_create_hit()
+        run_in_psiturk_shell('hit create 1 ye 1')
 
     def test_wrapper_get_all_hits(self, amt_services_wrapper, create_dummy_hit, list_hits, helpers):
         
@@ -248,23 +258,13 @@ class TestAmtServices(object):
             assignment['Assignment']['AssignmentStatus'] = 'Approved'
             return assignment
         return do_it
-                
-                
-    def test_wrapper_get_assignments_for_assignment_ids(self, stubber, amt_services_wrapper, create_dummy_hit, get_submitted_assignment_json):
-        assignment_ids = ['abc','123']
-        assignment_data = get_submitted_assignment_json()
-        create_dummy_hit(assignment_data['HIT']['HITId'])
-        for assignment_id in assignment_ids:
-            stubber.add_response('get_assignment', assignment_data)
-        assignments = amt_services_wrapper.get_assignments_for_assignment_ids(assignment_ids, all_studies=False)
-        assert len(assignments) == len(assignment_ids)
         
     def test_wrapper_get_assignments_for_hits(self, stubber, amt_services_wrapper, helpers, create_dummy_hit, get_submitted_assignment_json):
         assignments_data = helpers.get_boto3_return('list_assignments_for_hit.json')
         hit_ids = list(set([assignment['HITId'] for assignment in assignments_data['Assignments']]))
         [ create_dummy_hit(hit_id) for hit_id in hit_ids ]
         [ stubber.add_response('list_assignments_for_hit', assignments_data) for hit_id in hit_ids]
-        assignments = amt_services_wrapper.get_assignments_for_hits(hit_ids)
+        assignments = amt_services_wrapper.get_assignments(hit_ids=hit_ids)
         
     @pytest.fixture()
     def create_dummy_assignment(self, faker):
@@ -306,8 +306,8 @@ class TestAmtServices(object):
         assignments = [assignment_1, assignment_2]
         
         [ stubber.add_response('approve_assignment',{}) for assignment in assignments ]
-        results = amt_services_wrapper.approve_all_assignments(all_studies=False)
-        assert len([result for result in results if result['status'] == 'success']) == 2
+        results = (amt_services_wrapper.approve_all_assignments(all_studies=False)).data['results']
+        assert len([result for result in results if result.status == 'success']) == 2
         
         stubber.add_response('list_hits',hits_json)
         
@@ -323,16 +323,16 @@ class TestAmtServices(object):
                 stubber.add_response('approve_assignment',{})
                 number_approved += 1
         
-        results = amt_services_wrapper.approve_all_assignments(all_studies=True)
-        assert len([result for result in results if result['status'] == 'success']) == number_approved
+        results = (amt_services_wrapper.approve_all_assignments(all_studies=True)).data['results']
+        assert len([result for result in results if result.status == 'success']) == number_approved
         
     def test_wrapper_reject_unreject_assignments(self, stubber, amt_services_wrapper, create_dummy_assignment, helpers):
         
         # reject all for a given hit, local only...
         assignment_1 = create_dummy_assignment({'hitid':'abc','status':4})
         stubber.add_response('reject_assignment',{})
-        result = amt_services_wrapper.reject_assignments_for_hit('abc', all_studies=False)
-        assert len(result) == 1
+        results = (amt_services_wrapper.reject_assignments_for_hit('abc', all_studies=False)).data['results']
+        assert len(results) == 1
         
         hits_data = helpers.get_boto3_return('list_hits.json')
         assignments_data = helpers.get_boto3_return('list_assignments_for_hit.json')
@@ -355,10 +355,10 @@ class TestAmtServices(object):
         
         number_to_be_approved = prep_operation_all_for_hit('reject_assignment')
         
-        results = amt_services_wrapper.reject_assignments_for_hit('abc', all_studies=True)
+        results = (amt_services_wrapper.reject_assignments_for_hit('abc', all_studies=True)).data['results']
         assert len(results) == number_to_be_approved
         for result in results:
-            assert result['success'] == True
+            assert result.status == 'success'
             
         # reject one at a time
         reject_these = ['abc','123']
@@ -368,20 +368,20 @@ class TestAmtServices(object):
         
         # unreject one at a time
         [ stubber.add_response('approve_assignment',{}) for i in reject_these ]
-        results = amt_services_wrapper.unreject_assignments(reject_these)
+        results = (amt_services_wrapper.unreject_assignments(reject_these)).data['results']
         assert len(results) == len(reject_these)
         
         # unreject all for a given hit for local study only
-        results = amt_services_wrapper.unreject_assignments_for_hit(['abc'], all_studies=False)
+        results = (amt_services_wrapper.unreject_assignments_for_hit(['abc'], all_studies=False)).data['results']
         assert len(results) == 1        
         
         # unreject all for a given hit across all studies
         prep_list_hits()
         number_to_be_unrejected = prep_operation_all_for_hit('approve_assignment')
-        results = amt_services_wrapper.unreject_assignments_for_hit('abc', all_studies=True)
+        results = (amt_services_wrapper.unreject_assignments_for_hit('abc', all_studies=True)).data['results']
         assert len(results) == number_to_be_unrejected
         for result in results:
-            assert result['success'] == True
+            assert result.status == 'success'
             
     def test_wrapper_bonus_assignment(self, create_dummy_assignment, amt_services_wrapper, stubber):        
         
@@ -402,17 +402,17 @@ class TestAmtServices(object):
         
         assignment_1 = create_dummy_assignment({'hitid':hit_id})
         edit_assignment(assignment_1, { 'status': psiturk_statuses.BONUSED })
-        results = amt_services_wrapper.bonus_assignments_for_hit('123', amount, reason, override_bonused_status)
-        assert isinstance(results[0]['exception'], AssignmentAlreadyBonusedError)
+        results = (amt_services_wrapper.bonus_assignments_for_hit('123', amount, reason, override_bonused_status)).data['results']
+        assert isinstance(results[0].data['exception'], AssignmentAlreadyBonusedError)
         
         edit_assignment(assignment_1, { 'status': psiturk_statuses.CREDITED, 'bonus': 0.00 })
-        results = amt_services_wrapper.bonus_assignments_for_hit('123', amount, reason)
-        assert isinstance(results[0]['exception'], BadBonusAmountError)
+        results = (amt_services_wrapper.bonus_assignments_for_hit('123', amount, reason)).data['results']
+        assert isinstance(results[0].data['exception'], BadBonusAmountError)
         
         stubber.add_response('send_bonus', {})
         edit_assignment(assignment_1, { 'status': psiturk_statuses.BONUSED, 'bonus': 0.50})
-        results = amt_services_wrapper.bonus_assignments_for_hit('123', amount, reason, override_bonused_status=True)
-        assert results[0]['success']
+        results = (amt_services_wrapper.bonus_assignments_for_hit('123', amount, reason, override_bonused_status=True)).data['results']
+        assert results[0].status == 'success'
         
         
         assignment_id = 'abc'
@@ -425,16 +425,16 @@ class TestAmtServices(object):
         })
         stubber.add_response('send_bonus', {})
         stubber.add_response('send_bonus', {})
-        results = amt_services_wrapper.bonus_assignments_for_assignment_ids([assignment_id, '123'], amount, reason)
-        assert len([result for result in results if result['success']]) == 1
+        results = (amt_services_wrapper.bonus_assignments_for_assignment_ids([assignment_id, '123'], amount, reason)).data['results']
+        assert len([result for result in results if result.status == 'success']) == 1
         
         for assignment in [assignment_1, assignment_2]:
             edit_assignment(assignment, {'status': psiturk_statuses.CREDITED, 'mode':'sandbox', 'bonus': 0.50})
             stubber.add_response('send_bonus', {})
         amount = 'auto'
         reason = 'yee'
-        results = amt_services_wrapper.bonus_all_local_assignments(amount, reason)
-        assert len([result for result in results if result['success']]) == 2
+        results = (amt_services_wrapper.bonus_all_local_assignments(amount, reason)).data['results']
+        assert len([result for result in results if result.status == 'success']) == 2
         
         for i, assignment in enumerate([assignment_1, assignment_2]):
             edit_assignment(assignment, {
@@ -444,6 +444,6 @@ class TestAmtServices(object):
                 'bonus': 0.50
                 })
             stubber.add_response('send_bonus', {})
-        results = amt_services_wrapper.bonus_assignments_for_assignment_ids(['1bc','2bc'], amount=amount, reason='')
+        results = (amt_services_wrapper.bonus_assignments_for_assignment_ids(['1bc','2bc'], amount=amount, reason='')).data['results']
         for result in results:
-            assert isinstance(result['exception'], BonusReasonMissingError) 
+            assert isinstance(result.data['exception'], BonusReasonMissingError) 

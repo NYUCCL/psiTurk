@@ -48,12 +48,12 @@ class Participant(Base):
         for key in kwargs:
             setattr(self, key, kwargs[key])
 
-    # def __repr__(self):
-        # return "Subject(%s, %s, %s, %s)" % (
-            # self.uniqueid,
-            # self.cond,
-            # self.status,
-            # self.codeversion)
+    def __repr__(self):
+        return "Subject(uniqueid|%s, condition|%s, status|%s, codeversion|%s)" % (
+            self.uniqueid,
+            self.cond,
+            self.status,
+            self.codeversion)
 
     def get_trial_data(self):
         try:

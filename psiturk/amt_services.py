@@ -99,11 +99,11 @@ class MTurkServices(object):
         if not self.connect_to_turk():
             return False
         try:
-            if hit_ids and not isinstance(hit_ids, list):
-                hit_ids = [hit_ids]
-            else:
+            if not hit_ids:
                 hits = self.get_all_hits()
                 hit_ids = [hit.options['hitid'] for hit in hits]
+            elif not isinstance(hit_ids, list):
+                hit_ids = [hit_ids]
 
             assignments = []
             for hit_id in hit_ids:
@@ -193,8 +193,8 @@ class MTurkServices(object):
         ''' Connect to turk '''
         if ((self.aws_access_key_id == 'YourAccessKeyId') or
                 (self.aws_secret_access_key == 'YourSecretAccessKey')):
-            print "AWS access key not set in ~/.psiturkconfig; please enter a valid access key."
-            assert False
+            print 'AWS access keys not set in ~/.psiturkconfig; please enter valid aws credentials.'
+            return False
 
         if self.is_sandbox:
             endpoint_url = 'https://mturk-requester-sandbox.us-east-1.amazonaws.com'
@@ -368,6 +368,7 @@ class MTurkServices(object):
             return False
         try:
             self.mtc.delete_hit(HITId=hitid)
+            return True
         except Exception, e:
             print "Failed to delete of HIT %s. Make sure there are no "\
                 "assignments remaining to be reviewed." % hitid

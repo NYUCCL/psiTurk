@@ -1,0 +1,17 @@
+[[1mpsiTurk[0m server:[91moff[0m mode:[1msdbx[0m #HITs:0]$ mode sandbox
+mode is already sandbox
+[[1mpsiTurk[0m server:[91moff[0m mode:[1msdbx[0m #HITs:0]$ hit list --active --all-studies
+Stroop task 
+	Status: Assignable 
+	HITid: 3I7KR83SNAEQF0IHFCF0C36K74TK9W             
+	max:1\/pending:0\/complete:0\/remain:1 
+	Created:2019-06-20 15:25:44-06:00             
+	Expires:2019-06-21 15:25:44-06:00
+	Is Expired:False
+Stroop task 
+	Status: Assignable 
+	HITid: 33TGB4G0LPIFJFQ2C1Z6TXFYXKATXT             
+	max:1\/pending:0\/complete:0\/remain:1 
+	Created:2019-06-20 15:14:15-06:00             
+	Expires:2019-06-21 15:14:15-06:00
+	Is Expired:False

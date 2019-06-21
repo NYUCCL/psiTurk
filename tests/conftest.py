@@ -72,5 +72,10 @@ def db_setup():
     yield
     db.truncate_tables()
     
-    
+@pytest.fixture(scope='session')
+def run_in_psiturk_shell():
+    import psiturk.psiturk_shell as ps
+    def do_it(execute_string):
+        ps.run(cabinmode=False, execute=execute_string, quiet=True)
+    return do_it
     

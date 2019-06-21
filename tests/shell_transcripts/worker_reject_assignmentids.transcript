@@ -1,0 +1,5 @@
+[[1mpsiTurk[0m server:[91moff[0m mode:[1msdbx[0m #HITs:0]$ mode sandbox
+mode is already sandbox
+[[1mpsiTurk[0m server:[91moff[0m mode:[1msdbx[0m #HITs:0]$ worker reject 123 456
+<psiturk.amt_services_wrapper.WrapperResponseError object at 0x7fd07bd661d0>
+<psiturk.amt_services_wrapper.WrapperResponseError object at 0x7fd07bd66f10>

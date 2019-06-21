@@ -97,6 +97,9 @@ def launch_shell():
     script_group.add_argument(
         '-e', '--execute', help='Execute one command specified on the command line'
     )
+    script_group.add_argument(
+        '-t', '--test', help='Run cmd2 unittest using provided file'
+    )
     args, unknownargs = parser.parse_known_args()
     # If requested version just print and quit
     if args.version:
@@ -105,6 +108,8 @@ def launch_shell():
         import psiturk.psiturk_shell as ps
         if args.script:
             ps.run(cabinmode=args.cabinmode, script=args.script, quiet=True)
+        elif args.test:
+            ps.run(testfile=args.test, quiet=True)
         elif args.execute or unknownargs:
             if unknownargs:
                 execute= ' '.join(unknownargs)

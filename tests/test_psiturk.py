@@ -102,6 +102,7 @@ class PsiTurkStandardTests(PsiturkUnitTest):
             'hitId=debug%s' % self.hit_id,
             'mode=sandbox'])
         rv = self.app.get('/exp?%s' % args)
+        raise Exception(rv.data)
         assert '<b>Error</b>: 1018' in rv.data
 
     def test_sync_put(self):
