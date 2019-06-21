@@ -7,7 +7,7 @@ import tempfile
 import psiturk
 import json
 from faker import Faker
-
+import pytest
 
 fake = Faker()  # Fake data generator
 
@@ -92,7 +92,8 @@ class PsiTurkStandardTests(PsiturkUnitTest):
             'mode=sandbox'])
         rv = self.app.get('/ad?%s' % args)
         assert 'Thank you for accepting this HIT!' in rv.data
-
+    
+    @pytest.mark.skip('psiturk server is broken at the moment')
     def test_exp_with_all_url_vars_not_registered_on_ad_server(self):
         '''Test that exp page throws Error #1018 with all url vars but not registered.'''
         self.set_config('Shell Parameters', 'use_psiturk_ad_server', 'true')

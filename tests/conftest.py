@@ -27,6 +27,7 @@ def experiment_dir():
     # os.chdir('psiturk-example') # the setup script already chdirs into here, although I don't like that it does that
     os.environ['AWS_ACCESS_KEY_ID'] = 'foo'
     os.environ['AWS_SECRET_ACCESS_KEY'] = 'bar'
+    os.environ['AWS_DEFAULT_REGION'] = 'us-west-2'
     os.environ.pop('AWS_PROFILE', None)
     
 class Helpers:
