@@ -1,5 +1,5 @@
 [[1mpsiTurk[0m server:[91moff[0m mode:[1msdbx[0m #HITs:0]$ mode sandbox
 mode is already sandbox
 [[1mpsiTurk[0m server:[91moff[0m mode:[1msdbx[0m #HITs:0]$ worker unreject 123 456
-<psiturk.amt_services_wrapper.WrapperResponseError object at 0x7fd07bdbb9d0>
-<psiturk.amt_services_wrapper.WrapperResponseError object at 0x7fd07bd66710>
+Result(Status: error | Message: *** failed to unreject 123)
+Result(Status: error | Message: *** failed to unreject 456)

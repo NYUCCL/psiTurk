@@ -1,4 +1,4 @@
 [[1mpsiTurk[0m server:[91moff[0m mode:[1msdbx[0m #HITs:0]$ mode sandbox
 mode is already sandbox
 [[1mpsiTurk[0m server:[91moff[0m mode:[1msdbx[0m #HITs:0]$ hit expire ABC
-<psiturk.amt_services_wrapper.WrapperResponseError object at 0x7fd07bd29c50>
+Result(Operation: expire_hit | Status: error)

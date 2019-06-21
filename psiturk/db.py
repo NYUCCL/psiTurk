@@ -7,12 +7,7 @@ import re, os, sys
 config = PsiturkConfig()
 config.load_config()
 
-r = re.compile("OPENSHIFT_(.+)_DB_URL") # Might be MYSQL or POSTGRESQL
-matches = filter(r.match, os.environ)
-if matches:
-    DATABASE = "{}{}".format(os.environ[matches[0]], os.environ['OPENSHIFT_APP_NAME'])
-else:
-    DATABASE = config.get('Database Parameters', 'database_url')
+DATABASE = config.get('Database Parameters', 'database_url')
 
 if 'mysql://' in DATABASE.lower():
 	try:

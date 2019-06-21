@@ -11,10 +11,7 @@ DEFAULT_CONFIG_FILE = os.path.join(os.path.dirname(__file__),\
 DEFAULT_GLOBAL_CONFIG_FILE = os.path.join(os.path.dirname(__file__), \
     "default_configs/global_config_defaults.txt")
 
-# If working in OpenShift, global config file lives in data directory
-if 'OPENSHIFT_SECRET_TOKEN' in os.environ:
-    GLOBAL_CONFIG_PATH = os.environ['OPENSHIFT_DATA_DIR'] + ".psiturkconfig"
-elif 'PSITURK_GLOBAL_CONFIG_LOCATION' in os.environ:
+if 'PSITURK_GLOBAL_CONFIG_LOCATION' in os.environ:
     GLOBAL_CONFIG_PATH = os.path.join(os.environ['PSITURK_GLOBAL_CONFIG_LOCATION'],
                                       ".psiturkconfig")
 else:

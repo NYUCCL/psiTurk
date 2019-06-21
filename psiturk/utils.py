@@ -7,13 +7,10 @@ def get_my_ip():
         Asks and external server what your ip appears to be (useful is
         running from behind a NAT/wifi router).  Of course, incoming port
         to the router must be forwarded correctly.
-    """
-    if 'OPENSHIFT_SECRET_TOKEN' in os.environ:
-        my_ip = os.environ['OPENSHIFT_APP_DNS']
-    else:
-        my_ip = json.load(urllib2.urlopen(
-            'http://httpbin.org/ip'
-        ))['origin'].split(',')[0]
+    """    
+    my_ip = json.load(urllib2.urlopen(
+        'http://httpbin.org/ip'
+    ))['origin'].split(',')[0]
     return my_ip
     
 def colorize(target, color, use_escape=True):

@@ -450,9 +450,6 @@ class PsiturkShell(Cmd, object):
 
         if revproxy_url:
             base_url = revproxy_url
-        elif 'OPENSHIFT_SECRET_TOKEN' in os.environ:
-            base_url = "http://" + self.config.get('Server Parameters', 'host')\
-            + "/ad"
         else:
             base_url = "http://" + self.config.get('Server Parameters', 'host')\
             + ":" + self.config.get('Server Parameters', 'port') + "/ad"
@@ -1140,8 +1137,6 @@ class PsiturkNetworkShell(PsiturkShell):
 
         if revproxy_url:
             base_url = revproxy_url
-        elif 'OPENSHIFT_SECRET_TOKEN' in os.environ:
-            base_url = "http://" + self.config.get('Server Parameters', 'host') + "/ad"
         else:
             if arg['--print-only']:
                 my_ip = get_my_ip()

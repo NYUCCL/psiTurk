@@ -8,13 +8,8 @@ class PsiturkConfig(SafeConfigParser):
 
     def __init__(self, localConfig="config.txt",
                  globalConfigName=".psiturkconfig", **kwargs):
-
-        # If working in OpenShift, move global config file in data
-        # directory (has access rights)
-        if 'OPENSHIFT_SECRET_TOKEN' in os.environ:
-            globalConfig = os.path.join(
-                os.environ['OPENSHIFT_DATA_DIR'], globalConfigName)
-        elif 'PSITURK_GLOBAL_CONFIG_LOCATION' in os.environ:
+                 
+        if 'PSITURK_GLOBAL_CONFIG_LOCATION' in os.environ:
             globalConfig = os.path.join(
                 os.environ['PSITURK_GLOBAL_CONFIG_LOCATION'], globalConfigName)
         else:  # if nothing is set default to user's home directory
@@ -39,12 +34,7 @@ class PsiturkConfig(SafeConfigParser):
                    "'psiturk-setup-example' first.")
             sys.exit()
         if not os.path.exists(self.globalFile):
-            if 'OPENSHIFT_SECRET_TOKEN' in os.environ:
-                print ("No '.psiturkconfig' file found "
-                       "in your " + os.environ['OPENSHIFT_DATA_DIR'] +
-                       " directory.\nCreating default " +
-                       self.globalFile + " file.")
-            elif 'PSITURK_GLOBAL_CONFIG_LOCATION' in os.environ:
+            if 'PSITURK_GLOBAL_CONFIG_LOCATION' in os.environ:
                 print ("No '.psiturkconfig' file found in your " +
                        os.environ['PSITURK_GLOBAL_CONFIG_LOCATION'] +
                        " directory.\nCreating default " +
