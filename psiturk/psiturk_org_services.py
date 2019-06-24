@@ -2,22 +2,31 @@
 """ This module """
 from __future__ import print_function
 
+try:
+    from urllib.error import HTTPError
+except ImportError:
+    from urllib2 import HTTPError
+    
+try:
+    from urllib.request import urlopen
+except ImportError:
+    from urllib2 import urlopen
+    
+import psutil
+from psiturk.psiturk_config import PsiturkConfig
+from sys import platform as _platform
+import struct
+import signal
+import subprocess
+import git
+from psiturk.version import version_number
+import requests
+import json
+import os
+from builtins import object
+from builtins import str
 from future import standard_library
 standard_library.install_aliases()
-from builtins import str
-from builtins import object
-import os
-import urllib.request, urllib.error, urllib.parse
-import json
-import requests
-from psiturk.version import version_number
-import git
-import subprocess
-import signal
-import struct
-from sys import platform as _platform
-from psiturk.psiturk_config import PsiturkConfig
-import psutil
 
 
 class PsiturkOrgServices(object):
@@ -27,6 +36,7 @@ class PsiturkOrgServices(object):
         registering secure ads. See:
         https://github.com/NYUCCL/api-psiturk-org
     """
+
     def __init__(self, key, secret):
 
         # 'https://api.psiturk.org' # by default for now
@@ -36,11 +46,11 @@ class PsiturkOrgServices(object):
         self.update_credentials(key, secret)
         if not self.check_credentials():
             print('WARNING *****************************')
-            print('Sorry, psiTurk Credentials invalid.\nYou will only be able '\
-                + 'to test experiments locally until you enter\nvalid '\
-                + 'credentials in the psiTurk Access section of ' \
-                + '~/.psiturkconfig.\n  Get your credentials at '\
-                + 'https://www.psiturk.org/login.\n')
+            print('Sorry, psiTurk Credentials invalid.\nYou will only be able '
+                  + 'to test experiments locally until you enter\nvalid '
+                  + 'credentials in the psiTurk Access section of '
+                  + '~/.psiturkconfig.\n  Get your credentials at '
+                  + 'https://www.psiturk.org/login.\n')
 
     def check_credentials(self):
         ''' Check credentials '''
@@ -73,9 +83,10 @@ class PsiturkOrgServices(object):
         try:
             api_server_status_link = self.api_server + '/status_msg?version=' +\
                 version_number
-            response = urllib.request.urlopen(api_server_status_link, timeout=1)
+            response = urlopen(
+                api_server_status_link, timeout=1)
             status_msg = json.load(response)['status']
-        except urllib.error.HTTPError:
+        except HTTPError:
             status_msg = "Sorry, can't connect to psiturk.org, please check\
                 your internet connection.\nYou will not be able to create new\
                 hits, but testing locally should work.\n"
@@ -126,10 +137,10 @@ class PsiturkOrgServices(object):
             updates the ad with the corresponding hitid
         """
         if sandbox:
-            req = self.update_record('sandboxad', ad_id, {'amt_hit_id':hit_id},
+            req = self.update_record('sandboxad', ad_id, {'amt_hit_id': hit_id},
                                      self.access_key, self.secret_key)
         else:
-            req = self.update_record('ad', ad_id, {'amt_hit_id':hit_id},
+            req = self.update_record('ad', ad_id, {'amt_hit_id': hit_id},
                                      self.access_key, self.secret_key)
         if req.status_code == 201:
             return True
@@ -174,6 +185,7 @@ class ExperimentExchangeServices(object):
         by the psiturk_org website.  the feature is interfacing with the
         experiment exchange see: https://github.com/NYUCCL/api-psiturk-org
     """
+
     def __init__(self):
         # 'https://api.psiturk.org' # by default for now
         self.api_server = 'https://api.psiturk.org'
@@ -213,8 +225,8 @@ class ExperimentExchangeServices(object):
                 print("Name: " + expinfo['name'])
                 print("Downloads: " + str(expinfo['downloads']))
                 print("Keywords: " + expinfo['keywords'])
-                print("psiTurk Version: " +\
-                    str(expinfo['psiturk_version_string']))
+                print("psiTurk Version: " +
+                      str(expinfo['psiturk_version_string']))
                 print("URL: http://psiturk.org/ee/"+experiment_id)
                 print("\n")
                 print("Experiment downloaded into the `" + gitr['name'] + "`\
@@ -227,4 +239,3 @@ class ExperimentExchangeServices(object):
                     contact the author of this experiment.  Experiment NOT\
                     downloaded.")
             return
-

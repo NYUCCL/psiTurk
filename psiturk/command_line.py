@@ -23,6 +23,7 @@ def process():
     elif invoked_as == "psiturk-install":
         install_from_exchange()
 
+
 def install_from_exchange():
     ''' Install from experiment exchange. '''
     parser = argparse.ArgumentParser(
@@ -36,6 +37,7 @@ def install_from_exchange():
     args = parser.parse_args()
     exp_exch = ExperimentExchangeServices()
     exp_exch.download_experiment(args.exp_id)
+
 
 def setup_example():
     ''' Add commands for testing, etc. '''
@@ -57,6 +59,7 @@ def setup_example():
         import psiturk.setup_example as se
         se.setup_example()
 
+
 def launch_server():
     ''' Add commands for testing, etc.. '''
     parser = argparse.ArgumentParser(
@@ -76,6 +79,7 @@ def launch_server():
     else:
         import psiturk.experiment_server as es
         es.launch()
+
 
 def launch_shell():
     ''' Add commands for testing, etc.. '''
@@ -113,7 +117,7 @@ def launch_shell():
             ps.run(testfile=args.test, quiet=True)
         elif args.execute or unknownargs:
             if unknownargs:
-                execute= ' '.join(unknownargs)
+                execute = ' '.join(unknownargs)
             else:
                 execute = args.execute
             ps.run(cabinmode=args.cabinmode, execute=execute, quiet=True)

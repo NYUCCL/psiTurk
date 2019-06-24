@@ -3,6 +3,7 @@
 from __future__ import print_function
 from __future__ import absolute_import
 
+from .psiturk_statuses import *
 from builtins import str
 from builtins import range
 import os
@@ -42,8 +43,8 @@ CONFIG.load_config()
 if 'ON_HEROKU' in os.environ:
     LOG_FILE_PATH = None
 else:
-    LOG_FILE_PATH = os.path.join(os.getcwd(), CONFIG.get("Server Parameters", \
-    "logfile"))
+    LOG_FILE_PATH = os.path.join(os.getcwd(), CONFIG.get("Server Parameters",
+                                                         "logfile"))
 
 LOG_LEVELS = [logging.DEBUG, logging.INFO, logging.WARNING, logging.ERROR,
               logging.CRITICAL]
@@ -52,7 +53,6 @@ logging.basicConfig(filename=LOG_FILE_PATH, format='%(asctime)s %(message)s',
                     level=LOG_LEVEL)
 
 # Status codes
-from .psiturk_statuses import *
 
 # Let's start
 # ===========
@@ -62,7 +62,6 @@ app = Flask("Experiment_Server")
 app.config.update(SEND_FILE_MAX_AGE_DEFAULT=10)
 app.secret_key = CONFIG.get('Server Parameters', 'secret_key')
 app.logger.info("Secret key: " + app.secret_key)
-
 
 
 # Serving warm, fresh, & sweet custom, user-provided routes
@@ -86,8 +85,8 @@ init_db()
 
 
 # Read psiturk.js file into memory
-PSITURK_JS_FILE = os.path.join(os.path.dirname(__file__), \
-    "psiturk_js/psiturk.js")
+PSITURK_JS_FILE = os.path.join(os.path.dirname(__file__),
+                               "psiturk_js/psiturk.js")
 app.logger.info(PSITURK_JS_FILE)
 
 if os.path.exists(PSITURK_JS_FILE):
@@ -111,6 +110,7 @@ def handle_invalid_usage(error):
     response.status_code = error.status_code
     app.logger.error(error.message)
     return response
+
 
 @app.teardown_request
 def shutdown_session(_=None):
@@ -137,8 +137,9 @@ def get_random_condcount(mode):
                                                            'cutoff_time'))
     starttime = datetime.datetime.now() + cutofftime
 
-    try: 
-        conditions = json.load(open(os.path.join(app.root_path, 'conditions.json')))
+    try:
+        conditions = json.load(
+            open(os.path.join(app.root_path, 'conditions.json')))
         numconds = len(list(conditions.keys()))
         numcounts = 1
     except IOError as e:
@@ -146,7 +147,7 @@ def get_random_condcount(mode):
         numcounts = CONFIG.getint('Task Parameters', 'num_counters')
 
     participants = Participant.query.\
-        filter(Participant.codeversion == \
+        filter(Participant.codeversion ==
                CONFIG.get('Task Parameters', 'experiment_code_version')).\
         filter(Participant.mode == mode).\
         filter(or_(Participant.status == COMPLETED,
@@ -187,10 +188,12 @@ def favicon():
     ''' Serve favicon '''
     return app.send_static_file('favicon.ico')
 
+
 @app.route('/static/js/psiturk.js')
 def psiturk_js():
     ''' psiTurk js route '''
     return render_template_string(PSITURK_JS_CODE)
+
 
 @app.route('/check_worker_status', methods=['GET'])
 def check_worker_status():
@@ -202,7 +205,7 @@ def check_worker_status():
         worker_id = request.args['workerId']
         assignment_id = request.args['assignmentId']
         allow_repeats = CONFIG.getboolean('HIT Configuration', 'allow_repeats')
-        if allow_repeats: # if you allow repeats focus on current worker/assignment combo
+        if allow_repeats:  # if you allow repeats focus on current worker/assignment combo
             try:
                 part = Participant.query.\
                     filter(Participant.workerid == worker_id).\
@@ -210,19 +213,20 @@ def check_worker_status():
                 status = part.status
             except exc.SQLAlchemyError:
                 status = NOT_ACCEPTED
-        else: # if you disallow repeats search for highest status of anything by this worker
+        else:  # if you disallow repeats search for highest status of anything by this worker
             try:
                 matches = Participant.query.\
                     filter(Participant.workerid == worker_id).all()
                 numrecs = len(matches)
-                if numrecs==0: # this should be caught by exception, but just to be safe
+                if numrecs == 0:  # this should be caught by exception, but just to be safe
                     status = NOT_ACCEPTED
                 else:
                     status = max([record.status for record in matches])
             except exc.SQLAlchemyError:
                 status = NOT_ACCEPTED
-        resp = {"status" : status}
+        resp = {"status": status}
         return jsonify(**resp)
+
 
 @app.route('/ad', methods=['GET'])
 @app.route('/pub', methods=['GET'])
@@ -242,8 +246,8 @@ def advertisement():
     user_agent_string = request.user_agent.string
     user_agent_obj = user_agents.parse(user_agent_string)
     browser_ok = True
-    for rule in string.split(
-            CONFIG.get('HIT Configuration', 'browser_exclude_rule'), ','):
+    browser_exclude_rule = CONFIG.get('HIT Configuration', 'browser_exclude_rule')
+    for rule in browser_exclude_rule.split(','):
         myrule = rule.strip()
         if myrule in ["mobile", "tablet", "touchcapable", "pc", "bot"]:
             if (myrule == "mobile" and user_agent_obj.is_mobile) or\
@@ -306,7 +310,8 @@ def advertisement():
         # to mturk fails after we've set status to SUBMITTED, so really they
         # have not successfully submitted. This gives another chance for the
         # submit to work when not using the psiturk ad server.
-        use_psiturk_ad_server = CONFIG.getboolean('Shell Parameters', 'use_psiturk_ad_server')
+        use_psiturk_ad_server = CONFIG.getboolean(
+            'Shell Parameters', 'use_psiturk_ad_server')
         if not use_psiturk_ad_server:
             # They've finished the experiment but haven't successfully submitted the HIT
             # yet.
@@ -317,9 +322,9 @@ def advertisement():
                 assignmentid=assignment_id,
                 workerid=worker_id
             )
-        else: 
+        else:
             # Show them a thanks message and tell them to go away.
-            return render_template( 'thanks.html' )
+            return render_template('thanks.html')
     elif already_in_db and not (debug_mode or allow_repeats):
         raise ExperimentError('already_did_exp_hit')
     elif status == ALLOCATED or not status or debug_mode:
@@ -336,6 +341,7 @@ def advertisement():
         )
     else:
         raise ExperimentError('status_incorrectly_set')
+
 
 @app.route('/consent', methods=['GET'])
 @nocache
@@ -360,6 +366,7 @@ def give_consent():
         workerid=worker_id
     )
 
+
 def get_ad_via_hitid(hit_id):
     ''' Get ad via HIT id '''
     username = CONFIG.get('psiTurk Access', 'psiturk_access_key_id')
@@ -375,6 +382,7 @@ def get_ad_via_hitid(hit_id):
         else:
             return "error"
 
+
 @app.route('/exp', methods=['GET'])
 @nocache
 def start_exp():
@@ -387,7 +395,7 @@ def start_exp():
     worker_id = request.args['workerId']
     mode = request.args['mode']
     app.logger.info("Accessing /exp: %(h)s %(a)s %(w)s " % {
-        "h" : hit_id,
+        "h": hit_id,
         "a": assignment_id,
         "w": worker_id
     })
@@ -471,7 +479,8 @@ def start_exp():
             if other_assignment:
                 raise ExperimentError('already_did_exp_hit')
 
-    use_psiturk_ad_server = CONFIG.getboolean('Shell Parameters', 'use_psiturk_ad_server')
+    use_psiturk_ad_server = CONFIG.getboolean(
+        'Shell Parameters', 'use_psiturk_ad_server')
     if use_psiturk_ad_server and (mode == 'sandbox' or mode == 'live'):
         # If everything goes ok here relatively safe to assume we can lookup
         # the ad.
@@ -482,7 +491,7 @@ def start_exp():
                     + str(ad_id)
             elif mode == "live":
                 ad_server_location = 'https://ad.psiturk.org/complete/' +\
-                str(ad_id)
+                    str(ad_id)
         else:
             raise ExperimentError('hit_not_registered_with_ad_server')
     else:
@@ -493,9 +502,11 @@ def start_exp():
         condition=part.cond,
         counterbalance=part.counterbalance,
         adServerLoc=ad_server_location,
-        mode = mode,
-        contact_address=CONFIG.get('HIT Configuration', 'contact_email_on_error')
+        mode=mode,
+        contact_address=CONFIG.get(
+            'HIT Configuration', 'contact_email_on_error')
     )
+
 
 @app.route('/inexp', methods=['POST'])
 def enterexp():
@@ -556,6 +567,7 @@ def load(uid=None):
 
     return jsonify(**resp)
 
+
 @app.route('/sync/<uid>', methods=['PUT'])
 def update(uid=None):
     """
@@ -587,6 +599,7 @@ def update(uid=None):
     app.logger.info("saved data for %s (current trial: %s)", uid, trial)
     resp = {"status": "user data saved"}
     return jsonify(**resp)
+
 
 @app.route('/quitter', methods=['POST'])
 def quitter():
@@ -639,10 +652,12 @@ def debug_complete():
         except:
             raise ExperimentError('error_setting_worker_complete')
         else:
-            if (mode == 'sandbox' or mode == 'live'): # send them back to mturk.
+            # send them back to mturk.
+            if (mode == 'sandbox' or mode == 'live'):
                 return render_template('closepopup.html')
             else:
                 return render_template('complete.html')
+
 
 @app.route('/worker_complete', methods=['GET'])
 def worker_complete():
@@ -663,8 +678,9 @@ def worker_complete():
             status = "success"
         except exc.SQLAlchemyError:
             status = "database error"
-        resp = {"status" : status}
+        resp = {"status": status}
         return jsonify(**resp)
+
 
 @app.route('/worker_submitted', methods=['GET'])
 def worker_submitted():
@@ -684,7 +700,7 @@ def worker_submitted():
             status = "success"
         except exc.SQLAlchemyError:
             status = "database error"
-        resp = {"status" : status}
+        resp = {"status": status}
         return jsonify(**resp)
 
 # Is this a security risk?
@@ -696,9 +712,11 @@ def ppid():
 
 # Insert "mode" into pages so it's carried from page to page done server-side
 # to avoid breaking backwards compatibility with old templates.
+
+
 def insert_mode(page_html, mode):
     ''' Insert mode '''
-    page_html = page_html.decode("utf-8")
+    page_html = page_html
     match_found = False
     matches = re.finditer('workerId={{ workerid }}', page_html)
     match = None
@@ -728,14 +746,16 @@ def regularpage(foldername=None, pagename=None):
     else:
         return render_template(foldername+"/"+pagename)
 
+
 def run_webserver():
     ''' Run web server '''
     host = "0.0.0.0"
     port = CONFIG.getint('Server Parameters', 'port')
-    print("Serving on ", "http://" +  host + ":" + str(port))
+    print("Serving on ", "http://" + host + ":" + str(port))
     app.config['TEMPLATES_AUTO_RELOAD'] = True
     app.jinja_env.auto_reload = True
     app.run(debug=True, host=host, port=port)
+
 
 if __name__ == '__main__':
     run_webserver()

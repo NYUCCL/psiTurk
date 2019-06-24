@@ -1,4 +1,7 @@
 from __future__ import print_function
+import six
+from distutils import file_util
+import os
 from future import standard_library
 standard_library.install_aliases()
 import os
@@ -15,7 +18,7 @@ class PsiturkConfig(ConfigParser):
 
     def __init__(self, localConfig="config.txt",
                  globalConfigName=".psiturkconfig", **kwargs):
-                 
+
         if 'PSITURK_GLOBAL_CONFIG_LOCATION' in os.environ:
             globalConfig = os.path.join(
                 os.environ['PSITURK_GLOBAL_CONFIG_LOCATION'], globalConfigName)
@@ -51,7 +54,7 @@ class PsiturkConfig(ConfigParser):
                        "home directory.\nCreating default "
                        "~/.psiturkconfig file.")
             file_util.copy_file(global_defaults_file, self.globalFile)
-            
+
         # Read default global and local, then user's global and local. This way
         # any field not in the user's files will be set to the default value.
         self.read([global_defaults_file, local_defaults_file,

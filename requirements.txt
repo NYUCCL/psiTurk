@@ -8,8 +8,9 @@ requests==2.5.0
 user-agents==0.2.0
 sh==1.09
 faker==1.0.7
-gitpython==0.1.7
-fuzzywuzzy==0.2
+gitpython==2.1.11
+fuzzywuzzy==0.17.0
+python-Levenshtein==0.12.0
 setproctitle==1.1.8
 psutil>=1.2.1
 Werkzeug==0.12.1

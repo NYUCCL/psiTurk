@@ -7,10 +7,10 @@ from distutils import dir_util, file_util
 # from psiturk_config import PsiturkConfig  # unused
 
 EXAMPLE_DIR = os.path.join(os.path.dirname(__file__), "example")
-DEFAULT_CONFIG_FILE = os.path.join(os.path.dirname(__file__),\
-    "default_configs/local_config_defaults.txt")
-DEFAULT_GLOBAL_CONFIG_FILE = os.path.join(os.path.dirname(__file__), \
-    "default_configs/global_config_defaults.txt")
+DEFAULT_CONFIG_FILE = os.path.join(os.path.dirname(__file__),
+                                   "default_configs/local_config_defaults.txt")
+DEFAULT_GLOBAL_CONFIG_FILE = os.path.join(os.path.dirname(__file__),
+                                          "default_configs/global_config_defaults.txt")
 
 if 'PSITURK_GLOBAL_CONFIG_LOCATION' in os.environ:
     GLOBAL_CONFIG_PATH = os.path.join(os.environ['PSITURK_GLOBAL_CONFIG_LOCATION'],
@@ -21,6 +21,7 @@ else:
 GLOBAL_CONFIG_FILE = os.path.expanduser(GLOBAL_CONFIG_PATH)
 EXAMPLE_TARGET = os.path.join(os.curdir, "psiturk-example")
 CONFIG_TARGET = os.path.join(EXAMPLE_TARGET, "config.txt")
+
 
 def setup_example():
     ''' Setup example '''

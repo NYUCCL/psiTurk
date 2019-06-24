@@ -1,6 +1,6 @@
-#----------------------------------------------
+# ----------------------------------------------
 # ExperimentError Exception, for db errors, etc.
-#----------------------------------------------
+# ----------------------------------------------
 # Possible ExperimentError values.
 
 from flask import render_template
@@ -151,6 +151,7 @@ class ExperimentError(Exception):
             errordesc=self.errordesc,
             contact_address=contact_on_error,
             **request.args)
+
 
 class InvalidUsage(Exception):
     status_code = 400

@@ -13,6 +13,14 @@ import pytest
 
 fake = Faker()  # Fake data generator
 
+try:
+    reload  # Python 2.7
+except NameError:
+    try:
+        from importlib import reload  # Python 3.4+
+    except ImportError:
+        from imp import reload  # Python 3.0 - 3.3
+
 
 class FlaskTestClientProxy(object):
     '''Spoof user agent (Chrome)'''
@@ -73,17 +81,21 @@ class PsiTurkStandardTests(PsiturkUnitTest):
     def test_default_page(self):
         '''Test that root page works.'''
         rv = self.app.get('/')
-        assert 'Welcome to psiTurk!' in rv.data
+        response = rv.get_data(as_text=True)
+        # print(os.getcwd())
+        # with open('server.log','r') as infile:
+            # print(file.read())
+        assert ('Welcome to psiTurk!' in response)
 
     def test_exp_debug_no_url_vars(self):
         '''Test that exp page throws Error #1003 with no url vars.'''
         rv = self.app.get('/exp')
-        assert '<b>Error</b>: 1003' in rv.data
+        assert u'<b>Error</b>: 1003' in rv.get_data(as_text=True)
 
     def test_ad_no_url_vars(self):
         '''Test that ad page throws Error #1001 with no url vars.'''
         rv = self.app.get('/ad')
-        assert '<b>Error</b>: 1001' in rv.data
+        assert u'<b>Error</b>: 1001' in rv.get_data(as_text=True)
 
     def test_ad_with_all_urls(self):
         '''Test that ad page throws Error #1003 with no url vars.'''
@@ -93,7 +105,7 @@ class PsiTurkStandardTests(PsiturkUnitTest):
             'hitId=debug%s' % self.hit_id,
             'mode=sandbox'])
         rv = self.app.get('/ad?%s' % args)
-        assert 'Thank you for accepting this HIT!' in rv.data
+        assert 'Thank you for accepting this HIT!' in rv.get_data(as_text=True)
     
     @pytest.mark.skip('psiturk server is broken at the moment')
     def test_exp_with_all_url_vars_not_registered_on_ad_server(self):
@@ -105,8 +117,7 @@ class PsiTurkStandardTests(PsiturkUnitTest):
             'hitId=debug%s' % self.hit_id,
             'mode=sandbox'])
         rv = self.app.get('/exp?%s' % args)
-        raise Exception(rv.data)
-        assert '<b>Error</b>: 1018' in rv.data
+        assert '<b>Error</b>: 1018' in rv.get_data(as_text=True)
 
     def test_sync_put(self):
         request = "&".join([
@@ -121,7 +132,7 @@ class PsiTurkStandardTests(PsiturkUnitTest):
         # try putting the sync
         uniqueid = "debug%s:debug%s" % (self.worker_id, self.assignment_id)
         rv = self.app.put('/sync/%s' % uniqueid)
-        status = json.loads(rv.data).get("status", "")
+        status = json.loads(rv.get_data(as_text=True)).get("status", "")
         assert status == "user data saved"
 
     def test_sync_get(self):
@@ -142,7 +153,7 @@ class PsiTurkStandardTests(PsiturkUnitTest):
         uniqueid = "debug%s:debug%s" % (self.worker_id, self.assignment_id)
         rv = self.app.get('/sync/%s' % uniqueid)
 
-        response = json.loads(rv.data)
+        response = json.loads(rv.get_data(as_text=True))
         assert response.get("assignmentId", "") == "debug%s" % self.assignment_id
         assert response.get("workerId", "") == "debug%s" % self.worker_id
         assert response.get("hitId", "") == "debug%s" % self.hit_id
@@ -210,11 +221,11 @@ class PsiTurkStandardTests(PsiturkUnitTest):
 
         # make sure they are blocked on the ad page
         rv = self.app.get('/ad?%s' % request)
-        assert ': 1010' in rv.data
+        assert ': 1010' in rv.get_data(as_text=True)
 
         # make sure they are blocked on the experiment page
         rv = self.app.get("/exp?%s" % request)
-        assert ': 1010' in rv.data
+        assert ': 1010' in rv.get_data(as_text=True)
 
     def test_repeat_experiment_success(self):
         '''Test that a participant can repeat the experiment.'''
@@ -251,12 +262,12 @@ class PsiTurkStandardTests(PsiturkUnitTest):
         # make sure they are not blocked on the ad page
         rv = self.app.get('/ad?%s' % request)
         assert rv.status_code == 200
-        assert ': 1010' not in rv.data
+        assert ': 1010' not in rv.get_data(as_text=True)
 
         # make sure they are not blocked on the experiment page
         rv = self.app.get("/exp?%s" % request)
         assert rv.status_code == 200
-        assert ': 1010' not in rv.data
+        assert ': 1010' not in rv.get_data(as_text=True)
 
         # save data with sync PUT
         uniqueid = "%s:%s" % (self.worker_id, self.assignment_id)
@@ -288,12 +299,12 @@ class PsiTurkStandardTests(PsiturkUnitTest):
         # make sure they are blocked on the ad page
         rv = self.app.get('/ad?%s' % request)
         assert rv.status_code == 200
-        assert ': 1009' in rv.data
+        assert ': 1009' in rv.get_data(as_text=True)
 
         # make sure they are blocked on the experiment page
         rv = self.app.get("/exp?%s" % request)
         assert rv.status_code == 200
-        assert ': 1008' in rv.data
+        assert ': 1008' in rv.get_data(as_text=True)
 
         # have them quit the experiment
         rv = self.app.post("/quitter", data=dict(uniqueId=uniqueid))
@@ -302,12 +313,12 @@ class PsiTurkStandardTests(PsiturkUnitTest):
         # make sure they are blocked on the ad page
         rv = self.app.get('/ad?%s' % request)
         assert rv.status_code == 200
-        assert ': 1009' in rv.data
+        assert ': 1009' in rv.get_data(as_text=True)
 
         # make sure they are blocked on the experiment page
         rv = self.app.get("/exp?%s" % request)
         assert rv.status_code == 200
-        assert ': 1008' in rv.data
+        assert ': 1008' in rv.get_data(as_text=True)
 
     def test_repeat_experiment_quit_allow_repeats(self):
         '''Test that a participant cannot restart the experiment, even when repeats are allowed.'''
@@ -330,12 +341,12 @@ class PsiTurkStandardTests(PsiturkUnitTest):
         # make sure they are blocked on the ad page
         rv = self.app.get('/ad?%s' % request)
         assert rv.status_code == 200
-        assert ': 1009' in rv.data
+        assert ': 1009' in rv.get_data(as_text=True)
 
         # make sure they are blocked on the experiment page
         rv = self.app.get("/exp?%s" % request)
         assert rv.status_code == 200
-        assert ': 1008' in rv.data
+        assert ': 1008' in rv.get_data(as_text=True)
 
         # have them quit the experiment
         rv = self.app.post("/quitter", data=dict(uniqueId=uniqueid))
@@ -344,12 +355,12 @@ class PsiTurkStandardTests(PsiturkUnitTest):
         # make sure they are blocked on the ad page
         rv = self.app.get('/ad?%s' % request)
         assert rv.status_code == 200
-        assert ': 1009' in rv.data
+        assert ': 1009' in rv.get_data(as_text=True)
 
         # make sure they are blocked on the experiment page
         rv = self.app.get("/exp?%s" % request)
         assert rv.status_code == 200
-        assert ': 1008' in rv.data
+        assert ': 1008' in rv.get_data(as_text=True)
 
 
 class BadUserAgent(PsiturkUnitTest):
@@ -375,7 +386,7 @@ class BadUserAgent(PsiturkUnitTest):
             '/ad' + '?assignmentId=debug' + self.assignment_id + '&workerId=debug' +
             self.worker_id + '&hitId=debug' + self.hit_id + '&mode=sandbox'
         )
-        assert '<b>Error</b>: 1014' in rv.data
+        assert '<b>Error</b>: 1014' in rv.get_data(as_text=True)
 
 
 @pytest.mark.skip('cwd issues at the moment')
@@ -397,7 +408,7 @@ class PsiTurkTestPsiturkJS(PsiturkUnitTest):
     def test_psiturk_js_is_missing(self):
         ''' Test for missing psiturk.js '''
         rv = self.app.get('static/js/psiturk.js')
-        assert 'file not found' in rv.data
+        assert 'file not found' in rv.get_data(as_text=True)
 
     def tearDown(self):
         '''Tear down fixtures'''

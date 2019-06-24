@@ -1,18 +1,20 @@
 from __future__ import print_function
+import urllib.parse
+import urllib.error
+import urllib.request
+import hashlib
+import time
+import psutil
+import socket
+from threading import Thread, Event
+import webbrowser
+import signal
+import subprocess
+import sys
+import os
+from builtins import object
 from future import standard_library
 standard_library.install_aliases()
-from builtins import object
-import os
-import sys
-import subprocess
-import signal
-import webbrowser
-from threading import Thread, Event
-import urllib.request, urllib.error, urllib.parse
-import socket
-import psutil
-import time
-import hashlib
 
 
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -32,26 +34,31 @@ def is_port_available(ip, port):
     except socket.error as e:
         return True
 
+
 def wait_until_online(function, ip, port):
     """
     Uses Wait_For_State to wait for the server to come online, then runs the given function.
     """
-    awaiting_service = Wait_For_State(lambda: not is_port_available(ip, port), function)
+    awaiting_service = Wait_For_State(
+        lambda: not is_port_available(ip, port), function)
     awaiting_service.start()
     return awaiting_service
 
+
 def launch_browser(host, port, route):
-    launchurl = "http://{host}:{port}/{route}".format(host=host, port=port, route=route)
+    launchurl = "http://{host}:{port}/{route}".format(
+        host=host, port=port, route=route)
     webbrowser.open(launchurl, new=1, autoraise=True)
+
 
 def launch_browser_when_online(ip, port, route):
     return wait_until_online(lambda: launch_browser(ip, port, route), ip, port)
 
 
-#----------------------------------------------------------------
+# ----------------------------------------------------------------
 # handles waiting for processes which we don't control (e.g.,
 # browser requests)
-#----------------------------------------------------------------
+# ----------------------------------------------------------------
 class Wait_For_State(Thread):
     """
     Waits for a state-checking function to return True, then runs a given
@@ -63,6 +70,7 @@ class Wait_For_State(Thread):
     t.start()
     t.cancel() # Cancels thread
     """
+
     def __init__(self, state_function, function, pollinterval=1):
         Thread.__init__(self)
         self.function = function
@@ -82,19 +90,24 @@ class Wait_For_State(Thread):
             else:
                 self.finished.wait(self.pollinterval)
 
-#----------------------------------------------
+# ----------------------------------------------
 # vanilla exception handler
-#----------------------------------------------
+# ----------------------------------------------
+
+
 class ExperimentServerControllerException(Exception):
     def __init__(self, value):
         self.value = value
+
     def __str__(self):
         return repr(self.value)
 
-#----------------------------------------------
+# ----------------------------------------------
 # simple wrapper class to control the
 # starting/stopping of experiment server
-#----------------------------------------------
+# ----------------------------------------------
+
+
 class ExperimentServerController(object):
     def __init__(self, config):
         self.config = config
@@ -102,12 +115,14 @@ class ExperimentServerController(object):
 
     def get_ppid(self):
         if not self.is_port_available():
-            url = "http://{hostname}:{port}/ppid".format(hostname=self.config.get("Server Parameters", "host"), port=self.config.getint("Server Parameters", "port"))
+            url = "http://{hostname}:{port}/ppid".format(hostname=self.config.get(
+                "Server Parameters", "host"), port=self.config.getint("Server Parameters", "port"))
             ppid_request = urllib.request.Request(url)
-            ppid =  urllib.request.urlopen(ppid_request).read()
+            ppid = urllib.request.urlopen(ppid_request).read()
             return ppid
         else:
-            raise ExperimentServerControllerException("Cannot shut down experiment server, server not online")
+            raise ExperimentServerControllerException(
+                "Cannot shut down experiment server, server not online")
 
     def restart(self):
         self.shutdown()
@@ -141,15 +156,17 @@ class ExperimentServerController(object):
                 pid.send_signal(signal.SIGTERM)
 
     def is_server_running(self):
-        project_hash = hashlib.sha1(os.getcwd()).hexdigest()[:12]
+        project_hash = hashlib.sha1(os.getcwd().encode()).hexdigest()[:12]
         # find server processes run by this user from this folder
         PROCNAME = "psiturk_experiment_server_" + project_hash
-        cmd = "ps -o pid,command | grep '"+ PROCNAME + "' | grep -v grep | awk '{print $1}'"
-        psiturk_exp_processes = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+        cmd = "ps -o pid,command | grep '" + PROCNAME + \
+            "' | grep -v grep | awk '{print $1}'"
+        psiturk_exp_processes = subprocess.Popen(
+            cmd, shell=True, stdout=subprocess.PIPE)
         output = psiturk_exp_processes.stdout.readlines()
         parent = psutil.Process(psiturk_exp_processes.pid)
         self.kill_child_processes(parent.pid)
-        
+
         if output:
             is_psiturk_using_port = True
         else:
@@ -170,8 +187,9 @@ class ExperimentServerController(object):
 
     def startup(self):
         server_command = "{python_exec} '{server_script}'".format(
-            python_exec = sys.executable,
-            server_script = os.path.join(os.path.dirname(__file__), "experiment_server.py")
+            python_exec=sys.executable,
+            server_script=os.path.join(os.path.dirname(
+                __file__), "experiment_server.py")
         )
         server_status = self.is_server_running()
         if server_status == 'no':
@@ -184,6 +202,6 @@ class ExperimentServerController(object):
         elif server_status == 'yes':
             print("Experiment server may be already running...")
         elif server_status == 'blocked':
-            print("Another process is running on the desired port. Try using a different port number.")
+            print(
+                "Another process is running on the desired port. Try using a different port number.")
         time.sleep(1.2)  # Allow CLI to catch up.
-

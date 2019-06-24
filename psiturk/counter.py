@@ -10,6 +10,7 @@ from operator import itemgetter
 from heapq import nlargest
 from itertools import repeat
 
+
 class Counter(dict):
     '''Dict subclass for counting hashable objects.  Sometimes called a bag
     or multiset.  Elements are stored as dictionary keys and their counts
@@ -90,7 +91,8 @@ class Counter(dict):
                     for elem, count in iterable.items():
                         self[elem] = self_get(elem, 0) + count
                 else:
-                    dict.update(self, iterable) # fast path when counter is empty
+                    # fast path when counter is empty
+                    dict.update(self, iterable)
             else:
                 self_get = self.get
                 for elem in iterable:

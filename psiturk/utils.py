@@ -1,20 +1,25 @@
+try:
+    from urllib.request import urlopen
+except ImportError:
+    from urllib2 import urlopen
+import json
+import os
 from future import standard_library
 standard_library.install_aliases()
-import os
-import urllib.request, urllib.error, urllib.parse
-import json
+
 
 def get_my_ip():
     """
         Asks and external server what your ip appears to be (useful is
         running from behind a NAT/wifi router).  Of course, incoming port
         to the router must be forwarded correctly.
-    """    
-    my_ip = json.load(urllib.request.urlopen(
+    """
+    my_ip = json.load(urlopen(
         'http://httpbin.org/ip'
     ))['origin'].split(',')[0]
     return my_ip
-    
+
+
 def colorize(target, color, use_escape=True):
     ''' Colorize target string. Set use_escape to false when text will not be
     interpreted by readline, such as in intro message.'''

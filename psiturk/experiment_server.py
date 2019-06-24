@@ -5,12 +5,13 @@ from builtins import str
 from gunicorn.app.base import Application
 from gunicorn import util
 import multiprocessing
-from .psiturk_config import PsiturkConfig
+from psiturk.psiturk_config import PsiturkConfig
 import os
 import hashlib
 
 config = PsiturkConfig()
 config.load_config()
+
 
 class ExperimentServer(Application):
     '''
@@ -47,7 +48,8 @@ class ExperimentServer(Application):
         return util.import_app("psiturk.experiment:app")
 
     def load_user_config(self):
-        workers = config.get("Server Parameters", "threads")  # config calls these threads to avoid confusing with workers
+        # config calls these threads to avoid confusing with workers
+        workers = config.get("Server Parameters", "threads")
         if workers == "auto":
             workers = str(multiprocessing.cpu_count() * 2 + 1)
 
@@ -65,7 +67,7 @@ class ExperimentServer(Application):
             print('Press `enter` to continue.')
 
         # add unique identifier of this psiturk project folder
-        project_hash = hashlib.sha1(os.getcwd()).hexdigest()[:12]
+        project_hash = hashlib.sha1(os.getcwd().encode()).hexdigest()[:12]
         self.user_options = {
             'bind': config.get("Server Parameters", "host") + ":" + config.get("Server Parameters", "port"),
             'workers': workers,
@@ -81,23 +83,25 @@ class ExperimentServer(Application):
         if config.has_option("Server Parameters", "certfile") and config.has_option("Server Parameters", "keyfile"):
             print("Loading SSL certs for server...")
             ssl_options = {
-                'certfile' : config.get("Server Parameters", "certfile"),
-                'keyfile' : config.get("Server Parameters", "keyfile")
+                'certfile': config.get("Server Parameters", "certfile"),
+                'keyfile': config.get("Server Parameters", "keyfile")
             }
             self.user_options.update(ssl_options)
 
         if config.has_option("Server Parameters", "server_timeout"):
-            self.user_options.update({'timeout': config.get("Server Parameters", "server_timeout")})
+            self.user_options.update(
+                {'timeout': config.get("Server Parameters", "server_timeout")})
 
         if 'ON_HEROKU' in os.environ:
             self.user_options.update({
-                'accesslog' : '-',
-                'errorlog' : '-'
-                })
+                'accesslog': '-',
+                'errorlog': '-'
+            })
 
 
 def launch():
     ExperimentServer().run()
+
 
 if __name__ == "__main__":
     launch()
