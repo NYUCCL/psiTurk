@@ -75,10 +75,10 @@ class TestAmtServices(object):
                 with_hit_id = faker.md5(raw_output=False)
 
             stubber.add_response(
-                'create_hit_type', helpers.get_boto3_return('create_hit_type.pickle'))
+                'create_hit_type', helpers.get_boto3_return('create_hit_type.json'))
 
             boto_return_create_hit_with_hit_type = helpers.get_boto3_return(
-                'create_hit_with_hit_type.pickle')
+                'create_hit_with_hit_type.json')
 
             boto_return_create_hit_with_hit_type['HIT']['HITId'] = with_hit_id
             # used to always return a hit with id: 3XJOUITW8URHJMX7F00H20LGRIAQTX
