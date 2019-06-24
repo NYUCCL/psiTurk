@@ -8,10 +8,10 @@ import os
 import sys
 from distutils import file_util
 import six
-if six.PY3:
-    from configparser import ConfigParser
+if six.PY2:
+    from ConfigParser import ConfigParser
 else:
-    from configparser import SafeConfigParser as ConfigParser
+    from configparser import ConfigParser
 
 
 class PsiturkConfig(ConfigParser):
