@@ -721,9 +721,9 @@ class MTurkServicesWrapper(object):
 
         ad_id = None
         if use_psiturk_ad_server:
-            ad_id = self.create_psiturk_ad()
+            ad_id = (self.create_psiturk_ad()).data['ad_id']
             create_failed = False
-            fail_msg = None
+            fail_msg = ''
             if ad_id is not False:
                 ad_location = self.web_services.get_ad_url(
                     ad_id, int(self.sandbox))
@@ -753,8 +753,9 @@ class MTurkServicesWrapper(object):
                 fail_msg = "  Unable to create HIT on Amazon Mechanical Turk."
 
         if create_failed:
-            print('\n'.join(['*****************************',
-                             '  Sorry, there was an error creating the hit and registering ad.']))
+            fail_msg = '\n'.join(['*****************************',
+                             '  Sorry, there was an error creating the hit.',
+                             fail_msg])
 
             if fail_msg is None:
                 fail_msg = ''
