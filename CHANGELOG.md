@@ -19,3 +19,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  
 ### Removed
 - Shell support for EC2 MySQL
+
+### Fixed
+- #352 - expiring a hit didn't push far enough into the past to actually expire instead of extend on the mturk side
