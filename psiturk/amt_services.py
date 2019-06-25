@@ -363,9 +363,10 @@ class MTurkServices(object):
         if not self.connect_to_turk():
             return False
         try:
+            time_in_past = datetime.datetime.now() + datetime.timedelta(-30)
             self.mtc.update_expiration_for_hit(
                 HITId=hitid,
-                ExpireAt=datetime.datetime.now()
+                ExpireAt=time_in_past
             )
             return True
         except Exception as e:
