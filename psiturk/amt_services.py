@@ -65,6 +65,7 @@ def check_mturk_connection(func):
     return wrapper
     
 def amt_service_response(func):
+    @check_mturk_connection
     @wraps(func)
     def wrapper(*args, **kwargs):
         try:
@@ -142,7 +143,7 @@ class MTurkServices(object):
         return hits_data
 
     @amt_service_response
-    @check_mturk_connection
+    
     def get_all_hits(self):
         ''' Get all HITs '''
         hits = []
@@ -153,7 +154,7 @@ class MTurkServices(object):
         return hits_data
 
     @amt_service_response
-    @check_mturk_connection
+    
     def get_assignments(self, assignment_status=None, hit_ids=None):
         ''' Get workers '''
         if not hit_ids:
@@ -184,7 +185,7 @@ class MTurkServices(object):
         return workers
     
     @amt_service_response
-    @check_mturk_connection
+    
     def get_assignment(self, assignment_id):
         assignment = self.mtc.get_assignment(
             AssignmentId=assignment_id)['Assignment']
@@ -199,7 +200,7 @@ class MTurkServices(object):
         return worker_data
 
     @amt_service_response
-    @check_mturk_connection
+    
     def bonus_assignment(self, assignment_id, worker_id, amount, reason=""):
         ''' Bonus worker '''
     
@@ -212,7 +213,7 @@ class MTurkServices(object):
         return True
 
     @amt_service_response
-    @check_mturk_connection
+    
     def approve_assignment(self, assignment_id, override_rejection=False):
         ''' Approve worker '''
         self.mtc.approve_assignment(AssignmentId=assignment_id,
@@ -220,7 +221,7 @@ class MTurkServices(object):
         return True
     
     @amt_service_response
-    @check_mturk_connection
+    
     def reject_assignment(self, assignment_id):
         ''' Reject worker '''
         self.mtc.reject_assignment(
@@ -228,7 +229,7 @@ class MTurkServices(object):
         return True
     
     @amt_service_response
-    @check_mturk_connection
+    
     def unreject_assignment(self, assignment_id):
         ''' Unreject worker '''
         return self.approve_assignment(assignment_id, override_rejection=True)
@@ -366,13 +367,13 @@ class MTurkServices(object):
         )
 
     @amt_service_response
-    @check_mturk_connection
+    
     def check_balance(self):
         ''' Check balance '''
         return self.mtc.get_account_balance()['AvailableBalance']
         
     @amt_service_response
-    @check_mturk_connection
+    
     def create_hit(self, hit_config):
         ''' Create HIT '''
         self.configure_hit(hit_config)
@@ -380,7 +381,7 @@ class MTurkServices(object):
         return myhit
         
     @amt_service_response
-    @check_mturk_connection
+    
     def expire_hit(self, hitid):
         ''' Expire HIT '''
         
@@ -392,14 +393,14 @@ class MTurkServices(object):
         return True
 
     @amt_service_response
-    @check_mturk_connection
+    
     def delete_hit(self, hitid):
         ''' Delete HIT '''
         self.mtc.delete_hit(HITId=hitid)
         return True
 
     @amt_service_response
-    @check_mturk_connection
+    
     def extend_hit(self, hitid, assignments_increment=None,
                    expiration_increment=None):
 
@@ -417,14 +418,14 @@ class MTurkServices(object):
         return True
     
     @amt_service_response
-    @check_mturk_connection
+    
     def get_hit(self, hitid):
         ''' Get HIT '''
         hitdata = self.mtc.get_hit(HITId=hitid)
         return hitdata['HIT']
 
     @amt_service_response
-    @check_mturk_connection
+    
     def get_hit_status(self, hitid):
         ''' Get HIT status '''
         response = self.get_hit(hitid)
@@ -434,7 +435,7 @@ class MTurkServices(object):
         return hitdata['HITStatus']
 
     @amt_service_response
-    @check_mturk_connection
+    
     def get_summary(self):
         ''' Get summary '''
         
