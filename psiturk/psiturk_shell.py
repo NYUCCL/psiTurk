@@ -862,7 +862,7 @@ class PsiturkNetworkShell(PsiturkShell):
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     def do_amt_balance(self, _):
         ''' Get MTurk balance '''
-        balance = (self.amt_services_wrapper.amt_balance()).data['amt_balance']
+        balance = (self.amt_services_wrapper.amt_balance()).data
         self.poutput(balance)
 
     def help_amt_balance(self):

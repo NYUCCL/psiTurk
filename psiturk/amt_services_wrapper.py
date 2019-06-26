@@ -127,7 +127,7 @@ class MTurkServicesWrapper(object):
     def amt_balance(self):
         operation = 'amt_balance'
         ''' Get MTurk balance '''
-        return WrapperResponseSuccess(operation=operation, data={'amt_balance': self.amt_services.check_balance()})
+        return WrapperResponseSuccess(operation=operation, data=self.amt_services.check_balance().data)
 
     def set_sandbox(self, is_sandbox):
         self.sandbox = is_sandbox
@@ -190,7 +190,7 @@ class MTurkServicesWrapper(object):
             assignments = p_query.all()
         else:
             assignments = self.amt_services.get_assignments(
-                assignment_status=assignment_status, hit_ids=hit_ids)
+                assignment_status=assignment_status, hit_ids=hit_ids).data
             if assignments:
                 assignments = [self.add_bonus_info(
                     assignment) for assignment in assignments]
@@ -248,8 +248,8 @@ class MTurkServicesWrapper(object):
             if not all_studies:
                 return WrapperResponseError(operation=operation, message='assignment_id not found in local db', data={'assignment_id': assignment_id})
             else:
-                success = self.amt_services.approve_assignment(assignment_id)
-                if success:
+                response = self.amt_services.approve_assignment(assignment_id)
+                if response.success:
                     return WrapperResponseSuccess(operation=operation, data={'assignment_id': assignment_id})
                 else:
                     return WrapperResponseError(operation=operation, data={'assignment_id': assignment_id})
@@ -258,7 +258,7 @@ class MTurkServicesWrapper(object):
         operation = 'approve_assignments_for_hit'
         if all_studies:
             assignments = self.amt_services.get_assignments(
-                assignment_status='Submitted', hit_ids=[hit_id])
+                assignment_status='Submitted', hit_ids=[hit_id]).data
             results = []
             for assignment in assignments:
                 results.append(self.approve_mturk_assignment)
@@ -286,7 +286,7 @@ class MTurkServicesWrapper(object):
 
     def _approve_all_assignments_from_mturk(self):
         assignments = self.amt_services.get_assignments(
-            assignment_status="Submitted")
+            assignment_status="Submitted").data
         results = []
         for assignment in assignments:
             results.append(self.approve_mturk_assignment(assignment))
@@ -295,7 +295,9 @@ class MTurkServicesWrapper(object):
     def approve_local_assignment(self, assignment):
         try:
             assignment_id = assignment.assignmentid
-            self.amt_services.approve_assignment(assignment_id)
+            response = self.amt_services.approve_assignment(assignment_id)
+            if not response.success:
+                raise response.exception
             assignment.status = CREDITED
             db_session.add(assignment)
             db_session.commit()
@@ -322,8 +324,8 @@ class MTurkServicesWrapper(object):
         for part in parts:
             if part.workerid == assignment['workerId']:
                 found_assignment = True
-                success = self.amt_services.approve_assignment(assignment_id)
-                if success:
+                response = self.amt_services.approve_assignment(assignment_id)
+                if response.success:
                     part.status = CREDITED
                     db_session.add(part)
                     db_session.commit()
@@ -339,8 +341,8 @@ class MTurkServicesWrapper(object):
         if not found_assignment:
             # approve assignments not found in DB if the assignment id has been specified
             if force:
-                success = self.amt_services.approve_assignment(assignment_id)
-                if success:
+                response = self.amt_services.approve_assignment(assignment_id)
+                if response.success:
                     _status_report = 'approved worker {} for assignment {} but not found in DB'.format(
                         worker['workerId'], assignment_id)
                     status_report = '\n'.join([status_report, _status_report])
@@ -361,7 +363,7 @@ class MTurkServicesWrapper(object):
     def reject_assignments_for_hit(self, hit_id, all_studies=False):
         operation = 'reject_assignments_for_hit'
         if all_studies:
-            assignments = self.amt_services.get_assignments("Submitted")
+            assignments = self.amt_services.get_assignments("Submitted").data
             assignment_ids = [assignment['assignmentId'] for assignment in assignments if
                               assignment['hitId'] == hit_id]
         else:
@@ -384,8 +386,8 @@ class MTurkServicesWrapper(object):
 
     def reject_assignment(self, assignment_id, all_studies=False):
         operation = 'reject_assignment'
-        success = self.amt_services.reject_assignment(assignment_id)
-        if success:
+        response = self.amt_services.reject_assignment(assignment_id)
+        if response.success:
             return WrapperResponseSuccess(operation=operation, message='rejected {}'.format(assignment_id))
         else:
             return WrapperResponseError(operation=operation, message='*** failed to reject {}'.format(assignment_id))
@@ -393,7 +395,7 @@ class MTurkServicesWrapper(object):
     def unreject_assignments_for_hit(self, hit_id, all_studies=False):
         operation = 'unreject_assignments_for_hit'
         if all_studies:
-            assignments = self.amt_services.get_assignments("Rejected")
+            assignments = self.amt_services.get_assignments("Rejected").data
             assignment_ids = [assignment['assignmentId'] for assignment in assignments if
                               assignment['hitId'] == hit_id]
         else:
@@ -416,9 +418,9 @@ class MTurkServicesWrapper(object):
 
     def unreject_assignment(self, assignment_id, all_studies=False):
         ''' Unreject assignment '''
-        success = self.amt_services.unreject_assignment(assignment_id)
+        response = self.amt_services.unreject_assignment(assignment_id)
         result = {}
-        if success:
+        if response.success:
             result = WrapperResponseSuccess(
                 message='unrejected {}'.format(assignment_id))
             try:
@@ -487,7 +489,7 @@ class MTurkServicesWrapper(object):
         '''
         if all_studies:
             mturk_assignments = self.amt_services.get_assignments(
-                assignment_status="Approved", hit_ids=[hit_id])
+                assignment_status="Approved", hit_ids=[hit_id]).data
             assignments = self._try_fetch_local_credited_assignments(
                 mturk_assignments)
         else:
@@ -553,8 +555,10 @@ class MTurkServicesWrapper(object):
                 raise BadBonusAmountError(amount, assignment_id=assignment_id)
             if not reason:
                 raise BonusReasonMissingError
-            success = self.amt_services.bonus_assignment(
+            response = self.amt_services.bonus_assignment(
                 assignment_id, worker_id, amount, reason)
+            if not response.success:
+                raise response.exception
             message = "gave bonus of ${} for assignment {}".format(
                 str(amount), assignment_id)
             return WrapperResponseSuccess(operation=operation, message=message)
@@ -601,7 +605,7 @@ class MTurkServicesWrapper(object):
     def _get_hits(self, all_studies=False):
         # get all hits from amt
         # then filter to just the ones that have an id that appears in either local Hit or Worker tables
-        hits = self.amt_services.get_all_hits()
+        hits = self.amt_services.get_all_hits().data
         if not all_studies:
             hits = [hit for hit in hits if hit.options['hitid']
                     in self._get_local_hitids()]
@@ -624,7 +628,8 @@ class MTurkServicesWrapper(object):
 
         """
 
-        if self.amt_services.extend_hit(hit_id, assignments_increment=assignments, expiration_increment=minutes):
+        response = self.amt_services.extend_hit(hit_id, assignments_increment=assignments, expiration_increment=minutes)
+        if response.success:
             return WrapperResponseSuccess(operation=operation, message="HIT extended.")
 
     def delete_all_hits(self):
@@ -632,7 +637,7 @@ class MTurkServicesWrapper(object):
         '''
         Deletes all reviewable hits
         '''
-        hits = self.amt_services.get_all_hits()
+        hits = self.amt_services.get_all_hits().data
         hit_ids = [hit.options['hitid'] for hit in hits if
                    hit.options['status'] == "Reviewable"]
         results = []
@@ -647,16 +652,17 @@ class MTurkServicesWrapper(object):
         Deletes a single hit if it is reviewable
         '''
         # Check that the HIT is reviewable
-        status = self.amt_services.get_hit_status(hit_id)
-        if not status:
-            return WrapperResponseError(operation=operation, message="*** Error getting hit status")
+        response = self.amt_services.get_hit_status(hit_id)
+        if not response.success:
+            return WrapperResponseError(operation=operation, data={'exception':response.exception}, message="*** Error getting hit status")
 
+        status = response.data
         if status != "Reviewable":
             return WrapperResponseError(operation=operation, message="*** This hit is not 'Reviewable' and so can not be deleted")
         else:
-            success = self.amt_services.delete_hit(hit_id)
+            response = self.amt_services.delete_hit(hit_id)
             # self.web_services.delete_ad(hit)  # also delete the ad
-            if success:
+            if response.success:
                 if self.sandbox:
                     success_message = "deleted sandbox HIT {}".format(hit_id)
                 else:
@@ -667,8 +673,8 @@ class MTurkServicesWrapper(object):
 
     def expire_hit(self, hit_id):
         operation = 'expire_hit'
-        success = self.amt_services.expire_hit(hit_id)
-        if success:
+        response = self.amt_services.expire_hit(hit_id)
+        if response.success:
             if self.sandbox:
                 success_message = "expired sandbox HIT {}".format(hit_id)
             else:
@@ -729,7 +735,7 @@ class MTurkServicesWrapper(object):
                     ad_id, int(self.sandbox))
                 hit_config = self._generate_hit_config(
                     ad_location, num_workers, reward, duration)
-                hit_id = self.amt_services.create_hit(hit_config)
+                hit_id = self.amt_services.create_hit(hit_config).data
                 if hit_id is not False:
                     if not self.web_services.set_ad_hitid(ad_id, hit_id, int(self.sandbox)):
                         create_failed = True
@@ -747,7 +753,7 @@ class MTurkServicesWrapper(object):
             hit_config = self._generate_hit_config(
                 ad_location, num_workers, reward, duration)
             create_failed = False
-            hit_id = self.amt_services.create_hit(hit_config)
+            hit_id = self.amt_services.create_hit(hit_config).data['HITId']
             if hit_id is False:
                 create_failed = True
                 fail_msg = "  Unable to create HIT on Amazon Mechanical Turk."

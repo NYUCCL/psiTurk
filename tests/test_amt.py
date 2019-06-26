@@ -145,9 +145,6 @@ class TestAmtServices(object):
         # confirm that it's in the local db...
         assert Hit.query.get('ABCDUITW8URHJMX7F00H20LGRIAQTX') is not None
 
-        stubber_prepare_create_hit()
-        run_in_psiturk_shell('hit create 1 ye 1')
-
     def test_wrapper_get_all_hits(self, amt_services_wrapper, create_dummy_hit, list_hits, helpers):
 
         create_dummy_hit('3XJOUITW8URHJMX7F00H20LGRIAQTX')

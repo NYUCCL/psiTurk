@@ -18,6 +18,5 @@ class BadBonusAmountError(DoBonusError):
         self.message = 'Bonus must be a number greater than 0. You gave: {}'.format(
             amount)
 
-
 class BonusReasonMissingError(DoBonusError):
     pass

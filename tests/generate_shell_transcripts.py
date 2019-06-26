@@ -39,7 +39,10 @@ def do_commands(shell, cmds, name='yee'):
     for cmd in cmds:
         shell.history.append(cmd)
         print('Running: {}'.format(cmd))
-    shell.runcmds_plus_hooks(['history -t {}.transcript'.format(name)])
+    transcript_name = '{}.transcript'.format(name)
+    shell.runcmds_plus_hooks(['history -t {}'.format(transcript_name)])
+    with open(transcript_name, 'r') as infile:
+        print(infile.read())
 
 
 def do_cleanup():

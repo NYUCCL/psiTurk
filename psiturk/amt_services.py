@@ -2,6 +2,8 @@
 """ This module is a facade for AMT (Boto) services. """
 from __future__ import print_function
 
+from functools import wraps
+
 from builtins import str
 from builtins import object
 import boto3
@@ -21,7 +23,58 @@ MASTERS_SANDBOX_QUAL_ID = '2ARFPLSP75KLA8M8DH1HTEQVJT3SY6'
 
 NOTIFICATION_VERSION = '2006-05-05'
 
+class AmtServicesResponse(object):
+    def __init__(self, status=None, success=None, operation='', message='', data={}, **kwargs):
+        self.success = success
+        self.status = status
+        self.operation = operation,
+        self.message = message,
+        self.data = data
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+        
+    # def __repr__(self):
+        # pass
+    
+class AmtServicesSuccessResponse(AmtServicesResponse):
+    def __init__(self, *args, **kwargs):
+        super(AmtServicesSuccessResponse, self).__init__(
+            *args, status='success', success=True, **kwargs)
+    
+class AmtServicesErrorResponse(AmtServicesResponse):
+    def __init__(self, *args, exception=None, **kwargs):
+        super(AmtServicesErrorResponse, self).__init__(
+            *args, status='error', success=False, exception=exception, **kwargs)
 
+class AmtServicesException(Exception):
+    pass
+
+class NoMturkConnectionError(AmtServicesException):
+    def __init__(self):
+        self.message = 'Sorry, unable to connect to Amazon Mechanical Turk. AWS credentials invalid.'
+
+class NoHitDataError(AmtServicesException):
+    pass
+
+def check_mturk_connection(func):
+    @wraps(func)
+    def wrapper(self, *args, **kwargs):
+        if not self.connect_to_turk():
+            raise NoMturkConnectionError()
+        return func(self, *args, **kwargs)
+    return wrapper
+    
+def amt_service_response(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            response = func(*args, **kwargs)
+            return AmtServicesSuccessResponse(operation=func.__name__, data=response)
+        except Exception as e:
+            # print(e)
+            return AmtServicesErrorResponse(operation=func.__name__, exception=e)
+    return wrapper
+        
 class MTurkHIT(object):
     ''' Structure for dealing with MTurk HITs '''
 
@@ -55,10 +108,12 @@ class MTurkServices(object):
         self.valid_login = self.verify_aws_login()
 
         if not self.valid_login:
-            print('WARNING *****************************')
-            print('Sorry, AWS Credentials invalid.\nYou will only be able to '
-                  'test experiments locally until you enter\nvalid '
-                  'credentials in the AWS Access section of ~/.psiturkconfig\n')
+            self.warning_message = '\n'.join([
+                'WARNING *****************************',
+                'Sorry, AWS Credentials invalid.',
+                'You will only be able to test experiments locally until you enter',
+                'valid credentials in the AWS Access section of ~/.psiturkconfig'
+                ])
 
     def update_credentials(self, aws_access_key_id, aws_secret_access_key):
         ''' Update credentials '''
@@ -86,46 +141,38 @@ class MTurkServices(object):
         }) for hit in hits]
         return hits_data
 
+    @amt_service_response
+    @check_mturk_connection
     def get_all_hits(self):
         ''' Get all HITs '''
-        if not self.connect_to_turk():
-            return False
-        try:
-            hits = []
-            paginator = self.mtc.get_paginator('list_hits')
-            for page in paginator.paginate():
-                hits.extend(page['HITs'])
-        except Exception as e:
-            raise e
+        hits = []
+        paginator = self.mtc.get_paginator('list_hits')
+        for page in paginator.paginate():
+            hits.extend(page['HITs'])
         hits_data = self._hit_xml_to_object(hits)
         return hits_data
 
+    @amt_service_response
+    @check_mturk_connection
     def get_assignments(self, assignment_status=None, hit_ids=None):
         ''' Get workers '''
-        if not self.connect_to_turk():
-            return False
-        try:
-            if not hit_ids:
-                hits = self.get_all_hits()
-                hit_ids = [hit.options['hitid'] for hit in hits]
-            elif not isinstance(hit_ids, list):
-                hit_ids = [hit_ids]
+        if not hit_ids:
+            hits = self.get_all_hits().data
+            hit_ids = [hit.options['hitid'] for hit in hits]
+        elif not isinstance(hit_ids, list):
+            hit_ids = [hit_ids]
 
-            assignments = []
-            for hit_id in hit_ids:
-                paginator = self.mtc.get_paginator('list_assignments_for_hit')
-                args = dict(
-                    HITId=hit_id
-                )
-                if assignment_status:
-                    args['AssignmentStatuses'] = [assignment_status]
+        assignments = []
+        for hit_id in hit_ids:
+            paginator = self.mtc.get_paginator('list_assignments_for_hit')
+            args = dict(
+                HITId=hit_id
+            )
+            if assignment_status:
+                args['AssignmentStatuses'] = [assignment_status]
 
-                for page in paginator.paginate(**args):
-                    assignments.extend(page['Assignments'])
-
-        except Exception as e:
-            print(e)
-            raise
+            for page in paginator.paginate(**args):
+                assignments.extend(page['Assignments'])
         workers = [{
             'hitId': assignment['HITId'],
             'assignmentId': assignment['AssignmentId'],
@@ -135,15 +182,12 @@ class MTurkServices(object):
             'status': assignment['AssignmentStatus'],
         } for assignment in assignments]
         return workers
-
+    
+    @amt_service_response
+    @check_mturk_connection
     def get_assignment(self, assignment_id):
-        if not self.connect_to_turk():
-            return False
-        try:
-            assignment = self.mtc.get_assignment(
-                AssignmentId=assignment_id)['Assignment']
-        except Exception as e:
-            return False
+        assignment = self.mtc.get_assignment(
+            AssignmentId=assignment_id)['Assignment']
         worker_data = {
             'hitId': assignment['HITId'],
             'assignmentId': assignment['AssignmentId'],
@@ -154,47 +198,37 @@ class MTurkServices(object):
         }
         return worker_data
 
+    @amt_service_response
+    @check_mturk_connection
     def bonus_assignment(self, assignment_id, worker_id, amount, reason=""):
         ''' Bonus worker '''
-        if not self.connect_to_turk():
-            return False
-        try:
-            if not worker_id:
-                assignment = self.mtc.get_assignment(
-                    AssignmentId=assignment_id)['Assignment']
-                worker_id = assignment['WorkerId']
-            self.mtc.send_bonus(WorkerId=worker_id, AssignmentId=assignment_id, BonusAmount=str(
-                amount), Reason=reason)
-            return True
-        except Exception as e:
-            import traceback
-            traceback.print_stack()
-            raise e
-            return False
+    
+        if not worker_id:
+            assignment = self.mtc.get_assignment(
+                AssignmentId=assignment_id)['Assignment']
+            worker_id = assignment['WorkerId']
+        self.mtc.send_bonus(WorkerId=worker_id, AssignmentId=assignment_id, BonusAmount=str(
+            amount), Reason=reason)
+        return True
 
+    @amt_service_response
+    @check_mturk_connection
     def approve_assignment(self, assignment_id, override_rejection=False):
         ''' Approve worker '''
-        if not self.connect_to_turk():
-            return False
-        try:
-            self.mtc.approve_assignment(AssignmentId=assignment_id,
-                                        OverrideRejection=override_rejection)
-            return True
-        except Exception as e:
-            return False
-
+        self.mtc.approve_assignment(AssignmentId=assignment_id,
+                                    OverrideRejection=override_rejection)
+        return True
+    
+    @amt_service_response
+    @check_mturk_connection
     def reject_assignment(self, assignment_id):
         ''' Reject worker '''
-        if not self.connect_to_turk():
-            return False
-        try:
-            self.mtc.reject_assignment(
-                AssignmentId=assignment_id, RequesterFeedback='')
-            return True
-        except Exception as e:
-            print(e)
-            return False
-
+        self.mtc.reject_assignment(
+            AssignmentId=assignment_id, RequesterFeedback='')
+        return True
+    
+    @amt_service_response
+    @check_mturk_connection
     def unreject_assignment(self, assignment_id):
         ''' Unreject worker '''
         return self.approve_assignment(assignment_id, override_rejection=True)
@@ -226,8 +260,8 @@ class MTurkServices(object):
 
         try:
             self.mtc.get_account_balance()
-        except Exception as exception:
-            print(exception)
+        except Exception as e:
+            print(e)
             return False
         else:
             return True
@@ -235,10 +269,7 @@ class MTurkServices(object):
     def connect_to_turk(self):
         ''' Connect to turk '''
         if not self.valid_login or not self.mtc:
-            print('Sorry, unable to connect to Amazon Mechanical Turk. AWS '
-                  'credentials invalid.')
             return False
-
         return True
 
     def configure_hit(self, hit_config):
@@ -334,106 +365,79 @@ class MTurkServices(object):
             # ]
         )
 
+    @amt_service_response
+    @check_mturk_connection
     def check_balance(self):
         ''' Check balance '''
-        if not self.connect_to_turk():
-            return '-'
         return self.mtc.get_account_balance()['AvailableBalance']
-
-    # TODO (if valid AWS credentials haven't been provided then
-    # connect_to_turk() will fail, not error checking here and elsewhere)
+        
+    @amt_service_response
+    @check_mturk_connection
     def create_hit(self, hit_config):
         ''' Create HIT '''
-        try:
-            if not self.connect_to_turk():
-                return False
-            self.configure_hit(hit_config)
-            myhit = self.mtc.create_hit_with_hit_type(**self.param_dict)['HIT']
-            hitid = myhit['HITId']
-        except Exception as e:
-            print(e)
-            return False
-        else:
-            return hitid
-
-    # TODO(Jay): Have a wrapper around functions that serializes them.
-    # Default output should not be serialized.
+        self.configure_hit(hit_config)
+        myhit = self.mtc.create_hit_with_hit_type(**self.param_dict)['HIT']
+        return myhit
+        
+    @amt_service_response
+    @check_mturk_connection
     def expire_hit(self, hitid):
         ''' Expire HIT '''
-        if not self.connect_to_turk():
-            return False
-        try:
-            time_in_past = datetime.datetime.now() + datetime.timedelta(-30)
-            self.mtc.update_expiration_for_hit(
-                HITId=hitid,
-                ExpireAt=time_in_past
-            )
-            return True
-        except Exception as e:
-            print("Failed to expire HIT. Please check the ID and try again.")
-            print(e)
-            return False
+        
+        time_in_past = datetime.datetime.now() + datetime.timedelta(-30)
+        self.mtc.update_expiration_for_hit(
+            HITId=hitid,
+            ExpireAt=time_in_past
+        )
+        return True
 
+    @amt_service_response
+    @check_mturk_connection
     def delete_hit(self, hitid):
         ''' Delete HIT '''
-        if not self.connect_to_turk():
-            return False
-        try:
-            self.mtc.delete_hit(HITId=hitid)
-            return True
-        except Exception as e:
-            print("Failed to delete of HIT %s. Make sure there are no "
-                  "assignments remaining to be reviewed." % hitid)
+        self.mtc.delete_hit(HITId=hitid)
+        return True
 
+    @amt_service_response
+    @check_mturk_connection
     def extend_hit(self, hitid, assignments_increment=None,
                    expiration_increment=None):
-        if not self.connect_to_turk():
-            return False
-        try:
-            if assignments_increment:
-                self.mtc.create_additional_assignments_for_hit(HITId=hitid,
-                                                               NumberOfAdditionalAssignments=int(assignments_increment))
 
-            if expiration_increment:
-                hit = self.get_hit(hitid)
-                print('got hit', hit)
-                expiration = hit['Expiration'] + \
-                    datetime.timedelta(minutes=int(expiration_increment))
-                self.mtc.update_expiration_for_hit(
-                    HITId=hitid, ExpireAt=expiration)
+        if assignments_increment:
+            self.mtc.create_additional_assignments_for_hit(HITId=hitid,
+                                                           NumberOfAdditionalAssignments=int(assignments_increment))
 
-            return True
-        except Exception as e:
-            print(e)
-            print("Failed to extend HIT %s. Please check the ID and try again."
-                  % hitid)
-            return False
+        if expiration_increment:
+            hit = self.get_hit(hitid)
+            expiration = hit['Expiration'] + \
+                datetime.timedelta(minutes=int(expiration_increment))
+            self.mtc.update_expiration_for_hit(
+                HITId=hitid, ExpireAt=expiration)
 
+        return True
+    
+    @amt_service_response
+    @check_mturk_connection
     def get_hit(self, hitid):
         ''' Get HIT '''
-        if not self.connect_to_turk():
-            return False
-        try:
-            hitdata = self.mtc.get_hit(HITId=hitid)
-        except Exception as e:
-            print(e)
-            return False
+        hitdata = self.mtc.get_hit(HITId=hitid)
         return hitdata['HIT']
 
+    @amt_service_response
+    @check_mturk_connection
     def get_hit_status(self, hitid):
         ''' Get HIT status '''
-        hitdata = self.get_hit(hitid)
-        if not hitdata:
-            return False
-
+        response = self.get_hit(hitid)
+        if not response.success:
+            raise response.exception
+        hitdata = response.data
         return hitdata['HITStatus']
 
+    @amt_service_response
+    @check_mturk_connection
     def get_summary(self):
         ''' Get summary '''
-        try:
-            balance = self.check_balance()
-            summary = jsonify(balance=str(balance))
-            return summary
-        except MTurkRequestError as exception:
-            print(exception.error_message)
-            return False
+        
+        balance = self.check_balance()
+        summary = jsonify(balance=str(balance))
+        return summary
