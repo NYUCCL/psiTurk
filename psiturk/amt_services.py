@@ -32,9 +32,6 @@ class AmtServicesResponse(object):
         self.data = data
         for k, v in kwargs.items():
             setattr(self, k, v)
-        
-    # def __repr__(self):
-        # pass
     
 class AmtServicesSuccessResponse(AmtServicesResponse):
     def __init__(self, *args, **kwargs):

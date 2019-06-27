@@ -448,17 +448,20 @@ class TestAmtServices(object):
             db_session.commit()
 
         assignment_1 = create_dummy_assignment({'hitid': hit_id})
+        assignment_2 = create_dummy_assignment({'hitid': hit_id})
         edit_assignment(assignment_1, {'status': psiturk_statuses.BONUSED})
-        results = (amt_services_wrapper.bonus_assignments_for_hit(
-            '123', amount, reason, override_bonused_status)).data['results']
-        assert isinstance(results[0].data['exception'],
+        edit_assignment(assignment_2, {'status': psiturk_statuses.BONUSED})
+        results = amt_services_wrapper.bonus_assignments_for_hit(
+            hit_id, amount, reason, override_bonused_status)
+        results = results.data['results']
+        assert isinstance(results[0].exception,
                           AssignmentAlreadyBonusedError)
 
         edit_assignment(
             assignment_1, {'status': psiturk_statuses.CREDITED, 'bonus': 0.00})
         results = (amt_services_wrapper.bonus_assignments_for_hit(
             '123', amount, reason)).data['results']
-        assert isinstance(results[0].data['exception'], BadBonusAmountError)
+        assert isinstance(results[0].exception, BadBonusAmountError)
 
         stubber.add_response('send_bonus', {})
         edit_assignment(
@@ -477,8 +480,8 @@ class TestAmtServices(object):
         })
         stubber.add_response('send_bonus', {})
         stubber.add_response('send_bonus', {})
-        results = (amt_services_wrapper.bonus_assignments_for_assignment_ids(
-            [assignment_id, '123'], amount, reason)).data['results']
+        results = [amt_services_wrapper.bonus_assignment_for_assignment_id(
+            assignment_id, amount, reason) for assignment_id in [assignment_id, '123']]
         assert len(
             [result for result in results if result.status == 'success']) == 1
 
@@ -501,8 +504,8 @@ class TestAmtServices(object):
                 'bonus': 0.50
             })
             stubber.add_response('send_bonus', {})
-        results = (amt_services_wrapper.bonus_assignments_for_assignment_ids(
-            ['1bc', '2bc'], amount=amount, reason='')).data['results']
+        results = [amt_services_wrapper.bonus_assignment_for_assignment_id(
+            assignment_id, amount=amount, reason='') for assignment_id in ['1bc', '2bc']]
         for result in results:
             assert isinstance(
-                result.data['exception'], BonusReasonMissingError)
+                result.exception, BonusReasonMissingError)

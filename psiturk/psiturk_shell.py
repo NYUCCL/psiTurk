@@ -1138,8 +1138,9 @@ class PsiturkNetworkShell(PsiturkShell):
                     amount, reason, override_bonused_status)).data['results']
 
             elif arg['<assignment_id>']:
-                rseults = (self.amt_services_wrapper.bonus_assignments_for_assignment_ids(
-                    arg['<assignment_id>'], amount, reason, override_bonused_status)).data['results']
+                results = [
+                    self.amt_services_wrapper.bonus_assignment_for_assignment_id(
+                        assignment_id, amount, reason, override_bonused_status) for assignment_id in arg['<assignment_id>']]
         else:
             self.help_worker()
 

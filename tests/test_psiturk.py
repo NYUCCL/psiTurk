@@ -21,7 +21,6 @@ except NameError:
     except ImportError:
         from imp import reload  # Python 3.0 - 3.3
 
-
 class FlaskTestClientProxy(object):
     '''Spoof user agent (Chrome)'''
     def __init__(self, app):
@@ -33,7 +32,6 @@ class FlaskTestClientProxy(object):
             10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1944.0\
             Safari/537.36'
         return self.app(environ, start_response)
-
 
 class BadFlaskTestClientProxy(object):
     '''Spoof user agent (iPad)'''
@@ -107,7 +105,7 @@ class PsiTurkStandardTests(PsiturkUnitTest):
         rv = self.app.get('/ad?%s' % args)
         assert 'Thank you for accepting this HIT!' in rv.get_data(as_text=True)
     
-    @pytest.mark.skip('psiturk server is broken at the moment')
+    # @pytest.mark.skip('psiturk server is broken at the moment')
     def test_exp_with_all_url_vars_not_registered_on_ad_server(self):
         '''Test that exp page throws Error #1018 with all url vars but not registered.'''
         self.set_config('Shell Parameters', 'use_psiturk_ad_server', 'true')
@@ -388,14 +386,11 @@ class BadUserAgent(PsiturkUnitTest):
         )
         assert '<b>Error</b>: 1014' in rv.get_data(as_text=True)
 
-
-@pytest.mark.skip('cwd issues at the moment')
 class PsiTurkTestPsiturkJS(PsiturkUnitTest):
     ''' Setup test for missing psiturk.js file. '''
 
     def setUp(self):
         '''Build up fixtures'''
-        raise Exception(os.getcwd())
         self.PSITURK_JS_FILE = '../psiturk/psiturk_js/psiturk.js'
         os.rename(self.PSITURK_JS_FILE, self.PSITURK_JS_FILE + '.bup')
         import psiturk.experiment
