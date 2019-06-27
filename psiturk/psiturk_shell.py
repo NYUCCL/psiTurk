@@ -798,9 +798,9 @@ class PsiturkNetworkShell(PsiturkShell):
     def get_intro_prompt(self):
         ''' Overloads intro prompt with network-aware version if you can reach
         psiTurk.org, request system status message'''
-        status_msg_url = 'https://raw.githubusercontent.com/NYUCCL/psiTurk/master/status_msg.json'
+        status_msg_url = 'https://raw.githubusercontent.com/NYUCCL/psiTurk/master/status_msg.txt'
         r = http.request('GET', status_msg_url)
-        status_message = json.loads(r.data.decode('utf-8'))['status']
+        status_message = r.data.decode('utf-8')
 
         return status_message + colorize('psiTurk version ' + version_number +
                                          '\nType "help" for more information.',
