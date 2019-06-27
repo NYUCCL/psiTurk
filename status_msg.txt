@@ -12,12 +12,11 @@ https://psiturk.org
 --------------------------------------------------------------------
 System status:
 
-Hi all, You need to be running psiTurk version >= 2.0.0 to use the
-Ad Server feature!
+**ALERT**: Due to a recent Amazon API deprecation, you need to install psiturk version 2.3.0 or later.
 
 The latest stable version is 2.3.0.
 
-**ALERT**: Due to a recent Amazon API deprecation, you need to install psiturk version 2.3.0 or later.
+psiturk versions >=2.3.1 support python3!
 
 Check https://github.com/NYUCCL/psiTurk or https://psiturk.org for
 latest info.
