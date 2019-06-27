@@ -34,6 +34,10 @@ def experiment_dir():
     os.environ['AWS_SECRET_ACCESS_KEY'] = 'bar'
     os.environ['AWS_DEFAULT_REGION'] = 'us-west-2'
     os.environ.pop('AWS_PROFILE', None)
+    
+    yield
+    os.chdir('..')
+    shutil.rmtree('psiturk-example', ignore_errors=True)
 
 
 class Helpers(object):

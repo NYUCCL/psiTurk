@@ -76,12 +76,11 @@ class WrapperResponseSuccess(WrapperResponse):
         super(WrapperResponseSuccess, self).__init__(
             *args, status='success', **kwargs)
 
-
 class WrapperResponseError(WrapperResponse):
-    def __init__(self, *args, exception=None, **kwargs):
+    def __init__(self, *args, **kwargs):
         super(WrapperResponseError, self).__init__(
-            *args, status='error')
-        self.exception = exception
+            *args, status='error', success=False, **kwargs)
+        self.exception = kwargs.pop('exception', None)
             
 
 def amt_services_wrapper_response(func):

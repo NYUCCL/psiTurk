@@ -39,7 +39,8 @@ class AmtServicesSuccessResponse(AmtServicesResponse):
             *args, status='success', success=True, **kwargs)
     
 class AmtServicesErrorResponse(AmtServicesResponse):
-    def __init__(self, *args, exception=None, **kwargs):
+    def __init__(self, *args, **kwargs):
+        exception = kwargs.pop('exception', None)
         super(AmtServicesErrorResponse, self).__init__(
             *args, status='error', success=False, exception=exception, **kwargs)
 
