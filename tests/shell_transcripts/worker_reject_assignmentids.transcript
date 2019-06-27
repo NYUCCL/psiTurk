@@ -1,5 +1,5 @@
 [[1mpsiTurk[0m server:[91moff[0m mode:[1msdbx[0m #HITs:0]$ mode sandbox
 mode is already sandbox
 [[1mpsiTurk[0m server:[91moff[0m mode:[1msdbx[0m #HITs:0]$ worker reject 123 456
-Result(Operation: reject_assignment | Status: error | Message: *** failed to reject 123)
-Result(Operation: reject_assignment | Status: error | Message: *** failed to reject 456)
+Response(Operation: reject_assignment | Status: error | Exception: An error occurred (RequestError) when calling the RejectAssignment operation: Assignment 123 does not exist. (1561677830004 s))
+Response(Operation: reject_assignment | Status: error | Exception: An error occurred (RequestError) when calling the RejectAssignment operation: Assignment 456 does not exist. (1561677830329 s))

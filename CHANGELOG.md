@@ -19,7 +19,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   of a missing success attribute on wrapperresponsesuccess
 
 
-
 ## [2.3.1]
 ### Added
 - test suite to pave the way for migrating to Python 3 (woo!)

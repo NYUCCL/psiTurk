@@ -1,4 +1,23 @@
 [[1mpsiTurk[0m server:[91moff[0m mode:[1msdbx[0m #HITs:0]$ mode sandbox
 mode is already sandbox
 [[1mpsiTurk[0m server:[91moff[0m mode:[1msdbx[0m #HITs:0]$ worker list --submitted --all-studies
-*** no workers match your request
+[
+    {
+        "hitId": "3RKHNXPHGWXOZS6KDNAR8ZTYKTMKUE",
+        "assignmentId": "3L4D84MILZTR56SCL58IDO0BHP9HJS",
+        "workerId": "A3BW4SGA0TI4J8",
+        "submit_time": "2019-06-27 12:57:50-06:00",
+        "accept_time": "2019-06-27 12:55:25-06:00",
+        "status": "Submitted",
+        "bonus": "not-found-in-study-database"
+    },
+    {
+        "hitId": "3DGDV62G7OAGQ7UY7V5TYXK5VC7P20",
+        "assignmentId": "3137ONMDKG65UUB9NYF9V8BIXH0EG5",
+        "workerId": "A3BW4SGA0TI4J8",
+        "submit_time": "2019-06-27 12:45:57-06:00",
+        "accept_time": "2019-06-27 12:43:09-06:00",
+        "status": "Submitted",
+        "bonus": "not-found-in-study-database"
+    }
+]

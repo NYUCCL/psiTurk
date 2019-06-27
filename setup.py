@@ -48,8 +48,6 @@ if __name__ == "__main__":
         test_suite='test_psiturk',
         classifiers=[
             'Programming Language :: Python',
-            'Programming Language :: Python :: 2',
-            'Programming Language :: Python :: 2.7',
             'Programming Language :: Python :: 3',
             'Programming Language :: Python :: 3.6',
             'Programming Language :: Python :: 3.7',

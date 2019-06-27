@@ -2,15 +2,15 @@
 mode is already sandbox
 [[1mpsiTurk[0m server:[91moff[0m mode:[1msdbx[0m #HITs:0]$ hit create 1 0.01 1
 *****************************
-  Created [1msandbox[0m HIT
-    HITid: 3X2YVV51PU5ZLV930DJAL8IWW03W1M
+  Created sandbox HIT
+    HITid: 338431Z1FLGF9RZI7L7FA5NNXZYOR4
     Max workers: 1
     Reward: $0.01
     Duration: 1.0 hours
     Fee: $0.00
     ________________________
     Total: $0.01
-  Ad URL: https:\/\/example.test\/pub?mode=sandbox&assignmentId=debug3V8Z5S&hitId=debugW1JRT6&workerId=debugNNHDHV
+  Ad URL: https:\/\/example.test\/pub?mode=sandbox&assignmentId=debugQOI6CT&hitId=debugY7NKKM&workerId=debug6HP6KV
 Note: This url cannot be used to run your full psiTurk experiment.  It is only for testing your ad.
   MTurk URL: https:\/\/workersandbox.mturk.com\/projects?filters%5Bsearch_term%5D=Stroop+task
 Hint: In OSX, you can open a terminal link using cmd + click

@@ -8,7 +8,8 @@ cffi==1.12.3
 chardet==3.0.4
 ciso8601==2.1.1
 Click==7.0
-cmd2==0.8.9
+cmd2==0.9.13
+colorama==0.4.1
 configparser==3.7.4
 contextlib2==0.5.5
 cryptography==2.7
@@ -32,7 +33,7 @@ Jinja2==2.10.1
 jmespath==0.9.4
 MarkupSafe==1.1.1
 mock==3.0.5
-more-itertools==5.0.0
+more-itertools==7.1.0
 packaging==19.0
 pathlib2==2.3.4
 pluggy==0.12.0

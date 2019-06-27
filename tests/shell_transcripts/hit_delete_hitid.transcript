@@ -1,4 +1,4 @@
 [[1mpsiTurk[0m server:[91moff[0m mode:[1msdbx[0m #HITs:0]$ mode sandbox
 mode is already sandbox
 [[1mpsiTurk[0m server:[91moff[0m mode:[1msdbx[0m #HITs:0]$ hit delete ABC
-Result(Operation: delete_hit | Status: error | Message: *** Error getting hit status)
+Response(Operation: delete_hit | Status: error | Exception: An error occurred (RequestError) when calling the DeleteHIT operation: Hit ABC does not exist. (1561677822757 s))

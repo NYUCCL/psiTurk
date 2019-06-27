@@ -1,14 +1,11 @@
 from __future__ import print_function
-import psiturk.experiment_server_controller as control
-from psiturk.psiturk_config import PsiturkConfig
-from psiturk.psiturk_shell import PsiturkNetworkShell
+
 import os
 import shutil
 import glob
 import sys
 
-from cmd2 import History
-
+from cmd2.history import History
 
 def do_setup():
     shutil.rmtree('psiturk-example', ignore_errors=True)
@@ -37,7 +34,9 @@ def do_commands(shell, cmds, name='yee'):
     shell.history = History()
     cmds = ['mode sandbox'] + cmds
     for cmd in cmds:
-        shell.history.append(cmd)
+        # import pdb; pdb.set_trace()
+        stmt = shell.statement_parser.parse(cmd)
+        shell.history.append(stmt)
         print('Running: {}'.format(cmd))
     transcript_name = '{}.transcript'.format(name)
     shell.runcmds_plus_hooks(['history -t {}'.format(transcript_name)])
@@ -60,6 +59,10 @@ def do_cleanup():
 
 do_setup()
 
+import psiturk.experiment_server_controller as control
+from psiturk.psiturk_config import PsiturkConfig
+from psiturk.psiturk_shell import PsiturkNetworkShell
+
 
 try:
 
@@ -74,6 +77,8 @@ try:
         config, server,
         launch_in_sandbox_mode,
         quiet=quiet)
+        
+    shell.persistent_history_file = None
 
     # #########################
     # all `do_` commands:
