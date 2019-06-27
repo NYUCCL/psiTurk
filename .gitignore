@@ -25,6 +25,7 @@ boto-2.9.5-py2.7.egg
 # Packages
 *.egg
 *.egg-info
+*.eggs/
 dist
 build
 eggs
@@ -38,6 +39,7 @@ lib
 !psiturk/example/static/lib/
 lib64
 __pycache__
+.cache
 
 # Installer logs
 pip-log.txt

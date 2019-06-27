@@ -1,0 +1,41 @@
+{
+    "HIT": {
+        "HITId": "string",
+        "HITTypeId": "string",
+        "HITGroupId": "string",
+        "HITLayoutId": "string",
+        "CreationTime": "2019-05-24 14:49:59-06:00",
+        "Title": "string",
+        "Description": "string",
+        "Question": "string",
+        "Keywords": "string",
+        "HITStatus": "Assignable",
+        "MaxAssignments": 123,
+        "Reward": "string",
+        "AutoApprovalDelayInSeconds": 123,
+        "Expiration": "2019-05-24 14:49:59-06:00",
+        "AssignmentDurationInSeconds": 123,
+        "RequesterAnnotation": "string",
+        "QualificationRequirements": [
+            {
+                "QualificationTypeId": "string",
+                "Comparator": "LessThan",
+                "IntegerValues": [
+                    123
+                ],
+                "LocaleValues": [
+                    {
+                        "Country": "string",
+                        "Subdivision": "string"
+                    }
+                ],
+                "RequiredToPreview": true,
+                "ActionsGuarded": "Accept"
+            }
+        ],
+        "HITReviewStatus": "NotReviewed",
+        "NumberOfAssignmentsPending": 123,
+        "NumberOfAssignmentsAvailable": 123,
+        "NumberOfAssignmentsCompleted": 123
+    }
+}

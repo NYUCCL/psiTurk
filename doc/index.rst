@@ -26,7 +26,6 @@ User's Guide
    psiturk_org_setup
    secure_ad_server
    experiment_exchange
-   tunnel
    quickstart
    configuration
    command_line_overview

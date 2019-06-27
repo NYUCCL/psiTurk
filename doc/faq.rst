@@ -61,9 +61,6 @@ the wireless router that came with your internet service to forward particular i
 ports to your device (i.e., to you laptop instead of you phone or tablet).  There are
 many excellent tutorials about this `online <http://www.howtogeek.com/66214/how-to-forward-ports-on-your-router/>`__.
 
-Note: a new experimental feature called `tunnels <tunnel.html>`__ is in the works
-which may address this issue for many users.
-
 
 I'm having trouble with my AWS/AMT credentials
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

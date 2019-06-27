@@ -1,6 +1,10 @@
 language: python
 python:
 - '2.7'
+- '3.6'
+- '3.7'
+git:
+    quiet: true
 before_install:
 - sudo rm -f /etc/boto.cfg
 install:
@@ -8,12 +12,11 @@ install:
 - pip install coverage
 - pip install coveralls
 script:
-- python setup.py install
-- psiturk-setup-example
+- python setup.py test
 - coverage run --source=psiturk setup.py test
 after_success: coveralls
 deploy:
-    # test pypi
+    # test pypi pip deployment
 #  - provider: pypi
 #    server: https://test.pypi.org/legacy/
 #    user: nyuccl

@@ -1,6 +1,12 @@
-import os
-import urllib2
+try:
+    from urllib.request import urlopen
+except ImportError:
+    from urllib2 import urlopen
 import json
+import os
+from future import standard_library
+standard_library.install_aliases()
+
 
 def get_my_ip():
     """
@@ -8,14 +14,12 @@ def get_my_ip():
         running from behind a NAT/wifi router).  Of course, incoming port
         to the router must be forwarded correctly.
     """
-    if 'OPENSHIFT_SECRET_TOKEN' in os.environ:
-        my_ip = os.environ['OPENSHIFT_APP_DNS']
-    else:
-        my_ip = json.load(urllib2.urlopen(
-            'http://httpbin.org/ip'
-        ))['origin'].split(',')[0]
+    my_ip = json.load(urlopen(
+        'http://httpbin.org/ip'
+    ))['origin'].split(',')[0]
     return my_ip
-    
+
+
 def colorize(target, color, use_escape=True):
     ''' Colorize target string. Set use_escape to false when text will not be
     interpreted by readline, such as in intro message.'''

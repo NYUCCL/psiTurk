@@ -1,0 +1,5 @@
+[[1mpsiTurk[0m server:[91moff[0m mode:[1msdbx[0m #HITs:0]$ mode sandbox
+mode is already sandbox
+[[1mpsiTurk[0m server:[91moff[0m mode:[1msdbx[0m #HITs:0]$ worker approve 123
+Approving specified submissions for the current study...
+Result(Operation: approve_assignment_by_assignment_id | Status: error | Message: assignment_id not found in local db)

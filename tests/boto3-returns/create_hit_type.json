@@ -1,0 +1,14 @@
+{
+    "HITTypeId": "3NN44GVSBHX0DJUBBCVWBXU3KI7FGD", 
+    "ResponseMetadata": {
+        "RetryAttempts": 0, 
+        "HTTPStatusCode": 200, 
+        "RequestId": "3b949d78-a42a-412f-9703-3e8b0119eb26", 
+        "HTTPHeaders": {
+            "x-amzn-requestid": "3b949d78-a42a-412f-9703-3e8b0119eb26", 
+            "date": "Wed, 22 May 2019 18:21:53 GMT", 
+            "content-length": "46", 
+            "content-type": "application/x-amz-json-1.1"
+        }
+    }
+}

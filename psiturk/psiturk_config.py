@@ -1,25 +1,30 @@
+from __future__ import print_function
+import six
+from distutils import file_util
+import os
+from future import standard_library
+standard_library.install_aliases()
 import os
 import sys
 from distutils import file_util
-from ConfigParser import SafeConfigParser
+import six
+if six.PY2:
+    from ConfigParser import ConfigParser
+else:
+    from configparser import ConfigParser
 
 
-class PsiturkConfig(SafeConfigParser):
+class PsiturkConfig(ConfigParser):
 
     def __init__(self, localConfig="config.txt",
                  globalConfigName=".psiturkconfig", **kwargs):
 
-        # If working in OpenShift, move global config file in data
-        # directory (has access rights)
-        if 'OPENSHIFT_SECRET_TOKEN' in os.environ:
-            globalConfig = os.path.join(
-                os.environ['OPENSHIFT_DATA_DIR'], globalConfigName)
-        elif 'PSITURK_GLOBAL_CONFIG_LOCATION' in os.environ:
+        if 'PSITURK_GLOBAL_CONFIG_LOCATION' in os.environ:
             globalConfig = os.path.join(
                 os.environ['PSITURK_GLOBAL_CONFIG_LOCATION'], globalConfigName)
         else:  # if nothing is set default to user's home directory
             globalConfig = "~/" + globalConfigName
-        self.parent = SafeConfigParser
+        self.parent = ConfigParser
         self.parent.__init__(self, **kwargs)
         self.localFile = localConfig
         self.globalFile = os.path.expanduser(globalConfig)
@@ -39,12 +44,7 @@ class PsiturkConfig(SafeConfigParser):
                    "'psiturk-setup-example' first.")
             sys.exit()
         if not os.path.exists(self.globalFile):
-            if 'OPENSHIFT_SECRET_TOKEN' in os.environ:
-                print ("No '.psiturkconfig' file found "
-                       "in your " + os.environ['OPENSHIFT_DATA_DIR'] +
-                       " directory.\nCreating default " +
-                       self.globalFile + " file.")
-            elif 'PSITURK_GLOBAL_CONFIG_LOCATION' in os.environ:
+            if 'PSITURK_GLOBAL_CONFIG_LOCATION' in os.environ:
                 print ("No '.psiturkconfig' file found in your " +
                        os.environ['PSITURK_GLOBAL_CONFIG_LOCATION'] +
                        " directory.\nCreating default " +
@@ -54,7 +54,7 @@ class PsiturkConfig(SafeConfigParser):
                        "home directory.\nCreating default "
                        "~/.psiturkconfig file.")
             file_util.copy_file(global_defaults_file, self.globalFile)
-            
+
         # Read default global and local, then user's global and local. This way
         # any field not in the user's files will be set to the default value.
         self.read([global_defaults_file, local_defaults_file,

@@ -1,10 +1,14 @@
+from __future__ import print_function
+from __future__ import absolute_import
 
 import datetime
-import io, csv, json
+import io
+import csv
+import json
 from sqlalchemy import Column, Integer, String, DateTime, Float, Text
 
-from db import Base
-from psiturk_config import PsiturkConfig
+from .db import Base
+from .psiturk_config import PsiturkConfig
 
 config = PsiturkConfig()
 config.load_config()
@@ -12,14 +16,15 @@ config.load_config()
 TABLENAME = config.get('Database Parameters', 'table_name')
 CODE_VERSION = config.get('Task Parameters', 'experiment_code_version')
 
+
 class Participant(Base):
     """
     Object representation of a participant in the database.
     """
     __tablename__ = TABLENAME
 
-    uniqueid =Column(String(128), primary_key=True)
-    assignmentid =Column(String(128), nullable=False)
+    uniqueid = Column(String(128), primary_key=True)
+    assignmentid = Column(String(128), nullable=False)
     workerid = Column(String(128), nullable=False)
     hitid = Column(String(128), nullable=False)
     ipaddress = Column(String(128))
@@ -32,8 +37,8 @@ class Participant(Base):
     beginhit = Column(DateTime)
     beginexp = Column(DateTime)
     endhit = Column(DateTime)
-    bonus = Column(Float, default = 0)
-    status = Column(Integer, default = 1)
+    bonus = Column(Float, default=0)
+    status = Column(Integer, default=1)
     mode = Column(String(128))
     if 'postgres://' in config.get('Database Parameters', 'database_url').lower():
         datastring = Column(Text)
@@ -42,14 +47,14 @@ class Participant(Base):
 
     def __init__(self, **kwargs):
         self.uniqueid = "{workerid}:{assignmentid}".format(**kwargs)
-        for key in kwargs:
-            setattr(self, key, kwargs[key])
         self.status = 1
         self.codeversion = CODE_VERSION
         self.beginhit = datetime.datetime.now()
+        for key in kwargs:
+            setattr(self, key, kwargs[key])
 
     def __repr__(self):
-        return "Subject(%s, %s, %s, %s)" % (
+        return "Subject(uniqueid|%s, condition|%s, status|%s, codeversion|%s)" % (
             self.uniqueid,
             self.cond,
             self.status,
@@ -60,7 +65,7 @@ class Participant(Base):
             trialdata = json.loads(self.datastring)["data"]
         except (TypeError, ValueError):
             # There was no data to return.
-            print("No trial data found in record:", self)
+            print(("No trial data found in record:", self))
             return("")
 
         try:
@@ -76,7 +81,7 @@ class Participant(Base):
                 ret = outstring.getvalue()
             return ret
         except:
-            print("Error reading record:", self)
+            print(("Error reading record:", self))
             return("")
 
     def get_event_data(self):
@@ -84,7 +89,7 @@ class Participant(Base):
             eventdata = json.loads(self.datastring)["eventdata"]
         except (ValueError, TypeError):
             # There was no data to return.
-            print("No event data found in record:", self)
+            print(("No event data found in record:", self))
             return("")
 
         try:
@@ -92,11 +97,12 @@ class Participant(Base):
             with io.BytesIO() as outstring:
                 csvwriter = csv.writer(outstring)
                 for event in eventdata:
-                    csvwriter.writerow((self.uniqueid, event["eventtype"], event["interval"], event["value"], event["timestamp"]))
+                    csvwriter.writerow(
+                        (self.uniqueid, event["eventtype"], event["interval"], event["value"], event["timestamp"]))
                 ret = outstring.getvalue()
             return ret
         except:
-            print("Error reading record:", self)
+            print(("Error reading record:", self))
             return("")
 
     def get_question_data(self):
@@ -104,7 +110,7 @@ class Participant(Base):
             questiondata = json.loads(self.datastring)["questiondata"]
         except (TypeError, ValueError):
             # There was no data to return.
-            print("No question data found in record:", self)
+            print(("No question data found in record:", self))
             return("")
 
         try:
@@ -112,10 +118,17 @@ class Participant(Base):
             with io.BytesIO() as outstring:
                 csvwriter = csv.writer(outstring)
                 for question in questiondata:
-                    csvwriter.writerow((self.uniqueid, question, questiondata[question]))
+                    csvwriter.writerow(
+                        (self.uniqueid, question, questiondata[question]))
                 ret = outstring.getvalue()
             return ret
         except:
-            print("Error reading record:", self)
+            print(("Error reading record:", self))
             return("")
 
+
+class Hit(Base):
+    '''
+    '''
+    __tablename__ = 'amt_hit'
+    hitid = Column(String(128), primary_key=True)

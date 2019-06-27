@@ -1,18 +1,17 @@
+from __future__ import print_function
+from __future__ import absolute_import
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.ext.declarative import declarative_base
-from psiturk_config import PsiturkConfig
-import re, os, sys
+from .psiturk_config import PsiturkConfig
+import re
+import os
+import sys
 
 config = PsiturkConfig()
 config.load_config()
 
-r = re.compile("OPENSHIFT_(.+)_DB_URL") # Might be MYSQL or POSTGRESQL
-matches = filter(r.match, os.environ)
-if matches:
-    DATABASE = "{}{}".format(os.environ[matches[0]], os.environ['OPENSHIFT_APP_NAME'])
-else:
-    DATABASE = config.get('Database Parameters', 'database_url')
+DATABASE = config.get('Database Parameters', 'database_url')
 
 if 'mysql://' in DATABASE.lower():
 	try:
@@ -34,6 +33,13 @@ db_session = scoped_session(sessionmaker(autocommit=False,
 Base = declarative_base()
 Base.query = db_session.query_property()
 
+
 def init_db():
     #print "Initalizing db if necessary."
     Base.metadata.create_all(bind=engine)
+
+
+def truncate_tables():
+    for table in Base.metadata.sorted_tables:
+        db_session.execute(table.delete(bind=engine))
+    db_session.commit()
