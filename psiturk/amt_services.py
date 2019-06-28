@@ -14,6 +14,7 @@ import dateutil.tz
 from flask import jsonify
 import re as re
 from psiturk.psiturk_config import PsiturkConfig
+from .psiturk_exceptions import *
 
 PERCENT_ASSIGNMENTS_APPROVED_QUAL_ID = '000000000000000000L0'
 NUMBER_HITS_APPROVED_QUAL_ID = '00000000000000000040'
@@ -43,13 +44,6 @@ class AmtServicesErrorResponse(AmtServicesResponse):
         exception = kwargs.pop('exception', None)
         super(AmtServicesErrorResponse, self).__init__(
             *args, status='error', success=False, exception=exception, **kwargs)
-
-class AmtServicesException(Exception):
-    pass
-
-class NoMturkConnectionError(AmtServicesException):
-    def __init__(self):
-        self.message = 'Sorry, unable to connect to Amazon Mechanical Turk. AWS credentials invalid.'
 
 class NoHitDataError(AmtServicesException):
     pass
@@ -103,16 +97,11 @@ class MTurkServices(object):
     def __init__(self, aws_access_key_id, aws_secret_access_key, is_sandbox):
         self.update_credentials(aws_access_key_id, aws_secret_access_key)
         self.is_sandbox = is_sandbox
-        self.setup_mturk_connection()
+        self.setup_mturk_connection() # may throw AWSAccessKeysNotSet
         self.valid_login = self.verify_aws_login()
 
         if not self.valid_login:
-            self.warning_message = '\n'.join([
-                'WARNING *****************************',
-                'Sorry, AWS Credentials invalid.',
-                'You will only be able to test experiments locally until you enter',
-                'valid credentials in the AWS Access section of ~/.psiturkconfig'
-                ])
+            raise NoMturkConnectionError()
 
     def update_credentials(self, aws_access_key_id, aws_secret_access_key):
         ''' Update credentials '''
@@ -236,9 +225,7 @@ class MTurkServices(object):
         ''' Connect to turk '''
         if ((self.aws_access_key_id == 'YourAccessKeyId') or
                 (self.aws_secret_access_key == 'YourSecretAccessKey')):
-            print(
-                'AWS access keys not set in ~/.psiturkconfig; please enter valid aws credentials.')
-            return False
+            raise AWSAccessKeysNotSetError()
 
         if self.is_sandbox:
             endpoint_url = 'https://mturk-requester-sandbox.us-east-1.amazonaws.com'
@@ -259,11 +246,9 @@ class MTurkServices(object):
 
         try:
             self.mtc.get_account_balance()
-        except Exception as e:
-            print(e)
-            return False
-        else:
             return True
+        except Exception as e:
+            return False
 
     def connect_to_turk(self):
         ''' Connect to turk '''

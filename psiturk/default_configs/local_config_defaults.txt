@@ -42,6 +42,7 @@ num_counters = 1
 
 [Shell Parameters]
 launch_in_sandbox_mode = true
+persistent_history_file = ".psiturk_history"
 #bonus_message = "Thanks for participating!"
 
 # If you are not using the psiturk ad server, set `use_psiturk_ad_server` to `false` and point `ad_location` to your proxy server <host> and <port>. Format the ad_location like this:

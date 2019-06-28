@@ -117,10 +117,13 @@ class MTurkServicesWrapper(object):
     @property
     def amt_services(self):
         if not self._cached_amt_services:
-            self._cached_amt_services = MTurkServices(
-                self.config.get('AWS Access', 'aws_access_key_id'),
-                self.config.get('AWS Access', 'aws_secret_access_key'),
-                self.sandbox)
+            try:
+                self._cached_amt_services = MTurkServices(
+                    self.config.get('AWS Access', 'aws_access_key_id'),
+                    self.config.get('AWS Access', 'aws_secret_access_key'),
+                    self.sandbox)
+            except PsiturkException:
+                raise
         return self._cached_amt_services
 
     def __init__(self, config=None, web_services=None, sandbox=None):
@@ -131,13 +134,16 @@ class MTurkServicesWrapper(object):
             config.load_config()
         self.config = config
 
-        if web_services:
-            self._cached_web_services = web_services
-
         if not sandbox:
             sandbox = config.getboolean(
                 'Shell Parameters', 'launch_in_sandbox_mode')
         self.sandbox = sandbox
+        
+        if web_services:
+            self._cached_web_services = web_services
+            
+        _ = self.amt_services # may throw an exception. Let it throw!
+
 
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #   Miscellaneous

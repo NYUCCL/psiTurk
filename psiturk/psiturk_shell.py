@@ -19,10 +19,11 @@ from psiturk.psiturk_config import PsiturkConfig
 from psiturk.version import version_number
 from psiturk.psiturk_org_services import PsiturkOrgServices
 from psiturk.amt_services_wrapper import MTurkServicesWrapper
+from .psiturk_exceptions import *
 import sqlalchemy as sa
 import webbrowser
 from docopt import docopt, DocoptExit
-from cmd2 import Cmd
+from cmd2 import Cmd, EmptyStatement
 from fuzzywuzzy import process
 import signal
 import certifi
@@ -98,7 +99,8 @@ class PsiturkShell(Cmd, object):
         return Cmd.postcmd(self, *args)
 
     def __init__(self, config, server, quiet=False):
-        Cmd.__init__(self, persistent_history_file='.psiturk_history')
+        persistent_history_file=config['Shell Parameters']['persistent_history_file']
+        Cmd.__init__(self, persistent_history_file=persistent_history_file)
         self.config = config
         self.server = server
 
@@ -360,7 +362,7 @@ class PsiturkShell(Cmd, object):
                 self.poutput(
                     "Note: This sandboxed ad will expire from the server in 16 days.")
         except Exception as e:
-            self.perror(e)
+            self.poutput(e)
 
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #   worker management
@@ -739,6 +741,7 @@ class PsiturkNetworkShell(PsiturkShell):
     ''' Extends PsiturkShell class to include online psiTurk.org features '''
 
     _cached_web_services = None
+    _cached_amt_services_wrapper = None
 
     @property
     def web_services(self):
@@ -746,23 +749,33 @@ class PsiturkNetworkShell(PsiturkShell):
             self._cached_web_services = PsiturkOrgServices(
                 self.config.get('psiTurk Access', 'psiturk_access_key_id'),
                 self.config.get('psiTurk Access', 'psiturk_secret_access_id'))
-            self.amt_services_wrapper.set_web_services(
-                self._cached_web_services)
         return self._cached_web_services
+
+    @property
+    def amt_services_wrapper(self):
+        if not self._cached_amt_services_wrapper:
+            try:
+                _wrapper = MTurkServicesWrapper(
+                    config=self.config, web_services=self.web_services, sandbox=self.sandbox)
+                self._cached_amt_services_wrapper = _wrapper
+            except PsiturkException as e:
+                self.poutput(e)
+            
+        return self._cached_amt_services_wrapper
+
 
     def __init__(self, config, server, sandbox, quiet=False):
         self.config = config
         self.quiet = quiet
-        self.amt_services_wrapper = MTurkServicesWrapper(
-            config=config, sandbox=sandbox)
-
         self.sandbox = sandbox
-
         self.sandbox_hits = 0
         self.live_hits = 0
+        super().__init__(config, server, quiet)
+        
+        if not self.amt_services_wrapper:
+            sys.exit()
 
         self.maybe_update_hit_tally()
-        PsiturkShell.__init__(self, config, server, quiet)
 
     def do_quit(self, _):
         '''Override do_quit for network clean up.'''
