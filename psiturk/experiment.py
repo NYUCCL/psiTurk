@@ -428,8 +428,8 @@ def start_exp():
             request.user_agent.browser
         platform = "UNKNOWN" if not request.user_agent.platform else \
             request.user_agent.platform
-        language = "UNKNOWN" if not request.user_agent.language else \
-            request.user_agent.language
+        language = "UNKNOWN" if not request.accept_languages else \
+            request.accept_languages.best
 
         # Set condition here and insert into database.
         participant_attributes = dict(
