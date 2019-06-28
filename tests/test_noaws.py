@@ -10,9 +10,9 @@ def test_awskeys_invalid(capfd):
     
     config = PsiturkConfig()
     config.load_config()
-    config['Shell Parameters']['persistent_history_file'] = ''
-    config['AWS Access']['aws_access_key_id'] = ''
-    config['AWS Access']['aws_secret_access_key'] = ''
+    config.set('Shell Parameters', 'persistent_history_file', '')
+    config.set('AWS Access','aws_access_key_id', '')
+    config.set('AWS Access','aws_secret_access_key', '')
     server = control.ExperimentServerController(config)
 
     launch_in_sandbox_mode = True
@@ -38,9 +38,10 @@ def test_awscreds_notset(capfd):
     
     config = PsiturkConfig()
     config.load_config()
-    config['Shell Parameters']['persistent_history_file'] = ''
-    config['AWS Access']['aws_access_key_id'] = 'YourAccessKeyId'
-    config['AWS Access']['aws_secret_access_key'] = 'YourSecretAccessKey'
+    config.set('Shell Parameters', 'persistent_history_file', '')
+    config.set('AWS Access','aws_access_key_id', 'YourAccessKeyId')
+    config.set('AWS Access','aws_secret_access_key', 'YourSecretAccessKey')
+    
     server = control.ExperimentServerController(config)
 
     launch_in_sandbox_mode = True

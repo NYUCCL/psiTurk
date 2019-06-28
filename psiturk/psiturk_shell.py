@@ -99,7 +99,7 @@ class PsiturkShell(Cmd, object):
         return Cmd.postcmd(self, *args)
 
     def __init__(self, config, server, quiet=False):
-        persistent_history_file=config['Shell Parameters']['persistent_history_file']
+        persistent_history_file=config.get('Shell Parameters','persistent_history_file')
         Cmd.__init__(self, persistent_history_file=persistent_history_file)
         self.config = config
         self.server = server
@@ -770,7 +770,7 @@ class PsiturkNetworkShell(PsiturkShell):
         self.sandbox = sandbox
         self.sandbox_hits = 0
         self.live_hits = 0
-        super().__init__(config, server, quiet)
+        super(PsiturkNetworkShell, self).__init__(config, server, quiet)
         
         if not self.amt_services_wrapper:
             sys.exit()

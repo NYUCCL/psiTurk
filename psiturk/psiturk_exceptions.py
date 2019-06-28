@@ -1,6 +1,6 @@
 class PsiturkException(Exception):
     def __init__(self, **kwargs):
-        super().__init__()
+        super(PsiturkException, self).__init__()
         self.message=kwargs['message'] if 'message' in kwargs else ''
         
     def __str__(self):
@@ -22,20 +22,19 @@ class AmtServicesException(PsiturkException):
                 '- `psiturk debug -p`'])
                 
         if 'message' in kwargs:
-            # import pytest; pytest.set_trace()
             kwargs['message'] = ''.join([kwargs['message'], still_can_do])
             
-        super().__init__(**kwargs)
+        super(AmtServicesException, self).__init__(**kwargs)
 
 class AWSAccessKeysNotSetError(AmtServicesException):
     def __init__(self, **kwargs):
         message = 'AWS access keys not set in ~/.psiturkconfig; please enter valid credentials.'
-        super().__init__(message=message, **kwargs)
+        super(AWSAccessKeysNotSetError, self).__init__(message=message, **kwargs)
 
 class NoMturkConnectionError(AmtServicesException):
     def __init__(self, **kwargs):
         message = 'Sorry, unable to connect to Amazon Mechanical Turk. AWS credentials invalid.'
-        super().__init__(message=message, **kwargs)
+        super(NoMturkConnectionError, self).__init__(message=message, **kwargs)
 
 ####################################################
 # AMT Service Wrapper Exceptions
