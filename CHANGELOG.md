@@ -4,7 +4,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
 ## [Unreleased]
+### Changed
+- Drop support for python2
+- upgrade cmd2 to 0.9 (python3 only)
+
+
+## [2.3.2]
+### Added
+- add explanation for non-aws-users for how to use psiturk server commands without launching the shell
+
+### Fixed
+- `psiturk hit create` with use_psiturk_ad_server was throwing an error when trying to create a hit because
+  of a missing success attribute on wrapperresponsesuccess
+
+
+
+## [2.3.1]
 ### Added
 - test suite to pave the way for migrating to Python 3 (woo!)
 - Support for Python 3.6 and 3.7
