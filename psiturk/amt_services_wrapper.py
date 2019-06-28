@@ -74,7 +74,7 @@ class WrapperResponse(object):
 class WrapperResponseSuccess(WrapperResponse):
     def __init__(self, *args, **kwargs):
         super(WrapperResponseSuccess, self).__init__(
-            *args, status='success', **kwargs)
+            *args, status='success', success=True, **kwargs)
 
 class WrapperResponseError(WrapperResponse):
     def __init__(self, *args, **kwargs):
