@@ -81,7 +81,17 @@ except ImportError as e:
 else:
     app.register_blueprint(custom_code)
 
+
+#
+# Dashboard
+#
+from .dashboard import dashboard # management dashboard
+app.register_blueprint(dashboard)
+
 init_db()
+
+
+
 
 
 # Read psiturk.js file into memory
