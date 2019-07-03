@@ -5,10 +5,12 @@ import datetime
 import io
 import csv
 import json
-from sqlalchemy import Column, Integer, String, DateTime, Float, Text
+from sqlalchemy import Column, Integer, String, DateTime, Float, Text, func
 
 from .db import Base
 from .psiturk_config import PsiturkConfig
+
+from itertools import groupby
 
 config = PsiturkConfig()
 config.load_config()
@@ -125,7 +127,35 @@ class Participant(Base):
         except:
             print(("Error reading record:", self))
             return("")
-
+            
+    @classmethod
+    def count_workers(cls, query=None, group_bys=['codeversion','mode','status']):
+        group_by_labels = group_bys + ['count']
+        group_bys = [getattr(cls, group_by) for group_by in group_bys]
+        if not query:
+            query = cls.query
+        for group_by in group_bys:
+            query = query.group_by(group_by).order_by(group_by.desc())
+        entities = group_bys + [func.count()]
+            
+        query = query.with_entities(*entities)
+        results = query.all()
+        
+        def list_to_grouped_dicts(results):
+            parsed_results = {}
+            for k, group in groupby(results, lambda row: row[0]): # k will be codeversion
+                group = list(group)
+                if len(group[0]) > 2:
+                    parsed_results[k] = list_to_grouped_dicts([row[1:] for row in group])
+                else:
+                    parsed_results.update({k:v for k,v in group})
+            return parsed_results
+        
+        parsed_results = list_to_grouped_dicts(results)
+        
+        zipped_results = [dict(zip(group_by_labels, row)) for row in results]
+        return zipped_results
+            
 
 class Hit(Base):
     '''

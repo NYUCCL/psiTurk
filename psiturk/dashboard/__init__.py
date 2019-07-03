@@ -8,6 +8,8 @@ from psiturk.psiturk_config import PsiturkConfig
 from psiturk.experiment_errors import ExperimentError, InvalidUsage
 from psiturk.user_utils import PsiTurkAuthorization, nocache
 
+from psiturk.amt_services_wrapper import MTurkServicesWrapper
+amt_services_wrapper = MTurkServicesWrapper()
 # # Database setup
 from psiturk.db import db_session, init_db
 from psiturk.models import Participant
@@ -52,7 +54,6 @@ def login_required(view):
         is_logged_in = current_user.get_id() is not None
         is_static_resource_call = str(request.endpoint) == 'dashboard.static'
         is_login_route = str(request.url_rule) == '/dashboard/login'
-        print(request.url_rule)
         if not (is_static_resource_call or is_login_route or is_logged_in):
             return login_manager.unauthorized()
         return view(**kwargs)
@@ -67,7 +68,11 @@ def before_request():
 @dashboard.route('/')
 @login_required
 def index():
-    return render_template('dashboard/index.html')
+    # this should be a db query... or the result of a call to one encapsulated in the wrapper...
+    workers_count_response = amt_services_wrapper.count_workers(codeversion=None)
+    if workers_count_response.success:
+        workers_count = workers_count_response.data
+    return render_template('dashboard/index.html', workers_count=workers_count)
     
 @dashboard.route('/login', methods=('GET', 'POST'))
 def login():

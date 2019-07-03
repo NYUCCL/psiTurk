@@ -2,5 +2,21 @@
  
 {% block content %}
 
+<table class='table'>
+    <thead>
+    {% for key, value in workers_count[0].items() %}
+        <th>{{ key }}</th>
+    {% endfor %}
+    </thead>
+    <tbody>
+    {% for row in workers_count %}
+        <tr>
+        {% for key, value in row.items() %}
+            <td>{{ value }}</td>
+        {% endfor %}
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
 
 {% endblock %} 

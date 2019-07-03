@@ -20,6 +20,7 @@ from .psiturk_config import PsiturkConfig
 from .psiturk_org_services import PsiturkOrgServices
 from .amt_services import MTurkServices
 from sqlalchemy import or_, and_
+from sqlalchemy.sql.operators import eq
 import sqlalchemy as sa
 import webbrowser
 from fuzzywuzzy import process
@@ -181,20 +182,29 @@ class MTurkServicesWrapper(object):
         return assignment_dict
 
     @amt_services_wrapper_response
-    def count_workers(self, codeversion=None, mode='live', status='completed'):
+    def count_workers(self, codeversion='latest', mode='live', status='completed'):
         ''' 
         Counts the number of participants in the database who have made it through
         the experiment.
         '''
-        if not codeversion:
-            codeversion = self.config.get(
-                'Task Parameters', 'experiment_code_version')
-
-        worker_count = Participant.query.filter(and_(
-            Participant.status.in_([3, 4, 5, 7]),
-            Participant.codeversion == codeversion,
-            Participant.mode == mode
-        )).count()
+        if codeversion == 'latest':
+            codeversion = [self.config.get(
+                'Task Parameters', 'experiment_code_version')]
+        
+        if status == 'completed':
+            status = [3,4,5,7]
+        query = Participant.query
+        if mode:
+            query = query.filter(Participant.mode == mode)
+        if codeversion:
+            if not isinstance(codeversion, list):
+                codeversion = [codeversion]
+            query = query.filter(Participant.codeversion.in_(codeversion))
+        if status:
+            if not isinstance(status, list):
+                status = [status]
+            query = query.filter(Participant.status.in_(status))
+        worker_count = Participant.count_workers(query=query)
         return worker_count
 
     @amt_services_wrapper_response
