@@ -1,22 +1,77 @@
 {% extends 'dashboard/layout.html' %}
  
 {% block content %}
+{%- raw -%}
+<div id='workers_data'>
+    <div class='row mb-4'>
+        <div class='col' v-for='(key, key_index) in grouping_keys'>
+            <h3>{{key}}</h3>
+            <template v-for='(value, value_index) in distinct_values[key]'>
+                <div class='form-check'>
+                    <input class='form-check-input' type='checkbox' 
+                        v-model='filter_values[key][value]'
+                        :id="'checkbox-' + key + '-' + value" 
+                        :value='grouping_keys[key_index]'>
+                    <label class='form-check-label' 
+                        :for="'checkbox-' + key + '-' + value">{{value}}</label>
+                </div>
+            </template>
+        </div>
+    </div>
 
-<table class='table'>
-    <thead>
-    {% for key, value in workers_count[0].items() %}
-        <th>{{ key }}</th>
-    {% endfor %}
-    </thead>
-    <tbody>
-    {% for row in workers_count %}
-        <tr>
-        {% for key, value in row.items() %}
-            <td>{{ value }}</td>
-        {% endfor %}
-        </tr>
-    {% endfor %}
-    </tbody>
-</table>
+    <table class='table'>
+        <thead>
+            <th v-for="key in keys">{{key}}</th>
+        </thead>
+        <tbody>
+            <tr v-for="row in filtered_data">
+                <td v-for="(value, key) in row">{{value}}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+{%- endraw -%}
 
+<script type='text/javascript'>
+    var workers_data = {{workers_count|tojson|safe}};
+    var data_keys = {{data_keys|tojson|safe}};
+    var app = new Vue({
+            el: '#workers_data',
+            data: {
+                data: workers_data.slice(),
+                keys: data_keys,
+                filter_values: {}
+            },
+            computed: {
+                grouping_keys: function(){
+                    return this.keys.filter(element => element != 'count')
+                },
+                distinct_values: function(){
+                    var collector = {};
+                    var new_filter_values = {}
+                    this.grouping_keys.forEach(key => {
+                        var _distincts = [...new Set(this.data.map(item => item[key]))]
+                        collector[key] = _distincts
+                        
+                        // default-set the filter values...
+                        new_filter_values[key] = {}
+                        _distincts.forEach(_distinct => {
+                            new_filter_values[key][_distinct] = true
+                        })
+                    })
+                    this.filter_values = new_filter_values;
+                    return collector
+                },
+                filtered_data: function(){
+                    return this.data.filter(row => {   
+                        return this.grouping_keys.every(key => {
+                            let value = row[key]
+                            return this.filter_values[key][value]
+                        })
+                    })
+                }
+            },
+            
+    })
+</script>
 {% endblock %} 

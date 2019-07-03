@@ -72,7 +72,9 @@ def index():
     workers_count_response = amt_services_wrapper.count_workers(codeversion=None)
     if workers_count_response.success:
         workers_count = workers_count_response.data
-    return render_template('dashboard/index.html', workers_count=workers_count)
+    return render_template('dashboard/index.html', 
+        workers_count=workers_count, 
+        data_keys= ['codeversion','mode','status','count'])
     
 @dashboard.route('/login', methods=('GET', 'POST'))
 def login():

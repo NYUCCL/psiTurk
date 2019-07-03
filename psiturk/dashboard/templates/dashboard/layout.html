@@ -1,24 +1,21 @@
 {% extends "dashboard/base.html" %}
 {% block layout %}
-<body>    
-    <header>
-        <nav></nav>
-    </header>
-        <div class='container'>
-        
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="alert alert-warning alert-dismissible" role="alert">
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>
-                    {{message}}
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-        
-        {% block content %}{% endblock %}
+<header></header>
+<div class='container'>
+    <div class='row'>
+        <nav class='sidebar col-md-2 d-block'>
+            <ul class='nav flex-column'>
+                <li class='nav-item'>
+                    <a class='nav-link' href='#'><span class='oi oi-home'></span> Dashboard</a>
+                </li>
+            </ul>
+        </nav>
+        <div class='main col-md-9 col-lg-10 px-4'>
+            {% include 'dashboard/flashed_messages.html' %}
+            
+            {% block content %}{% endblock %}
         </div>
-    <footer></footer>
-</body>
+    </div>
+</div>
+<footer></footer>
 {% endblock %}
