@@ -155,6 +155,12 @@ class Participant(Base):
         
         zipped_results = [dict(zip(group_by_labels, row)) for row in results]
         return zipped_results
+        
+    @classmethod
+    def all_but_datastring(cls):
+        query = cls.query
+        query = query.with_entities(*[c for c in cls.__table__.c if c.name != 'datastring'])
+        return query.all()
             
 
 class Hit(Base):

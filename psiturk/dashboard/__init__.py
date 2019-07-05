@@ -7,6 +7,7 @@ from sqlalchemy import or_
 from psiturk.psiturk_config import PsiturkConfig
 from psiturk.experiment_errors import ExperimentError, InvalidUsage
 from psiturk.user_utils import PsiTurkAuthorization, nocache
+from psiturk.models import Participant
 
 from psiturk.amt_services_wrapper import MTurkServicesWrapper
 amt_services_wrapper = MTurkServicesWrapper()
@@ -64,17 +65,28 @@ def login_required(view):
 def before_request():
     pass
 
+@dashboard.route('/all_worker_data')
+def all_worker_data():
+    all_workers = [worker.object_as_dict(filter_these=['datastring']) for worker in Participant.query.filter(Participant.mode != 'debug').all()]
+    return render_template('dashboard/all_worker_data.html', data=all_workers)
+    
+
 @dashboard.route('/index')
 @dashboard.route('/')
 @login_required
 def index():
     # this should be a db query... or the result of a call to one encapsulated in the wrapper...
     workers_count_response = amt_services_wrapper.count_workers(codeversion=None)
+    
     if workers_count_response.success:
-        workers_count = workers_count_response.data
+        workers_count = [list(worker_count.items()) for worker_count in workers_count_response.data]
+        
+    all_workers = Participant.query.filter(Participant.mode != 'debug').all()
+    
     return render_template('dashboard/index.html', 
         workers_count=workers_count, 
-        data_keys= ['codeversion','mode','status','count'])
+        data_keys= ['codeversion','mode','status','count'],
+        all_worker_data=[worker.object_as_dict(filter_these=['datastring']) for worker in all_workers])
     
 @dashboard.route('/login', methods=('GET', 'POST'))
 def login():

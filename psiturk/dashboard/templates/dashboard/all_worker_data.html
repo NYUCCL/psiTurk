@@ -1,0 +1,1 @@
+var all_worker_data = {{data|tojson|safe}};
