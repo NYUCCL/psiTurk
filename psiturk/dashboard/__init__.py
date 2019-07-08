@@ -9,8 +9,8 @@ from psiturk.experiment_errors import ExperimentError, InvalidUsage
 from psiturk.user_utils import PsiTurkAuthorization, nocache
 from psiturk.models import Participant
 
-from psiturk.amt_services_wrapper import MTurkServicesWrapper
-amt_services_wrapper = MTurkServicesWrapper()
+# from psiturk.amt_services_wrapper import MTurkServicesWrapper
+# amt_services_wrapper = MTurkServicesWrapper()
 # # Database setup
 from psiturk.db import db_session, init_db
 from psiturk.models import Participant
