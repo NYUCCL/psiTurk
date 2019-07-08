@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, jsonify, Response, abort, current_app, flash, session, g, redirect, url_for, abort
+from flask import Blueprint, render_template, request, jsonify, Response, abort, current_app, flash, session, g, redirect, url_for, abort, make_response
 from flask_login import UserMixin, login_user, logout_user, current_user
 from jinja2 import TemplateNotFound
 from functools import wraps
@@ -65,28 +65,23 @@ def login_required(view):
 def before_request():
     pass
 
-@dashboard.route('/all_worker_data')
+@dashboard.route('/data/all_worker_data.js')
 def all_worker_data():
     all_workers = [worker.object_as_dict(filter_these=['datastring']) for worker in Participant.query.filter(Participant.mode != 'debug').all()]
-    return render_template('dashboard/all_worker_data.html', data=all_workers)
+    response = make_response(render_template('dashboard/all_worker_data.js', data=all_workers))
+    response.headers['content-type'] = 'application/javascript; charset=utf-8'
+    return response
     
 
 @dashboard.route('/index')
 @dashboard.route('/')
 @login_required
 def index():
-    # this should be a db query... or the result of a call to one encapsulated in the wrapper...
-    workers_count_response = amt_services_wrapper.count_workers(codeversion=None)
-    
-    if workers_count_response.success:
-        workers_count = [list(worker_count.items()) for worker_count in workers_count_response.data]
-        
-    all_workers = Participant.query.filter(Participant.mode != 'debug').all()
+    current_codeversion = config['Task Parameters']['experiment_code_version']
     
     return render_template('dashboard/index.html', 
-        workers_count=workers_count, 
-        data_keys= ['codeversion','mode','status','count'],
-        all_worker_data=[worker.object_as_dict(filter_these=['datastring']) for worker in all_workers])
+        current_codeversion=current_codeversion
+        )
     
 @dashboard.route('/login', methods=('GET', 'POST'))
 def login():

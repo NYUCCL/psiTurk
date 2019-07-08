@@ -2,170 +2,77 @@
  
 {% block content %}
 {%- raw -%}
-<div id='workers_data'>
-    <div class='row mb-4'>
-        <div class='col' v-for='(key, key_index) in grouping_keys'>
-            <h3>{{key}}</h3>
-            <template v-for='(value, value_index) in distinct_values[key]'>
+<div id='workers_data' v-cloak>
+    
+    <div class='row'>
+        <div class='col'>
+            <h3>Options</h3>
+            <div class='mb-2'>
                 <div class='form-check'>
                     <input class='form-check-input' type='checkbox' 
-                        v-model='filter_values[key][value]'
-                        :id="'checkbox-' + key + '-' + value" 
-                        :value='grouping_keys[key_index]'>
-                    <label class='form-check-label' 
-                        :for="'checkbox-' + key + '-' + value">{{value}}</label>
+                        v-model='only_latest_codeversion'
+                        id='only-latest-codeversion'
+                    >
+                    <label class='form-check-label' for='only-latest-codeversion'>
+                        Only show most recent codeversion ({{latest_codeversion}})
+                    </label>
                 </div>
-            </template>
+            </div>
+            <div class='mb-2'>
+                <div class='form-check'>
+                    <input class='form-check-input' type='checkbox' 
+                        v-model='group_by_condition'
+                        id='group-by-condition'
+                    >
+                    <label class='form-check-label' for='group-by-condition'>
+                        Group by `condition`
+                    </label>
+                </div>
+            </div>
+            <div class='mb-2'>
+                <div class='form-check'>
+                    <input class='form-check-input' type='checkbox' 
+                        v-model='only_show_complete_status'
+                        id='status-group-complete'
+                    >
+                    <label class='form-check-label' for='status-group-complete'>
+                        Only show 'complete' statuses.
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class='col'>
+            <h3>Filters</h3>
+            <div class='mb-2' v-for='grouping_key in grouping_keys'>
+                <distinct-value-set :grouping_key='grouping_key' v-bind:filter_values.sync='filter_values'
+                ></distinct-value-set>
+            </div>
         </div>
     </div>
-
-    <table class='table'>
-        <thead>
-            <th v-for="key in sorted_keys">{{key}}</th>
-        </thead>
-        <tbody>
-            <tr v-for="row in filtered_data">
-                <td v-for="value in row">{{value}}</td>
-            </tr>
-        </tbody>
-    </table>
+    
+    <div v-for='(_key, key_index) in grouping_keys' class='mb-2'>
+    </div>
+    <div>
+        <table class='table'>
+            <thead>
+                <th v-for="key in keys">{{key}}</th>
+            </thead>
+            <tbody>
+                <tr v-for="(row, index) in filtered_data">
+                    <td v-for="value in row">{{value}}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 </div>
-
-<!-- <div id='d3table'> -->
-    <!-- <table class='table'> -->
-        <!-- <thead> -->
-            <!-- <th v-for='key in keys'>{{key}}</th> -->
-        <!-- </thead> -->
-        <!-- <tbody> -->
-        <!-- </tbody> -->
-    <!-- </table> -->
-<!-- </div> -->
 {%- endraw -%}
 {% endblock %} 
 
 {% block scripts %}
 {{ super() }}
-<script type='text/javascript' src='/dashboard/all_worker_data'></script>
-<script type='text/javascript'>
-    var rollup_keys = new Map([
-        ['count', v => v.length],
-        ['codeversion', d => d.codeversion],
-        ['mode', d => d.mode],
-        ['status', d => d.status]])
-    
-    var worker_data_counts = d3.rollup(all_worker_data, ...rollup_keys.values())
-    
-    var workers_data_entries = {{workers_count|tojson|safe}};
-    var workers_data = workers_data_entries.map(entry => Object.fromEntries(entry));
-    
-    var d3app = new Vue({
-        el: '#workers_data',
-        data: {
-            keys: Array.from(rollup_keys.keys()),
-            mapped_data: worker_data_counts,
-            filter_values: {}
-        },
-        computed: {
-            sorted_keys: function(){
-                this.keys.push(this.keys.shift())
-                return this.keys
-            },
-            grouping_keys: function(){
-                return this.keys.slice(0, -1) // 'count' should be the last one after sorting above; drop it.
-            },
-            flat_data: function(){
-                let _flat_data = this.flatten_data(this.mapped_data)
-                _flat_data.sort(d3.descending)
-                return _flat_data
-            },
-            distinct_values: function(){
-                let distincts = {}
-                let new_filter_values = {}
-                this.grouping_keys.forEach((key, index) => {
-                    let _distincts = [...new Set(this.flat_data.map(entry => entry[index]))]
-                    distincts[key] = _distincts
-                
-                    // default-set the filter values...
-                    new_filter_values[key] = {}
-                    _distincts.forEach(distinct => {
-                        new_filter_values[key][distinct] = true
-                    })
-                })
-                this.filter_values = new_filter_values;
-                return distincts
-            },
-            filtered_data: function(){
-                let distincts = this.distinct_values // force update for filter_values...
-                return this.flat_data.filter(row => { 
-                    return this.grouping_keys.every((key,index) => {
-                        let value = row[index]
-                        return this.filter_values[key][value]
-                    })
-                })
-            }
-        },
-        methods: {
-            flatten_data: function(flatten_me){
-                let rows = []
-                if ( flatten_me instanceof Map) {
-                    for (let [key, value] of flatten_me.entries()) {
-                        if (value instanceof Map) {
-                            let _rows = this.flatten_data(value)
-                            for (_row of _rows) {
-                                rows.push([key].concat(_row))
-                            }
-                        } else {
-                            rows.push([key, value])
-                        }
-                    }
-                }
-                return rows
-            }
-        }
-    })
-    
-    d3app.flat_data
-    
-    /*
-    var app = new Vue({
-        el: '#workers_data',
-        data: {
-            data: workers_data,
-            filter_values: {}
-        },
-        computed: {
-            keys: function(){
-                return Object.keys(this.data[0])
-            },
-            grouping_keys: function(){
-                return this.keys.filter(element => element != 'count')
-            },
-            distinct_values: function(){
-                var collector = {};
-                var new_filter_values = {}
-                this.grouping_keys.forEach(key => {
-                    var _distincts = [...new Set(this.data.map(item => item[key]))]
-                    collector[key] = _distincts
-                    
-                    // default-set the filter values...
-                    new_filter_values[key] = {}
-                    _distincts.forEach(_distinct => {
-                        new_filter_values[key][_distinct] = true
-                    })
-                })
-                this.filter_values = new_filter_values;
-                return collector
-            },
-            filtered_data: function(){
-                return this.data.filter(row => {   
-                    return this.grouping_keys.every(key => {
-                        let value = row[key]
-                        return this.filter_values[key][value]
-                    })
-                })
-            }
-        },
-    })
-    */
+<script type='text/javascript' src='/dashboard/data/all_worker_data.js'></script>
+<script>
+    let current_codeversion = '{{current_codeversion}}';
 </script>
+<script type='text/javascript' src='/dashboard/static/index.js'></script>
 {% endblock %}
