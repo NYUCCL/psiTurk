@@ -103,6 +103,7 @@ class PsiturkShell(Cmd, object):
         Cmd.__init__(self, persistent_history_file=persistent_history_file)
         self.config = config
         self.server = server
+        self.quiet = quiet
 
         # Prevents running of commands by abbreviation
         self.abbrev = False
@@ -110,7 +111,7 @@ class PsiturkShell(Cmd, object):
         self.help_path = os.path.join(os.path.dirname(__file__), "shell_help/")
         self.psiturk_header = 'psiTurk command help:'
         self.super_header = 'basic CMD command help:'
-
+        
         if not self.quiet:
             self.prompt = self.color_prompt()
             self.intro = self.get_intro_prompt()
@@ -195,13 +196,13 @@ class PsiturkShell(Cmd, object):
         ''' List hits. '''
         if active_hits:
             hits_data = (self.amt_services_wrapper.get_active_hits(
-                all_studies)).data['active_hits']
+                all_studies)).data
         elif reviewable_hits:
             hits_data = (self.amt_services_wrapper.get_reviewable_hits(
-                all_studies)).data['reviewable_hits']
+                all_studies)).data
         else:
             hits_data = (self.amt_services_wrapper.get_all_hits(
-                all_studies)).data['hits']
+                all_studies)).data
         if not hits_data:
             self.poutput('*** no hits retrieved')
         else:
@@ -758,6 +759,16 @@ class PsiturkNetworkShell(PsiturkShell):
                 _wrapper = MTurkServicesWrapper(
                     config=self.config, web_services=self.web_services, sandbox=self.sandbox)
                 self._cached_amt_services_wrapper = _wrapper
+            except AmtServicesException as e:
+                still_can_do = '\n'.join([
+                '',
+                'You can still use the psiturk server by running non-AWS commands such as:',
+                    '- `psiturk server <subcommand>`',
+                    '- `psiturk server start`',
+                    '- `psiturk server stop`',
+                    '- `psiturk debug -p`'])
+                message = '{}{}'.format(e.message, still_can_do)
+                self.poutput(message)
             except PsiturkException as e:
                 self.poutput(e)
             
@@ -1289,7 +1300,7 @@ def run(cabinmode=False, script=None, execute=None, testfile=None, quiet=False):
             config, server,
             config.getboolean('Shell Parameters', 'launch_in_sandbox_mode'),
             quiet=quiet)
-
+    
     if script:
         shell.runcmds_plus_hooks(['load {}'.format(script)])
     elif execute:

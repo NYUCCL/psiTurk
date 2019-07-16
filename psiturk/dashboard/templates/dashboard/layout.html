@@ -8,9 +8,22 @@
         <nav class='sidebar col-md-2 d-block'>
             <ul class='nav flex-column'>
                 <li class='nav-item'>
-                    <a class='nav-link' href='#'><span class='oi oi-home'></span> Dashboard</a>
+                    <a class='nav-link' href='/dashboard/'><span class='oi oi-home'></span> Dashboard</a>
+                </li>
+                <li class='nav-item'>
+                    <a class='nav-link' href='/dashboard/hits/'>Hits</a>
+                </li>
+                <li class='nav-item'>
+                    <a class='nav-link' href='/dashboard/mode'>Mode</a>
                 </li>
             </ul>
+            <p><strong>Current mode:</strong> 
+            {%- raw -%}
+            <span 
+                v-cloak 
+                id='current-mode'
+            > {{mode}}</span>
+            {%- endraw -%}</p>
         </nav>
         <div class='main col-md-9 col-lg-10 px-4'>
             {% block content %}{% endblock %}
@@ -23,4 +36,28 @@
 {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.js"></script>
 <script src="https://d3js.org/d3-array.v2.min.js"></script>
+
+<!-- beefy bootstrap... sheesh, all this just for dropdowns... -->
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+<script src='/dashboard/static/flash_messages.js'></script>
+
+<script type='text/javascript'>
+let vm_mode = new Vue({
+    el: '#current-mode',
+    data: {
+        mode: ''
+    },
+    created: function(){
+        fetch('/api/services_manager/').then((response)=>{
+            return response.json()
+        })
+        .then((json)=>{
+            this.mode = json.mode
+        })
+    }
+})
+</script>
 {% endblock %}

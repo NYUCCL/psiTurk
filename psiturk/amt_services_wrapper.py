@@ -48,6 +48,7 @@ except ImportError:
 
 class WrapperResponse(object):
     def __init__(self, status=None, message='', data={}, operation='', **kwargs):
+        self.dict_keys = ['status','success','message','data','operation']
         self.status = status
         self.message = message
         self.data = data
@@ -70,6 +71,12 @@ class WrapperResponse(object):
                               for key, value in details])
 
         return 'Response({})'.format(details)
+        
+    def to_dict(self):
+        _dict = {}
+        for key in self.dict_keys:
+            _dict[key] = getattr(self, key)
+        return _dict
 
 
 class WrapperResponseSuccess(WrapperResponse):
@@ -81,18 +88,19 @@ class WrapperResponseError(WrapperResponse):
     def __init__(self, *args, **kwargs):
         super(WrapperResponseError, self).__init__(
             *args, status='error', success=False, **kwargs)
+        
+        self.dict_keys.append('exception')
         self.exception = kwargs.pop('exception', None)
-            
 
 def amt_services_wrapper_response(func):
     @wraps(func)
     def wrapper(self, *args, **kwargs):
         try:
             response = func(self, *args, **kwargs)
-            if isinstance(response, WrapperResponseSuccess): # this so that func.__name__ can be set
-                response = response.data
-            elif isinstance(response, WrapperResponseError): # this so that func.__name__ can be set
-                raise response.exception
+            if isinstance(response, WrapperResponse):
+                return response
+            if 'exception' in response:
+                return WrapperResponseError(operation=func.__name__, exception=response.pop('exception'), data=response)
             return WrapperResponseSuccess(operation=func.__name__, data=response)
         except Exception as e:
             return WrapperResponseError(operation=func.__name__, exception=e)
@@ -138,7 +146,8 @@ class MTurkServicesWrapper(object):
         if not sandbox:
             sandbox = config.getboolean(
                 'Shell Parameters', 'launch_in_sandbox_mode')
-        self.sandbox = sandbox
+        mode = 'sandbox' if sandbox else 'live'
+        self.set_mode(mode)
         
         if web_services:
             self._cached_web_services = web_services
@@ -149,6 +158,23 @@ class MTurkServicesWrapper(object):
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #   Miscellaneous
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
+    @amt_services_wrapper_response
+    def get_mode(self):
+        return self.mode
+            
+    @amt_services_wrapper_response
+    def set_mode(self, mode):
+        if mode not in ['sandbox','live']:
+            raise PsiturkException('mode not recognized: {}'.format(mode))        
+        
+        self.mode = mode
+        
+        if mode == 'sandbox':
+            self.set_sandbox(True)
+        elif mode == 'live':
+            self.set_sandbox(False)
+            
+        return {'success': True}
 
     def set_sandbox(self, is_sandbox):
         self.sandbox = is_sandbox
@@ -288,7 +314,7 @@ class MTurkServicesWrapper(object):
             else:
                 response = self.amt_services.approve_assignment(assignment_id)
                 if response.success:
-                    return True
+                    return {'success': True}
                 else:
                     raise response.exception
 
@@ -305,13 +331,15 @@ class MTurkServicesWrapper(object):
             results = []
             for assignment in assignments:
                 results.append(self.approve_local_assignment(assignment))
-        return {'results': results}
+        return {'results': results, 'hit_id': hit_id}
 
-    def _get_local_submitted_assignments(self, hit_id=None):
+    def _get_local_submitted_assignments(self, hit_id=None, only_mturk=True):
         query = Participant.query.filter(
             or_(Participant.status == COMPLETED, Participant.status == SUBMITTED))
+        if only_mturk:
+            query = query.filter(Participant.mode == self.mode)
         if hit_id:
-            query.filter(Participant.hitid == hit_id)
+            query = query.filter(Participant.hitid == hit_id)
         assignments = query.all()
         return assignments
 
@@ -342,9 +370,7 @@ class MTurkServicesWrapper(object):
             db_session.commit()
             return {'assignment_id': assignment_id}
         except Exception as e:
-            return WrapperResponseError(exception=e, data={
-                'assignment_id': assignment_id,
-            })
+            return {'exception': e, 'assignment_id': assignment_id}
 
     @amt_services_wrapper_response
     def approve_mturk_assignment(self, assignment, ignore_local_not_found=False):
@@ -410,7 +436,7 @@ class MTurkServicesWrapper(object):
         if not response.success:
             raise response.exception
         else:
-            return True
+            return {'success': True}
 
     @amt_services_wrapper_response
     def unreject_assignments_for_hit(self, hit_id, all_studies=False):
@@ -540,7 +566,7 @@ class MTurkServicesWrapper(object):
             else:
                 response = self.bonus_nonlocal_assignment(assignment_id, amount, reason, worker_id=None)
                 if response.success:
-                    return True
+                    return {'success': True}
                 else:
                     raise response.exception
 
@@ -580,7 +606,7 @@ class MTurkServicesWrapper(object):
     
     @amt_services_wrapper_response
     def tally_hits(self):
-        hits = self.get_active_hits(all_studies=False).data['active_hits']
+        hits = self.get_active_hits(all_studies=False).data
         num_hits = 0
         if hits:
             num_hits = len(hits)
@@ -597,19 +623,24 @@ class MTurkServicesWrapper(object):
     def get_active_hits(self, all_studies=False):
         hits = self._get_hits(all_studies)
         active_hits = [hit for hit in hits if not hit.options['is_expired']]
-        return {'active_hits': active_hits}
+        return active_hits
 
     @amt_services_wrapper_response
     def get_reviewable_hits(self, all_studies=False):
         hits = self._get_hits(all_studies)
         reviewable_hits = [hit for hit in hits if hit.options['status'] == "Reviewable"
                            or hit.options['status'] == "Reviewing"]
-        return {'reviewable_hits': reviewable_hits}
+        return reviewable_hits
 
     @amt_services_wrapper_response
     def get_all_hits(self, all_studies=False):
         hits = self._get_hits(all_studies)
-        return {'hits': hits}
+        return hits
+        
+    @amt_services_wrapper_response
+    def get_hit(self, hit_id):
+        hit = self.amt_services.get_hit(hit_id).data
+        return hit
 
     def _get_hits(self, all_studies=False):
         # get all hits from amt
@@ -645,19 +676,20 @@ class MTurkServicesWrapper(object):
         if not response.success:
             raise response.exception
             
-        return True
+        return {'success': True}
 
     @amt_services_wrapper_response
     def delete_all_hits(self):
         '''
         Deletes all reviewable hits
         '''
-        response = self.amt_services.get_all_hits()
+        response = self.get_all_hits()
         if not response.success:
             raise response.exception
         hits = response.data
         hit_ids = [hit.options['hitid'] for hit in hits if
-                   hit.options['status'] == "Reviewable"]
+                        hit.options['status'] == "Reviewable" and 
+                        hit.options['number_submissions_needing_action'] == 0]
         results = []
         for hit_id in hit_ids:
             _result = self.delete_hit(hit_id)
@@ -674,25 +706,25 @@ class MTurkServicesWrapper(object):
         response = self.amt_services.delete_hit(hit_id)
         # self.web_services.delete_ad(hit)  # also delete the ad
         if not response.success:
-            raise response.exception
+            return {'exception': response.exception, 'hit_id': hit_id}
         else:
             if self.sandbox:
                 success_message = "deleted sandbox HIT {}".format(hit_id)
             else:
                 success_message = "deleted live HIT {}".format(hit_id)
-            return True
+            return {'hit_id': hit_id, 'success': True, 'message': success_message}
 
     @amt_services_wrapper_response
     def expire_hit(self, hit_id):
         response = self.amt_services.expire_hit(hit_id)
         if not response.success:
-            raise response.exception
+            raise AmtServicesWrapperError('Error expiring hit {}'.format(hit_id)) from response.exception
         else:
-            return True
+            return {'hit_id': hit_id, 'success': True}
 
     @amt_services_wrapper_response
     def expire_all_hits(self):
-        hits_data = self.get_active_hits().data['active_hits']
+        hits_data = self.get_active_hits().data
         hit_ids = [hit.options['hitid'] for hit in hits_data]
         results = []
         for hit_id in hit_ids:

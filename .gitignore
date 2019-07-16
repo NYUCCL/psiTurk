@@ -62,3 +62,5 @@ nosetests.xml
 .DS_Store
 
 doc/_build
+
+tests/shell_transcripts/*

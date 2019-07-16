@@ -8,9 +8,10 @@ from psiturk.psiturk_config import PsiturkConfig
 from psiturk.experiment_errors import ExperimentError, InvalidUsage
 from psiturk.user_utils import PsiTurkAuthorization, nocache
 from psiturk.models import Participant
+from psiturk.psiturk_exceptions import *
 
-# from psiturk.amt_services_wrapper import MTurkServicesWrapper
-# amt_services_wrapper = MTurkServicesWrapper()
+from psiturk.services_manager import psiturk_services_manager as services_manager
+
 # # Database setup
 from psiturk.db import db_session, init_db
 from psiturk.models import Participant
@@ -40,15 +41,6 @@ class DashboardUser(UserMixin):
 def load_user(username):
     return DashboardUser(username=username)
 
-
-# def check_login(func):
-    # @wraps(func)
-    # def check_it(*args, **kwargs):
-        # g.logged_in = 'logged_in' in session
-        # return func(*args, **kwargs)
-    # return check_it
-    
-# @check_login
 def login_required(view):
     @wraps(view)
     def wrapped_view(**kwargs):
@@ -59,30 +51,53 @@ def login_required(view):
             return login_manager.unauthorized()
         return view(**kwargs)
     return wrapped_view
+    
+def try_amt_services_wrapper(view):
+    @wraps(view)
+    def wrapped_view(**kwargs):
+        try:
+            _ = services_manager.amt_services_wrapper
+            return view(**kwargs)
+        except Exception as e:
+            message = e.message if hasattr(e, 'message') else str(e)
+            flash(message, 'danger')
+            return redirect(url_for('.index'))
+    return wrapped_view
 
 @dashboard.before_request
 @login_required
 def before_request():
     pass
 
-@dashboard.route('/data/all_worker_data.js')
-def all_worker_data():
-    all_workers = [worker.object_as_dict(filter_these=['datastring']) for worker in Participant.query.filter(Participant.mode != 'debug').all()]
-    response = make_response(render_template('dashboard/all_worker_data.js', data=all_workers))
-    response.headers['content-type'] = 'application/javascript; charset=utf-8'
-    return response
-    
+@dashboard.route('/mode', methods=('GET','POST'))
+@try_amt_services_wrapper
+def mode():
+    if request.method == 'POST':
+        mode = request.form['mode']
+        if mode not in ['live','sandbox']:
+            flash('unrecognized mode: {}'.format(mode), 'danger')
+        else:
+            result = services_manager.amt_services_wrapper.set_mode(mode)
+            if result.success:
+                flash('mode successfully updated to {}'.format(mode), 'success')
+            else:
+                flash(str(result.exception), 'danger')
+    mode = services_manager.amt_services_wrapper.get_mode().data
+    return render_template('dashboard/mode.html', mode=mode)
 
 @dashboard.route('/index')
 @dashboard.route('/')
-@login_required
 def index():
     current_codeversion = config['Task Parameters']['experiment_code_version']
-    
     return render_template('dashboard/index.html', 
-        current_codeversion=current_codeversion
-        )
-    
+        current_codeversion=current_codeversion)
+        
+@dashboard.route('/hits')
+@dashboard.route('/hits/')
+@try_amt_services_wrapper
+def hits_list():
+    return render_template('dashboard/hits/list.html')
+
 @dashboard.route('/login', methods=('GET', 'POST'))
 def login():
     if request.method == 'POST':
@@ -102,7 +117,6 @@ def login():
     return render_template('dashboard/login.html')
     
 @dashboard.route('/logout')
-@login_required
 def logout():
     logout_user()
     flash('Logged out successfully.')

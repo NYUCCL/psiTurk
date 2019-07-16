@@ -1,4 +1,4 @@
 [[1mpsiTurk[0m server:[91moff[0m mode:[1msdbx[0m #HITs:0]$ mode sandbox
 mode is already sandbox
 [[1mpsiTurk[0m server:[91moff[0m mode:[1msdbx[0m #HITs:0]$ hit expire ABC
-Response(Operation: expire_hit | Status: error | Exception: An error occurred (RequestError) when calling the UpdateExpirationForHIT operation: Hit ABC does not exist. (1561677817009 s))
+Response(Operation: expire_hit | Status: error | Exception: AmtServicesWrapperError: )

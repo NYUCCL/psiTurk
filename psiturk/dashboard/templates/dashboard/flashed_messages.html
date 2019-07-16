@@ -1,10 +1,16 @@
-{% with messages = get_flashed_messages() %}
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-warning alert-dismissible" role="alert">
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>
-                {{message}}
-            </div>
-        {% endfor %}
-    {% endif %}
+<script type='text/javascript'>
+{% with messages = get_flashed_messages(with_categories=true) %}
+    var flask_messages = {{messages|tojson}} || [];
 {% endwith %}
+</script>
+<div class='flash-messages'>
+    <div id='vue-flash-messages'>
+        <vue-flash-message
+            v-for='(message, index) in messages'
+            v-bind:key='index'
+            v-bind:message='message[1]'
+            v-bind:category='message[0]'
+            v-on:close='close_message(index)'
+        ></vue-flash-message>
+    </div>
+</div>

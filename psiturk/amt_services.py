@@ -115,6 +115,8 @@ class MTurkServices(object):
 
     @staticmethod
     def _hit_xml_to_object(hits):
+        if not isinstance(hits, list):
+            hits = [hits]
         hits_data = [MTurkHIT({
             'hitid': hit['HITId'],
             'title': hit['Title'],
@@ -125,12 +127,15 @@ class MTurkServices(object):
             'number_assignments_available': hit['NumberOfAssignmentsAvailable'],
             'creation_time': hit['CreationTime'],
             'expiration': hit['Expiration'],
-            'is_expired': datetime.datetime.now(hit['Expiration'].tzinfo) >= hit['Expiration']
+            'is_expired': datetime.datetime.now(hit['Expiration'].tzinfo) >= hit['Expiration'],
+            'duration_in_seconds': hit['AssignmentDurationInSeconds'],
+            'reward': hit['Reward'],
+            'description': hit['Description'],
+            'number_submissions_needing_action': hit['MaxAssignments'] - hit['NumberOfAssignmentsCompleted'] - hit['NumberOfAssignmentsPending'] - hit['NumberOfAssignmentsAvailable']
         }) for hit in hits]
         return hits_data
 
     @amt_service_response
-    
     def get_all_hits(self):
         ''' Get all HITs '''
         hits = []
@@ -141,7 +146,6 @@ class MTurkServices(object):
         return hits_data
 
     @amt_service_response
-    
     def get_assignments(self, assignment_status=None, hit_ids=None):
         ''' Get workers '''
         if not hit_ids:
@@ -172,7 +176,6 @@ class MTurkServices(object):
         return workers
     
     @amt_service_response
-    
     def get_assignment(self, assignment_id):
         assignment = self.mtc.get_assignment(
             AssignmentId=assignment_id)['Assignment']
@@ -187,7 +190,6 @@ class MTurkServices(object):
         return worker_data
 
     @amt_service_response
-    
     def bonus_assignment(self, assignment_id, worker_id, amount, reason=""):
         ''' Bonus worker '''
     
@@ -200,7 +202,6 @@ class MTurkServices(object):
         return True
 
     @amt_service_response
-    
     def approve_assignment(self, assignment_id, override_rejection=False):
         ''' Approve worker '''
         self.mtc.approve_assignment(AssignmentId=assignment_id,
@@ -208,7 +209,6 @@ class MTurkServices(object):
         return True
     
     @amt_service_response
-    
     def reject_assignment(self, assignment_id):
         ''' Reject worker '''
         self.mtc.reject_assignment(
@@ -216,7 +216,6 @@ class MTurkServices(object):
         return True
     
     @amt_service_response
-    
     def unreject_assignment(self, assignment_id):
         ''' Unreject worker '''
         return self.approve_assignment(assignment_id, override_rejection=True)
@@ -350,13 +349,11 @@ class MTurkServices(object):
         )
 
     @amt_service_response
-    
     def check_balance(self):
         ''' Check balance '''
         return self.mtc.get_account_balance()['AvailableBalance']
         
     @amt_service_response
-    
     def create_hit(self, hit_config):
         ''' Create HIT '''
         self.configure_hit(hit_config)
@@ -364,7 +361,6 @@ class MTurkServices(object):
         return myhit
         
     @amt_service_response
-    
     def expire_hit(self, hitid):
         ''' Expire HIT '''
         
@@ -376,14 +372,12 @@ class MTurkServices(object):
         return True
 
     @amt_service_response
-    
     def delete_hit(self, hitid):
         ''' Delete HIT '''
         self.mtc.delete_hit(HITId=hitid)
         return True
 
     @amt_service_response
-    
     def extend_hit(self, hitid, assignments_increment=None,
                    expiration_increment=None):
 
@@ -392,7 +386,7 @@ class MTurkServices(object):
                                                            NumberOfAdditionalAssignments=int(assignments_increment))
 
         if expiration_increment:
-            hit = self.get_hit(hitid)
+            hit = self.get_hit(hitid).data
             expiration = hit['Expiration'] + \
                 datetime.timedelta(minutes=int(expiration_increment))
             self.mtc.update_expiration_for_hit(
@@ -401,14 +395,12 @@ class MTurkServices(object):
         return True
     
     @amt_service_response
-    
     def get_hit(self, hitid):
         ''' Get HIT '''
         hitdata = self.mtc.get_hit(HITId=hitid)
-        return hitdata['HIT']
+        return self._hit_xml_to_object(hitdata['HIT'])[0]
 
     @amt_service_response
-    
     def get_hit_status(self, hitid):
         ''' Get HIT status '''
         response = self.get_hit(hitid)
@@ -418,7 +410,6 @@ class MTurkServices(object):
         return hitdata['HITStatus']
 
     @amt_service_response
-    
     def get_summary(self):
         ''' Get summary '''
         

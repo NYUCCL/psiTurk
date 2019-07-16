@@ -88,6 +88,9 @@ else:
 from .dashboard import dashboard # management dashboard
 app.register_blueprint(dashboard)
 
+from .api import api_blueprint
+app.register_blueprint(api_blueprint)
+
 init_db()
 
 

@@ -1,10 +1,16 @@
 class PsiturkException(Exception):
-    def __init__(self, **kwargs):
-        super(PsiturkException, self).__init__()
+    def __init__(self, *args, **kwargs):
+        super(PsiturkException, self).__init__(*args)
         self.message=kwargs['message'] if 'message' in kwargs else ''
         
     def __str__(self):
         return '{}: {}'.format(type(self).__name__, self.message)
+        
+    def to_dict(self):
+        return {
+            'exception': type(self).__name__,
+            'message': self.message
+        }
 
 ####################################################
 # AMT Services Exceptions
@@ -13,17 +19,6 @@ class PsiturkException(Exception):
 class AmtServicesException(PsiturkException):
     
     def __init__(self, **kwargs):
-        still_can_do = '\n'.join([
-            '',
-            'You can still use the psiturk server by running non-AWS commands such as:',
-                '- `psiturk server <subcommand>`',
-                '- `psiturk server start`',
-                '- `psiturk server stop`',
-                '- `psiturk debug -p`'])
-                
-        if 'message' in kwargs:
-            kwargs['message'] = ''.join([kwargs['message'], still_can_do])
-            
         super(AmtServicesException, self).__init__(**kwargs)
 
 class AWSAccessKeysNotSetError(AmtServicesException):
@@ -110,3 +105,9 @@ class AdHtmlTooLarge(AmtServicesWrapperError):
                                  '  Your local ad.html is {} bytes, but the maximum'.format(size_of_ad),
                                  '  template size uploadable to the ad server is',
                                  '  1048576 bytes.' ])
+                                 
+#################
+# API Exceptions
+#################
+class APIException(PsiturkException):
+    pass

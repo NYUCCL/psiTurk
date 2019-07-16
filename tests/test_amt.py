@@ -110,10 +110,10 @@ class TestAmtServices(object):
             stubber.add_response('list_hits', hits_json)
             if active:
                 results = (amt_services_wrapper.get_active_hits(
-                    all_studies=all_studies)).data['active_hits']
+                    all_studies=all_studies)).data
             else:
                 results = (amt_services_wrapper.get_all_hits(
-                    all_studies=all_studies)).data['hits']
+                    all_studies=all_studies)).data
             return results
 
         return do_it
@@ -329,11 +329,11 @@ class TestAmtServices(object):
         active_hit_id = hits_json['HITs'][index_of_hit_to_be_active]['HITId']
 
         assignment_1 = create_dummy_assignment(
-            {'hitid': active_hit_id, 'status': psiturk_statuses.COMPLETED})
+            {'hitid': active_hit_id, 'status': psiturk_statuses.COMPLETED, 'mode': 'sandbox'})
         # do not create dummy hit
 
         assignment_2 = create_dummy_assignment(
-            {'hitid': active_hit_id, 'status': psiturk_statuses.COMPLETED})
+            {'hitid': active_hit_id, 'status': psiturk_statuses.COMPLETED, 'mode': 'sandbox'})
         # create_dummy_hit(assignment_2.hitid)
 
         assignments = [assignment_1, assignment_2]
@@ -368,7 +368,7 @@ class TestAmtServices(object):
     def test_wrapper_reject_unreject_assignments(self, stubber, amt_services_wrapper, create_dummy_assignment, helpers):
 
         # reject all for a given hit, local only...
-        assignment_1 = create_dummy_assignment({'hitid': 'abc', 'status': 4})
+        assignment_1 = create_dummy_assignment({'hitid': 'abc', 'status': 4, 'mode': 'sandbox'})
         stubber.add_response('reject_assignment', {})
         results = (amt_services_wrapper.reject_assignments_for_hit(
             'abc', all_studies=False)).data['results']

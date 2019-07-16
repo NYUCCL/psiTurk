@@ -56,7 +56,7 @@ var d3app = new Vue({
             ['condition', d => d.cond],
             ['status', d => d.status],
         ]),
-        raw_data: all_worker_data,
+        raw_data: [],
         only_show_complete_status: true,
         group_by_condition: true,
         only_latest_codeversion: true,
@@ -117,10 +117,12 @@ var d3app = new Vue({
         filter_values_with_defaults: function(){            
             let new_filter_values = {}
             Object.keys(this.distinct_values).forEach(distinct_key=>{
-                new_filter_values[distinct_key] = {}
-                this.distinct_values[distinct_key].forEach(distinct_value => {
-                    new_filter_values[distinct_key][distinct_value] = true
-                })
+                if (this.distinct_values[distinct_key].length){
+                    new_filter_values[distinct_key] = {}
+                    this.distinct_values[distinct_key].forEach(distinct_value => {
+                        new_filter_values[distinct_key][distinct_value] = true
+                    })   
+                }
             })
             
             Object.assign(new_filter_values, this.filter_values)
@@ -139,10 +141,13 @@ var d3app = new Vue({
         }
     },
     created: function(){
-        let _filter_values_with_defaults = this.filter_values_with_defaults // hopefully will kick off init...
-        if (this.distinct_values['codeversion']){
-            this.set_filter_values('codeversion', [current_codeversion])
-        }
+        fetch('/api/workers/')
+        .then((response)=>{
+            return response.json()
+        })
+        .then((json)=>{
+            this.raw_data = json
+        })
     },
     methods: {
         flatten_data: function(flatten_me){

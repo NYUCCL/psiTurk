@@ -1,4 +1,4 @@
 [[1mpsiTurk[0m server:[91moff[0m mode:[1msdbx[0m #HITs:0]$ mode sandbox
 mode is already sandbox
 [[1mpsiTurk[0m server:[91moff[0m mode:[1msdbx[0m #HITs:0]$ hit extend ABC --assignments 1 --expiration 1
-Response(Operation: extend_hit | Status: error | Exception: An error occurred (RequestError) when calling the CreateAdditionalAssignmentsForHIT operation: Hit ABC does not exist. (1561677816582 s))
+Response(Operation: extend_hit | Status: error | Exception: An error occurred (RequestError) when calling the CreateAdditionalAssignmentsForHIT operation: Hit ABC does not exist. (1563311896423 s))
