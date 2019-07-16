@@ -99,7 +99,7 @@ def amt_services_wrapper_response(func):
             response = func(self, *args, **kwargs)
             if isinstance(response, WrapperResponse):
                 return response
-            if 'exception' in response:
+            if isinstance(response, dict) and 'exception' in response:
                 return WrapperResponseError(operation=func.__name__, exception=response.pop('exception'), data=response)
             return WrapperResponseSuccess(operation=func.__name__, data=response)
         except Exception as e:
@@ -296,6 +296,7 @@ class MTurkServicesWrapper(object):
 
     @amt_services_wrapper_response
     def approve_all_assignments(self, all_studies=False):
+        # import pdb; pdb.set_trace()
         if all_studies:
             results = self._approve_all_assignments_from_mturk(ignore_local_not_found=all_studies)
         else:
@@ -502,6 +503,8 @@ class MTurkServicesWrapper(object):
                 local_assignment.assignmentid)
             raise AssignmentAlreadyBonusedError(message=message)
         if amount == 'auto':
+            if not local_assignment.bonus:
+                return {'exception': NoAutoBonusAmountSetError(), 'assignment_id': assignment_id}
             amount = local_assignment.bonus
 
         response = self.bonus_nonlocal_assignment(

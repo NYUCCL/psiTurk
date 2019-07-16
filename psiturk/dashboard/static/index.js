@@ -141,7 +141,7 @@ var d3app = new Vue({
         }
     },
     created: function(){
-        fetch('/api/workers/')
+        fetch('/api/assignments/')
         .then((response)=>{
             return response.json()
         })

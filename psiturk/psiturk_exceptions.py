@@ -56,6 +56,9 @@ class BadBonusAmountError(DoBonusError):
 
 class BonusReasonMissingError(DoBonusError):
     pass
+    
+class NoAutoBonusAmountSetError(DoBonusError):
+    pass
 
 class AssignmentIdNotFoundInLocalDBError(AmtServicesWrapperError):
     def __init__(self, assignment_id='', **kwargs):

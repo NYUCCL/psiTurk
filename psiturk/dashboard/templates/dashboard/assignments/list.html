@@ -1,0 +1,36 @@
+{% extends 'dashboard/layouts/layout.html' %}
+
+{% block content %}
+<div id='assignments'>
+    <div>
+        <h3>Batch operations</h3>
+        <div class='form-group'>
+            <button
+                v-on:click='approve_all'
+                :disabled='!any_assignments_pending_approval'
+                type='button' class='btn btn-primary'
+            >Approve all</button>
+        </div>
+        <div class='form-group'>                
+            <div class='form-inline'>
+                <button
+                    v-on:click='bonus_all'
+                    :disabled='!any_autobonusable_assignments'
+                    type='button' class='btn btn-primary'
+                >Auto-Bonus All</button>
+                <input type='text' 
+                    v-model.trim='bonus_reason'
+                    class='form-control ml-2' 
+                    placeholder='Bonus Reason'>
+                <small class='ml-2'>Only "Approved" assignments are auto-bonus-able.</small>
+            </div>
+            
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script type='text/javascript' src='/dashboard/static/assignments/list.js'></script>
+{% endblock %}

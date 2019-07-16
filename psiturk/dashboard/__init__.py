@@ -97,6 +97,12 @@ def index():
 @try_amt_services_wrapper
 def hits_list():
     return render_template('dashboard/hits/list.html')
+    
+@dashboard.route('/assignments')
+@dashboard.route('/assignments/')
+@try_amt_services_wrapper
+def assignments_list():
+    return render_template('dashboard/assignments/list.html')
 
 @dashboard.route('/login', methods=('GET', 'POST'))
 def login():

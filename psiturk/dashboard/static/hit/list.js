@@ -171,7 +171,7 @@ let vm_hits = new Vue({
             })            
         },
         delete_hit: function(hit){
-            this.hits.splice(this.hits.indexOf(hit))
+            this.hits.splice(this.hits.indexOf(hit), 1)
         },
         update_hit: function(hit, hit_data){
             this.$set(this.hits, this.hits.indexOf(hit), hit_data)
