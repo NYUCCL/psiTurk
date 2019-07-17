@@ -461,7 +461,7 @@ class TestAmtServices(object):
             assignment_1, {'status': psiturk_statuses.CREDITED, 'bonus': 0.00})
         results = (amt_services_wrapper.bonus_assignments_for_hit(
             '123', amount, reason)).data['results']
-        assert isinstance(results[0].exception, BadBonusAmountError)
+        assert isinstance(results[0].exception, (BadBonusAmountError, NoAutoBonusAmountSetError))
 
         stubber.add_response('send_bonus', {})
         edit_assignment(
