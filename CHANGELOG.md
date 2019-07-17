@@ -40,3 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - #352 - expiring a hit didn't push far enough into the past to actually expire instead of extend on the mturk side
+
+[Unreleased]: https://github.com/NYUCCL/psiTurk/compare/2.3.2...HEAD
+[2.3.2]: https://github.com/NYUCCL/psiTurk/compare/2.3.1...2.3.2
+[2.3.1]: https://github.com/NYUCCL/psiTurk/compare/2.3.0...2.3.1
