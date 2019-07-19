@@ -230,8 +230,27 @@ class MTurkServicesWrapper(object):
             if not isinstance(status, list):
                 status = [status]
             query = query.filter(Participant.status.in_(status))
-        worker_count = Participant.count_workers(query=query)
+        worker_count = Participant.count_workers(query=query, group_bys=[])
         return worker_count
+    
+    @amt_services_wrapper_response
+    def count_available(self, hits=None):
+        if not hits:
+            hits = self.get_all_hits().data
+        return sum([hit.options['number_assignments_available'] for hit in hits if hit.options['status'] == 'Assignable'])
+    
+    @amt_services_wrapper_response
+    def count_maybe_will_complete(self, hits=None):
+        maybe_will_complete_count = 0
+        if not hits:
+            hits = self.get_all_hits().data
+        for hit in hits:
+            status = hit.options['status']
+            if status == 'Assignable':
+                maybe_will_complete_count += hit.options['number_assignments_pending'] + hit.options['number_assignments_available']
+            elif status == 'Unassignable':
+                maybe_will_complete_count += hit.options['number_assignments_pending']
+        return maybe_will_complete_count
 
     @amt_services_wrapper_response
     def get_assignments(self, hit_ids=None, assignment_status=None, all_studies=False):
@@ -273,30 +292,41 @@ class MTurkServicesWrapper(object):
             attempts_were_made.append(attempt_was_made)
         return attempts_were_made
 
-    def _try_fetch_local_credited_assignment(self, try_this):
+    def _try_fetch_local_assignment(self, try_this, with_psiturk_status=None):
         '''
         Can accept either an assignment_id or the return of a mturk boto grab...
         '''
-        query = Participant.query\
-            .filter(Participant.status == CREDITED)\
-            .order_by(Participant.beginhit.desc())
+        query = Participant.query.order_by(Participant.beginhit.desc())
+            
+        if with_psiturk_status:
+            query = query.filter(Participant.status == with_psiturk_status)
+            
         if isinstance(try_this, str):  # then assume that it's an assignment_id
             assignment_id = try_this
             query = query.filter(Participant.assignmentid == assignment_id)
+            
         elif isinstance(try_this, dict):  # then assume that it's a return from mturk
             assignment = try_this
             assignment_id = assignment['assignmentId']
             query = query.filter(Participant.workerid == assignment['workerId'])\
                 .filter(Participant.assignmentid == assignment_id)
+        else:
+            raise PsiturkException('Unrecognized `try_this` value-type: {}'.format(type(try_this)))
+        
         local_assignment = query.first()
         if local_assignment:
             return local_assignment
         else:
             return try_this
+    
+    def _try_fetch_local_submitted_assignment(self, try_this):
+        return self._try_fetch_local_assignment(try_this, with_psiturk_status=SUBMITTED)
+
+    def _try_fetch_local_credited_assignment(self, try_this):
+        return self._try_fetch_local_assignment(try_this, with_psiturk_status=CREDITED)
 
     @amt_services_wrapper_response
     def approve_all_assignments(self, all_studies=False):
-        # import pdb; pdb.set_trace()
         if all_studies:
             results = self._approve_all_assignments_from_mturk(ignore_local_not_found=all_studies)
         else:
@@ -305,7 +335,7 @@ class MTurkServicesWrapper(object):
 
     @amt_services_wrapper_response
     def approve_assignment_by_assignment_id(self, assignment_id, all_studies=False):
-        tried_this = self._try_fetch_local_credited_assignment(assignment_id)
+        tried_this = self._try_fetch_local_submitted_assignment(assignment_id)
         if isinstance(tried_this, Participant):
             result = self.approve_local_assignment(tried_this)
             return result
@@ -625,15 +655,20 @@ class MTurkServicesWrapper(object):
     @amt_services_wrapper_response
     def get_active_hits(self, all_studies=False):
         hits = self._get_hits(all_studies)
-        active_hits = [hit for hit in hits if not hit.options['is_expired']]
+        active_hits = self._filter_active(hits)
         return active_hits
+
+    def _filter_active(self, hits):
+        return [hit for hit in hits if not hit.options['is_expired']]
 
     @amt_services_wrapper_response
     def get_reviewable_hits(self, all_studies=False):
         hits = self._get_hits(all_studies)
-        reviewable_hits = [hit for hit in hits if hit.options['status'] == "Reviewable"
-                           or hit.options['status'] == "Reviewing"]
+        reviewable_hits = self._filter_reviewable(hits)
         return reviewable_hits
+        
+    def _filter_reviewable(self, hits):
+        return [hit for hit in hits if hit.options['status'] in ['Reviewable','Reviewing']]
 
     @amt_services_wrapper_response
     def get_all_hits(self, all_studies=False):
