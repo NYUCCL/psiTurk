@@ -81,6 +81,21 @@ except ImportError as e:
 else:
     app.register_blueprint(custom_code)
 
+# scheduler
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
+from flask_apscheduler import APScheduler
+
+from .db import engine
+jobstores = {
+    'default': SQLAlchemyJobStore(engine=engine)
+}
+scheduler = BackgroundScheduler(jobstores=jobstores)
+app.apscheduler = scheduler
+scheduler.app = app
+scheduler.start()
+
+logging.getLogger('apscheduler').setLevel(logging.DEBUG)
 
 #
 # Dashboard

@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, jsonify, Response, abort, current_app, flash, session, g, redirect, url_for, abort, make_response
+from flask import Blueprint, render_template, request, jsonify, Response, abort, current_app, flash, session, g, redirect, url_for, make_response
 from flask_login import UserMixin, login_user, logout_user, current_user
 from jinja2 import TemplateNotFound
 from functools import wraps
@@ -104,23 +104,56 @@ def hits_list():
 def assignments_list():
     return render_template('dashboard/assignments/list.html')
 
+@dashboard.route('/campaigns')
+@dashboard.route('/campaigns/')
+def campaigns_list():
+    # get completed so far, for the current mode and codeversion... also get pending, etc... this will
+    # require (1) count the local db, and (2) get all `active` hits to see how many are pending... (can expired have pending?) I just want to know which ones are pending that haven't come in yet... that will just be a count of... pending... plus available... (do expired have available?)
+    # completed_count = Participants.query.\
+        # filter(Participant.codeversion=services_manager.codeversion, 
+            # Participant.mode = services_manager.mode,
+            # Participant.status.in_([3,4,5,7]))
+    completed_count = Participant.count_completed(
+        codeversion=services_manager.codeversion, 
+        mode=services_manager.mode)
+        
+    all_hits = services_manager.amt_services_wrapper.get_all_hits().data
+    available_count = services_manager.amt_services_wrapper.count_available(hits=all_hits).data
+    pending_count = services_manager.amt_services_wrapper.count_pending(hits=all_hits).data    
+    maybe_will_complete_count = services_manager.amt_services_wrapper.count_maybe_will_complete(hits=all_hits).data
+        
+    return render_template('dashboard/campaigns/list.html', 
+        completed_count=completed_count,
+        pending_count=pending_count,
+        maybe_will_complete_count=maybe_will_complete_count,
+        available_count=available_count)
+        
+@dashboard.route('/tasks')
+@dashboard.route('/tasks/')
+def tasks_list():
+    return render_template('dashboard/tasks/list.html')
+
 @dashboard.route('/login', methods=('GET', 'POST'))
 def login():
     if request.method == 'POST':
         username= request.form['username']
         password= request.form['password']
-        success = myauth.check_auth(username, password)
         
-        if not success:
-            error = 'Incorrect username or password'
-            flash(error)
-        else:
+        try:
+            if 'example' in username or 'example' in password:
+                raise Exception('Default username-password not permitted! Change them in your config file.')
+            if not myauth.check_auth(username, password):
+                raise Exception('Incorrect username or password')
+                
             user = DashboardUser(username=username)
             login_user(user)
             flash("Logged in successfully.")
             next = request.args.get('next')
             return redirect(next or url_for('.index'))
-    return render_template('dashboard/login.html')
+        except Exception as e:
+            flash(str(e), 'danger')
+    
+    return render_template('dashboard/login.html')            
     
 @dashboard.route('/logout')
 def logout():

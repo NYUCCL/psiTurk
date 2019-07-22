@@ -9,4 +9,16 @@ class PsiturkServicesManager():
             self._cached_amt_services_wrapper = MTurkServicesWrapper()
         return self._cached_amt_services_wrapper
         
+    @property
+    def config(self):
+        return self.amt_services_wrapper.config
+    
+    @property
+    def mode(self):
+        return self.amt_services_wrapper.get_mode().data
+    
+    @property
+    def codeversion(self):
+        return self.config['Task Parameters']['experiment_code_version']
+        
 psiturk_services_manager = PsiturkServicesManager()

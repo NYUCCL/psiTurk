@@ -238,6 +238,12 @@ class MTurkServicesWrapper(object):
         if not hits:
             hits = self.get_all_hits().data
         return sum([hit.options['number_assignments_available'] for hit in hits if hit.options['status'] == 'Assignable'])
+
+    @amt_services_wrapper_response
+    def count_pending(self, hits=None):
+        if not hits:
+            hits = self.get_all_hits().data
+        return sum([hit.options['number_assignments_pending'] for hit in hits if hit.options['status'] in ['Assignable', 'Unassignable']])
     
     @amt_services_wrapper_response
     def count_maybe_will_complete(self, hits=None):
@@ -772,9 +778,6 @@ class MTurkServicesWrapper(object):
     @amt_services_wrapper_response
     def create_hit(self, num_workers, reward, duration):
         ''' Create a HIT '''
-        if not num_workers or not reward or not duration:
-            raise MissingArgumentsError()
-
         if self.sandbox:
             mode = 'sandbox'
         else:

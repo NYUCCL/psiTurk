@@ -1,14 +1,19 @@
-from flask import Blueprint, jsonify, make_response, request
+from flask import Blueprint, jsonify, make_response, request, current_app as app
 from flask.json import JSONEncoder
-from flask_restful import Api, Resource
+from flask_restful import Api, Resource, abort
 from psiturk.dashboard import login_required
 from psiturk.services_manager import psiturk_services_manager as services_manager
-from psiturk.models import Participant
+from psiturk.models import Participant, Campaign
 from psiturk.experiment import app
 from psiturk.psiturk_exceptions import *
 from psiturk.amt_services_wrapper import WrapperResponse
 from psiturk.amt_services import MTurkHIT
+from psiturk.db import Base as DBModel, db_session
 from functools import wraps
+from apscheduler.job import Job
+from apscheduler.triggers.base import BaseTrigger
+from datetime import datetime, timedelta
+from pytz.tzinfo import BaseTzInfo
 
 api_blueprint = Blueprint('api', __name__, url_prefix='/api')
 api = Api()
@@ -16,6 +21,7 @@ api = Api()
 @api_blueprint.errorhandler(Exception)
 def handle_psiturk_exception(exception):
     message = exception.message if (hasattr(exception, 'message') and exception.message) else str(exception)
+    raise exception
     return jsonify({
         'exception': type(exception).__name__,
         'message': message
@@ -25,13 +31,28 @@ class PsiturkJSONEncoder(JSONEncoder): # flask's jsonencoder class
     def default(self, obj):
         if isinstance(obj, (PsiturkException, WrapperResponse)):
             return obj.to_dict()
-        elif isinstance(obj, Exception):
+        
+        if isinstance(obj, Exception):
             return {
                 'exception': type(obj).__name__, 
                 'message': str(obj)
             }
-        elif isinstance(obj, MTurkHIT):
+        
+        if isinstance(obj, timedelta):
+            return str(obj)
+        
+        if isinstance(obj, MTurkHIT):
             return obj.__dict__
+        
+        if isinstance(obj, DBModel):
+            return obj.object_as_dict()
+            
+        if isinstance(obj, (Job, BaseTrigger)):
+            return obj.__getstate__()
+            
+        if isinstance(obj, BaseTzInfo):
+            return str(obj)
+            
         return JSONEncoder.default(self, obj)
 
 api_blueprint.json_encoder = PsiturkJSONEncoder
@@ -49,13 +70,18 @@ def before_request():
     
 class ServicesManager(Resource):
     def get(self):
+        _return = {
+            'mode': 'unavailable', 
+            'codeversion': 'unavailable'
+        }
         try:
-            mode = services_manager.amt_services_wrapper.get_mode().data
+            _return['mode'] = services_manager.mode
+            _return['codeversion'] = services_manager.codeversion
         except PsiturkException:
-            mode = 'unavailable'
-        return {'mode':mode}
+            pass
+        return _return
 
-class Assignments(Resource):
+class AssignmentList(Resource):
     def get(self, assignment_id=None):
         all_workers = [worker.object_as_dict(filter_these=['datastring']) for worker in Participant.query.filter(Participant.mode != 'debug').all()]
         return all_workers
@@ -79,7 +105,7 @@ class AssignmentsAction(Resource):
         else:
             raise APIException(message='action `{}` not recognized!'.format(action))
 
-class Hit(Resource):
+class Hits(Resource):
     def patch(self, hit_id):
         data = request.json
         if 'is_expired' in data and data['is_expired']:
@@ -99,7 +125,7 @@ class Hit(Resource):
             raise response.exception
         return '', 204
         
-class Hits(Resource):
+class HitList(Resource):
     def get(self, status=None):
         if status == 'active':
             hits = services_manager.amt_services_wrapper.get_active_hits().data
@@ -136,14 +162,70 @@ class HitsAction(Resource):
         else:
             raise APIException(message='action `{}` not recognized!'.format(action))
 
+class Campaigns(Resource):
+    def get(self, campaign_id):
+        campaign = Campaign.query.filter(Campaign.id == campaign_id).one()
+        return campaign
+    
+    def patch(self, campaign_id):
+        campaign = Campaign.query.filter(Campaign.id == campaign_id).one()
+        data = request.json
+        did_something = False
+        if 'is_active' in data and campaign.is_active and not data['is_active']:
+            campaign.end()
+            did_something = True
+        elif 'goal' in data:
+            goal = data['goal']
+            
+            completed_count = Participant.count_completed(
+                codeversion=services_manager.codeversion, 
+                mode=services_manager.mode)
+            
+            assert goal > completed_count, 'Goal {} must be greater than current completed {}.'.format(goal, completed_count)            
+            
+            campaign.goal = goal
+            did_something = True
+        
+        if did_something:
+            db_session.add(campaign)
+            db_session.commit()
+            
+        return campaign
+        
+        
+class CampaignList(Resource):
+    def get(self):
+        campaigns = Campaign.query.filter(Campaign.codeversion == services_manager.codeversion, 
+            Campaign.mode == services_manager.mode).all()
+        return campaigns
+    
+    def post(self):
+        data = request.json
+        # check if one already exists that is active...
+        if Campaign.active_campaign_exists():
+            raise APIException(message='Active campaign already exists. Cancel that campaign first in order to create a new one.')
+        codeversion = services_manager.codeversion
+        mode = services_manager.mode
+        campaign = Campaign.launch_new_campaign(codeversion=codeversion, mode=mode, **data)
+        return campaign, 201
+        
+class TaskList(Resource):
+    def get(self):
+        tasks = app.apscheduler.get_jobs()
+        return tasks
         
 api.add_resource(ServicesManager, '/services_manager','/services_manager/')
 
-api.add_resource(Assignments, '/assignments/', '/assignments/<assignment_id>')
+api.add_resource(AssignmentList, '/assignments', '/assignments/')
 api.add_resource(AssignmentsAction, '/assignments/action/<action>')
 
-api.add_resource(Hit, '/hit/<hit_id>')
-api.add_resource(Hits, '/hits/', '/hits/<status>')
+api.add_resource(Hits, '/hit/<hit_id>')
+api.add_resource(HitList, '/hits/', '/hits/<status>')
 api.add_resource(HitsAction, '/hits/action/<action>')
+
+api.add_resource(CampaignList, '/campaigns', '/campaigns/')
+api.add_resource(Campaigns, '/campaigns/<campaign_id>')
+
+api.add_resource(TaskList, '/tasks', '/tasks/')
 
 api.init_app(api_blueprint)

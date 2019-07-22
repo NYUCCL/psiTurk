@@ -67,7 +67,7 @@ Vue.component('hit-table-row', {
         <td>{{ hit_data.status }}</td>
         <td>
             <div class='dropdown'>
-                <button class='btn btn-sm dropdown-toggle' 
+                <button class='btn btn-sm btn-outline-dark dropdown-toggle' 
                     type='button' data-toggle='dropdown'
                 >Action</button>
                 <div class='dropdown-menu'>

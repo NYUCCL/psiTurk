@@ -1,0 +1,16 @@
+{% extends 'dashboard/layouts/layout.html' %}
+
+{% block content %}
+{%- raw -%}
+<div id='tasks'></div>
+
+
+{%- endraw -%}
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script type='text/javascript'>
+</script>
+<script type='text/javascript' src='/dashboard/static/tasks/list.js'></script>
+{% endblock %}
