@@ -17,11 +17,12 @@
     <title></title>
   </head>
   <body>
+    {% include 'dashboard/flashed_messages.html' %}
     {% block layout %}{% endblock %}
     
     {% block scripts %}
         <script src="https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.js"></script>    
+        <script src="/dashboard/static/flash_messages.js"></script>
     {% endblock %}
-    {% include 'dashboard/flashed_messages.html' %}
   </body>
 </html>
