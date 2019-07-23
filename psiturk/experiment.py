@@ -84,7 +84,6 @@ else:
 # scheduler
 
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
-from flask_apscheduler import APScheduler
 
 from .db import engine
 jobstores = {
