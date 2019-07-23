@@ -27,7 +27,7 @@ future==0.17.1
 fuzzywuzzy==0.17.0
 gitdb2==2.0.5
 GitPython==2.1.11
-gunicorn==19.9.0
+gunicorn[gevent]==19.9.0
 idna==2.8
 importlib-metadata==0.18
 ipaddress==1.0.22

@@ -71,6 +71,7 @@ class ExperimentServer(Application):
         self.user_options = {
             'bind': config.get("Server Parameters", "host") + ":" + config.get("Server Parameters", "port"),
             'workers': workers,
+            'worker_class': 'gevent',
             'loglevels': self.loglevels,
             'loglevel': self.loglevels[config.getint("Server Parameters", "loglevel")],
             # 'accesslog': config.get("Server Parameters", "logfile"),

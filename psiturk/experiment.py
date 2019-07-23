@@ -82,7 +82,7 @@ else:
     app.register_blueprint(custom_code)
 
 # scheduler
-from apscheduler.schedulers.background import BackgroundScheduler
+
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from flask_apscheduler import APScheduler
 
@@ -90,12 +90,16 @@ from .db import engine
 jobstores = {
     'default': SQLAlchemyJobStore(engine=engine)
 }
-scheduler = BackgroundScheduler(jobstores=jobstores)
+if 'gunicorn' in os.environ.get('SERVER_SOFTWARE',''):
+    from apscheduler.schedulers.gevent import GeventScheduler as Scheduler
+else:
+    from apscheduler.schedulers.background import BackgroundScheduler as Scheduler
+logging.getLogger('apscheduler').setLevel(logging.DEBUG)
+scheduler = Scheduler(jobstores=jobstores)
 app.apscheduler = scheduler
 scheduler.app = app
 scheduler.start()
 
-logging.getLogger('apscheduler').setLevel(logging.DEBUG)
 
 #
 # Dashboard
