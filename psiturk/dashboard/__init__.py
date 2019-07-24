@@ -107,12 +107,6 @@ def assignments_list():
 @dashboard.route('/campaigns')
 @dashboard.route('/campaigns/')
 def campaigns_list():
-    # get completed so far, for the current mode and codeversion... also get pending, etc... this will
-    # require (1) count the local db, and (2) get all `active` hits to see how many are pending... (can expired have pending?) I just want to know which ones are pending that haven't come in yet... that will just be a count of... pending... plus available... (do expired have available?)
-    # completed_count = Participants.query.\
-        # filter(Participant.codeversion=services_manager.codeversion, 
-            # Participant.mode = services_manager.mode,
-            # Participant.status.in_([3,4,5,7]))
     completed_count = Participant.count_completed(
         codeversion=services_manager.codeversion, 
         mode=services_manager.mode)

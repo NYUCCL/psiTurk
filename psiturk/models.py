@@ -253,6 +253,7 @@ class Campaign(Base):
     
     @classmethod
     def launch_new_campaign(cls, **kwargs):
+        kwargs['is_active'] = True
         new_campaign = cls(**kwargs)
         db_session.add(new_campaign)
         db_session.commit()
