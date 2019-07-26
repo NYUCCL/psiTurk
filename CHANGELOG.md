@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Drop support for python2
 - upgrade cmd2 to 0.9 (python3 only)
 
+### Added
+- add ability to customize participant condition assignment. (see 309a623)
+- add a sweet dashboard for doing amazing things, and the beginnings of a sort-of REST API that the dashboard uses.
+  See `/dashboard` route.
+
+### Fixed
+- `worker approve <assignmentid | hitid>` was incorrectly looking for already-credited local submissions instead of just submitted ones
+- `worker approve --hitid` was not filtering to just the local study
 
 ## [2.3.2]
 ### Added
