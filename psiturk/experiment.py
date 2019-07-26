@@ -152,56 +152,59 @@ def shutdown_session(_=None):
 # Experiment counterbalancing code
 # ================================
 
-def get_random_condcount(mode):
-    """
-    HITs can be in one of three states:
-        - jobs that are finished
-        - jobs that are started but not finished
-        - jobs that are never going to finish (user decided not to do it)
-    Our count should be based on the first two, so we count any tasks finished
-    or any tasks not finished that were started in the last cutoff_time
-    minutes, as specified in the cutoff_time variable in the config file.
+try:
+    from custom import custom_get_condition as get_random_condcount
+except ImportError:
+    def get_random_condcount(mode):
+        """
+        HITs can be in one of three states:
+            - jobs that are finished
+            - jobs that are started but not finished
+            - jobs that are never going to finish (user decided not to do it)
+        Our count should be based on the first two, so we count any tasks finished
+        or any tasks not finished that were started in the last cutoff_time
+        minutes, as specified in the cutoff_time variable in the config file.
 
-    Returns a tuple: (cond, condition)
-    """
-    cutofftime = datetime.timedelta(minutes=-CONFIG.getint('Server Parameters',
-                                                           'cutoff_time'))
-    starttime = datetime.datetime.now() + cutofftime
+        Returns a tuple: (cond, condition)
+        """
+        cutofftime = datetime.timedelta(minutes=-CONFIG.getint('Server Parameters',
+                                                               'cutoff_time'))
+        starttime = datetime.datetime.now() + cutofftime
 
-    try:
-        conditions = json.load(
-            open(os.path.join(app.root_path, 'conditions.json')))
-        numconds = len(list(conditions.keys()))
-        numcounts = 1
-    except IOError as e:
-        numconds = CONFIG.getint('Task Parameters', 'num_conds')
-        numcounts = CONFIG.getint('Task Parameters', 'num_counters')
+        try:
+            conditions = json.load(
+                open(os.path.join(app.root_path, 'conditions.json')))
+            numconds = len(list(conditions.keys()))
+            numcounts = 1
+        except IOError as e:
+            numconds = CONFIG.getint('Task Parameters', 'num_conds')
+            numcounts = CONFIG.getint('Task Parameters', 'num_counters')
 
-    participants = Participant.query.\
-        filter(Participant.codeversion ==
-               CONFIG.get('Task Parameters', 'experiment_code_version')).\
-        filter(Participant.mode == mode).\
-        filter(or_(Participant.status == COMPLETED,
-                   Participant.status == CREDITED,
-                   Participant.status == SUBMITTED,
-                   Participant.status == BONUSED,
-                   Participant.beginhit > starttime)).all()
-    counts = Counter()
-    for cond in range(numconds):
-        for counter in range(numcounts):
-            counts[(cond, counter)] = 0
-    for participant in participants:
-        condcount = (participant.cond, participant.counterbalance)
-        if condcount in counts:
-            counts[condcount] += 1
-    mincount = min(counts.values())
-    minima = [hsh for hsh, count in counts.items() if count == mincount]
-    chosen = choice(minima)
-    #conds += [ 0 for _ in range(1000) ]
-    #conds += [ 1 for _ in range(1000) ]
-    app.logger.info("given %(a)s chose %(b)s" % {'a': counts, 'b': chosen})
+        participants = Participant.query.\
+            filter(Participant.codeversion ==
+                   CONFIG.get('Task Parameters', 'experiment_code_version')).\
+            filter(Participant.mode == mode).\
+            filter(or_(Participant.status == COMPLETED,
+                       Participant.status == CREDITED,
+                       Participant.status == SUBMITTED,
+                       Participant.status == BONUSED,
+                       Participant.beginhit > starttime)).all()
+        counts = Counter()
+        for cond in range(numconds):
+            for counter in range(numcounts):
+                counts[(cond, counter)] = 0
+        for participant in participants:
+            condcount = (participant.cond, participant.counterbalance)
+            if condcount in counts:
+                counts[condcount] += 1
+        mincount = min(counts.values())
+        minima = [hsh for hsh, count in counts.items() if count == mincount]
+        chosen = choice(minima)
+        #conds += [ 0 for _ in range(1000) ]
+        #conds += [ 1 for _ in range(1000) ]
+        app.logger.info("given %(a)s chose %(b)s" % {'a': counts, 'b': chosen})
 
-    return chosen
+        return chosen
 
 
 # Routes
