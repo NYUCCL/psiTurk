@@ -46,6 +46,16 @@ def do_campaign_round(campaign, **kwargs):
         task_utils.aws_services_wrapper.create_hit(
             num_workers=this_hit, reward=campaign.hit_reward, duration=campaign.hit_duration_hours)
         remaining = remaining - this_hit
+        
+        
+# Approve All task_utils
+def do_approve_all(mode):
+    task_utils.aws_services_wrapper.set_mode(mode)
+    result = task_utils.aws_services_wrapper.approve_all_assignments()
+    if result.success:
+        logger.info('Approved all.')
+    else:
+        logger.error(str(result.exception))
     
     
     

@@ -19,9 +19,9 @@ api_blueprint = Blueprint('api', __name__, url_prefix='/api')
 api = Api()
 
 @api_blueprint.errorhandler(Exception)
-def handle_psiturk_exception(exception):
+def handle_exception(exception):
     message = exception.message if (hasattr(exception, 'message') and exception.message) else str(exception)
-    raise exception
+    # raise exception
     return jsonify({
         'exception': type(exception).__name__,
         'message': message
@@ -209,10 +209,38 @@ class CampaignList(Resource):
         campaign = Campaign.launch_new_campaign(codeversion=codeversion, mode=mode, **data)
         return campaign, 201
         
+        
+class Tasks(Resource):
+    def delete(self, task_id):
+        app.apscheduler.remove_job(str(task_id))
+        return '', 204
+        
 class TaskList(Resource):
     def get(self):
         tasks = app.apscheduler.get_jobs()
         return tasks
+        
+    def post(self):
+        data = request.json
+        mode = services_manager.mode
+        if data['name'] == 'approve_all':
+            # check if we already have an 'approve_all'
+            if app.apscheduler.get_job('approve_all'):
+                raise APIException(message='`approve_all` job already exists')
+            
+            from psiturk.tasks import do_approve_all
+            
+            job = app.apscheduler.add_job(
+                id='approve_all',
+                args=[mode],
+                func=do_approve_all,
+                trigger='interval',
+                minutes=max(int(int(data['interval']) * 60), 30),
+                next_run_time=datetime.now()
+            )
+            return job, 201
+            
+        raise APIException(message='task name `{}` not recognized!'.format(data['name']))
         
 api.add_resource(ServicesManager, '/services_manager','/services_manager/')
 
@@ -227,5 +255,6 @@ api.add_resource(CampaignList, '/campaigns', '/campaigns/')
 api.add_resource(Campaigns, '/campaigns/<campaign_id>')
 
 api.add_resource(TaskList, '/tasks', '/tasks/')
+api.add_resource(Tasks, '/tasks/<task_id>')
 
 api.init_app(api_blueprint)
