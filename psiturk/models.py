@@ -222,7 +222,7 @@ class Campaign(Base):
     @validates('is_active')
     def validate_is_active(self, key, is_active):
         if is_active:
-            assert not self.active_campaign_exists, 'No no, there can be only one active campaign.'
+            assert not self.active_campaign_exists(), 'No no, there can be only one active campaign.'
         return is_active
         
     
@@ -249,7 +249,8 @@ class Campaign(Base):
     def active_campaign_exists(cls):
         subquery = cls.query.filter(cls.is_active.is_(True)).exists()
         query = db_session.query(subquery)
-        return query.scalar()
+        _return = query.scalar()
+        return _return
     
     @classmethod
     def launch_new_campaign(cls, **kwargs):
