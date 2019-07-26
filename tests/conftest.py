@@ -10,6 +10,8 @@ import datetime
 import dateutil.parser
 import ciso8601
 import six
+import boto3
+from botocore.stub import Stubber
 
 
 @pytest.fixture(scope='session')
@@ -38,6 +40,44 @@ def experiment_dir():
     yield
     os.chdir('..')
     shutil.rmtree('psiturk-example', ignore_errors=True)
+
+
+#############
+# amt-related fixtures
+##############
+@pytest.fixture(scope='function')
+def client():
+    client = boto3.client('mturk')
+    return client
+
+
+@pytest.fixture(scope='function')
+def stubber(client):
+    stubber = Stubber(client)
+    stubber.activate()
+    yield stubber
+    stubber.deactivate()
+
+@pytest.fixture(scope='function')
+def patch_aws_services(client, mocker):
+    import psiturk.amt_services_wrapper
+    import psiturk.amt_services
+
+    def setup_mturk_connection(self):
+        self.mtc = client
+        return True
+
+    mocker.patch.object(psiturk.amt_services.MTurkServices,
+                        'verify_aws_login', lambda *args, **kwargs: True)
+    mocker.patch.object(psiturk.amt_services.MTurkServices,
+                        'setup_mturk_connection', setup_mturk_connection)
+
+    my_amt_services = psiturk.amt_services.MTurkServices(
+        '', '', is_sandbox=True)
+    mocker.patch.object(
+        psiturk.amt_services_wrapper.MTurkServicesWrapper, 'amt_services', my_amt_services)
+
+
 
 
 class Helpers(object):
@@ -77,7 +117,6 @@ class Helpers(object):
 @pytest.fixture(scope='session')
 def helpers():
     return Helpers
-
 
 @pytest.fixture()
 def db_setup():

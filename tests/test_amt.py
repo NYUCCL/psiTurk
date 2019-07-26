@@ -11,7 +11,7 @@ except ImportError:
 import pickle
 import os
 import boto3
-from botocore.stub import Stubber
+
 import datetime
 import ciso8601
 from psiturk import psiturk_statuses
@@ -21,20 +21,6 @@ SANDBOX_ENDPOINT_URL = 'https://mturk-requester-sandbox.us-east-1.amazonaws.com'
 LIVE_ENDPOINT_URL = 'https://mturk-requester.us-east-1.amazonaws.com'
 
 
-@pytest.fixture(scope='function')
-def client():
-    client = boto3.client('mturk')
-    return client
-
-
-@pytest.fixture(scope='function')
-def stubber(client):
-    stubber = Stubber(client)
-    stubber.activate()
-    yield stubber
-    stubber.deactivate()
-
-
 @pytest.fixture(scope='session')
 def faker():
     faker = Faker()
@@ -42,25 +28,6 @@ def faker():
 
 
 class TestAmtServices(object):
-
-    @pytest.fixture(scope='function')
-    def patch_aws_services(self, client, mocker):
-        import psiturk.amt_services_wrapper
-        import psiturk.amt_services
-
-        def setup_mturk_connection(self):
-            self.mtc = client
-            return True
-
-        mocker.patch.object(psiturk.amt_services.MTurkServices,
-                            'verify_aws_login', lambda *args, **kwargs: True)
-        mocker.patch.object(psiturk.amt_services.MTurkServices,
-                            'setup_mturk_connection', setup_mturk_connection)
-
-        my_amt_services = psiturk.amt_services.MTurkServices(
-            '', '', is_sandbox=True)
-        mocker.patch.object(
-            psiturk.amt_services_wrapper.MTurkServicesWrapper, 'amt_services', my_amt_services)
 
     @pytest.fixture()
     def amt_services_wrapper(self, patch_aws_services):

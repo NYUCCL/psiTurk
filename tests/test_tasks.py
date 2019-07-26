@@ -19,7 +19,7 @@ def campaign():
     db_session.commit()
     return new_campaign
 
-def test_campaign_round_codeversion_change_cancel(campaign, mocker, caplog):
+def test_campaign_round_codeversion_change_cancel(patch_aws_services, campaign, mocker, caplog):
     from psiturk.tasks import do_campaign_round
     
     campaign_args = {
