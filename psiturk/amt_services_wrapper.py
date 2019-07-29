@@ -7,6 +7,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 from functools import wraps
+from six import string_types
 
 import urllib.error
 import urllib.parse
@@ -246,7 +247,7 @@ class MTurkServicesWrapper(object):
         if with_psiturk_status:
             query = query.filter(Participant.status == with_psiturk_status)
             
-        if isinstance(try_this, str):  # then assume that it's an assignment_id
+        if isinstance(try_this, string_types):  # then assume that it's an assignment_id
             assignment_id = try_this
             query = query.filter(Participant.assignmentid == assignment_id)
             
@@ -256,7 +257,7 @@ class MTurkServicesWrapper(object):
             query = query.filter(Participant.workerid == assignment['workerId'])\
                 .filter(Participant.assignmentid == assignment_id)
         else:
-            raise PsiturkException('Unrecognized `try_this` value-type: {}'.format(type(try_this)))
+            raise PsiturkException(message='Unrecognized `try_this` value-type: {}'.format(type(try_this)))
         
         local_assignment = query.first()
         if local_assignment:
@@ -521,7 +522,7 @@ class MTurkServicesWrapper(object):
                 result = self.bonus_local_assignment(
                     bonus_this, amount, reason, override_bonused_status)
                 results.append(result)
-            elif isinstance(bonus_this, str):
+            elif isinstance(bonus_this, string_types):
                 # assume that the str is just an assignment_id
                 assignment_id = bonus_this
                 result = self.bonus_nonlocal_assignment(
