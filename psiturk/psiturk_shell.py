@@ -111,6 +111,7 @@ class PsiturkShell(Cmd, object):
         self.psiturk_header = 'psiTurk command help:'
         self.super_header = 'basic CMD command help:'
 
+        self.quiet = quiet
         if not self.quiet:
             self.prompt = self.color_prompt()
             self.intro = self.get_intro_prompt()
