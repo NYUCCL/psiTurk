@@ -31,6 +31,7 @@ deploy:
     user: nyuccl
     password:
       secure: h8nh6ooykI7eniajVkE/MYxZgyZoxcKRODhFWUwjlSHRmUV2tW/n2i/4MYJvMQXqiBgO64nOPmNhNH0mhYY+GbwyinAThRn3xhPIUfO8tV+edpzlzSwnGT+xSRINoUaGZfrs5UqCPVS7Ff5EB4SYRfrYBoV2VA5sx1XxoKKPkU4=
+    skip_existing: true
     on:
       tags: true
       branch: python2
