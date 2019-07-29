@@ -319,6 +319,23 @@ class TestAmtServices(object):
             return participant
 
         return do_it
+        
+    def test_wrapper_approve_single_assignment(self, stubber, create_dummy_assignment, amt_services_wrapper):
+        create_dummy_assignment({
+                'hitid': '123',
+                'beginhit': datetime.datetime.utcnow() - datetime.timedelta(days=-2),
+                'assignmentid': 'ABC',
+                'status': psiturk_statuses.SUBMITTED,
+                'mode': 'sandbox'})
+        create_dummy_assignment({'hitid': '123',
+            'beginhit': datetime.datetime.utcnow(),
+            'assignmentid': 'DEF',
+            'status': psiturk_statuses.SUBMITTED,
+            'mode': 'sandbox'
+        })
+        stubber.add_response('approve_assignment', {}, {'AssignmentId':'ABC', 'OverrideRejection': False})
+        response = amt_services_wrapper.approve_assignment_by_assignment_id('ABC')
+        assert response.success
 
     def test_wrapper_approve_all_assignments(self, stubber, activate_a_hit, helpers, create_dummy_assignment, create_dummy_hit, amt_services_wrapper):
         hits_json = helpers.get_boto3_return('list_hits.json')
