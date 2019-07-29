@@ -357,12 +357,13 @@ class TestAmtServices(object):
         second_hitid = hits_json['HITs'][1]['HITId']
         
         # set two to be for the first hit
+        mode = 'sandbox'
         a_1 = create_dummy_assignment(
-            {'hitid': first_hitid, 'status': psiturk_statuses.COMPLETED})
+            {'hitid': first_hitid, 'status': psiturk_statuses.COMPLETED, 'mode': mode})
         a_2 = create_dummy_assignment(
-            {'hitid': first_hitid, 'status': psiturk_statuses.COMPLETED})
+            {'hitid': first_hitid, 'status': psiturk_statuses.COMPLETED, 'mode': mode})
         a_3 = create_dummy_assignment(
-            {'hitid': second_hitid, 'status': psiturk_statuses.COMPLETED})
+            {'hitid': second_hitid, 'status': psiturk_statuses.COMPLETED, 'mode': mode})
             
         #set up stubber to expect two 'approve_hit' calls
         stubber.add_response('approve_assignment', {})
