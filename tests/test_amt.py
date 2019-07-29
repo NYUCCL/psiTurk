@@ -381,6 +381,30 @@ class TestAmtServices(object):
             all_studies=True)).data['results']
         assert len([result for result in results if result.status ==
                     'success']) == number_approved
+                    
+    def test_wrapper_approve_all_for_hit(self, stubber, activate_a_hit, helpers, create_dummy_assignment, create_dummy_hit, amt_services_wrapper):
+        hits_json = helpers.get_boto3_return('list_hits.json')
+        [activate_a_hit(hits_json, i) for (i, hit) in enumerate(hits_json['HITs'])]
+        
+        first_hitid = hits_json['HITs'][0]['HITId']
+        second_hitid = hits_json['HITs'][1]['HITId']
+        
+        # set two to be for the first hit
+        a_1 = create_dummy_assignment(
+            {'hitid': first_hitid, 'status': psiturk_statuses.COMPLETED})
+        a_2 = create_dummy_assignment(
+            {'hitid': first_hitid, 'status': psiturk_statuses.COMPLETED})
+        a_3 = create_dummy_assignment(
+            {'hitid': second_hitid, 'status': psiturk_statuses.COMPLETED})
+            
+        #set up stubber to expect two 'approve_hit' calls
+        stubber.add_response('approve_assignment', {})
+        stubber.add_response('approve_assignment', {})
+            
+        response = amt_services_wrapper.approve_assignments_for_hit(first_hitid)
+        for r in response.data['results']:
+            assert r.success
+        assert len(response.data['results']) == 2
 
     def test_wrapper_reject_unreject_assignments(self, stubber, amt_services_wrapper, create_dummy_assignment, helpers):
 
