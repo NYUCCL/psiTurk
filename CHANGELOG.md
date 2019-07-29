@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Drop support for python2
 - upgrade cmd2 to 0.9 (python3 only)
 
+## [2.3.3]
+### Fixed
+- datastring encoding to db was wrong
 
 ## [2.3.2]
 ### Added
