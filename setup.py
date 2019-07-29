@@ -23,7 +23,7 @@ if __name__ == "__main__":
     setup_args = dict(
         name = "PsiTurk",
         version = version_number,
-        packages = ["psiturk"],
+        packages = ['psiturk', 'psiturk.api', 'psiturk.dashboard'],
         include_package_data = True,
         zip_safe = False,
         entry_points = {
