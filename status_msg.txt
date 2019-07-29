@@ -16,7 +16,7 @@ System status:
 
 The latest stable version is 2.3.0.
 
-psiturk versions >=2.3.2 support python3!
+psiturk versions >=2.3.3 support python3!
 
 Check https://github.com/NYUCCL/psiTurk or https://psiturk.org for
 latest info.
