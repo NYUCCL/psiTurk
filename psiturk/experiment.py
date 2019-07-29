@@ -584,16 +584,13 @@ def update(uid=None):
         app.logger.error("DB error: Unique user not found.")
 
     if hasattr(request, 'json'):
-        user.datastring = request.data.decode('utf-8').encode(
-            'ascii', 'xmlcharrefreplace'
-        )
+        user.datastring = json.dumps(request.json)
         db_session.add(user)
         db_session.commit()
 
-    try:
-        data = json.loads(user.datastring)
-    except:
-        data = {}
+    
+    data = json.loads(user.datastring)
+    
 
     trial = data.get("currenttrial", None)
     app.logger.info("saved data for %s (current trial: %s)", uid, trial)

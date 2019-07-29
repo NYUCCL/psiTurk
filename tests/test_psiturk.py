@@ -127,37 +127,47 @@ class PsiTurkStandardTests(PsiturkUnitTest):
         # put the user in the database
         rv = self.app.get("/exp?%s" % request)
 
-        # try putting the sync
+        
+        # try putting the sync, simulating a Backbone PUT payload
         uniqueid = "debug%s:debug%s" % (self.worker_id, self.assignment_id)
-        rv = self.app.put('/sync/%s' % uniqueid)
+        payload = {"condition":5,"counterbalance":0,"assignmentId":self.assignment_id,"workerId":self.worker_id,"hitId":self.hit_id,"currenttrial":2,"bonus":0,"data":[{"uniqueid":uniqueid,"current_trial":0,"dateTime":1564425799481,"trialdata":{"phase":"postquestionnaire","status":"begin"}},{"uniqueid":uniqueid,"current_trial":1,"dateTime":1564425802158,"trialdata":{"phase":"postquestionnaire","status":"submit"}}],"questiondata":{"engagement":"5","difficulty":"5"},"eventdata":[{"eventtype":"initialized","value":'',"timestamp":1564425799139,"interval":0},{"eventtype":"window_resize","value":[933,708],"timestamp":1564425799139,"interval":0}],"useragent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36","mode":"debug"}
+        rv = self.app.put('/sync/%s' % uniqueid, json=payload)
         status = json.loads(rv.get_data(as_text=True)).get("status", "")
         assert status == "user data saved"
 
     def test_sync_get(self):
+        self.assignment_id = "debug%s" % self.assignment_id
+        self.worker_id = "debug%s" % self.worker_id
+        self.hit_id = "debug%s" % self.hit_id
+        
         request = "&".join([
-           "assignmentId=debug%s" % self.assignment_id,
-           "workerId=debug%s" % self.worker_id,
-           "hitId=debug%s" % self.hit_id,
-           "mode=debug"])
+           "assignmentId=%s" % self.assignment_id,
+           "workerId=%s" % self.worker_id,
+           "hitId=%s" % self.hit_id,
+           "mode="])
 
         # put the user in the database
         rv = self.app.get("/exp?%s" % request)
 
         # save data with sync PUT
-        uniqueid = "debug%s:debug%s" % (self.worker_id, self.assignment_id)
-        rv = self.app.put('/sync/%s' % uniqueid)
+        uniqueid = "%s:%s" % (self.worker_id, self.assignment_id)
+        condition = 0
+        counterbalance = 0
+        bonus = 0.0
+        payload = {"condition":condition,"counterbalance":counterbalance,"assignmentId":self.assignment_id,"workerId":self.worker_id,"hitId":self.hit_id,"currenttrial":2,"bonus":bonus,"data":[{"uniqueid":uniqueid,"current_trial":0,"dateTime":1564425799481,"trialdata":{"phase":"postquestionnaire","status":"begin"}},{"uniqueid":uniqueid,"current_trial":1,"dateTime":1564425802158,"trialdata":{"phase":"postquestionnaire","status":"submit"}}],"questiondata":{"engagement":"5","difficulty":"5"},"eventdata":[{"eventtype":"initialized","value":'',"timestamp":1564425799139,"interval":0},{"eventtype":"window_resize","value":[933,708],"timestamp":1564425799139,"interval":0}],"useragent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36","mode":"debug"}
+        rv = self.app.put('/sync/%s' % uniqueid, json=payload)
 
         # get data with sync GET
-        uniqueid = "debug%s:debug%s" % (self.worker_id, self.assignment_id)
+        uniqueid = "%s:%s" % (self.worker_id, self.assignment_id)
         rv = self.app.get('/sync/%s' % uniqueid)
 
         response = json.loads(rv.get_data(as_text=True))
-        assert response.get("assignmentId", "") == "debug%s" % self.assignment_id
-        assert response.get("workerId", "") == "debug%s" % self.worker_id
-        assert response.get("hitId", "") == "debug%s" % self.hit_id
-        assert response.get("condition", None) == 0
-        assert response.get("counterbalance", None) == 0
-        assert response.get("bonus", None) == 0.0
+        assert response.get("assignmentId", "") == "%s" % self.assignment_id
+        assert response.get("workerId", "") == "%s" % self.worker_id
+        assert response.get("hitId", "") == "%s" % self.hit_id
+        assert response.get("condition", None) == condition
+        assert response.get("counterbalance", None) == counterbalance
+        assert response.get("bonus", None) == bonus
 
     def test_favicon(self):
         '''Test that favicon loads.'''
@@ -176,12 +186,8 @@ class PsiTurkStandardTests(PsiturkUnitTest):
         rv = self.app.get("/exp?%s" % request)
         assert rv.status_code == 200
 
-        # save data with sync PUT
-        uniqueid = "debug%s:debug%s" % (self.worker_id, self.assignment_id)
-        rv = self.app.put('/sync/%s' % uniqueid)
-        assert rv.status_code == 200
-
         # complete experiment
+        uniqueid = "debug%s:debug%s" % (self.worker_id, self.assignment_id)
         mode = 'debug'
         rv = self.app.get('/complete?uniqueId=%s&mode=%s' % (uniqueid, mode))
         assert rv.status_code == 200
@@ -200,7 +206,8 @@ class PsiTurkStandardTests(PsiturkUnitTest):
 
         # save data with sync PUT
         uniqueid = "%s:%s" % (self.worker_id, self.assignment_id)
-        rv = self.app.put('/sync/%s' % uniqueid)
+        payload = payload = {"condition":5,"counterbalance":0,"assignmentId":self.assignment_id,"workerId":self.worker_id,"hitId":self.hit_id,"currenttrial":2,"bonus":0,"data":[{"uniqueid":uniqueid,"current_trial":0,"dateTime":1564425799481,"trialdata":{"phase":"postquestionnaire","status":"begin"}},{"uniqueid":uniqueid,"current_trial":1,"dateTime":1564425802158,"trialdata":{"phase":"postquestionnaire","status":"submit"}}],"questiondata":{"engagement":"5","difficulty":"5"},"eventdata":[{"eventtype":"initialized","value":'',"timestamp":1564425799139,"interval":0},{"eventtype":"window_resize","value":[933,708],"timestamp":1564425799139,"interval":0}],"useragent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36","mode":"debug"}
+        rv = self.app.put('/sync/%s' % uniqueid, json={"condition":5,"counterbalance":0,"assignmentId":self.assignment_id,"workerId":self.worker_id,"hitId":self.hit_id,"currenttrial":2,"bonus":0,"data":[{"uniqueid":uniqueid,"current_trial":0,"dateTime":1564425799481,"trialdata":{"phase":"postquestionnaire","status":"begin"}},{"uniqueid":uniqueid,"current_trial":1,"dateTime":1564425802158,"trialdata":{"phase":"postquestionnaire","status":"submit"}}],"questiondata":{"engagement":"5","difficulty":"5"},"eventdata":[{"eventtype":"initialized","value":'',"timestamp":1564425799139,"interval":0},{"eventtype":"window_resize","value":[933,708],"timestamp":1564425799139,"interval":0}],"useragent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36","mode":"debug"})
         assert rv.status_code == 200
 
         # complete experiment
@@ -240,7 +247,8 @@ class PsiTurkStandardTests(PsiturkUnitTest):
 
         # save data with sync PUT
         uniqueid = "%s:%s" % (self.worker_id, self.assignment_id)
-        rv = self.app.put('/sync/%s' % uniqueid)
+        payload = payload = {"condition":5,"counterbalance":0,"assignmentId":self.assignment_id,"workerId":self.worker_id,"hitId":self.hit_id,"currenttrial":2,"bonus":0,"data":[{"uniqueid":uniqueid,"current_trial":0,"dateTime":1564425799481,"trialdata":{"phase":"postquestionnaire","status":"begin"}},{"uniqueid":uniqueid,"current_trial":1,"dateTime":1564425802158,"trialdata":{"phase":"postquestionnaire","status":"submit"}}],"questiondata":{"engagement":"5","difficulty":"5"},"eventdata":[{"eventtype":"initialized","value":'',"timestamp":1564425799139,"interval":0},{"eventtype":"window_resize","value":[933,708],"timestamp":1564425799139,"interval":0}],"useragent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36","mode":"debug"}
+        rv = self.app.put('/sync/%s' % uniqueid, json=payload)
         assert rv.status_code == 200
 
         # complete experiment
@@ -269,7 +277,8 @@ class PsiTurkStandardTests(PsiturkUnitTest):
 
         # save data with sync PUT
         uniqueid = "%s:%s" % (self.worker_id, self.assignment_id)
-        rv = self.app.put('/sync/%s' % uniqueid)
+        payload = payload = {"condition":5,"counterbalance":0,"assignmentId":self.assignment_id,"workerId":self.worker_id,"hitId":self.hit_id,"currenttrial":2,"bonus":0,"data":[{"uniqueid":uniqueid,"current_trial":0,"dateTime":1564425799481,"trialdata":{"phase":"postquestionnaire","status":"begin"}},{"uniqueid":uniqueid,"current_trial":1,"dateTime":1564425802158,"trialdata":{"phase":"postquestionnaire","status":"submit"}}],"questiondata":{"engagement":"5","difficulty":"5"},"eventdata":[{"eventtype":"initialized","value":'',"timestamp":1564425799139,"interval":0},{"eventtype":"window_resize","value":[933,708],"timestamp":1564425799139,"interval":0}],"useragent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36","mode":"debug"}
+        rv = self.app.put('/sync/%s' % uniqueid, json=payload)
         assert rv.status_code == 200
 
         # complete experiment
