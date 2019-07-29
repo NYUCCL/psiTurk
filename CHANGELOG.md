@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.3.3]
 ### Fixed
 - datastring encoding to db was wrong
+- for python2, needed to check against six.string_types instead of str
+
+### Added
+- unit tests for approve_assignments_for_hit
 
 ## [2.3.2]
 ### Added
