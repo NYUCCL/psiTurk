@@ -5,7 +5,7 @@ from functools import wraps
 from sqlalchemy import or_
 
 from psiturk.psiturk_config import PsiturkConfig
-from psiturk.experiment_errors import ExperimentError, InvalidUsage
+from psiturk.experiment_errors import ExperimentError, InvalidUsageError
 from psiturk.user_utils import PsiTurkAuthorization, nocache
 from psiturk.models import Participant
 from psiturk.psiturk_exceptions import *

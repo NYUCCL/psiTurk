@@ -32,7 +32,7 @@ from .models import Participant
 from sqlalchemy import or_, exc
 
 from .psiturk_config import PsiturkConfig
-from .experiment_errors import ExperimentError, InvalidUsage
+from .experiment_errors import ExperimentError, ExperimentApiError, InvalidUsageError
 from psiturk.user_utils import nocache
 
 # Setup config
@@ -135,8 +135,8 @@ def handle_exp_error(exception):
                                                     'contact_email_on_error'))
 
 # for use with API errors
-@app.errorhandler(InvalidUsage)
-def handle_invalid_usage(error):
+@app.errorhandler(ExperimentApiError)
+def handle_experiment_api_error(error):
     response = jsonify(error.to_dict())
     response.status_code = error.status_code
     app.logger.error(error.message)
@@ -615,19 +615,16 @@ def update(uid=None):
             filter(Participant.uniqueid == uid).\
             one()
     except exc.SQLAlchemyError:
-        app.logger.error("DB error: Unique user not found.")
-
-    if hasattr(request, 'json'):
-        user.datastring = request.data.decode('utf-8').encode(
-            'ascii', 'xmlcharrefreplace'
-        )
-        db_session.add(user)
-        db_session.commit()
-
+        raise ExperimentApiError("DB error: Unique user not found.")
+    
+    user.datastring = json.dumps(request.json)
+    db_session.add(user)
+    db_session.commit()    
+    
     try:
         data = json.loads(user.datastring)
-    except:
-        data = {}
+    except Exception as e:
+        raise ExperimentApiError('failed to load json datastring back from database as object! Error was {}: {}'.format(type(e), str(e)))
 
     trial = data.get("currenttrial", None)
     app.logger.info("saved data for %s (current trial: %s)", uid, trial)
