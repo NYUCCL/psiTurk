@@ -120,8 +120,7 @@ class PsiturkShell(Cmd, object):
 
     def default(self, statement):
 
-        full_statement = statement.full_parsed_statement()
-        cmd = full_statement.parsed.command
+        cmd = statement.command
 
         ''' Collect incorrect and mistyped commands '''
         choices = ["help", "mode", "psiturk_status", "server", "shortcuts",
@@ -1052,8 +1051,10 @@ class PsiturkNetworkShell(PsiturkShell):
         elif arg['delete']:
             did_something = False
             if arg['--all']:
-                results = (
-                    self.amt_services_wrapper.delete_all_hits()).data['results']
+                result = self.amt_services_wrapper.delete_all_hits()
+                if not result.success:
+                    return self.poutput(result)
+                results = result.data['results']
                 for result in results:
                     self.poutput(result)
                 did_something = True

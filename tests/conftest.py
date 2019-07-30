@@ -13,11 +13,10 @@ import six
 import boto3
 from botocore.stub import Stubber
 from distutils import dir_util, file_util
-
+from faker import Faker
 
 @pytest.fixture(scope='session', autouse=True)
 def experiment_dir():
-    import shutil
     try:
         dir_util.remove_tree('psiturk-example')
     except FileNotFoundError:
@@ -27,14 +26,17 @@ def experiment_dir():
     se.setup_example()
     
     # os.chdir('psiturk-example') # the setup script already chdirs into here, although I don't like that it does that
-    os.environ['AWS_ACCESS_KEY_ID'] = 'foo'
-    os.environ['AWS_SECRET_ACCESS_KEY'] = 'bar'
-    os.environ['AWS_DEFAULT_REGION'] = 'us-west-2'
-    os.environ.pop('AWS_PROFILE', None)
+    bork_aws_environ()
     
     yield
     os.chdir('..')
     dir_util.remove_tree('psiturk-example')
+
+def bork_aws_environ():
+    os.environ['AWS_ACCESS_KEY_ID'] = 'foo'
+    os.environ['AWS_SECRET_ACCESS_KEY'] = 'bar'
+    os.environ['AWS_DEFAULT_REGION'] = 'us-west-2'
+    os.environ.pop('AWS_PROFILE', None)
 
 @pytest.fixture(autouse=True)
 def reset_experiment_dir(pytestconfig, db_setup, reset_config_file):
@@ -84,13 +86,18 @@ def client():
     client = boto3.client('mturk')
     return client
 
-
 @pytest.fixture(scope='function')
 def stubber(client):
     stubber = Stubber(client)
     stubber.activate()
     yield stubber
     stubber.deactivate()
+
+@pytest.fixture()
+def amt_services_wrapper(patch_aws_services):
+    import psiturk.amt_services_wrapper
+    amt_services_wrapper = psiturk.amt_services_wrapper.MTurkServicesWrapper()
+    return amt_services_wrapper
 
 @pytest.fixture(scope='function')
 def patch_aws_services(client, mocker):
@@ -111,7 +118,101 @@ def patch_aws_services(client, mocker):
     mocker.patch.object(
         psiturk.amt_services_wrapper.MTurkServicesWrapper, 'amt_services', my_amt_services)
 
+@pytest.fixture(scope='session')
+def faker():
+    faker = Faker()
+    return faker
+    
+@pytest.fixture()
+def stubber_prepare_create_hit(stubber, helpers, faker):
+    def do_it(with_hit_id=None):
+        if not with_hit_id:
+            with_hit_id = faker.md5(raw_output=False)
 
+        stubber.add_response(
+            'create_hit_type', helpers.get_boto3_return('create_hit_type.json'))
+
+        boto_return_create_hit_with_hit_type = helpers.get_boto3_return(
+            'create_hit_with_hit_type.json')
+
+        boto_return_create_hit_with_hit_type['HIT']['HITId'] = with_hit_id
+        # used to always return a hit with id: 3XJOUITW8URHJMX7F00H20LGRIAQTX
+
+        stubber.add_response('create_hit_with_hit_type',
+                             boto_return_create_hit_with_hit_type)
+    return do_it
+
+@pytest.fixture()
+def create_dummy_hit(stubber_prepare_create_hit, amt_services_wrapper):
+
+    def do_it(with_hit_id=None):
+        stubber_prepare_create_hit(with_hit_id)
+        result = amt_services_wrapper.create_hit(1, 0.01, 1)
+
+    return do_it
+    
+@pytest.fixture()
+def create_dummy_assignment(faker):
+    from psiturk.db import db_session, init_db
+    from psiturk.models import Participant
+
+    def do_it(participant_attributes={}):
+
+        participant_attribute_defaults = {
+            'workerid': faker.md5(raw_output=False),
+            'hitid': faker.md5(raw_output=False),
+            'assignmentid': faker.md5(raw_output=False),
+        }
+
+        participant_attributes = dict(list(
+            participant_attribute_defaults.items()) + list(participant_attributes.items()))
+        init_db()
+
+        participant = Participant(**participant_attributes)
+        db_session.add(participant)
+        db_session.commit()
+
+        return participant
+
+    return do_it
+    
+@pytest.fixture()
+def list_hits(stubber, helpers, amt_services_wrapper):
+    '''
+    Returns two hit_ids:
+        3BFNCI9LYKQ2ENUY4MLKKW0NSU437W
+        3XJOUITW8URHJMX7F00H20LGRIAQTX
+    '''
+    def do_it(hits_json=None, all_studies=False, active=False):
+        if not hits_json:
+            hits_json = helpers.get_boto3_return('list_hits.json')
+
+        stubber.add_response('list_hits', hits_json)
+        if active:
+            results = (amt_services_wrapper.get_active_hits(
+                all_studies=all_studies)).data
+        else:
+            results = (amt_services_wrapper.get_all_hits(
+                all_studies=all_studies)).data
+        return results
+
+    return do_it
+
+@pytest.fixture()
+def expire_a_hit():
+    def do_it(hits_json, index_of_hit_to_expire=0):
+        expired_time = datetime.datetime.now() - datetime.timedelta(hours=10)
+        hits_json['HITs'][index_of_hit_to_expire]['Expiration'] = expired_time
+        return hits_json
+    return do_it
+
+@pytest.fixture()
+def activate_a_hit():
+    def do_it(hits_json, index_of_hit_to_be_active=1):
+        active_time = datetime.datetime.now() + datetime.timedelta(hours=10)
+        hits_json['HITs'][index_of_hit_to_be_active]['Expiration'] = active_time
+        return hits_json
+    return do_it
 
 
 class Helpers(object):
