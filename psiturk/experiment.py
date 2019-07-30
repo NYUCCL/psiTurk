@@ -16,6 +16,7 @@ import string
 import requests
 import re
 import json
+from jinja2 import TemplateNotFound
 
 try:
     from collections import Counter
@@ -62,6 +63,17 @@ app = Flask("Experiment_Server")
 app.config.update(SEND_FILE_MAX_AGE_DEFAULT=10)
 app.secret_key = CONFIG.get('Server Parameters', 'secret_key')
 app.logger.info("Secret key: " + app.secret_key)
+
+# this checks for templates that are required if you are hosting your own ad.
+def check_templates_exist():
+    try:
+        try_these = ['thanks-mturksubmit.html', 'closepopup.html']
+        [app.jinja_env.get_template(try_this) for try_this in try_these]
+    except TemplateNotFound as e:
+        sys.exit('Missing one of the following templates: {}. Copy these over from a freshly-created psiturk example experiment. {}: {}'.format(', '.join(try_these), type(e).__name__, str(e)))
+
+if not CONFIG['Shell Parameters'].getboolean('use_psiturk_ad_server'):
+    check_templates_exist()
 
 
 # Serving warm, fresh, & sweet custom, user-provided routes

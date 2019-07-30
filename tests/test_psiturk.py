@@ -70,6 +70,47 @@ class PsiturkUnitTest(unittest.TestCase):
     def set_config(self, section, field, value):
         self.config.parent.set(self.config, section, field, str(value))
 
+@pytest.fixture()
+def remove_template():
+    from distutils import file_util
+    def do_it(template):
+        file_util.move_file('templates/{}'.format(template), 'templates/z{}'.format(template))
+    return do_it
+
+@pytest.fixture()
+def psiturk_test_client():
+    def do_it():
+        import psiturk.experiment
+        psiturk.experiment.app.wsgi_app = FlaskTestClientProxy(
+            psiturk.experiment.app.wsgi_app)
+        from psiturk.experiment import app
+        return app
+    yield do_it
+
+@pytest.fixture()
+def edit_config_file():
+    def do_it(find, replace):
+        _edit_config_file(find, replace)
+    yield do_it
+
+def _edit_config_file(find, replace):
+    with open('config.txt', 'r') as file:
+        config_file = file.read()
+        
+    config_file = config_file.replace(find, replace)
+    
+    with open('config.txt', 'w') as file:
+        file.write(config_file)
+
+def test_missing_template_exception(edit_config_file, remove_template, psiturk_test_client):
+    edit_config_file('use_psiturk_ad_server = true', 'use_psiturk_ad_server = false')
+    remove_template('closepopup.html')
+    with pytest.raises(SystemExit):
+        psiturk_test_client()
+        
+def test_notmissing_template(edit_config_file, remove_template, psiturk_test_client):
+    edit_config_file('use_psiturk_ad_server = true', 'use_psiturk_ad_server = false')
+    psiturk_test_client()
 
 class PsiTurkStandardTests(PsiturkUnitTest):
 

@@ -12,25 +12,20 @@ import ciso8601
 import six
 import boto3
 from botocore.stub import Stubber
+from distutils import dir_util, file_util
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='session', autouse=True)
 def experiment_dir():
     import shutil
-    shutil.rmtree('psiturk-example', ignore_errors=True)
+    try:
+        dir_util.remove_tree('psiturk-example')
+    except FileNotFoundError:
+        pass
     import psiturk.setup_example as se
+    # import pytest; pytest.set_trace()
     se.setup_example()
-
-    # change config file...
-    with open('config.txt', 'r') as file:
-        config_file = file.read()
-
-    config_file = config_file.replace(
-        'use_psiturk_ad_server = true', 'use_psiturk_ad_server = false')
-
-    with open('config.txt', 'w') as file:
-        file.write(config_file)
-
+    
     # os.chdir('psiturk-example') # the setup script already chdirs into here, although I don't like that it does that
     os.environ['AWS_ACCESS_KEY_ID'] = 'foo'
     os.environ['AWS_SECRET_ACCESS_KEY'] = 'bar'
@@ -39,7 +34,46 @@ def experiment_dir():
     
     yield
     os.chdir('..')
-    shutil.rmtree('psiturk-example', ignore_errors=True)
+    dir_util.remove_tree('psiturk-example')
+
+@pytest.fixture(autouse=True)
+def reset_experiment_dir(pytestconfig, db_setup, reset_config_file):
+    dir_util.copy_tree(os.path.join(pytestconfig.rootdir,'psiturk','example'),'')
+    reset_config_file()
+    db_setup()
+    
+@pytest.fixture()
+def reset_config_file():
+    def do_it():
+        from psiturk.setup_example import DEFAULT_CONFIG_FILE
+        file_util.copy_file(DEFAULT_CONFIG_FILE, 'config.txt')
+        # change config file...
+        with open('config.txt', 'r') as file:
+            config_file = file.read()
+
+        config_file = config_file.replace(
+            'use_psiturk_ad_server = true', 'use_psiturk_ad_server = false')
+
+        with open('config.txt', 'w') as file:
+            file.write(config_file)
+    yield do_it
+
+@pytest.fixture()
+def db_setup():
+    def do_it():
+        from psiturk import db
+        db.init_db()
+        db.truncate_tables()
+    yield do_it
+
+@pytest.fixture(scope='session')
+def run_in_psiturk_shell():
+    import psiturk.psiturk_shell as ps
+
+    def do_it(execute_string):
+        ps.run(cabinmode=False, execute=execute_string, quiet=True)
+    return do_it
+
 
 
 #############
@@ -118,20 +152,3 @@ class Helpers(object):
 def helpers():
     return Helpers
 
-@pytest.fixture()
-def db_setup():
-    import psiturk.models
-    from psiturk import db
-    db.init_db()
-    db.truncate_tables()
-    yield
-    db.truncate_tables()
-
-
-@pytest.fixture(scope='session')
-def run_in_psiturk_shell():
-    import psiturk.psiturk_shell as ps
-
-    def do_it(execute_string):
-        ps.run(cabinmode=False, execute=execute_string, quiet=True)
-    return do_it
