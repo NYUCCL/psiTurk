@@ -71,10 +71,16 @@ class PsiturkUnitTest(unittest.TestCase):
         self.config.parent.set(self.config, section, field, str(value))
 
 @pytest.fixture()
-def remove_template():
-    from distutils import file_util
-    def do_it(template):
-        file_util.move_file('templates/{}'.format(template), 'templates/z{}'.format(template))
+def remove_file():
+    def do_it(filename):
+        from distutils import file_util
+        file_util.move_file(filename, './{}.xyz'.format(filename))
+    return do_it
+
+@pytest.fixture()
+def remove_template(remove_file):
+    def do_it(template_name):
+        remove_file('templates/{}'.format(template_name))
     return do_it
 
 @pytest.fixture()
@@ -110,6 +116,10 @@ def test_missing_template_exception(edit_config_file, remove_template, psiturk_t
         
 def test_notmissing_template(edit_config_file, remove_template, psiturk_test_client):
     edit_config_file('use_psiturk_ad_server = true', 'use_psiturk_ad_server = false')
+    psiturk_test_client()
+    
+def test_does_not_die_if_no_custompy(remove_file, psiturk_test_client):
+    remove_file('custom.py')
     psiturk_test_client()
 
 class PsiTurkStandardTests(PsiturkUnitTest):

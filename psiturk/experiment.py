@@ -82,14 +82,13 @@ if not CONFIG['Shell Parameters'].getboolean('use_psiturk_ad_server'):
 try:
     sys.path.append(os.getcwd())
     from custom import custom_code
+except ModuleNotFoundError as e:
+    app.logger.info("Hmm... it seems no custom code (custom.py) associated \
+                    with this project.")
 except ImportError as e:
-    if str(e) == 'No module named custom':
-        app.logger.info("Hmm... it seems no custom code (custom.py) associated \
-                        with this project.")
-    else:
-        app.logger.error("There is custom code (custom.py) associated with this \
-                          project but it doesn't import cleanly.  Raising exception,")
-        raise
+    app.logger.error("There is custom code (custom.py) associated with this \
+                      project but it doesn't import cleanly.  Raising exception,")
+    raise
 else:
     app.register_blueprint(custom_code)
 
