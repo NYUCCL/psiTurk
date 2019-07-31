@@ -454,7 +454,7 @@ class PsiturkShell(Cmd, object):
     @docopt_cmd
     def do_debug(self, arg):
         """
-        Usage: debug [options]
+        Usage: debug [--workerid=workerid] [--hitid=hitid] [--assignmentid=assignmentid] [options]
 
         -p, --print-only        just provides the URL, doesn't attempt to
                                 launch browser
@@ -482,10 +482,17 @@ class PsiturkShell(Cmd, object):
             base_url = "http://" + self.config.get('Server Parameters', 'host')\
                 + ":" + self.config.get('Server Parameters', 'port') + "/ad"
 
-        launch_url = base_url + "?assignmentId=debug" \
-            + str(self.random_id_generator()) + "&hitId=debug" \
-            + str(self.random_id_generator()) + "&workerId=debug" \
-            + str(self.random_id_generator() + "&mode=debug")
+        workerid = arg['--workerid'] if arg['--workerid'] else \
+            'debug' + str(self.random_id_generator())
+        assignmentid = arg['--assignmentid'] if arg['--assignmentid'] else \
+            'debug' + str(self.random_id_generator())
+        hitid = arg['--hitid'] if arg['--hitid'] else \
+            'debug' + str(self.random_id_generator())
+        launch_url = base_url + "?" + \
+            "assignmentId={}".format(assignmentid) + \
+            "&hitId={}".format(hitid) + \
+            "&workerId={}".format(workerid) + \
+            "&mode=debug"
 
         if arg['--print-only']:
             self.poutput("Here's your randomized debug link, feel free to request "
@@ -1185,7 +1192,7 @@ class PsiturkNetworkShell(PsiturkShell):
     @docopt_cmd
     def do_debug(self, arg):
         """
-        Usage: debug [options]
+        Usage: debug [--workerid=workerid] [--hitid=hitid] [--assignmentid=assignmentid] [options]
 
         -p, --print-only        just provides the URL, doesn't attempt to
                                 launch browser
@@ -1212,12 +1219,17 @@ class PsiturkNetworkShell(PsiturkShell):
                 base_url = "http://" + self.config.get('Server Parameters',
                                                        'host') + \
                     ":" + self.config.get('Server Parameters', 'port') + "/ad"
-
-        launch_url = base_url + "?assignmentId=debug" + \
-            str(self.random_id_generator()) \
-            + "&hitId=debug" + str(self.random_id_generator()) \
-            + "&workerId=debug" + str(self.random_id_generator()
-                                      + "&mode=debug")
+        workerid = arg['--workerid'] if arg['--workerid'] else \
+            'debug' + str(self.random_id_generator())
+        assignmentid = arg['--assignmentid'] if arg['--assignmentid'] else \
+            'debug' + str(self.random_id_generator())
+        hitid = arg['--hitid'] if arg['--hitid'] else \
+            'debug' + str(self.random_id_generator())
+        launch_url = base_url + "?" + \
+            "assignmentId={}".format(assignmentid) + \
+            "&hitId={}".format(hitid) + \
+            "&workerId={}".format(workerid) + \
+            "&mode=debug"
 
         if arg['--print-only']:
             self.poutput("Here's your randomized debug link, feel free to request "
