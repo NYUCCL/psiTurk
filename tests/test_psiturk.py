@@ -121,6 +121,25 @@ def test_notmissing_template(edit_config_file, remove_template, psiturk_test_cli
 def test_does_not_die_if_no_custompy(remove_file, psiturk_test_client):
     remove_file('custom.py')
     psiturk_test_client()
+    
+def test_custom_get_condition_can_import(mocker, psiturk_test_client):
+    
+    custom_func = '''
+def custom_get_condition(mode):
+    return (9,9)
+'''
+        
+    with open('custom.py','a') as customfile:
+        customfile.write(custom_func)
+    
+    psiturk_test_client()
+    
+    from psiturk.experiment import get_condition
+    assert get_condition('') == (9,9)
+    
+def test_custom_get_condition_not_necessary(mocker, psiturk_test_client):
+    from psiturk.experiment import get_condition
+    assert get_condition('') == (0,0)
 
 class PsiTurkStandardTests(PsiturkUnitTest):
 
