@@ -1,19 +1,19 @@
 <!DOCTYPE html>
-
 <html>
-	<head>
+    <head>
         <meta charset="utf-8" />
-		<title>Psychology Experiment</title>
-		<link rel="stylesheet" href="/static/css/bootstrap.min.css" type="text/css" />
-		<link rel="stylesheet" href="/static/css/style.css" type="text/css" />
-	</head>
-	<body>
-		<div id="container-not-an-ad" class="media">
-			<div class="media-left pull-left" href="#">
-						<!-- REPLACE THE LOGO HERE WITH YOUR  UNIVERSITY, LAB, or COMPANY -->
-						<img id="adlogo" src="/static/images/university.png" alt="Lab Logo" />
-			</div>
-			<div class="media-body">
+        <title>Psychology Experiment</title>
+        <link rel="stylesheet" href="/static/css/bootstrap.min.css" type="text/css" />
+        <link rel="stylesheet" href="/static/css/style.css" type="text/css" />
+        <link rel="icon" href="/static/favicon.ico" />
+    </head>
+    <body>
+        <div id="container-not-an-ad" class="media">
+            <div class="media-left pull-left" href="#">
+                        <!-- REPLACE THE LOGO HERE WITH YOUR  UNIVERSITY, LAB, or COMPANY -->
+                        <img id="adlogo" src="/static/images/university.png" alt="Lab Logo" />
+            </div>
+            <div class="media-body">
                     <h1>Debugging task complete!</h1>
                     <hr />
                     <div class="alert alert-warning">
@@ -23,8 +23,8 @@
                         <h3>Repeat experiment?</h3>
                         <a class='btn btn-primary' id='ad-href' href='#'>Repeat</a>
                     {% endif %}
-			</div>
-		</div>
+            </div>
+        </div>
         <script>
             {% if allow_repeats %}
                 function makeid() {
@@ -44,5 +44,5 @@
                 document.getElementById('ad-href').href = href;
             {% endif %}
         </script>
-	</body>
+    </body>
 </html>
