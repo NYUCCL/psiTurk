@@ -698,7 +698,9 @@ def debug_complete():
             if (mode == 'sandbox' or mode == 'live'):
                 return render_template('closepopup.html')
             else:
-                return render_template('complete.html')
+                allow_repeats = CONFIG.getboolean('HIT Configuration', 'allow_repeats')
+                return render_template('complete.html', 
+                    allow_repeats=allow_repeats, worker_id=user.workerid)
 
 
 @app.route('/worker_complete', methods=['GET'])
