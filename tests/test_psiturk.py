@@ -111,7 +111,7 @@ def _edit_config_file(find, replace):
 def test_missing_template_exception(edit_config_file, remove_template, psiturk_test_client):
     edit_config_file('use_psiturk_ad_server = true', 'use_psiturk_ad_server = false')
     remove_template('closepopup.html')
-    with pytest.raises(SystemExit):
+    with pytest.raises(RuntimeError):
         psiturk_test_client()
         
 def test_notmissing_template(edit_config_file, remove_template, psiturk_test_client):

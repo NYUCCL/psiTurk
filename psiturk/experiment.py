@@ -70,7 +70,7 @@ def check_templates_exist():
         try_these = ['thanks-mturksubmit.html', 'closepopup.html']
         [app.jinja_env.get_template(try_this) for try_this in try_these]
     except TemplateNotFound as e:
-        sys.exit('Missing one of the following templates: {}. Copy these over from a freshly-created psiturk example experiment. {}: {}'.format(', '.join(try_these), type(e).__name__, str(e)))
+        raise RuntimeError('Missing one of the following templates: {}. Copy these over from a freshly-created psiturk example experiment. {}: {}'.format(', '.join(try_these), type(e).__name__, str(e)))
 
 if not CONFIG['Shell Parameters'].getboolean('use_psiturk_ad_server'):
     check_templates_exist()
