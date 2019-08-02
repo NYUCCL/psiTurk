@@ -40,6 +40,7 @@ from builtins import range
 from builtins import str
 from builtins import input
 from future import standard_library
+from functools import wraps
 standard_library.install_aliases()
 urllib3.contrib.pyopenssl.inject_into_urllib3()
 http = urllib3.PoolManager(
@@ -58,7 +59,7 @@ def docopt_cmd(func):
     This decorator is used to simplify the try/except block and pass the result
     of the docopt parsing to the called action.
     """
-
+    @wraps(func)
     def helper_fn(self, arg):
         '''helper function for docopt'''
         try:
@@ -74,9 +75,7 @@ def docopt_cmd(func):
             # We do not need to do the print here.
             return
         return func(self, opt)
-    helper_fn.__name__ = func.__name__
-    helper_fn.__doc__ = func.__doc__
-    helper_fn.__dict__.update(func.__dict__)
+    
     return helper_fn
 
 
