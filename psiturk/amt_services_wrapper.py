@@ -723,11 +723,11 @@ class MTurkServicesWrapper(object):
         return {'success': True}
 
     @amt_services_wrapper_response
-    def delete_all_hits(self):
+    def delete_all_hits(self, all_studies=False):
         '''
         Deletes all reviewable hits
         '''
-        response = self.get_all_hits()
+        response = self.get_all_hits(all_studies=all_studies)
         if not response.success:
             raise response.exception
         hits = response.data

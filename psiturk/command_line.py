@@ -91,10 +91,7 @@ def launch_shell():
     parser.add_argument(
         '-v', '--version', help='Print version number.', action="store_true"
     )
-    parser.add_argument(
-        '-c', '--cabinmode', help='Launch psiturk in cabin (offline) mode',
-        action="store_true"
-    )
+    
     script_group = parser.add_mutually_exclusive_group()
     script_group.add_argument(
         '-s', '--script', help='Run commands from a script file'
@@ -112,7 +109,7 @@ def launch_shell():
     else:
         import psiturk.psiturk_shell as ps
         if args.script:
-            ps.run(cabinmode=args.cabinmode, script=args.script, quiet=True)
+            ps.run(script=args.script, quiet=True)
         elif args.test:
             ps.run(testfile=args.test, quiet=True)
         elif args.execute or unknownargs:
@@ -120,6 +117,6 @@ def launch_shell():
                 execute = ' '.join(unknownargs)
             else:
                 execute = args.execute
-            ps.run(cabinmode=args.cabinmode, execute=execute, quiet=True)
+            ps.run(execute=execute, quiet=True)
         else:
-            ps.run(cabinmode=args.cabinmode)
+            ps.run()
