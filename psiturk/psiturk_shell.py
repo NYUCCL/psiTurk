@@ -158,6 +158,8 @@ class PsiturkNetworkShell(Cmd, object):
 
         Cmd.__init__(self, persistent_history_file=persistent_history_file)
         
+        self.maybe_update_hit_tally()
+        
         if not self.quiet:
             self.prompt = self.color_prompt()
             self.intro = self.get_intro_prompt()
@@ -167,7 +169,6 @@ class PsiturkNetworkShell(Cmd, object):
         if not self.amt_services_wrapper:
             sys.exit()
 
-        self.maybe_update_hit_tally()
 
     def do_quit(self, _):
         '''Override do_quit for network clean up.'''
@@ -291,18 +292,6 @@ class PsiturkNetworkShell(Cmd, object):
         self.config.load_config()
         if restart_server:
             self.server_restart()
-
-    def do_status(self, _):
-        ''' Notify user of server status. '''
-        server_status = self.server.is_server_running()
-        if server_status == 'yes':
-            self.poutput('Server: ' + colorize('currently online', 'green'))
-        elif server_status == 'no':
-            self.poutput('Server: ' + colorize('currently offline', 'red'))
-        elif server_status == 'maybe':
-            self.poutput('Server: ' + colorize('status unknown', 'yellow'))
-        elif server_status == 'blocked':
-            self.poutput('Server: ' + colorize('blocked', 'red'))
 
     def do_setup_example(self, _):
         ''' Load psiTurk demo.'''
@@ -715,7 +704,17 @@ class PsiturkNetworkShell(Cmd, object):
         self.poutput("Log program launching...")
 
     def do_status(self, arg):  # overloads do_status with AMT info
-        super(PsiturkNetworkShell, self).do_status(arg)
+        ''' Notify user of server status. '''
+        server_status = self.server.is_server_running()
+        if server_status == 'yes':
+            self.poutput('Server: ' + colorize('currently online', 'green'))
+        elif server_status == 'no':
+            self.poutput('Server: ' + colorize('currently offline', 'red'))
+        elif server_status == 'maybe':
+            self.poutput('Server: ' + colorize('status unknown', 'yellow'))
+        elif server_status == 'blocked':
+            self.poutput('Server: ' + colorize('blocked', 'red'))
+            
         # server_status = self.server.is_server_running()  # Not used
         self.update_hit_tally()
         if self.sandbox:
