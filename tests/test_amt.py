@@ -19,10 +19,11 @@ from psiturk.psiturk_exceptions import *
 SANDBOX_ENDPOINT_URL = 'https://mturk-requester-sandbox.us-east-1.amazonaws.com'
 LIVE_ENDPOINT_URL = 'https://mturk-requester.us-east-1.amazonaws.com'
 
+# pytest_plugins = ['pytest_profiling']
 
 class TestAmtServices(object):
 
-    def test_wrapper_hit_create(self, amt_services_wrapper, helpers, create_dummy_hit, stubber_prepare_create_hit, run_in_psiturk_shell):
+    def test_wrapper_hit_create(self, amt_services_wrapper, helpers, create_dummy_hit, stubber_prepare_create_hit):
 
         create_dummy_hit('3XJOUITW8URHJMX7F00H20LGRIAQTX')
         create_dummy_hit('ABCDUITW8URHJMX7F00H20LGRIAQTX')

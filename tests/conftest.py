@@ -12,69 +12,60 @@ import ciso8601
 import six
 import boto3
 from botocore.stub import Stubber
+import shutil
 from distutils import dir_util, file_util
 from faker import Faker
+from importlib import reload
 
-@pytest.fixture(scope='session', autouse=True)
-def experiment_dir():
-    try:
-        dir_util.remove_tree('psiturk-example')
-    except FileNotFoundError:
-        pass
-    import psiturk.setup_example as se
-    # import pytest; pytest.set_trace()
-    se.setup_example()
-    
-    # os.chdir('psiturk-example') # the setup script already chdirs into here, although I don't like that it does that
-    bork_aws_environ()
-    
-    yield
-    os.chdir('..')
-    dir_util.remove_tree('psiturk-example')
-
+@pytest.fixture(autouse=True)
 def bork_aws_environ():
     os.environ['AWS_ACCESS_KEY_ID'] = 'foo'
     os.environ['AWS_SECRET_ACCESS_KEY'] = 'bar'
     os.environ['AWS_DEFAULT_REGION'] = 'us-west-2'
     os.environ.pop('AWS_PROFILE', None)
-
-@pytest.fixture(autouse=True)
-def reset_experiment_dir(pytestconfig, db_setup, reset_config_file):
-    dir_util.copy_tree(os.path.join(pytestconfig.rootdir,'psiturk','example'),'')
-    reset_config_file()
-    db_setup()
+    yield
+    
     
 @pytest.fixture()
-def reset_config_file():
-    def do_it():
-        from psiturk.setup_example import DEFAULT_CONFIG_FILE
-        file_util.copy_file(DEFAULT_CONFIG_FILE, 'config.txt')
-        # change config file...
+def edit_config_file():
+    def do_it(find, replace):
         with open('config.txt', 'r') as file:
             config_file = file.read()
-
-        config_file = config_file.replace(
-            'use_psiturk_ad_server = true', 'use_psiturk_ad_server = false')
-
+            
+        config_file = config_file.replace(find, replace)
+        
         with open('config.txt', 'w') as file:
             file.write(config_file)
     yield do_it
+    
 
-@pytest.fixture()
-def db_setup():
-    def do_it():
-        from psiturk import db
-        db.init_db()
-        db.truncate_tables()
-    yield do_it
 
-@pytest.fixture(scope='session')
-def run_in_psiturk_shell():
-    import psiturk.psiturk_shell as ps
+@pytest.fixture(scope='function', autouse=True)
+def experiment_dir(tmpdir, bork_aws_environ, edit_config_file):
+    # pytest.set_trace()
+    os.chdir(tmpdir)
+    import psiturk.setup_example as se
+    se.setup_example()
+    edit_config_file('use_psiturk_ad_server = true', 'use_psiturk_ad_server = false')
+    # os.chdir('psiturk-example') # the setup script already chdirs into here, although I don't like that it does that
+    yield
+    
+    os.chdir('..')
+    shutil.rmtree('psiturk-example')
 
-    def do_it(execute_string):
-        ps.run(cabinmode=False, execute=execute_string, quiet=True)
-    return do_it
+@pytest.fixture(autouse=True)
+def db_setup(mocker, experiment_dir, tmpdir, request):
+    import psiturk.db
+    reload(psiturk.db)
+    
+    import psiturk.models
+    psiturk.models.Base.metadata.clear()
+    reload(psiturk.models)
+    
+    from psiturk.db import init_db
+    init_db()
+    
+    yield 
 
 
 
@@ -96,6 +87,7 @@ def stubber(client):
 @pytest.fixture()
 def amt_services_wrapper(patch_aws_services):
     import psiturk.amt_services_wrapper
+    reload(psiturk.amt_services_wrapper)
     amt_services_wrapper = psiturk.amt_services_wrapper.MTurkServicesWrapper()
     return amt_services_wrapper
 

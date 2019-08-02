@@ -19,6 +19,9 @@ def get_shell(patch_aws_services, stubber, mocker):
         import psiturk.experiment_server_controller as control
         from psiturk.psiturk_config import PsiturkConfig
         
+        import psiturk.experiment_server_controller
+        mocker.patch.object(psiturk.experiment_server_controller.ExperimentServerController, 'is_port_available', lambda *args, **kwargs: True)
+        
         mocker.patch.object(PsiturkNetworkShell,'get_intro_prompt', lambda *args, **kwargs: '')
         mocker.patch.object(PsiturkNetworkShell,'update_hit_tally', lambda *args, **kwargs: None)
         mocker.patch.object(PsiturkNetworkShell,'_confirm_dialog', lambda *args, **kwargs: True)
@@ -114,6 +117,8 @@ def test_do_commands(get_shell, pytestconfig, cmds, name, stubber, capsys):
             print(infile.read())
         file_util.copy_file(transcript_name, os.path.join(pytestconfig.rootdir, 'tests','shell_transcripts', transcript_name))
     else:
+        # if name == 'worker_approve_all':
+            # pytest.set_trace()
         response = shell.runcmds_plus_hooks(cmds)
         captured = capsys.readouterr()
         # with capsys.disabled():

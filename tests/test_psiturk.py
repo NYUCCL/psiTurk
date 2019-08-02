@@ -71,10 +71,10 @@ class PsiturkUnitTest(unittest.TestCase):
         self.config.parent.set(self.config, section, field, str(value))
 
 @pytest.fixture()
-def remove_file():
+def remove_file(tmpdir):
     def do_it(filename):
-        from distutils import file_util
-        file_util.move_file(filename, './{}.xyz'.format(filename))
+        import shutil
+        shutil.move(filename, './{}.xyz'.format(filename))
     return do_it
 
 @pytest.fixture()
@@ -87,32 +87,43 @@ def remove_template(remove_file):
 def psiturk_test_client():
     def do_it():
         import psiturk.experiment
+        reload(psiturk.experiment)
         psiturk.experiment.app.wsgi_app = FlaskTestClientProxy(
             psiturk.experiment.app.wsgi_app)
-        from psiturk.experiment import app
-        return app
+        return psiturk.experiment.app
     yield do_it
 
-@pytest.fixture()
-def edit_config_file():
-    def do_it(find, replace):
-        _edit_config_file(find, replace)
-    yield do_it
-
-def _edit_config_file(find, replace):
-    with open('config.txt', 'r') as file:
-        config_file = file.read()
-        
-    config_file = config_file.replace(find, replace)
+def test_custom_get_condition_can_import(mocker, psiturk_test_client):
+    # pytest.set_trace()
+    # import psiturk.experiment
+    import sys
+    sys.path.append(os.getcwd())
+    import custom
+    reload(custom)
     
-    with open('config.txt', 'w') as file:
-        file.write(config_file)
+    from mock import PropertyMock
+    mocker.patch.object(custom,'custom_get_condition', lambda mode: (9,9), create=True)
+    
+    app = psiturk_test_client()
+    
+    from psiturk.experiment import get_condition
+    assert get_condition('') == (9,9)
+    
+def test_custom_get_condition_not_necessary(tmpdir, mocker, psiturk_test_client):
+    import sys
+    sys.path.append(os.getcwd())
+    import custom
+    reload(custom)
+    app = psiturk_test_client()
+    
+    from psiturk.experiment import get_condition
+    assert get_condition('') == (0,0)
 
 def test_missing_template_exception(edit_config_file, remove_template, psiturk_test_client):
     edit_config_file('use_psiturk_ad_server = true', 'use_psiturk_ad_server = false')
     remove_template('closepopup.html')
     with pytest.raises(RuntimeError):
-        psiturk_test_client()
+        app = psiturk_test_client()
         
 def test_notmissing_template(edit_config_file, remove_template, psiturk_test_client):
     edit_config_file('use_psiturk_ad_server = true', 'use_psiturk_ad_server = false')
@@ -122,24 +133,7 @@ def test_does_not_die_if_no_custompy(remove_file, psiturk_test_client):
     remove_file('custom.py')
     psiturk_test_client()
     
-def test_custom_get_condition_can_import(mocker, psiturk_test_client):
-    
-    custom_func = '''
-def custom_get_condition(mode):
-    return (9,9)
-'''
-        
-    with open('custom.py','a') as customfile:
-        customfile.write(custom_func)
-    
-    psiturk_test_client()
-    
-    from psiturk.experiment import get_condition
-    assert get_condition('') == (9,9)
-    
-def test_custom_get_condition_not_necessary(mocker, psiturk_test_client):
-    from psiturk.experiment import get_condition
-    assert get_condition('') == (0,0)
+
 
 class PsiTurkStandardTests(PsiturkUnitTest):
 
