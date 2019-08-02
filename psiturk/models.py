@@ -8,7 +8,9 @@ import json
 from sqlalchemy import Column, Integer, String, DateTime, Float, Text, Boolean, func
 from sqlalchemy.orm import validates
 from sqlalchemy.ext.hybrid import hybrid_property
-from .db import Base, db_session
+from sqlalchemy.ext.declarative import declarative_base
+import psiturk.db
+from psiturk.db import db_session
 from .psiturk_config import PsiturkConfig
 
 from itertools import groupby
@@ -21,6 +23,17 @@ CODE_VERSION = config.get('Task Parameters', 'experiment_code_version')
 
 from .tasks import do_campaign_round
 from apscheduler.jobstores.base import JobLookupError
+
+# Base class
+
+Base = declarative_base()
+Base.query = db_session.query_property()
+
+def object_as_dict(self, filter_these=[]):
+    return {c.key: getattr(self, c.key)
+        for c in inspect(self).mapper.column_attrs if c.key not in filter_these}
+
+Base.object_as_dict = object_as_dict
 
 class Participant(Base):
     """

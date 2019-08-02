@@ -8,7 +8,8 @@ from psiturk.experiment import app
 from psiturk.psiturk_exceptions import *
 from psiturk.amt_services_wrapper import WrapperResponse
 from psiturk.amt_services import MTurkHIT
-from psiturk.db import Base as DBModel, db_session
+from psiturk.db import db_session
+from psiturk.models import Base as DBModel
 from functools import wraps
 from apscheduler.job import Job
 from apscheduler.triggers.base import BaseTrigger

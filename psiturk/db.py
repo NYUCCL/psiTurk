@@ -30,21 +30,13 @@ db_session = scoped_session(sessionmaker(autocommit=False,
                                          autoflush=False,
                                          bind=engine))
 
-Base = declarative_base()
-Base.query = db_session.query_property()
-
-def object_as_dict(self, filter_these=[]):
-    return {c.key: getattr(self, c.key)
-        for c in inspect(self).mapper.column_attrs if c.key not in filter_these}
-
-Base.object_as_dict = object_as_dict
-
 def init_db():
+    from .models import Base
     #print "Initalizing db if necessary."
     Base.metadata.create_all(bind=engine)
 
-
 def truncate_tables():
+    from .models import Base
     for table in Base.metadata.sorted_tables:
         db_session.execute(table.delete(bind=engine))
     db_session.commit()
