@@ -158,6 +158,9 @@ class PsiturkNetworkShell(Cmd, object):
 
         Cmd.__init__(self, persistent_history_file=persistent_history_file)
         
+        if not self.amt_services_wrapper:
+            sys.exit()
+            
         self.maybe_update_hit_tally()
         
         if not self.quiet:
@@ -166,8 +169,6 @@ class PsiturkNetworkShell(Cmd, object):
         else:
             self.intro = ''
         
-        if not self.amt_services_wrapper:
-            sys.exit()
 
 
     def do_quit(self, _):
