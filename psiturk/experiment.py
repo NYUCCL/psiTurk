@@ -17,24 +17,21 @@ import requests
 import re
 import json
 from jinja2 import TemplateNotFound
-
-try:
-    from collections import Counter
-except ImportError:
-    from .counter import Counter
+from collections import Counter
 
 # Setup flask
 from flask import Flask, render_template, render_template_string, request, \
     jsonify
 
 # Setup database
+
 from .db import db_session, init_db
 from .models import Participant
 from sqlalchemy import or_, exc
 
 from .psiturk_config import PsiturkConfig
 from .experiment_errors import ExperimentError, ExperimentApiError, InvalidUsageError
-from psiturk.user_utils import nocache
+from .user_utils import nocache
 
 # Setup config
 CONFIG = PsiturkConfig()
