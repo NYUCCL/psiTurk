@@ -587,28 +587,6 @@ class PsiturkShell(Cmd, object):
     #   Local SQL database commands
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
 
-    def db_get_config(self):
-        ''' Get database config. '''
-        self.poutput("Current database setting (database_url): \n\t",
-                     self.config.get("Database Parameters", "database_url"))
-
-    def db_use_local_file(self, arg, filename=None):
-        ''' Use local file for DB. '''
-        # interactive = False  # Never used
-        if filename is None:
-            # interactive = True  # Never used
-            filename = input('Enter the filename of the local SQLLite '
-                             'database you would like to use '
-                             '[default=participants.db]: ')
-            if filename == '':
-                filename = 'participants.db'
-        base_url = "sqlite:///" + filename
-        self.config.set("Database Parameters", "database_url", base_url)
-        self.poutput("Updated database setting (database_url): \n\t",
-                     self.config.get("Database Parameters", "database_url"))
-        if self.server.is_server_running() == 'yes':
-            self.server_restart()
-
     def do_download_datafiles(self, _):
         ''' Download datafiles. '''
         contents = {"trialdata": lambda p: p.get_trial_data(), "eventdata":
@@ -895,60 +873,6 @@ class PsiturkNetworkShell(PsiturkShell):
     def help_amt_balance(self):
         ''' Get help for amt_balance. '''
         with open(self.help_path + 'amt.txt', 'r') as help_text:
-            self.poutput(help_text.read())
-
-    @docopt_cmd
-    def do_db(self, arg):
-        """
-        Usage:
-          db get_config
-          db use_local_file [<filename>]
-          db use_aws_instance [<instance_id>]
-          db aws_list_regions
-          db aws_get_region
-          db aws_set_region [<region_name>]
-          db aws_list_instances
-          db aws_create_instance [<instance_id> <size> <username> <password>
-                                  <dbname>]
-          db aws_delete_instance [<instance_id>]
-          db help
-        """
-        if arg['get_config']:
-            self.db_get_config()
-        elif arg['use_local_file']:
-            self.db_use_local_file(arg, filename=arg['<filename>'])
-        elif arg['use_aws_instance']:
-            self.db_use_aws_instance(arg['<instance_id>'], arg)
-        elif arg['aws_list_regions']:
-            self.db_aws_list_regions()
-        elif arg['aws_get_region']:
-            self.db_aws_get_region()
-        elif arg['aws_set_region']:
-            self.db_aws_set_region(arg['<region_name>'])
-        elif arg['aws_list_instances']:
-            self.db_aws_list_instances()
-        elif arg['aws_create_instance']:
-            self.db_create_aws_db_instance(arg['<instance_id>'], arg['<size>'],
-                                           arg['<username>'],
-                                           arg['<password>'], arg['<dbname>'])
-        elif arg['aws_delete_instance']:
-            self.db_aws_delete_instance(arg['<instance_id>'])
-        else:
-            self.help_db()
-
-    db_commands = ('get_config', 'use_local_file', 'use_aws_instance',
-                   'aws_list_regions', 'aws_get_region', 'aws_set_region',
-                   'aws_list_instances', 'aws_create_instance',
-                   'aws_delete_instance', 'help')
-
-    def complete_db(self, text, line, begidx, endidx):
-        ''' Tab-complete db command '''
-        return [i for i in PsiturkNetworkShell.db_commands if
-                i.startswith(text)]
-
-    def help_db(self):
-        ''' DB help '''
-        with open(self.help_path + 'db.txt', 'r') as help_text:
             self.poutput(help_text.read())
 
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
