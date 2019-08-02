@@ -402,16 +402,20 @@ class PsiturkShell(Cmd, object):
                 all_studies_msg, force_msg))
             result = self.amt_services_wrapper.approve_all_assignments(
                 all_studies=all_studies)
-            for result in result.data['results']:
-                self.poutput(result)
+            if not result.success:
+                return self.poutput(result)
+            for _result in result.data['results']:
+                self.poutput(_result)
         elif chosen_hits:
             self.poutput("Approving submissions for HITs {}{}{}".format(
                 ' '.join(chosen_hits), all_studies_msg, force_msg))
             for hit_id in chosen_hits:
-                results = (self.amt_services_wrapper.approve_assignments_for_hit(
-                    hit_id, all_studies=all_studies)).data['results']
-                for result in results:
-                    self.poutput(result)
+                result = self.amt_services_wrapper.approve_assignments_for_hit(
+                    hit_id, all_studies=all_studies)
+                if not result.success:
+                    return self.poutput(result)
+                for _result in result.data['results']:
+                    self.poutput(_result)
         else:
             self.poutput("Approving specified submissions{}{}...".format(
                 all_studies_msg, force_msg))
@@ -756,7 +760,7 @@ class PsiturkNetworkShell(PsiturkShell):
         if not self._cached_amt_services_wrapper:
             try:
                 _wrapper = MTurkServicesWrapper(
-                    config=self.config, web_services=self.web_services, sandbox=self.sandbox)
+                    config=self.config, sandbox=self.sandbox)
                 self._cached_amt_services_wrapper = _wrapper
             except AmtServicesException as e:
                 still_can_do = '\n'.join([
@@ -1038,8 +1042,10 @@ class PsiturkNetworkShell(PsiturkShell):
             did_something = False
             if arg['--all']:
                 result = self.amt_services_wrapper.expire_all_hits()
-                for result in result.data['results']:
-                    self.poutput(result)
+                if not result.success:
+                    return self.poutput(result)
+                for _result in result.data['results']:
+                    self.poutput(_result)
                 did_something = True
             elif arg['<HITid>']:
                 did_something = True
@@ -1055,8 +1061,8 @@ class PsiturkNetworkShell(PsiturkShell):
                 if not result.success:
                     return self.poutput(result)
                 results = result.data['results']
-                for result in results:
-                    self.poutput(result)
+                for _result in results:
+                    self.poutput(_result)
                 did_something = True
             elif arg['<HITid>']:
                 did_something = True
@@ -1101,11 +1107,17 @@ class PsiturkNetworkShell(PsiturkShell):
         elif arg['reject']:
             result = None
             if arg['<hit_id>']:
-                results = (self.amt_services_wrapper.reject_assignments_for_hit(
-                    arg['<hit_id>'], all_studies=all_studies)).data['results']
+                result = self.amt_services_wrapper.reject_assignments_for_hit(
+                    arg['<hit_id>'], all_studies=all_studies)
+                if not result.success:
+                    return self.poutput(result)
+                results = result.data['results']
             elif arg['<assignment_id>']:
-                results = (self.amt_services_wrapper.reject_assignments(
-                    arg['<assignment_id>'], all_studies=all_studies)).data['results']
+                result = self.amt_services_wrapper.reject_assignments(
+                    arg['<assignment_id>'], all_studies=all_studies)
+                if not result.success:
+                    return self.poutput(result)
+                results = result.data['results']
             if results:
                 for _result in results:
                     self.poutput(_result)
@@ -1155,17 +1167,26 @@ class PsiturkNetworkShell(PsiturkShell):
                 amount = arg['<amount>']
 
             if arg['<hit_id>']:
-                results = (self.amt_services_wrapper.bonus_assignments_for_hit(
-                    arg['<hit_id>'][0], amount, reason, all_studies=all_studies, override_bonused_status=override_bonused_status)).data['results']
+                result = (self.amt_services_wrapper.bonus_assignments_for_hit(
+                    arg['<hit_id>'][0], amount, reason, all_studies=all_studies, override_bonused_status=override_bonused_status))
+                if not result.success:
+                    return self.poutput(result)
+                results = result.data['results']
 
             elif arg['--all']:
-                results = (self.amt_services_wrapper.bonus_all_local_assignments(
-                    amount, reason, override_bonused_status)).data['results']
+                result = self.amt_services_wrapper.bonus_all_local_assignments(
+                    amount, reason, override_bonused_status)
+                if not result.success:
+                    return self.poutput(result)
+                results = result.data['results']
 
             elif arg['<assignment_id>']:
                 results = [
                     self.amt_services_wrapper.bonus_assignment_for_assignment_id(
                         assignment_id, amount, reason, override_bonused_status) for assignment_id in arg['<assignment_id>']]
+            
+            if results:
+                [self.poutput(_result) for _result in results]
         else:
             self.help_worker()
 
