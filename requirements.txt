@@ -9,7 +9,7 @@ cffi==1.12.3
 chardet==3.0.4
 ciso8601==2.1.1
 Click==7.0
-cmd2==0.9.16
+cmd2==0.9.13
 colorama==0.4.1
 configparser==3.7.4
 contextlib2==0.5.5
