@@ -19,7 +19,7 @@ Installation requirements
 
 Installation of **psiTurk** requires:
 
-1. **A python installation (<= v2.7).** We recommend the `Enthought
+1. **A python installation (>= v3.0).** We recommend the `Enthought
    python distribution <https://www.enthought.com/products/epd/free/>`__
    on Mac OS X.
 2. **The ``pip`` package manager.** Directions on installing this are
@@ -97,6 +97,12 @@ the instructions above to install ``pip`` and:
 ::
 
     sudo pip install git+git://github.com/NYUCCL/psiTurk.git@master
+
+If you want to install a certain release, download and extract the source code, navigate to that folder and run:
+
+::
+
+    sudo pip install . 
 
 If the install was successful you will have a new command ``psiturk``
 available on your command line. You can check the location of this command
