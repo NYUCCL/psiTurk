@@ -69,6 +69,23 @@ class PsiturkUnitTest(unittest.TestCase):
 
     def set_config(self, section, field, value):
         self.config.parent.set(self.config, section, field, str(value))
+        
+@pytest.fixture()
+def psiturk_test_client():
+    def do_it():
+        import psiturk.experiment
+        reload(psiturk.experiment)
+        psiturk.experiment.app.wsgi_app = FlaskTestClientProxy(
+            psiturk.experiment.app.wsgi_app)
+        return psiturk.experiment.app
+    yield do_it
+    
+def test_insert_mode(psiturk_test_client):
+    with open('templates/ad.html', 'r') as temp_file:
+        ad_string = temp_file.read()
+    
+    from psiturk.experiment import insert_mode
+    insert_mode(ad_string, 'debug')
 
 
 class PsiTurkStandardTests(PsiturkUnitTest):
