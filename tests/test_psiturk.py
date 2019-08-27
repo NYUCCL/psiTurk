@@ -81,11 +81,22 @@ def psiturk_test_client():
     yield do_it
     
 def test_insert_mode(psiturk_test_client):
-    with open('templates/ad.html', 'r') as temp_file:
+    import six
+    if six.PY2:
+        # FileNotFoundError is only available since Python 3.3
+        FileNotFoundError = IOError
+        from io import open
+    
+    with open('templates/ad.html', 'r', encoding='utf-8') as temp_file:
         ad_string = temp_file.read()
+        
+    with open('templates/consent.html', 'r', encoding='utf-8') as temp_file:
+        consent_string = temp_file.read()
     
     from psiturk.experiment import insert_mode
     insert_mode(ad_string, 'debug')
+    insert_mode(consent_string, 'debug')
+    
 
 
 class PsiTurkStandardTests(PsiturkUnitTest):

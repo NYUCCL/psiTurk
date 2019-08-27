@@ -17,6 +17,12 @@ import requests
 import re
 import json
 
+import six
+if six.PY2:
+    # FileNotFoundError is only available since Python 3.3
+    FileNotFoundError = IOError
+    from io import open
+
 try:
     from collections import Counter
 except ImportError:
@@ -330,7 +336,7 @@ def advertisement():
     elif status == ALLOCATED or not status or debug_mode:
         # Participant has not yet agreed to the consent. They might not
         # even have accepted the HIT.
-        with open('templates/ad.html', 'r') as temp_file:
+        with open('templates/ad.html', 'r', encoding='utf-8') as temp_file:
             ad_string = temp_file.read()
         ad_string = insert_mode(ad_string, mode)
         return render_template_string(
@@ -356,7 +362,7 @@ def give_consent():
     assignment_id = request.args['assignmentId']
     worker_id = request.args['workerId']
     mode = request.args['mode']
-    with open('templates/consent.html', 'r') as temp_file:
+    with open('templates/consent.html', 'r', encoding='utf-8') as temp_file:
         consent_string = temp_file.read()
     consent_string = insert_mode(consent_string, mode)
     return render_template_string(
