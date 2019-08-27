@@ -311,8 +311,7 @@ class MTurkServicesWrapper(object):
         return {'results': results}
 
     def _get_local_submitted_assignments(self, hit_id=None):
-        query = Participant.query.filter(
-            or_(Participant.status == COMPLETED, Participant.status == SUBMITTED))
+        query = Participant.query.filter(Participant.status == SUBMITTED)
         if hit_id:
             query = query.filter(Participant.hitid == hit_id)
         assignments = query.all()
