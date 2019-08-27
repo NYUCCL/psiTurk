@@ -346,11 +346,11 @@ class TestAmtServices(object):
         active_hit_id = hits_json['HITs'][index_of_hit_to_be_active]['HITId']
 
         assignment_1 = create_dummy_assignment(
-            {'hitid': active_hit_id, 'status': psiturk_statuses.COMPLETED})
+            {'hitid': active_hit_id, 'status': psiturk_statuses.SUBMITTED})
         # do not create dummy hit
 
         assignment_2 = create_dummy_assignment(
-            {'hitid': active_hit_id, 'status': psiturk_statuses.COMPLETED})
+            {'hitid': active_hit_id, 'status': psiturk_statuses.SUBMITTED})
         # create_dummy_hit(assignment_2.hitid)
 
         assignments = [assignment_1, assignment_2]
@@ -391,11 +391,11 @@ class TestAmtServices(object):
         
         # set two to be for the first hit
         a_1 = create_dummy_assignment(
-            {'hitid': first_hitid, 'status': psiturk_statuses.COMPLETED})
+            {'hitid': first_hitid, 'status': psiturk_statuses.SUBMITTED})
         a_2 = create_dummy_assignment(
-            {'hitid': first_hitid, 'status': psiturk_statuses.COMPLETED})
+            {'hitid': first_hitid, 'status': psiturk_statuses.SUBMITTED})
         a_3 = create_dummy_assignment(
-            {'hitid': second_hitid, 'status': psiturk_statuses.COMPLETED})
+            {'hitid': second_hitid, 'status': psiturk_statuses.SUBMITTED})
             
         #set up stubber to expect two 'approve_hit' calls
         stubber.add_response('approve_assignment', {})
