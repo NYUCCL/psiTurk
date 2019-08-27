@@ -62,6 +62,8 @@ def docopt_cmd(func):
     def helper_fn(self, arg):
         '''helper function for docopt'''
         try:
+            import shlex
+            arg = shlex.split(arg)
             opt = docopt(helper_fn.__doc__, arg)
         except DocoptExit as exception:
             # The DocoptExit is thrown when the args do not match.
@@ -1087,7 +1089,7 @@ class PsiturkNetworkShell(PsiturkShell):
           worker approve (--all | --hit <hit_id> ... | <assignment_id> ...) [--all-studies] [--force]
           worker reject (--hit <hit_id> | <assignment_id> ...) [--all-studies]
           worker unreject (--hit <hit_id> | <assignment_id> ...) [--all-studies]
-          worker bonus  (--amount <amount> | --auto) (--reason=<reason>) (--all | --hit <hit_id> | <assignment_id> ...) [--override-bonused-status] [--all-studies]
+          worker bonus (--amount <amount> | --auto) [--reason=<reason>] (--all | --hit <hit_id> | <assignment_id> ...) [--override-bonused-status] [--all-studies]
           worker list [--submitted | --approved | --rejected] [(--hit <hit_id> ...)] [--all-studies]
           worker help
         """

@@ -117,7 +117,11 @@ def launch_shell():
             ps.run(testfile=args.test, quiet=True)
         elif args.execute or unknownargs:
             if unknownargs:
-                execute = ' '.join(unknownargs)
+                try:
+                    from shlex import quote as cmd_quote
+                except ImportError:
+                    from pipes import quote as cmd_quote
+                execute = ' '.join([cmd_quote(e) for e in unknownargs])
             else:
                 execute = args.execute
             ps.run(cabinmode=args.cabinmode, execute=execute, quiet=True)
