@@ -75,7 +75,7 @@ def compute_bonus():
     # check that user provided the correct keys
     # errors will not be that gracefull here if being
     # accessed by the Javascrip client
-    if not request.args.has_key('uniqueId'):
+    if not 'uniqueId' in request.args:
         # i don't like returning HTML to JSON requests...  maybe should change this
         raise ExperimentError('improper_inputs')
     uniqueId = request.args['uniqueId']
