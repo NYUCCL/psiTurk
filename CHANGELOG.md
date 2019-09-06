@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Drop support for python2
 - upgrade cmd2 to 0.9 (python3 only)
 
+## [2.3.4]
+### Fixed
+- worker bonus didn't do anything because of shell parsing bug (see #377)
+- (probably) fixed utf-8 encoding issue when opening consent.html or ad.html
+
+
 ## [2.3.3]
 ### Fixed
 - datastring encoding to db was wrong
@@ -16,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - unit tests for approve_assignments_for_hit
+
 
 ## [2.3.2]
 ### Added
