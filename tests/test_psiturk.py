@@ -82,11 +82,12 @@ def psiturk_test_client():
     
 def test_insert_mode(psiturk_test_client):
     import six
+    
     if six.PY2:
         # FileNotFoundError is only available since Python 3.3
         FileNotFoundError = IOError
-        from io import open
-    
+    from io import open
+        
     with open('templates/ad.html', 'r', encoding='utf-8') as temp_file:
         ad_string = temp_file.read()
         
