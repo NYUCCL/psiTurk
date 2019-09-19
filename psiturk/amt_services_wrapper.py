@@ -71,7 +71,7 @@ class WrapperResponse(object):
                               for key, value in details])
 
         return 'Response({})'.format(details)
-        
+
     def to_dict(self):
         _dict = {}
         for key in self.dict_keys:
@@ -88,7 +88,7 @@ class WrapperResponseError(WrapperResponse):
     def __init__(self, *args, **kwargs):
         super(WrapperResponseError, self).__init__(
             *args, status='error', success=False, **kwargs)
-        
+
         self.dict_keys.append('exception')
         self.exception = kwargs.pop('exception', None)
 
@@ -148,10 +148,10 @@ class MTurkServicesWrapper(object):
                 'Shell Parameters', 'launch_in_sandbox_mode')
         mode = 'sandbox' if sandbox else 'live'
         self.set_mode(mode)
-        
+
         if web_services:
             self._cached_web_services = web_services
-            
+
         _ = self.amt_services # may throw an exception. Let it throw!
 
 
@@ -161,19 +161,19 @@ class MTurkServicesWrapper(object):
     @amt_services_wrapper_response
     def get_mode(self):
         return self.mode
-            
+
     @amt_services_wrapper_response
     def set_mode(self, mode):
         if mode not in ['sandbox','live']:
-            raise PsiturkException('mode not recognized: {}'.format(mode))        
-        
+            raise PsiturkException('mode not recognized: {}'.format(mode))
+
         self.mode = mode
-        
+
         if mode == 'sandbox':
             self.set_sandbox(True)
         elif mode == 'live':
             self.set_sandbox(False)
-            
+
         return {'success': True}
 
     def set_sandbox(self, is_sandbox):
@@ -184,7 +184,7 @@ class MTurkServicesWrapper(object):
                             string.digits):
         ''' Generate random id numbers '''
         return ''.join(random.choice(chars) for x in range(size))
-    
+
     @amt_services_wrapper_response
     def amt_balance(self):
         ''' Get MTurk balance '''
@@ -209,14 +209,14 @@ class MTurkServicesWrapper(object):
 
     @amt_services_wrapper_response
     def count_workers(self, codeversion='latest', mode='live', status='completed'):
-        ''' 
+        '''
         Counts the number of participants in the database who have made it through
         the experiment.
         '''
         if codeversion == 'latest':
             codeversion = [self.config.get(
                 'Task Parameters', 'experiment_code_version')]
-        
+
         if status == 'completed':
             status = [3,4,5,7]
         query = Participant.query
@@ -232,7 +232,7 @@ class MTurkServicesWrapper(object):
             query = query.filter(Participant.status.in_(status))
         worker_count = Participant.count_workers(query=query, group_bys=[])
         return worker_count
-    
+
     @amt_services_wrapper_response
     def count_available(self, hits=None):
         if not hits:
@@ -244,7 +244,7 @@ class MTurkServicesWrapper(object):
         if not hits:
             hits = self.get_all_hits().data
         return sum([hit.options['number_assignments_pending'] for hit in hits if hit.options['status'] in ['Assignable', 'Unassignable']])
-    
+
     @amt_services_wrapper_response
     def count_maybe_will_complete(self, hits=None):
         maybe_will_complete_count = 0
@@ -303,14 +303,14 @@ class MTurkServicesWrapper(object):
         Can accept either an assignment_id or the return of a mturk boto grab...
         '''
         query = Participant.query.order_by(Participant.beginhit.desc())
-            
+
         if with_psiturk_status:
             query = query.filter(Participant.status == with_psiturk_status)
-            
+
         if isinstance(try_this, str):  # then assume that it's an assignment_id
             assignment_id = try_this
             query = query.filter(Participant.assignmentid == assignment_id)
-            
+
         elif isinstance(try_this, dict):  # then assume that it's a return from mturk
             assignment = try_this
             assignment_id = assignment['assignmentId']
@@ -318,13 +318,13 @@ class MTurkServicesWrapper(object):
                 .filter(Participant.assignmentid == assignment_id)
         else:
             raise PsiturkException('Unrecognized `try_this` value-type: {}'.format(type(try_this)))
-        
+
         local_assignment = query.first()
         if local_assignment:
             return local_assignment
         else:
             return try_this
-    
+
     def _try_fetch_local_submitted_assignment(self, try_this):
         return self._try_fetch_local_assignment(try_this, with_psiturk_status=SUBMITTED)
 
@@ -556,10 +556,10 @@ class MTurkServicesWrapper(object):
     @amt_services_wrapper_response
     def bonus_assignments_for_hit(self, hit_id, amount, reason, all_studies=False, override_bonused_status=False):
         '''
-        Fetch assignments for local hit. 
+        Fetch assignments for local hit.
         * If all_studies, try to map them to a local_assignment.
         * If not all_studies, just pull from local db. Already a Participant.
-        
+
         For each, if isinstance Participant, assignment, then send to `bonus_local_assignment`.
         Otherwise, send directly to bonus_assignment. Record the result either way.
         '''
@@ -591,7 +591,7 @@ class MTurkServicesWrapper(object):
                     assignment_id=bonus_this, amount=amount, reason=reason, worker_id=None)
                 results.append(result)
         return results
-    
+
     @amt_services_wrapper_response
     def bonus_assignment_for_assignment_id(self, assignment_id, amount, reason, all_studies=False):
         tried_this = self._try_fetch_local_credited_assignment(
@@ -614,13 +614,13 @@ class MTurkServicesWrapper(object):
         ''' Bonus assignment '''
 
         '''
-        If this is supposed to bonus a local_assignment, then call `bonus_local_assignment`, 
+        If this is supposed to bonus a local_assignment, then call `bonus_local_assignment`,
         passing the local assignment.
-        
-        Try to match up local_assignments with whatever arguments are passed (assignment_ids, hit_id) 
+
+        Try to match up local_assignments with whatever arguments are passed (assignment_ids, hit_id)
         before coming into this function.
         `amount` has to be greater than 0
-        
+
         Otherwise, just give at least an assignment_id. Worker_id is nice if you have it, but if
         you don't, amt_services will look it up.
         '''
@@ -642,7 +642,7 @@ class MTurkServicesWrapper(object):
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #   hit management
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
-    
+
     @amt_services_wrapper_response
     def tally_hits(self):
         hits = self.get_active_hits(all_studies=False).data
@@ -672,7 +672,7 @@ class MTurkServicesWrapper(object):
         hits = self._get_hits(all_studies)
         reviewable_hits = self._filter_reviewable(hits)
         return reviewable_hits
-        
+
     def _filter_reviewable(self, hits):
         return [hit for hit in hits if hit.options['status'] in ['Reviewable','Reviewing']]
 
@@ -680,7 +680,7 @@ class MTurkServicesWrapper(object):
     def get_all_hits(self, all_studies=False):
         hits = self._get_hits(all_studies)
         return hits
-        
+
     @amt_services_wrapper_response
     def get_hit(self, hit_id):
         hit = self.amt_services.get_hit(hit_id).data
@@ -693,10 +693,10 @@ class MTurkServicesWrapper(object):
         if not response.success:
             raise response.exception
         hits = response.data
-        
+
+        my_hitids = self._get_local_hitids()
         if not all_studies:
-            hits = [hit for hit in hits if hit.options['hitid']
-                    in self._get_local_hitids()]
+            hits = [hit for hit in hits if hit.options['hitid'] in my_hitids]
         return hits
 
     @amt_services_wrapper_response
@@ -719,7 +719,7 @@ class MTurkServicesWrapper(object):
         response = self.amt_services.extend_hit(hit_id, assignments_increment=assignments, expiration_increment=minutes)
         if not response.success:
             raise response.exception
-            
+
         return {'success': True}
 
     @amt_services_wrapper_response
@@ -732,7 +732,7 @@ class MTurkServicesWrapper(object):
             raise response.exception
         hits = response.data
         hit_ids = [hit.options['hitid'] for hit in hits if
-                        hit.options['status'] == "Reviewable" and 
+                        hit.options['status'] == "Reviewable" and
                         hit.options['number_submissions_needing_action'] == 0]
         results = []
         for hit_id in hit_ids:
@@ -746,7 +746,7 @@ class MTurkServicesWrapper(object):
         Deletes a single hit if it is reviewable
         '''
         # Check that the HIT is reviewable
-        
+
         response = self.amt_services.delete_hit(hit_id)
         # self.web_services.delete_ad(hit)  # also delete the ad
         if not response.success:
