@@ -133,7 +133,12 @@ def test_does_not_die_if_no_custompy(remove_file, psiturk_test_client):
     remove_file('custom.py')
     psiturk_test_client()
     
-
+def test_insert_mode(psiturk_test_client):
+    with open('templates/ad.html', 'r') as temp_file:
+        ad_string = temp_file.read()
+    
+    from psiturk.experiment import insert_mode
+    insert_mode(ad_string, 'debug')
 
 class PsiTurkStandardTests(PsiturkUnitTest):
 
