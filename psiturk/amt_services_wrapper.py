@@ -149,23 +149,6 @@ class MTurkServicesWrapper(object):
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #   Miscellaneous
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
-    @amt_services_wrapper_response
-    def get_mode(self):
-        return self.mode
-
-    @amt_services_wrapper_response
-    def set_mode(self, mode):
-        if mode not in ['sandbox','live']:
-            raise PsiturkException('mode not recognized: {}'.format(mode))
-
-        self.mode = mode
-
-        if mode == 'sandbox':
-            self.set_sandbox(True)
-        elif mode == 'live':
-            self.set_sandbox(False)
-
-        return {'success': True}
 
     def set_sandbox(self, is_sandbox):
         self.sandbox = is_sandbox
