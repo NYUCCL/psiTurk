@@ -624,6 +624,10 @@ class MTurkServicesWrapper(object):
         mode = 'sandbox' if self.sandbox else 'live'
 
         result = {}
+        try:
+            float(amount)
+        except ValueError as e:
+            raise e
         if amount <= 0:
             raise BadBonusAmountError(amount, assignment_id=assignment_id)
         if not reason:

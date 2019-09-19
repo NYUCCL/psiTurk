@@ -43,7 +43,14 @@ def get_shell(patch_aws_services, stubber, mocker):
             
     return do_it
 
-
+def test_do_worker_bonus_reason(get_shell, mocker):
+    from psiturk.psiturk_shell import MTurkServicesWrapper
+    patched = mocker.patch.object(MTurkServicesWrapper, 'bonus_all_local_assignments')
+    shell = get_shell()
+    
+    shell.runcmds_plus_hooks(['worker bonus --amount 1.00 --all --reason "thanks for everything"'])
+    
+    patched.assert_called_with(float('1.00'), "thanks for everything", False)
 
 @pytest.fixture()
 def populate_db_for_shell_cmds(create_dummy_hit, create_dummy_assignment):

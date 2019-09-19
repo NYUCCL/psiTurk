@@ -114,7 +114,8 @@ def launch_shell():
             ps.run(testfile=args.test, quiet=True)
         elif args.execute or unknownargs:
             if unknownargs:
-                execute = ' '.join(unknownargs)
+                import shlex
+                execute = ' '.join([shlex.quote(e) for e in unknownargs])
             else:
                 execute = args.execute
             ps.run(execute=execute, quiet=True)

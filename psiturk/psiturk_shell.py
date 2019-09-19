@@ -41,6 +41,7 @@ from builtins import str
 from builtins import input
 from future import standard_library
 from functools import wraps
+import shlex
 standard_library.install_aliases()
 urllib3.contrib.pyopenssl.inject_into_urllib3()
 http = urllib3.PoolManager(
@@ -62,6 +63,7 @@ def docopt_cmd(func):
     def helper_fn(self, arg):
         '''helper function for docopt'''
         try:
+            arg = shlex.split(arg)
             opt = docopt(helper_fn.__doc__, arg)
         except DocoptExit as exception:
             # The DocoptExit is thrown when the args do not match.
@@ -897,9 +899,12 @@ class PsiturkNetworkShell(Cmd, object):
           worker approve (--all | --hit <hit_id> ... | <assignment_id> ...) [--all-studies] [--force]
           worker reject (--hit <hit_id> | <assignment_id> ...) [--all-studies]
           worker unreject (--hit <hit_id> | <assignment_id> ...) [--all-studies]
-          worker bonus  (--amount <amount> | --auto) (--reason <reason>) (--all | --hit <hit_id> | <assignment_id> ...) [--override-bonused-status] [--all-studies]
+          worker bonus (--amount <amount> | --auto) [--reason=<reason>] (--all | --hit <hit_id> | <assignment_id> ...) [--override-bonused-status] [--all-studies]
           worker list [--submitted | --approved | --rejected] [(--hit <hit_id> ...)] [--all-studies]
           worker help
+          
+        Options:
+          --reason REASON    the reason...
         """
         all_studies = arg['--all-studies']
         if arg['approve']:
@@ -949,6 +954,8 @@ class PsiturkNetworkShell(Cmd, object):
 
         elif arg['bonus']:
             reason = arg['--reason']
+            if isinstance(reason, list):
+                reason = ' '.join(reason)
             if not reason:
                 if self.config.has_option('Shell Parameters', 'bonus_message'):
                     reason = self.config.get(
@@ -965,7 +972,7 @@ class PsiturkNetworkShell(Cmd, object):
             if arg['--auto']:
                 amount = 'auto'
             else:
-                amount = arg['<amount>']
+                amount = float(arg['<amount>'])
 
             if arg['<hit_id>']:
                 result = (self.amt_services_wrapper.bonus_assignments_for_hit(
