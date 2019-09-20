@@ -11,6 +11,15 @@ Please visit [psiturk.org](https://psiturk.org) for more information.
 
 
 
+# Versions
+
+- **v2.3.0** | minimum-version that can be used with current Amazon mturk API. python2-only
+- **v2.3.1 -- v2.3.x** | python2 branch in the git repo. Supports both python2 and python3. Receiving hot-fixes only, and releases will only increment 2.3.x.
+- **unreleased -- forthcoming v3.x.x** | master branch, feature branch. python3 _only_. psiTurk v3.x.x will be released from this branch.
+
+
+
+
 # Developing
 
 Check out a clone of this repo, and install it into your local environment for testing
@@ -22,6 +31,8 @@ git install -e psiTurk
 ```
 
 A test suite can be run using `pytest` from within the base directory of psiturk.
+
+
 
 
 # Citing 
