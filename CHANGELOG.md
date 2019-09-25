@@ -4,10 +4,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+
+## [Unreleased 3.0.0]
 ### Changed
 - Drop support for python2
 - upgrade cmd2 to 0.9 (python3 only)
+
+### Added
+- add ability to customize participant condition assignment. (see 309a623)
+- add a sweet dashboard for doing amazing things, and the beginnings of a sort-of REST API that the dashboard uses.
+  See `/dashboard` route.
+- if a commonly-forgotten required template is missing when not using the psiturk ad server, raise an exception
+
+
+
+## [Unreleased 2.3.x]
+### Fixed
+- moved _get_local_hitids out of list comprehension (#380)
+
+
+## [2.3.4]
+### Fixed
+- worker bonus didn't do anything because of shell parsing bug (see #377)
+- (probably) fixed utf-8 encoding issue when opening consent.html or ad.html
+
+
+## [2.3.3]
+### Fixed
+- datastring encoding to db was wrong
+- for python2, needed to check against six.string_types instead of str
+- `worker approve <assignmentid | hitid>` was incorrectly looking for already-credited local submissions instead of just submitted ones
+- `worker approve --hitid` was not filtering to just the local study
 
 
 ## [2.3.2]
@@ -41,6 +68,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - #352 - expiring a hit didn't push far enough into the past to actually expire instead of extend on the mturk side
 
-[Unreleased]: https://github.com/NYUCCL/psiTurk/compare/2.3.2...HEAD
+## [2.3.0]
+### Fixed
+- moved AWS mturk api to 2017–01–17 via a move to boto3. No psiturk version prior to 2.3.0 will work.
+
+
+[Unreleased 3.0.0]: https://github.com/NYUCCL/psiTurk/tree/master
+[Unreleased 2.3.x]: https://github.com/NYUCCL/psiTurk/tree/python2
+[2.3.4]: https://github.com/NYUCCL/psiTurk/compare/2.3.3...2.3.4
+[2.3.3]: https://github.com/NYUCCL/psiTurk/compare/2.3.2...2.3.3
 [2.3.2]: https://github.com/NYUCCL/psiTurk/compare/2.3.1...2.3.2
 [2.3.1]: https://github.com/NYUCCL/psiTurk/compare/2.3.0...2.3.1

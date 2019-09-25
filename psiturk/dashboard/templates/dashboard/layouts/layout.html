@@ -1,7 +1,6 @@
 {% extends "dashboard/base.html" %}
+
 {% block layout %}
-
-
 <header></header>
 <div class='container'>
     <div class='row'>
@@ -19,14 +18,25 @@
                 <li class='nav-item'>
                     <a class='nav-link' href='/dashboard/mode'>Mode</a>
                 </li>
+                <li class='nav-item'>
+                    <a class='nav-link' href='/dashboard/campaigns'>Campaigns</a>
+                </li>
+                <li class='nav-item'>
+                    <a class='nav-link' href='/dashboard/tasks'>Tasks</a>
+                </li>
             </ul>
-            <p><strong>Current mode:</strong> 
             {%- raw -%}
-            <span 
-                v-cloak 
-                id='current-mode'
-            > {{mode}}</span>
-            {%- endraw -%}</p>
+            <div v-cloak id='nav_services_manager'>
+            <p>
+                <strong>Current mode:</strong> 
+                <span> {{mode}}</span>
+            </p>
+            <p>
+                <strong>Current codeversion:</strong> 
+                <span> {{codeversion}}</span>
+            </p>
+            </div>
+            {%- endraw -%}
         </nav>
         <div class='main col-md-9 col-lg-10 px-4'>
             {% block content %}{% endblock %}
@@ -37,7 +47,7 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.js"></script>
+{{ super() }}
 <script src="https://d3js.org/d3-array.v2.min.js"></script>
 
 <!-- beefy bootstrap... sheesh, all this just for dropdowns... -->
@@ -45,20 +55,30 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 
-<script src='/dashboard/static/flash_messages.js'></script>
-
 <script type='text/javascript'>
-let vm_mode = new Vue({
-    el: '#current-mode',
-    data: {
-        mode: ''
+
+var services_manager = {
+        'codeversion': '', 
+        'mode': ''
+    }
+
+let vm_services_manager = new Vue({
+    el: '#nav_services_manager',
+    data: { 
+        services_manager
+    },
+    computed: {
+        mode: function(){ return this.services_manager.mode || '' },
+        codeversion: function() { return this.services_manager.codeversion || '' }
     },
     created: function(){
         fetch('/api/services_manager/').then((response)=>{
             return response.json()
         })
-        .then((json)=>{
-            this.mode = json.mode
+        .then(json=>{
+            for(const [key, value] of Object.entries(json)){
+                this.services_manager[key] = value
+            }
         })
     }
 })

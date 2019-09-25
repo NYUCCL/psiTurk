@@ -1,0 +1,197 @@
+{% extends 'dashboard/layouts/layout.html' %}
+
+{% block content %}
+{%- raw -%}
+<div id='campaigns'>
+    
+    <div class='row mb-5'>
+        <div class='col-6'>
+            <table class='table table-sm'>
+                <tr>
+                    <th>Current Codeversion</th>
+                    <td>{{services_manager.codeversion}}</td>
+                </tr>
+                <tr>
+                    <th>Current Mode</th>
+                    <td>{{services_manager.mode}}</td>
+                </tr>
+                <tr>
+                    <th>Number Available</th>
+                    <td>{{available_count}}</td>
+                </tr>
+                <tr>
+                    <th>Number Completed</th>
+                    <td>{{completed_count}}</td>
+                </tr>
+                <tr>
+                    <th>Number Pending</th>
+                    <td>{{pending_count}}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    
+    
+    <div class='row'>
+        <div class='col-12 mb-4'>
+            <div v-if='active_campaign'>
+                <h2>Active Campaign</h2>
+                <table class='table table-borderless table-sm'>
+                    <tr>
+                        <th scope='row'>Codeversion</th>
+                        <td>{{active_campaign.codeversion}}</td>
+                    </tr>
+                    
+                    <tr>
+                        <th scope='row'>Mode</th>
+                        <td>{{active_campaign.mode}}</td>
+                    </tr>
+                    
+                    <tr>
+                        <th scope='row'>Created</th>
+                        <td>{{active_campaign.created}}</td>
+                    </tr>
+
+                    <tr>
+                        <th scope='row'>Goal</th>
+                        <td>{{active_campaign.goal}}</td>
+                        <td>
+                            <div class='form-group'>
+                                <div>
+                                    <div class='input-group'>
+                                        <input type='number' class='form-control' v-model.number='update_active_campaign_goal' min=0 step=1>
+                                        <div class='input-group-append mr-1'>
+                                            <button
+                                                :disabled='!is_valid_update_active_goal'
+                                                v-on:click='update_active_goal' 
+                                                class='btn btn-primary'
+                                            >Set new campaign goal</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <small class='form-text text-muted'>New goal must be greater than count of already-completed.</small>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <th scope='row'>Assignments per round</th>
+                        <td>{{active_campaign.assignments_per_round}}</td>
+                    </tr>
+                    
+                    <tr>
+                        <th scope='row'>Reward per hit</th>
+                        <td>{{active_campaign.hit_reward}}</td>
+                    </tr>
+                    
+                    <tr>
+                        <th scope='row'>Duration of hit</th>
+                        <td>{{active_campaign.hit_duration_hours}}</td>
+                    </tr>
+                    
+                    <tr>
+                        <th scope='row'>Minutes between rounds</th>
+                        <td>{{active_campaign.minutes_between_rounds}}</dd>
+                    </tr>
+                </table>
+                
+                <div class='form-row'>
+                    <div class='form-group col-auto'>
+                        <button v-on:click='cancel_active' class='btn btn-danger'>Cancel campaign</button>
+                    </div>
+                </div>
+                <small class='form-text'>Campaign will automatically cancel if the codeversion is changed.</small>
+            </div>
+            <div v-else>
+                <h3>Create new campaign</h3>
+                <div>
+                    <div class='form-group'>
+                        <label for='create-goal'>Campaign goal</label>
+                        <input v-model.number='create_goal' type='number' 
+                            class='form-control' id='create-goal' min='0' step='1'>
+                        <small class='form-text text-muted'>The goal for number of completed assignments for this campaign.</small>
+                    </div>
+                    
+                    <div class='form-group'>
+                        <label for='hit-reward'>Hit Reward</label>
+                        <div class='input-group'>
+                            <div class='input-group-prepend'>
+                                <span class='input-group-text'>$</span>
+                            </div>
+                            <input v-model.number='hit_reward' type='number' 
+                                class='form-control' id='hit-reward' min='0' placeholder='0.00'>
+                        </div>
+                        <small class='form-text text-muted'>Reward in format 0.00 for each completed assignment.</small>
+                    </div>
+                    
+                    <div class='form-group'>
+                        <label for='hit-duration'>Hit Duration</label>
+                        <input v-model.number='hit_duration_hours' type='number' 
+                            class='form-control' id='hit-duration' min='0' placeholder='1.00'>
+                        <small class='form-text text-muted'>How long in hours a participant has to complete the assignment after accepting it.</small>
+                    </div>
+                    
+                    
+                    
+                    <div class='form-group'>
+                        <label for='assignments-per-round'>Assignments per round</label>
+                        <input v-model.number='assignments_per_round' type='number' class='form-control' id='assignments-per-round' min='0' step='1'>
+                        <small class='form-text text-muted'>In order to keep commissions down, each round will post a series of hits with no more than 9 assignments each.</small>
+                    </div>
+                    
+                    <div class='form-group'>
+                        <label for='round-separation'>Minutes between rounds</label>
+                        <input v-model.number='minutes_between_rounds' type='number' class='form-control' id='round-separation' min='0' step='1'>
+                        <small class='form-text text-muted'>Rounds of assignments will continue to be posted as long as the goal is not met, or until the campaign is cancelled.</small>
+                    </div>
+                    
+                    <button v-on:click='create_new_campaign' class='btn btn-primary' type='submit'>Submit new campaign</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div>
+        <h2>Past Campaigns</h2>
+        <div v-if='!!ended_campaigns.length'>
+            <table class='table' v-cloak>
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Codeversion</th>
+                        <th>Mode</th>
+                        <th>Hit Reward</th>
+                        <th>Hit Duration (hours)</th>
+                        <th>Created</th>
+                        <th>Ended</th>
+                        <th>Goal</th>
+                        <th>Assignments per round</th>
+                        <th>Minutes between rounds</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr
+                       is='campaign-table-row'
+                       v-for='campaign in ended_campaigns'
+                       :key='campaign.id'
+                       :campaign='campaign'
+                    ></tr>
+                </tbody>
+            </table>
+        </div>
+        <span v-else>No inactive campaigns found.</span>
+    </div>
+</div>
+{%- endraw -%}
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script type='text/javascript'>
+let completed_count = {{completed_count}}
+let maybe_will_complete_count = {{maybe_will_complete_count}}
+let available_count = {{available_count}}
+let pending_count = {{pending_count}}
+</script>
+<script type='text/javascript' src='/dashboard/static/campaigns/list.js'></script>
+{% endblock %}

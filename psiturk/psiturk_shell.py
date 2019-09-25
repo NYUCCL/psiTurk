@@ -40,6 +40,8 @@ from builtins import range
 from builtins import str
 from builtins import input
 from future import standard_library
+from functools import wraps
+import shlex
 standard_library.install_aliases()
 urllib3.contrib.pyopenssl.inject_into_urllib3()
 http = urllib3.PoolManager(
@@ -52,16 +54,16 @@ try:
 except ImportError:
     import readline
 
-
 def docopt_cmd(func):
     """
     This decorator is used to simplify the try/except block and pass the result
     of the docopt parsing to the called action.
     """
-
+    @wraps(func)
     def helper_fn(self, arg):
         '''helper function for docopt'''
         try:
+            arg = shlex.split(arg)
             opt = docopt(helper_fn.__doc__, arg)
         except DocoptExit as exception:
             # The DocoptExit is thrown when the args do not match.
@@ -74,54 +76,58 @@ def docopt_cmd(func):
             # We do not need to do the print here.
             return
         return func(self, opt)
-    helper_fn.__name__ = func.__name__
-    helper_fn.__doc__ = func.__doc__
-    helper_fn.__dict__.update(func.__dict__)
+    
     return helper_fn
 
+class PsiturkNetworkShell(Cmd, object):
+    ''' Extends PsiturkShell class to include online psiTurk.org features '''
 
-# ---------------------------------
-#  psiturk shell class
-#   -  all commands contained in methods titled do_something(self, arg)
-#   -  if a command takes any arguments, use @docopt_cmd decorator
-#      and describe command usage in docstring
-# ---------------------------------
-class PsiturkShell(Cmd, object):
-    """
-    Usage:
-        psiturk -c
-        psiturk_shell -c
-    """
+    _cached_web_services = None
+    _cached_amt_services_wrapper = None
+
+    @property
+    def web_services(self):
+        if not self._cached_web_services:
+            self._cached_web_services = PsiturkOrgServices(
+                self.config.get('psiTurk Access', 'psiturk_access_key_id'),
+                self.config.get('psiTurk Access', 'psiturk_secret_access_id'))
+        return self._cached_web_services
+
+    @property
+    def amt_services_wrapper(self):
+        if not self._cached_amt_services_wrapper:
+            try:
+                _wrapper = MTurkServicesWrapper(
+                    config=self.config, sandbox=self.sandbox)
+                self._cached_amt_services_wrapper = _wrapper
+            except AmtServicesException as e:
+                still_can_do = '\n'.join([
+                '',
+                'You can still use the psiturk server by running non-AWS commands such as:',
+                    '- `psiturk server <subcommand>`',
+                    '- `psiturk server start`',
+                    '- `psiturk server stop`',
+                    '- `psiturk debug -p`'])
+                message = '{}{}'.format(e.message, still_can_do)
+                self.poutput(message)
+            except PsiturkException as e:
+                self.poutput(e)
+            
+        return self._cached_amt_services_wrapper
 
     def postcmd(self, *args):
         if not self.quiet:
             self.prompt = self.color_prompt()
         return Cmd.postcmd(self, *args)
-
-    def __init__(self, config, server, quiet=False):
-        persistent_history_file=config.get('Shell Parameters','persistent_history_file')
-        Cmd.__init__(self, persistent_history_file=persistent_history_file)
-        self.config = config
-        self.server = server
-        self.quiet = quiet
-
-        # Prevents running of commands by abbreviation
-        self.abbrev = False
-        self.debug = True
-        self.help_path = os.path.join(os.path.dirname(__file__), "shell_help/")
-        self.psiturk_header = 'psiTurk command help:'
-        self.super_header = 'basic CMD command help:'
         
-        if not self.quiet:
-            self.prompt = self.color_prompt()
-            self.intro = self.get_intro_prompt()
-        else:
-            self.intro = ''
-
+    def complete(self, text, state):
+        ''' Add space after a completion, makes tab completion with
+        multi-word commands cleaner. '''
+        return Cmd.complete(self, text, state) + ' '
+        
+        
     def default(self, statement):
-
-        full_statement = statement.full_parsed_statement()
-        cmd = full_statement.parsed.command
+        cmd = statement.command
 
         ''' Collect incorrect and mistyped commands '''
         choices = ["help", "mode", "psiturk_status", "server", "shortcuts",
@@ -134,40 +140,82 @@ class PsiturkShell(Cmd, object):
         if guess and guess[1] > 50:
             self.poutput("Did you mean this?\n\t{}".format(guess[0]))
 
+    def __init__(self, config, server, sandbox, quiet=False):
+        persistent_history_file=config.get('Shell Parameters','persistent_history_file')
+        
+        # Prevents running of commands by abbreviation
+        self.abbrev = False
+        self.debug = True
+        self.help_path = os.path.join(os.path.dirname(__file__), "shell_help/")
+        self.psiturk_header = 'psiTurk command help:'
+        self.super_header = 'basic CMD command help:'
+        
+        self.config = config
+        self.quiet = quiet
+        self.server = server
+        
+        self.sandbox = sandbox
+        self.sandbox_hits = 0
+        self.live_hits = 0
+
+        Cmd.__init__(self, persistent_history_file=persistent_history_file)
+        
+        if not self.amt_services_wrapper:
+            sys.exit()
+            
+        self.maybe_update_hit_tally()
+        
+        if not self.quiet:
+            self.prompt = self.color_prompt()
+            self.intro = self.get_intro_prompt()
+        else:
+            self.intro = ''
+        
+
+
+    def do_quit(self, _):
+        '''Override do_quit for network clean up.'''
+        if (self.server.is_server_running() == 'yes' or
+                self.server.is_server_running() == 'maybe'):
+            user_input = input("Quitting shell will shut down experiment "
+                               "server. Really quit? y or n: ")
+            if user_input == 'y':
+                self.server_off()
+            else:
+                return False
+        return True
+
+    def server_off(self):
+        if (self.server.is_server_running() == 'yes' or
+                self.server.is_server_running() == 'maybe'):
+            self.server.shutdown()
+            self.poutput('Please wait. This could take a few seconds.')
+            while self.server.is_server_running() != 'no':
+                time.sleep(0.5)
+        else:
+            self.poutput('Your server is already off.')
+
+    def server_restart(self):
+        ''' Restart server '''
+        self.server_off()
+        self.server_on()
+
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #   basic command line functions
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
 
-    def check_offline_configuration(self):
-        ''' Check offline configuration file'''
-        quit_on_start = False
-        database_url = self.config.get('Database Parameters', 'database_url')
-        host = self.config.get('Server Parameters', 'host', 'localhost')
-        if database_url[:6] != 'sqlite':
-            self.poutput("*** Error: config.txt option 'database_url' set to use "
-                         "mysql://.  Please change this sqllite:// while in cabin mode.")
-            quit_on_start = True
-        if host != 'localhost':
-            self.poutput("*** Error: config option 'host' is not set to localhost. "
-                         "Please change this to localhost while in cabin mode.")
-            quit_on_start = True
-        if quit_on_start:
-            sys.exit()
-
     def get_intro_prompt(self):
-        ''' Print cabin mode message '''
-        sys_status = open(self.help_path + 'cabin.txt', 'r')
-        server_msg = sys_status.read()
-        return server_msg + colorize('psiTurk version ' + version_number +
-                                     '\nType "help" for more information.',
-                                     'green', False)
+        ''' Overloads intro prompt with network-aware version if you can reach
+        psiTurk.org, request system status message'''
+        status_msg_url = 'https://raw.githubusercontent.com/NYUCCL/psiTurk/master/status_msg.txt'
+        r = http.request('GET', status_msg_url)
+        status_message = r.data.decode('utf-8')
 
-    def do_psiturk_status(self, _):
-        ''' Print psiTurk news '''
-        self.poutput(self.get_intro_prompt())
+        return status_message + colorize('psiTurk version ' + version_number +
+                                         '\nType "help" for more information.',
+                                         'green', False)
 
     def color_prompt(self):
-        ''' Construct psiTurk shell prompt '''
         prompt = '[' + colorize('psiTurk', 'bold')
         server_string = ''
         server_status = self.server.is_server_running()
@@ -176,18 +224,187 @@ class PsiturkShell(Cmd, object):
         elif server_status == 'no':
             server_string = colorize('off', 'red')
         elif server_status == 'maybe':
-            server_string = colorize('unknown', 'yellow')
+            server_string = colorize('status unknown', 'yellow')
         elif server_status == 'blocked':
             server_string = colorize('blocked', 'red')
         prompt += ' server:' + server_string
-        prompt += ' mode:' + colorize('cabin', 'bold')
+        if self.sandbox:
+            prompt += ' mode:' + colorize('sdbx', 'bold')
+        else:
+            prompt += ' mode:' + colorize('live', 'bold')
+        if self.sandbox:
+            prompt += ' #HITs:' + str(self.sandbox_hits)
+        else:
+            prompt += ' #HITs:' + str(self.live_hits)
         prompt += ']$ '
         return prompt
+        
+    # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
+    #   basic command line functions
+    # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
 
-    def complete(self, text, state):
-        ''' Add space after a completion, makes tab completion with
-        multi-word commands cleaner. '''
-        return Cmd.complete(self, text, state) + ' '
+    def do_version(self, _):
+        ''' Print version number '''
+        self.poutput('psiTurk version ' + version_number)
+
+    @docopt_cmd
+    def do_config(self, arg):
+        """
+        Usage:
+          config print
+          config reload
+          config help
+        """
+        if arg['print']:
+            self.print_config(arg)
+        elif arg['reload']:
+            self.reload_config(arg)
+        else:
+            self.help_server()
+
+    config_commands = ('print', 'reload', 'help')
+
+    def complete_config(self, text, line, begidx, endidx):
+        ''' Tab-complete config command '''
+        return [i for i in config_commands if i.startswith(text)]
+
+    def help_config(self):
+        ''' Help for config '''
+        with open(self.help_path + 'config.txt', 'r') as help_text:
+            self.poutput(help_text.read())
+
+    def print_config(self, _):
+        ''' Print configuration. '''
+        for section in self.config.sections():
+            self.poutput('[%s]' % section)
+            items = dict(self.config.items(section))
+            for k in items:
+                self.poutput("%(a)s=%(b)s" % {'a': k, 'b': items[k]})
+            print('')
+
+    def reload_config(self, _):
+        ''' Reload config. '''
+        restart_server = False
+        if (self.server.is_server_running() == 'yes' or
+                self.server.is_server_running() == 'maybe'):
+            user_input = input("Reloading configuration requires the server "
+                               "to restart. Really reload? y or n: ")
+            if user_input != 'y':
+                return
+            restart_server = True
+        self.config.load_config()
+        if restart_server:
+            self.server_restart()
+
+    def do_setup_example(self, _):
+        ''' Load psiTurk demo.'''
+        from . import setup_example as se
+        se.setup_example()
+
+    @docopt_cmd
+    def do_debug(self, arg):
+        """
+        Usage: debug [options]
+
+        -p, --print-only        just provides the URL, doesn't attempt to
+                                launch browser
+        """
+        if (self.server.is_server_running() == 'no' or
+                self.server.is_server_running() == 'maybe'):
+            self.poutput("Error: Sorry, you need to have the server running to debug "
+                         "your experiment.  Try 'server on' first.")
+            return
+
+        revproxy_url = False
+        if self.config.has_option('Server Parameters', 'adserver_revproxy_host'):
+            if self.config.has_option('Server Parameters', 'adserver_revproxy_port'):
+                port = self.config.get(
+                    'Server Parameters', 'adserver_revproxy_port')
+            else:
+                port = 80
+            revproxy_url = "http://{}:{}/ad".format(self.config.get('Server Parameters',
+                                                                    'adserver_revproxy_host'),
+                                                    port)
+
+        if revproxy_url:
+            base_url = revproxy_url
+        else:
+            base_url = "http://" + self.config.get('Server Parameters', 'host')\
+                + ":" + self.config.get('Server Parameters', 'port') + "/ad"
+
+        launch_url = base_url + "?assignmentId=debug" \
+            + str(self.random_id_generator()) + "&hitId=debug" \
+            + str(self.random_id_generator()) + "&workerId=debug" \
+            + str(self.random_id_generator() + "&mode=debug")
+
+        if arg['--print-only']:
+            self.poutput("Here's your randomized debug link, feel free to request "
+                         "another:\n\t" + launch_url)
+        else:
+            self.poutput("Launching browser pointed at your randomized debug link, "
+                         "feel free to request another.\n\t" + launch_url)
+            webbrowser.open(launch_url, new=1, autoraise=True)
+
+    def help_debug(self):
+        ''' Help for debug '''
+        with open(self.help_path + 'debug.txt', 'r') as help_text:
+            self.poutput(help_text.read())
+
+
+    @docopt_cmd
+    def do_open(self, arg):
+        """
+        Usage: open
+               open <folder>
+
+        Opens folder or current directory using the local system's shell
+        command 'open'.
+        """
+        if arg['<folder>'] is None:
+            subprocess.call(["open"])
+        else:
+            subprocess.call(["open", arg['<folder>']])
+
+    def do_eof(self, arg):
+        ''' Execute on EOF '''
+        return self.do_quit(arg)
+
+    def do_exit(self, arg):
+        ''' Execute on exit '''
+        return self.do_quit(arg)
+
+    def do_quit(self, _):
+        ''' Execute on quit '''
+        if (self.server.is_server_running() == 'yes' or
+                self.server.is_server_running() == 'maybe'):
+            user_input = input("Quitting shell will shut down experiment "
+                               "server.  Really quit? y or n: ")
+            if user_input == 'y':
+                self.server_off()
+            else:
+                return
+        return True
+    
+    def do_psiturk_status(self, _):
+        ''' Print psiTurk news '''
+        self.poutput(self.get_intro_prompt())
+        
+        
+    # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
+    #   Local SQL database commands
+    # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
+
+    def do_download_datafiles(self, _):
+        ''' Download datafiles. '''
+        contents = {"trialdata": lambda p: p.get_trial_data(), "eventdata":
+                    lambda p: p.get_event_data(), "questiondata": lambda p:
+                    p.get_question_data()}
+        query = Participant.query.all()
+        for k in contents:
+            ret = "".join([contents[k](p) for p in query])
+            temp_file = open(k + '.csv', 'w')
+            temp_file.write(ret)
+            temp_file.close()
 
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #   hit management
@@ -403,16 +620,20 @@ class PsiturkShell(Cmd, object):
                 all_studies_msg, force_msg))
             result = self.amt_services_wrapper.approve_all_assignments(
                 all_studies=all_studies)
-            for result in result.data['results']:
-                self.poutput(result)
+            if not result.success:
+                return self.poutput(result)
+            for _result in result.data['results']:
+                self.poutput(_result)
         elif chosen_hits:
             self.poutput("Approving submissions for HITs {}{}{}".format(
                 ' '.join(chosen_hits), all_studies_msg, force_msg))
             for hit_id in chosen_hits:
-                results = (self.amt_services_wrapper.approve_assignments_for_hit(
-                    hit_id, all_studies=all_studies)).data['results']
-                for result in results:
-                    self.poutput(result)
+                result = self.amt_services_wrapper.approve_assignments_for_hit(
+                    hit_id, all_studies=all_studies)
+                if not result.success:
+                    return self.poutput(result)
+                for _result in result.data['results']:
+                    self.poutput(_result)
         else:
             self.poutput("Approving specified submissions{}{}...".format(
                 all_studies_msg, force_msg))
@@ -420,10 +641,43 @@ class PsiturkShell(Cmd, object):
                 result = self.amt_services_wrapper.approve_assignment_by_assignment_id(
                     assignment_id, all_studies=all_studies)
                 self.poutput(result)
-
+        
+    
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #   server management
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
+    @docopt_cmd
+    def do_server(self, arg):
+        """
+        Usage:
+          server on
+          server off
+          server restart
+          server log
+          server help
+        """
+        if arg['on']:
+            self.server_on()
+        elif arg['off']:
+            self.server_off()
+        elif arg['restart']:
+            self.server_restart()
+        elif arg['log']:
+            self.server_log()
+        else:
+            self.help_server()
+            
+    server_commands = ('on', 'off', 'restart', 'log', 'help')
+    
+    def complete_server(self, text, line, begidx, endidx):
+        ''' Tab-complete server command '''
+        return [i for i in server_commands if i.startswith(text)]
+
+    def help_server(self):
+        ''' Help for server '''
+        with open(self.help_path + 'server.txt', 'r') as help_text:
+            self.poutput(help_text.read())
+    
     def server_on(self):
         ''' Start experiment server '''
         self.server.startup()
@@ -452,118 +706,7 @@ class PsiturkShell(Cmd, object):
         subprocess.Popen(args, close_fds=True)
         self.poutput("Log program launching...")
 
-    @docopt_cmd
-    def do_debug(self, arg):
-        """
-        Usage: debug [options]
-
-        -p, --print-only        just provides the URL, doesn't attempt to
-                                launch browser
-        """
-        if (self.server.is_server_running() == 'no' or
-                self.server.is_server_running() == 'maybe'):
-            self.poutput("Error: Sorry, you need to have the server running to debug "
-                         "your experiment.  Try 'server on' first.")
-            return
-
-        revproxy_url = False
-        if self.config.has_option('Server Parameters', 'adserver_revproxy_host'):
-            if self.config.has_option('Server Parameters', 'adserver_revproxy_port'):
-                port = self.config.get(
-                    'Server Parameters', 'adserver_revproxy_port')
-            else:
-                port = 80
-            revproxy_url = "http://{}:{}/ad".format(self.config.get('Server Parameters',
-                                                                    'adserver_revproxy_host'),
-                                                    port)
-
-        if revproxy_url:
-            base_url = revproxy_url
-        else:
-            base_url = "http://" + self.config.get('Server Parameters', 'host')\
-                + ":" + self.config.get('Server Parameters', 'port') + "/ad"
-
-        launch_url = base_url + "?assignmentId=debug" \
-            + str(self.random_id_generator()) + "&hitId=debug" \
-            + str(self.random_id_generator()) + "&workerId=debug" \
-            + str(self.random_id_generator() + "&mode=debug")
-
-        if arg['--print-only']:
-            self.poutput("Here's your randomized debug link, feel free to request "
-                         "another:\n\t" + launch_url)
-        else:
-            self.poutput("Launching browser pointed at your randomized debug link, "
-                         "feel free to request another.\n\t" + launch_url)
-            webbrowser.open(launch_url, new=1, autoraise=True)
-
-    def help_debug(self):
-        ''' Help for debug '''
-        with open(self.help_path + 'debug.txt', 'r') as help_text:
-            self.poutput(help_text.read())
-
-    def do_version(self, _):
-        ''' Print version number '''
-        self.poutput('psiTurk version ' + version_number)
-
-    @docopt_cmd
-    def do_dev(self, arg):
-        '''
-        Usage: dev
-            dev 
-        '''
-        results = self.amt_services_wrapper.approve_all_workers_for_study()
-        self.poutput('\n'.join(results))
-
-    @docopt_cmd
-    def do_config(self, arg):
-        """
-        Usage:
-          config print
-          config reload
-          config help
-        """
-        if arg['print']:
-            self.print_config(arg)
-        elif arg['reload']:
-            self.reload_config(arg)
-        else:
-            self.help_server()
-
-    config_commands = ('print', 'reload', 'help')
-
-    def complete_config(self, text, line, begidx, endidx):
-        ''' Tab-complete config command '''
-        return [i for i in PsiturkShell.config_commands if i.startswith(text)]
-
-    def help_config(self):
-        ''' Help for config '''
-        with open(self.help_path + 'config.txt', 'r') as help_text:
-            self.poutput(help_text.read())
-
-    def print_config(self, _):
-        ''' Print configuration. '''
-        for section in self.config.sections():
-            self.poutput('[%s]' % section)
-            items = dict(self.config.items(section))
-            for k in items:
-                self.poutput("%(a)s=%(b)s" % {'a': k, 'b': items[k]})
-            print('')
-
-    def reload_config(self, _):
-        ''' Reload config. '''
-        restart_server = False
-        if (self.server.is_server_running() == 'yes' or
-                self.server.is_server_running() == 'maybe'):
-            user_input = input("Reloading configuration requires the server "
-                               "to restart. Really reload? y or n: ")
-            if user_input != 'y':
-                return
-            restart_server = True
-        self.config.load_config()
-        if restart_server:
-            self.server_restart()
-
-    def do_status(self, _):
+    def do_status(self, arg):  # overloads do_status with AMT info
         ''' Notify user of server status. '''
         server_status = self.server.is_server_running()
         if server_status == 'yes':
@@ -574,292 +717,7 @@ class PsiturkShell(Cmd, object):
             self.poutput('Server: ' + colorize('status unknown', 'yellow'))
         elif server_status == 'blocked':
             self.poutput('Server: ' + colorize('blocked', 'red'))
-
-    def do_setup_example(self, _):
-        ''' Load psiTurk demo.'''
-        from . import setup_example as se
-        se.setup_example()
-
-    # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
-    #   Local SQL database commands
-    # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
-
-    def db_get_config(self):
-        ''' Get database config. '''
-        self.poutput("Current database setting (database_url): \n\t",
-                     self.config.get("Database Parameters", "database_url"))
-
-    def db_use_local_file(self, arg, filename=None):
-        ''' Use local file for DB. '''
-        # interactive = False  # Never used
-        if filename is None:
-            # interactive = True  # Never used
-            filename = input('Enter the filename of the local SQLLite '
-                             'database you would like to use '
-                             '[default=participants.db]: ')
-            if filename == '':
-                filename = 'participants.db'
-        base_url = "sqlite:///" + filename
-        self.config.set("Database Parameters", "database_url", base_url)
-        self.poutput("Updated database setting (database_url): \n\t",
-                     self.config.get("Database Parameters", "database_url"))
-        if self.server.is_server_running() == 'yes':
-            self.server_restart()
-
-    def do_download_datafiles(self, _):
-        ''' Download datafiles. '''
-        contents = {"trialdata": lambda p: p.get_trial_data(), "eventdata":
-                    lambda p: p.get_event_data(), "questiondata": lambda p:
-                    p.get_question_data()}
-        query = Participant.query.all()
-        for k in contents:
-            ret = "".join([contents[k](p) for p in query])
-            temp_file = open(k + '.csv', 'w')
-            temp_file.write(ret)
-            temp_file.close()
-
-    @docopt_cmd
-    def do_open(self, arg):
-        """
-        Usage: open
-               open <folder>
-
-        Opens folder or current directory using the local system's shell
-        command 'open'.
-        """
-        if arg['<folder>'] is None:
-            subprocess.call(["open"])
-        else:
-            subprocess.call(["open", arg['<folder>']])
-
-    def do_eof(self, arg):
-        ''' Execute on EOF '''
-        return self.do_quit(arg)
-
-    def do_exit(self, arg):
-        ''' Execute on exit '''
-        return self.do_quit(arg)
-
-    def do_quit(self, _):
-        ''' Execute on quit '''
-        if (self.server.is_server_running() == 'yes' or
-                self.server.is_server_running() == 'maybe'):
-            user_input = input("Quitting shell will shut down experiment "
-                               "server.  Really quit? y or n: ")
-            if user_input == 'y':
-                self.server_off()
-            else:
-                return
-        return True
-
-    @docopt_cmd
-    def do_server(self, arg):
-        """
-        Usage:
-          server on
-          server off
-          server restart
-          server log
-          server help
-        """
-        if arg['on']:
-            self.server_on()
-        elif arg['off']:
-            self.server_off()
-        elif arg['restart']:
-            self.server_restart()
-        elif arg['log']:
-            self.server_log()
-        else:
-            self.help_server()
-
-    server_commands = ('on', 'off', 'restart', 'log', 'help')
-
-    def complete_server(self, text, line, begidx, endidx):
-        ''' Tab-complete server command '''
-        return [i for i in PsiturkShell.server_commands if i.startswith(text)]
-
-    def help_server(self):
-        ''' Help for server '''
-        with open(self.help_path + 'server.txt', 'r') as help_text:
-            self.poutput(help_text.read())
-
-    def random_id_generator(self, size=6, chars=string.ascii_uppercase +
-                            string.digits):
-        ''' Generate random id numbers '''
-        return ''.join(random.choice(chars) for x in range(size))
-
-    def do_help(self, arg):
-        ''' Modified version of standard cmd help which lists psiturk commands
-            first'''
-        if arg:
-            try:
-                func = getattr(self, 'help_' + arg)
-            except AttributeError:
-                try:
-                    doc = getattr(self, 'do_' + arg).__doc__
-                    if doc:
-                        self.stdout.write("%s\n" % str(doc))
-                        return
-                except AttributeError:
-                    pass
-                self.stdout.write("%s\n" % str(self.nohelp % (arg,)))
-                return
-            func()
-        else:
-            # Modifications start here
-            names = dir(PsiturkShell)
-            super_names = dir(Cmd)
-            new_names = [m for m in names if m not in super_names]
-            help_struct = {}
-            cmds_psiturk = []
-            cmds_super = []
-            for name in names:
-                if name[:5] == 'help_':
-                    help_struct[name[5:]] = 1
-            names.sort()
-            prevname = ''
-            for name in names:
-                if name[:3] == 'do_':
-                    if name == prevname:
-                        continue
-                    prevname = name
-                    cmd = name[3:]
-                    if cmd in help_struct:
-                        del help_struct[cmd]
-                    if name in new_names:
-                        cmds_psiturk.append(cmd)
-                    else:
-                        cmds_super.append(cmd)
-            self.stdout.write("%s\n" % str(self.doc_leader))
-            self.print_topics(self.psiturk_header, cmds_psiturk, 15, 80)
-            self.print_topics(self.misc_header, list(
-                help_struct.keys()), 15, 80)
-            self.print_topics(self.super_header, cmds_super, 15, 80)
-
-
-class PsiturkNetworkShell(PsiturkShell):
-    ''' Extends PsiturkShell class to include online psiTurk.org features '''
-
-    _cached_web_services = None
-    _cached_amt_services_wrapper = None
-
-    @property
-    def web_services(self):
-        if not self._cached_web_services:
-            self._cached_web_services = PsiturkOrgServices(
-                self.config.get('psiTurk Access', 'psiturk_access_key_id'),
-                self.config.get('psiTurk Access', 'psiturk_secret_access_id'))
-        return self._cached_web_services
-
-    @property
-    def amt_services_wrapper(self):
-        if not self._cached_amt_services_wrapper:
-            try:
-                _wrapper = MTurkServicesWrapper(
-                    config=self.config, web_services=self.web_services, sandbox=self.sandbox)
-                self._cached_amt_services_wrapper = _wrapper
-            except AmtServicesException as e:
-                still_can_do = '\n'.join([
-                '',
-                'You can still use the psiturk server by running non-AWS commands such as:',
-                    '- `psiturk server <subcommand>`',
-                    '- `psiturk server start`',
-                    '- `psiturk server stop`',
-                    '- `psiturk debug -p`'])
-                message = '{}{}'.format(e.message, still_can_do)
-                self.poutput(message)
-            except PsiturkException as e:
-                self.poutput(e)
             
-        return self._cached_amt_services_wrapper
-
-
-    def __init__(self, config, server, sandbox, quiet=False):
-        self.config = config
-        self.quiet = quiet
-        self.sandbox = sandbox
-        self.sandbox_hits = 0
-        self.live_hits = 0
-        super(PsiturkNetworkShell, self).__init__(config, server, quiet)
-        
-        if not self.amt_services_wrapper:
-            sys.exit()
-
-        self.maybe_update_hit_tally()
-
-    def do_quit(self, _):
-        '''Override do_quit for network clean up.'''
-        if (self.server.is_server_running() == 'yes' or
-                self.server.is_server_running() == 'maybe'):
-            user_input = input("Quitting shell will shut down experiment "
-                               "server. Really quit? y or n: ")
-            if user_input == 'y':
-                self.server_off()
-            else:
-                return False
-        return True
-
-    def server_off(self):
-        if (self.server.is_server_running() == 'yes' or
-                self.server.is_server_running() == 'maybe'):
-            self.server.shutdown()
-            self.poutput('Please wait. This could take a few seconds.')
-            while self.server.is_server_running() != 'no':
-                time.sleep(0.5)
-        else:
-            self.poutput('Your server is already off.')
-
-    def server_restart(self):
-        ''' Restart server '''
-        self.server_off()
-        self.server_on()
-
-    # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
-    #   basic command line functions
-    # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
-
-    def get_intro_prompt(self):
-        ''' Overloads intro prompt with network-aware version if you can reach
-        psiTurk.org, request system status message'''
-        status_msg_url = 'https://raw.githubusercontent.com/NYUCCL/psiTurk/master/status_msg.txt'
-        r = http.request('GET', status_msg_url)
-        status_message = r.data.decode('utf-8')
-
-        return status_message + colorize('psiTurk version ' + version_number +
-                                         '\nType "help" for more information.',
-                                         'green', False)
-
-    def color_prompt(self):  # overloads prompt with network info
-        prompt = '[' + colorize('psiTurk', 'bold')
-        server_string = ''
-        server_status = self.server.is_server_running()
-        if server_status == 'yes':
-            server_string = colorize('on', 'green')
-        elif server_status == 'no':
-            server_string = colorize('off', 'red')
-        elif server_status == 'maybe':
-            server_string = colorize('status unknown', 'yellow')
-        elif server_status == 'blocked':
-            server_string = colorize('blocked', 'red')
-        prompt += ' server:' + server_string
-        if self.sandbox:
-            prompt += ' mode:' + colorize('sdbx', 'bold')
-        else:
-            prompt += ' mode:' + colorize('live', 'bold')
-        if self.sandbox:
-            prompt += ' #HITs:' + str(self.sandbox_hits)
-        else:
-            prompt += ' #HITs:' + str(self.live_hits)
-        prompt += ']$ '
-        return prompt
-
-    def server_on(self):
-        self.server.startup()
-        time.sleep(0.5)
-
-    def do_status(self, arg):  # overloads do_status with AMT info
-        super(PsiturkNetworkShell, self).do_status(arg)
         # server_status = self.server.is_server_running()  # Not used
         self.update_hit_tally()
         if self.sandbox:
@@ -892,60 +750,6 @@ class PsiturkNetworkShell(PsiturkShell):
     def help_amt_balance(self):
         ''' Get help for amt_balance. '''
         with open(self.help_path + 'amt.txt', 'r') as help_text:
-            self.poutput(help_text.read())
-
-    @docopt_cmd
-    def do_db(self, arg):
-        """
-        Usage:
-          db get_config
-          db use_local_file [<filename>]
-          db use_aws_instance [<instance_id>]
-          db aws_list_regions
-          db aws_get_region
-          db aws_set_region [<region_name>]
-          db aws_list_instances
-          db aws_create_instance [<instance_id> <size> <username> <password>
-                                  <dbname>]
-          db aws_delete_instance [<instance_id>]
-          db help
-        """
-        if arg['get_config']:
-            self.db_get_config()
-        elif arg['use_local_file']:
-            self.db_use_local_file(arg, filename=arg['<filename>'])
-        elif arg['use_aws_instance']:
-            self.db_use_aws_instance(arg['<instance_id>'], arg)
-        elif arg['aws_list_regions']:
-            self.db_aws_list_regions()
-        elif arg['aws_get_region']:
-            self.db_aws_get_region()
-        elif arg['aws_set_region']:
-            self.db_aws_set_region(arg['<region_name>'])
-        elif arg['aws_list_instances']:
-            self.db_aws_list_instances()
-        elif arg['aws_create_instance']:
-            self.db_create_aws_db_instance(arg['<instance_id>'], arg['<size>'],
-                                           arg['<username>'],
-                                           arg['<password>'], arg['<dbname>'])
-        elif arg['aws_delete_instance']:
-            self.db_aws_delete_instance(arg['<instance_id>'])
-        else:
-            self.help_db()
-
-    db_commands = ('get_config', 'use_local_file', 'use_aws_instance',
-                   'aws_list_regions', 'aws_get_region', 'aws_set_region',
-                   'aws_list_instances', 'aws_create_instance',
-                   'aws_delete_instance', 'help')
-
-    def complete_db(self, text, line, begidx, endidx):
-        ''' Tab-complete db command '''
-        return [i for i in PsiturkNetworkShell.db_commands if
-                i.startswith(text)]
-
-    def help_db(self):
-        ''' DB help '''
-        with open(self.help_path + 'db.txt', 'r') as help_text:
             self.poutput(help_text.read())
 
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
@@ -1023,10 +827,12 @@ class PsiturkNetworkShell(PsiturkShell):
           hit create [<numWorkers> <reward> <duration>]
           hit extend <HITid> [(--assignments <number>)] [(--expiration <minutes>)]
           hit expire (--all | <HITid> ...)
-          hit delete (--all | <HITid> ...)
+          hit delete (--all | <HITid> ...) [--all-studies]
           hit list [--active | --reviewable] [--all-studies]
           hit help
         """
+        
+        all_studies = arg['--all-studies']
 
         if arg['create']:
             self.hit_create(arg['<numWorkers>'], arg['<reward>'],
@@ -1039,8 +845,10 @@ class PsiturkNetworkShell(PsiturkShell):
             did_something = False
             if arg['--all']:
                 result = self.amt_services_wrapper.expire_all_hits()
-                for result in result.data['results']:
-                    self.poutput(result)
+                if not result.success:
+                    return self.poutput(result)
+                for _result in result.data['results']:
+                    self.poutput(_result)
                 did_something = True
             elif arg['<HITid>']:
                 did_something = True
@@ -1052,10 +860,12 @@ class PsiturkNetworkShell(PsiturkShell):
         elif arg['delete']:
             did_something = False
             if arg['--all']:
-                results = (
-                    self.amt_services_wrapper.delete_all_hits()).data['results']
-                for result in results:
-                    self.poutput(result)
+                result = self.amt_services_wrapper.delete_all_hits(all_studies=all_studies)
+                if not result.success:
+                    return self.poutput(result)
+                results = result.data['results']
+                for _result in results:
+                    self.poutput(_result)
                 did_something = True
             elif arg['<HITid>']:
                 did_something = True
@@ -1066,7 +876,7 @@ class PsiturkNetworkShell(PsiturkShell):
                 self.update_hit_tally()
         elif arg['list']:
             self.hit_list(arg['--active'], arg['--reviewable'],
-                          arg['--all-studies'])
+                          all_studies)
         else:
             self.help_hit()
 
@@ -1089,9 +899,12 @@ class PsiturkNetworkShell(PsiturkShell):
           worker approve (--all | --hit <hit_id> ... | <assignment_id> ...) [--all-studies] [--force]
           worker reject (--hit <hit_id> | <assignment_id> ...) [--all-studies]
           worker unreject (--hit <hit_id> | <assignment_id> ...) [--all-studies]
-          worker bonus  (--amount <amount> | --auto) (--reason <reason>) (--all | --hit <hit_id> | <assignment_id> ...) [--override-bonused-status] [--all-studies]
+          worker bonus (--amount <amount> | --auto) [--reason=<reason>] (--all | --hit <hit_id> | <assignment_id> ...) [--override-bonused-status] [--all-studies]
           worker list [--submitted | --approved | --rejected] [(--hit <hit_id> ...)] [--all-studies]
           worker help
+          
+        Options:
+          --reason REASON    the reason...
         """
         all_studies = arg['--all-studies']
         if arg['approve']:
@@ -1100,11 +913,17 @@ class PsiturkNetworkShell(PsiturkShell):
         elif arg['reject']:
             result = None
             if arg['<hit_id>']:
-                results = (self.amt_services_wrapper.reject_assignments_for_hit(
-                    arg['<hit_id>'], all_studies=all_studies)).data['results']
+                result = self.amt_services_wrapper.reject_assignments_for_hit(
+                    arg['<hit_id>'], all_studies=all_studies)
+                if not result.success:
+                    return self.poutput(result)
+                results = result.data['results']
             elif arg['<assignment_id>']:
-                results = (self.amt_services_wrapper.reject_assignments(
-                    arg['<assignment_id>'], all_studies=all_studies)).data['results']
+                result = self.amt_services_wrapper.reject_assignments(
+                    arg['<assignment_id>'], all_studies=all_studies)
+                if not result.success:
+                    return self.poutput(result)
+                results = result.data['results']
             if results:
                 for _result in results:
                     self.poutput(_result)
@@ -1135,6 +954,8 @@ class PsiturkNetworkShell(PsiturkShell):
 
         elif arg['bonus']:
             reason = arg['--reason']
+            if isinstance(reason, list):
+                reason = ' '.join(reason)
             if not reason:
                 if self.config.has_option('Shell Parameters', 'bonus_message'):
                     reason = self.config.get(
@@ -1151,20 +972,29 @@ class PsiturkNetworkShell(PsiturkShell):
             if arg['--auto']:
                 amount = 'auto'
             else:
-                amount = arg['<amount>']
+                amount = float(arg['<amount>'])
 
             if arg['<hit_id>']:
-                results = (self.amt_services_wrapper.bonus_assignments_for_hit(
-                    arg['<hit_id>'][0], amount, reason, all_studies=all_studies, override_bonused_status=override_bonused_status)).data['results']
+                result = (self.amt_services_wrapper.bonus_assignments_for_hit(
+                    arg['<hit_id>'][0], amount, reason, all_studies=all_studies, override_bonused_status=override_bonused_status))
+                if not result.success:
+                    return self.poutput(result)
+                results = result.data['results']
 
             elif arg['--all']:
-                results = (self.amt_services_wrapper.bonus_all_local_assignments(
-                    amount, reason, override_bonused_status)).data['results']
+                result = self.amt_services_wrapper.bonus_all_local_assignments(
+                    amount, reason, override_bonused_status)
+                if not result.success:
+                    return self.poutput(result)
+                results = result.data['results']
 
             elif arg['<assignment_id>']:
                 results = [
                     self.amt_services_wrapper.bonus_assignment_for_assignment_id(
                         assignment_id, amount, reason, override_bonused_status) for assignment_id in arg['<assignment_id>']]
+            
+            if results:
+                [self.poutput(_result) for _result in results]
         else:
             self.help_worker()
 
@@ -1226,6 +1056,11 @@ class PsiturkNetworkShell(PsiturkShell):
             self.poutput("Launching browser pointed at your randomized debug link, "
                          "feel free to request another.\n\t" + launch_url)
             webbrowser.open(launch_url, new=1, autoraise=True)
+            
+    def random_id_generator(self, size=6, chars=string.ascii_uppercase +
+                            string.digits):
+        ''' Generate random id numbers '''
+        return ''.join(random.choice(chars) for x in range(size))
 
     # Modified version of standard cmd help which lists psiturk commands first.
     def do_help(self, arg):
@@ -1275,7 +1110,7 @@ class PsiturkNetworkShell(PsiturkShell):
             self.print_topics(self.super_header, cmds_super, 15, 80)
 
 
-def run(cabinmode=False, script=None, execute=None, testfile=None, quiet=False):
+def run(script=None, execute=None, testfile=None, quiet=False):
     using_libedit = 'libedit' in readline.__doc__
     if using_libedit:
         self.poutput(colorize('\n'.join([
@@ -1292,14 +1127,10 @@ def run(cabinmode=False, script=None, execute=None, testfile=None, quiet=False):
     config = PsiturkConfig()
     config.load_config()
     server = control.ExperimentServerController(config)
-    if cabinmode:
-        shell = PsiturkShell(config, server)
-        shell.check_offline_configuration()
-    else:
-        shell = PsiturkNetworkShell(
-            config, server,
-            config.getboolean('Shell Parameters', 'launch_in_sandbox_mode'),
-            quiet=quiet)
+    shell = PsiturkNetworkShell(
+        config, server,
+        config.getboolean('Shell Parameters', 'launch_in_sandbox_mode'),
+        quiet=quiet)
     
     if script:
         shell.runcmds_plus_hooks(['load {}'.format(script)])

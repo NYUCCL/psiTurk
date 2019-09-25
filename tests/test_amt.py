@@ -1,7 +1,6 @@
 from builtins import range
 from builtins import object
 import pytest
-from faker import Faker
 try:
     import mock
     from mock import patch, PropertyMock
@@ -11,7 +10,7 @@ except ImportError:
 import pickle
 import os
 import boto3
-from botocore.stub import Stubber
+
 import datetime
 import ciso8601
 from psiturk import psiturk_statuses
@@ -20,121 +19,11 @@ from psiturk.psiturk_exceptions import *
 SANDBOX_ENDPOINT_URL = 'https://mturk-requester-sandbox.us-east-1.amazonaws.com'
 LIVE_ENDPOINT_URL = 'https://mturk-requester.us-east-1.amazonaws.com'
 
-
-@pytest.fixture(scope='function')
-def client():
-    client = boto3.client('mturk')
-    return client
-
-
-@pytest.fixture(scope='function')
-def stubber(client):
-    stubber = Stubber(client)
-    stubber.activate()
-    yield stubber
-    stubber.deactivate()
-
-
-@pytest.fixture(scope='session')
-def faker():
-    faker = Faker()
-    return faker
-
+# pytest_plugins = ['pytest_profiling']
 
 class TestAmtServices(object):
 
-    @pytest.fixture(scope='function')
-    def patch_aws_services(self, client, mocker):
-        import psiturk.amt_services_wrapper
-        import psiturk.amt_services
-
-        def setup_mturk_connection(self):
-            self.mtc = client
-            return True
-
-        mocker.patch.object(psiturk.amt_services.MTurkServices,
-                            'verify_aws_login', lambda *args, **kwargs: True)
-        mocker.patch.object(psiturk.amt_services.MTurkServices,
-                            'setup_mturk_connection', setup_mturk_connection)
-
-        my_amt_services = psiturk.amt_services.MTurkServices(
-            '', '', is_sandbox=True)
-        mocker.patch.object(
-            psiturk.amt_services_wrapper.MTurkServicesWrapper, 'amt_services', my_amt_services)
-
-    @pytest.fixture()
-    def amt_services_wrapper(self, patch_aws_services):
-        import psiturk.amt_services_wrapper
-        amt_services_wrapper = psiturk.amt_services_wrapper.MTurkServicesWrapper()
-        return amt_services_wrapper
-
-    @pytest.fixture()
-    def stubber_prepare_create_hit(self, stubber, helpers, faker):
-        def do_it(with_hit_id=None):
-            if not with_hit_id:
-                with_hit_id = faker.md5(raw_output=False)
-
-            stubber.add_response(
-                'create_hit_type', helpers.get_boto3_return('create_hit_type.json'))
-
-            boto_return_create_hit_with_hit_type = helpers.get_boto3_return(
-                'create_hit_with_hit_type.json')
-
-            boto_return_create_hit_with_hit_type['HIT']['HITId'] = with_hit_id
-            # used to always return a hit with id: 3XJOUITW8URHJMX7F00H20LGRIAQTX
-
-            stubber.add_response('create_hit_with_hit_type',
-                                 boto_return_create_hit_with_hit_type)
-        return do_it
-
-    @pytest.fixture()
-    def create_dummy_hit(self, stubber_prepare_create_hit, amt_services_wrapper):
-
-        def do_it(with_hit_id=None):
-            stubber_prepare_create_hit(with_hit_id)
-            result = amt_services_wrapper.create_hit(1, 0.01, 1)
-
-        return do_it
-
-    @pytest.fixture()
-    def list_hits(self, stubber, helpers, amt_services_wrapper):
-        '''
-        Returns two hit_ids:
-            3BFNCI9LYKQ2ENUY4MLKKW0NSU437W
-            3XJOUITW8URHJMX7F00H20LGRIAQTX
-        '''
-        def do_it(hits_json=None, all_studies=False, active=False):
-            if not hits_json:
-                hits_json = helpers.get_boto3_return('list_hits.json')
-
-            stubber.add_response('list_hits', hits_json)
-            if active:
-                results = (amt_services_wrapper.get_active_hits(
-                    all_studies=all_studies)).data
-            else:
-                results = (amt_services_wrapper.get_all_hits(
-                    all_studies=all_studies)).data
-            return results
-
-        return do_it
-
-    @pytest.fixture()
-    def expire_a_hit(self):
-        def do_it(hits_json, index_of_hit_to_expire=0):
-            expired_time = datetime.datetime.now() - datetime.timedelta(hours=10)
-            hits_json['HITs'][index_of_hit_to_expire]['Expiration'] = expired_time
-            return hits_json
-        return do_it
-
-    @pytest.fixture()
-    def activate_a_hit(self):
-        def do_it(hits_json, index_of_hit_to_be_active=1):
-            active_time = datetime.datetime.now() + datetime.timedelta(hours=10)
-            hits_json['HITs'][index_of_hit_to_be_active]['Expiration'] = active_time
-            return hits_json
-        return do_it
-
-    def test_wrapper_hit_create(self, amt_services_wrapper, helpers, create_dummy_hit, stubber_prepare_create_hit, run_in_psiturk_shell):
+    def test_wrapper_hit_create(self, amt_services_wrapper, helpers, create_dummy_hit, stubber_prepare_create_hit):
 
         create_dummy_hit('3XJOUITW8URHJMX7F00H20LGRIAQTX')
         create_dummy_hit('ABCDUITW8URHJMX7F00H20LGRIAQTX')
@@ -294,31 +183,23 @@ class TestAmtServices(object):
         [stubber.add_response('list_assignments_for_hit',
                               assignments_data) for hit_id in hit_ids]
         assignments = amt_services_wrapper.get_assignments(hit_ids=hit_ids)
-
-    @pytest.fixture()
-    def create_dummy_assignment(self, faker):
-        from psiturk.db import db_session, init_db
-        from psiturk.models import Participant
-
-        def do_it(participant_attributes={}):
-
-            participant_attribute_defaults = {
-                'workerid': faker.md5(raw_output=False),
-                'hitid': faker.md5(raw_output=False),
-                'assignmentid': faker.md5(raw_output=False),
-            }
-
-            participant_attributes = dict(list(
-                participant_attribute_defaults.items()) + list(participant_attributes.items()))
-            init_db()
-
-            participant = Participant(**participant_attributes)
-            db_session.add(participant)
-            db_session.commit()
-
-            return participant
-
-        return do_it
+    
+    def test_wrapper_approve_single_assignment(self, stubber, create_dummy_assignment, amt_services_wrapper):
+        create_dummy_assignment({
+                'hitid': '123', 
+                'beginhit': datetime.datetime.utcnow() - datetime.timedelta(days=-2), 
+                'assignmentid': 'ABC', 
+                'status': psiturk_statuses.SUBMITTED, 
+                'mode': 'sandbox'})
+        create_dummy_assignment({'hitid': '123', 
+            'beginhit': datetime.datetime.utcnow(), 
+            'assignmentid': 'DEF', 
+            'status': psiturk_statuses.SUBMITTED, 
+            'mode': 'sandbox'
+        })
+        stubber.add_response('approve_assignment', {}, {'AssignmentId':'ABC', 'OverrideRejection': False})
+        response = amt_services_wrapper.approve_assignment_by_assignment_id('ABC')
+        assert response.success
 
     def test_wrapper_approve_all_assignments(self, stubber, activate_a_hit, helpers, create_dummy_assignment, create_dummy_hit, amt_services_wrapper):
         hits_json = helpers.get_boto3_return('list_hits.json')
@@ -329,11 +210,11 @@ class TestAmtServices(object):
         active_hit_id = hits_json['HITs'][index_of_hit_to_be_active]['HITId']
 
         assignment_1 = create_dummy_assignment(
-            {'hitid': active_hit_id, 'status': psiturk_statuses.COMPLETED, 'mode': 'sandbox'})
+            {'hitid': active_hit_id, 'status': psiturk_statuses.SUBMITTED})
         # do not create dummy hit
 
         assignment_2 = create_dummy_assignment(
-            {'hitid': active_hit_id, 'status': psiturk_statuses.COMPLETED, 'mode': 'sandbox'})
+            {'hitid': active_hit_id, 'status': psiturk_statuses.SUBMITTED})
         # create_dummy_hit(assignment_2.hitid)
 
         assignments = [assignment_1, assignment_2]
@@ -364,6 +245,32 @@ class TestAmtServices(object):
             all_studies=True)).data['results']
         assert len([result for result in results if result.status ==
                     'success']) == number_approved
+                    
+    def test_wrapper_approve_all_for_hit(self, stubber, activate_a_hit, helpers, create_dummy_assignment, create_dummy_hit, amt_services_wrapper):
+        hits_json = helpers.get_boto3_return('list_hits.json')
+        [activate_a_hit(hits_json, i) for (i, hit) in enumerate(hits_json['HITs'])]
+        
+        first_hitid = hits_json['HITs'][0]['HITId']
+        second_hitid = hits_json['HITs'][1]['HITId']
+        
+        # set two to be for the first hit
+        mode = 'sandbox'
+        a_1 = create_dummy_assignment(
+            {'hitid': first_hitid, 'status': psiturk_statuses.SUBMITTED})
+        a_2 = create_dummy_assignment(
+            {'hitid': first_hitid, 'status': psiturk_statuses.SUBMITTED})
+        a_3 = create_dummy_assignment(
+            {'hitid': second_hitid, 'status': psiturk_statuses.SUBMITTED})
+
+            
+        #set up stubber to expect two 'approve_hit' calls
+        stubber.add_response('approve_assignment', {})
+        stubber.add_response('approve_assignment', {})
+            
+        response = amt_services_wrapper.approve_assignments_for_hit(first_hitid)
+        for r in response.data['results']:
+            assert r.success
+        assert len(response.data['results']) == 2
 
     def test_wrapper_reject_unreject_assignments(self, stubber, amt_services_wrapper, create_dummy_assignment, helpers):
 

@@ -6,7 +6,7 @@ from functools import wraps
 from sqlalchemy import or_
 
 from psiturk.psiturk_config import PsiturkConfig
-from psiturk.experiment_errors import ExperimentError, InvalidUsage
+from psiturk.experiment_errors import ExperimentError, InvalidUsageError
 from psiturk.user_utils import PsiTurkAuthorization, nocache
 
 # # Database setup
@@ -75,7 +75,7 @@ def compute_bonus():
     # check that user provided the correct keys
     # errors will not be that gracefull here if being
     # accessed by the Javascrip client
-    if not request.args.has_key('uniqueId'):
+    if not 'uniqueId' in request.args:
         # i don't like returning HTML to JSON requests...  maybe should change this
         raise ExperimentError('improper_inputs')
     uniqueId = request.args['uniqueId']

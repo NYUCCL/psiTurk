@@ -10,13 +10,9 @@ https://psiturk.org
              an open platform for science on Amazon Mechanical Turk
 
 --------------------------------------------------------------------
-System status:
 
-**ALERT**: Due to a recent Amazon API deprecation, you need to install psiturk version 2.3.0 or later.
+Due to a recent Amazon API deprecation, you need to install psiturk version 2.3.0 or later.
 
-The latest stable version is 2.3.0.
+v2.3.0 is python2 only, while versions of v2.3.x >= v2.3.1 support both python2 and python3.
 
-psiturk versions >=2.3.2 support python3!
-
-Check https://github.com/NYUCCL/psiTurk or https://psiturk.org for
-latest info.
+Check https://github.com/NYUCCL/psiTurk or https://psiturk.org for more info.

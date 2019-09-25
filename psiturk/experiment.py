@@ -16,24 +16,22 @@ import string
 import requests
 import re
 import json
-
-try:
-    from collections import Counter
-except ImportError:
-    from .counter import Counter
+from jinja2 import TemplateNotFound
+from collections import Counter
 
 # Setup flask
 from flask import Flask, render_template, render_template_string, request, \
     jsonify
 
 # Setup database
+
 from .db import db_session, init_db
 from .models import Participant
 from sqlalchemy import or_, exc
 
 from .psiturk_config import PsiturkConfig
-from .experiment_errors import ExperimentError, InvalidUsage
-from psiturk.user_utils import nocache
+from .experiment_errors import ExperimentError, ExperimentApiError, InvalidUsageError
+from .user_utils import nocache
 
 # Setup config
 CONFIG = PsiturkConfig()
@@ -63,6 +61,17 @@ app.config.update(SEND_FILE_MAX_AGE_DEFAULT=10)
 app.secret_key = CONFIG.get('Server Parameters', 'secret_key')
 app.logger.info("Secret key: " + app.secret_key)
 
+# this checks for templates that are required if you are hosting your own ad.
+def check_templates_exist():
+    try:
+        try_these = ['thanks-mturksubmit.html', 'closepopup.html']
+        [app.jinja_env.get_template(try_this) for try_this in try_these]
+    except TemplateNotFound as e:
+        raise RuntimeError('Missing one of the following templates: {}. Copy these over from a freshly-created psiturk example experiment. {}: {}'.format(', '.join(try_these), type(e).__name__, str(e)))
+
+if not CONFIG['Shell Parameters'].getboolean('use_psiturk_ad_server'):
+    check_templates_exist()
+
 
 # Serving warm, fresh, & sweet custom, user-provided routes
 # ==========================================================
@@ -70,16 +79,33 @@ app.logger.info("Secret key: " + app.secret_key)
 try:
     sys.path.append(os.getcwd())
     from custom import custom_code
+except ModuleNotFoundError as e:
+    app.logger.info("Hmm... it seems no custom code (custom.py) associated \
+                    with this project.")
 except ImportError as e:
-    if str(e) == 'No module named custom':
-        app.logger.info("Hmm... it seems no custom code (custom.py) associated \
-                        with this project.")
-    else:
-        app.logger.error("There is custom code (custom.py) associated with this \
-                          project but it doesn't import cleanly.  Raising exception,")
-        raise
+    app.logger.error("There is custom code (custom.py) associated with this \
+                      project but it doesn't import cleanly.  Raising exception,")
+    raise
 else:
     app.register_blueprint(custom_code)
+
+# scheduler
+
+from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
+
+from .db import engine
+jobstores = {
+    'default': SQLAlchemyJobStore(engine=engine)
+}
+if 'gunicorn' in os.environ.get('SERVER_SOFTWARE',''):
+    from apscheduler.schedulers.gevent import GeventScheduler as Scheduler
+else:
+    from apscheduler.schedulers.background import BackgroundScheduler as Scheduler
+logging.getLogger('apscheduler').setLevel(logging.DEBUG)
+scheduler = Scheduler(jobstores=jobstores)
+app.apscheduler = scheduler
+scheduler.app = app
+scheduler.start()
 
 
 #
@@ -117,8 +143,8 @@ def handle_exp_error(exception):
                                                     'contact_email_on_error'))
 
 # for use with API errors
-@app.errorhandler(InvalidUsage)
-def handle_invalid_usage(error):
+@app.errorhandler(ExperimentApiError)
+def handle_experiment_api_error(error):
     response = jsonify(error.to_dict())
     response.status_code = error.status_code
     app.logger.error(error.message)
@@ -185,6 +211,10 @@ def get_random_condcount(mode):
 
     return chosen
 
+try:
+    from custom import custom_get_condition as get_condition
+except (ModuleNotFoundError, ImportError):
+    get_condition = get_random_condcount
 
 # Routes
 # ======
@@ -433,7 +463,7 @@ def start_exp():
     numrecs = len(matches)
     if numrecs == 0:
         # Choose condition and counterbalance
-        subj_cond, subj_counter = get_random_condcount(mode)
+        subj_cond, subj_counter = get_condition(mode)
 
         worker_ip = "UNKNOWN" if not request.remote_addr else \
             request.remote_addr
@@ -594,19 +624,16 @@ def update(uid=None):
             filter(Participant.uniqueid == uid).\
             one()
     except exc.SQLAlchemyError:
-        app.logger.error("DB error: Unique user not found.")
-
-    if hasattr(request, 'json'):
-        user.datastring = request.data.decode('utf-8').encode(
-            'ascii', 'xmlcharrefreplace'
-        )
-        db_session.add(user)
-        db_session.commit()
-
+        raise ExperimentApiError("DB error: Unique user not found.")
+    
+    user.datastring = json.dumps(request.json)
+    db_session.add(user)
+    db_session.commit()    
+    
     try:
         data = json.loads(user.datastring)
-    except:
-        data = {}
+    except Exception as e:
+        raise ExperimentApiError('failed to load json datastring back from database as object! Error was {}: {}'.format(type(e), str(e)))
 
     trial = data.get("currenttrial", None)
     app.logger.info("saved data for %s (current trial: %s)", uid, trial)
@@ -669,7 +696,9 @@ def debug_complete():
             if (mode == 'sandbox' or mode == 'live'):
                 return render_template('closepopup.html')
             else:
-                return render_template('complete.html')
+                allow_repeats = CONFIG.getboolean('HIT Configuration', 'allow_repeats')
+                return render_template('complete.html', 
+                    allow_repeats=allow_repeats, worker_id=user.workerid)
 
 
 @app.route('/worker_complete', methods=['GET'])

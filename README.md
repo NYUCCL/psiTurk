@@ -2,12 +2,21 @@
 
 [![Build Status](https://travis-ci.org/NYUCCL/psiTurk.png?branch=master)](https://travis-ci.org/NYUCCL/psiTurk)
 [![Latest Version](https://img.shields.io/pypi/v/psiturk.svg?style=flat-square&label=latest%20stable%20version)](https://pypi.python.org/pypi/psiturk/)
-[![Coverage Status](http://coveralls.io/repos/NYUCCL/psiTurk/badge.png?branch=master)](http://coveralls.io/r/NYUCCL/psiTurk?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/NYUCCL/psiTurk/badge.svg?branch=master)](https://coveralls.io/github/NYUCCL/psiTurk?branch=master)
 [![License](http://img.shields.io/badge/license-MIT-red.svg)](http://en.wikipedia.org/wiki/MIT_License)
 
 Please visit [psiturk.org](https://psiturk.org) for more information.
 
 [Psiturk Google Group](https://groups.google.com/forum/#!forum/psiturk)
+
+
+
+# Versions
+
+- **v2.3.0** | minimum-version that can be used with current Amazon mturk API. python2-only
+- **v2.3.1 -- v2.3.x** | python2 branch in the git repo. Supports both python2 and python3. Receiving hot-fixes only, and releases will only increment 2.3.x.
+- **unreleased -- forthcoming v3.x.x** | master branch, feature branch. python3 _only_. psiTurk v3.x.x will be released from this branch.
+
 
 
 
@@ -22,6 +31,8 @@ git install -e psiTurk
 ```
 
 A test suite can be run using `pytest` from within the base directory of psiturk.
+
+
 
 
 # Citing 

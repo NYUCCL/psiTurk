@@ -23,7 +23,7 @@ if __name__ == "__main__":
     setup_args = dict(
         name = "PsiTurk",
         version = version_number,
-        packages = ["psiturk"],
+        packages = ['psiturk', 'psiturk.api', 'psiturk.dashboard'],
         include_package_data = True,
         zip_safe = False,
         entry_points = {
@@ -36,7 +36,7 @@ if __name__ == "__main__":
             ]
         },
         setup_requires = ['pytest-runner'],
-        tests_require=['pytest','ciso8601','pytest-mock','pytz'],
+        tests_require=['pytest','ciso8601','pytest-mock','pytest-socket','pytz'],
         extras_require={
             ':python_version == "2.7"': ['futures']
         },

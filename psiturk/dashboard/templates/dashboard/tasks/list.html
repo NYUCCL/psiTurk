@@ -1,0 +1,60 @@
+{% extends 'dashboard/layouts/layout.html' %}
+
+{% block content %}
+{%- raw -%}
+<div id='tasks'>
+
+    <div class='form-group'>
+        <div class='form-inline'>
+            <template v-if='!exists_approve_all_task'>
+                <button
+                    v-on:click='schedule_approve_all_task'
+                    :disabled='exists_approve_all_task'
+                    type='button' class='btn btn-primary'
+                >Schedule `Approve all`</button>
+                <input type='number'
+                    v-model.number='approve_all_interval'
+                    class='form-control ml-2'
+                    placeholder='1.00'
+                >
+                <small class='ml-2 form-text'>Task interval, fraction of hours. E.g., `1.5` to approve-all every hour and a half.'</small>
+                <small class='ml-2 form-text'>Minimum is 30 minutes, because really, you don't want to hammer your server.</small>
+            </template>
+            <template v-else>
+                <button
+                    v-on:click='delete_approve_all_task'
+                    type='button' class='btn btn-danger'
+                >Delete 'Approve All' task.</button>
+            </template>
+        </div>
+    </div>
+    <table class='table'>
+        <thead>
+            <tr>
+                <th>Task Id</th>
+                <th>Task Name</th>
+                <th>Args</th>
+                <th>Next Run Time</th>
+                <th>Trigger</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr
+                is='task-table-row'
+                v-for='task in tasks'
+                :key='task.id'
+                :task='task'
+            ></tr>
+        </tbody>
+    </table>
+
+</div>
+{%- endraw -%}
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script type='text/javascript'>
+</script>
+<script type='text/javascript' src='/dashboard/static/tasks/list.js'></script>
+{% endblock %}
