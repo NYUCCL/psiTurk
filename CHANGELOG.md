@@ -68,8 +68,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - #352 - expiring a hit didn't push far enough into the past to actually expire instead of extend on the mturk side
 
-
-
 ## [2.3.0]
 ### Fixed
 - moved AWS mturk api to 2017–01–17 via a move to boto3. No psiturk version prior to 2.3.0 will work.
+
+
+[Unreleased 3.0.0]: https://github.com/NYUCCL/psiTurk/tree/master
+[Unreleased 2.3.x]: https://github.com/NYUCCL/psiTurk/tree/python2
+[2.3.4]: https://github.com/NYUCCL/psiTurk/compare/2.3.3...2.3.4
+[2.3.3]: https://github.com/NYUCCL/psiTurk/compare/2.3.2...2.3.3
+[2.3.2]: https://github.com/NYUCCL/psiTurk/compare/2.3.1...2.3.2
+[2.3.1]: https://github.com/NYUCCL/psiTurk/compare/2.3.0...2.3.1
