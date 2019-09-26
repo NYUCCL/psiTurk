@@ -27,7 +27,7 @@ Check out a clone of this repo, and install it into your local environment for t
 
 ```
 git clone git@github.com:NYUCCL/psiTurk.git
-git install -e psiTurk
+pip install -e psiTurk
 ```
 
 A test suite can be run using `pytest` from within the base directory of psiturk.
