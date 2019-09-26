@@ -3,6 +3,7 @@ before_install:
 - sudo rm -f /etc/boto.cfg
 env:
 - PYTHON=python
+- PIP=pip
 matrix:
     include:
         - name: "Python 2.7 on macOS"
@@ -16,7 +17,6 @@ matrix:
           env: PIP=pip3 PYTHON=python3
         - name: "Python 2.7 on linux"
           python: 2.7
-          env: PIP=pip
         - name: "Python 3.6 on linux"
           python: 3.6
           env: PIP=pip3
