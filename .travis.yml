@@ -3,6 +3,9 @@ python:
 - '2.7'
 - '3.6'
 - '3.7'
+os:
+- linux
+- osx
 git:
     quiet: true
 before_install:
