@@ -1,15 +1,13 @@
 language: python
 before_install:
 - sudo rm -f /etc/boto.cfg
-env:
-- PYTHON=python
-- PIP=pip
 matrix:
     include:
         - name: "Python 2.7 on macOS"
           os: osx
           osx_image: xcode11
           language: shell
+          env: PIP=pip PYTHON=python
         - name: "Python 3.7 on macOS"
           os: osx
           osx_image: xcode11
@@ -17,12 +15,13 @@ matrix:
           env: PIP=pip3 PYTHON=python3
         - name: "Python 2.7 on linux"
           python: 2.7
+          env: PIP=pip PYTHON=python
         - name: "Python 3.6 on linux"
           python: 3.6
-          env: PIP=pip3
+          env: PIP=pip3 PYTHON=python
         - name: "Python 3.7 on linux"
           python: 3.7
-          env: PIP=pip3
+          env: PIP=pip3 PYTHON=python
 install:
 - $PIP install -r requirements.txt
 - $PIP install coverage
