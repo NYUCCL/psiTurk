@@ -66,9 +66,5 @@ if __name__ == "__main__":
             else:
                 install_requires.append(req)
 
-    # add readline only on osx
-    if sys.platform == 'darwin':
-        install_requires.append('gnureadline==6.3.3')
-
     setup(**setup_args)
     

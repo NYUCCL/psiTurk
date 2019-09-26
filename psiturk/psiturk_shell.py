@@ -48,6 +48,7 @@ http = urllib3.PoolManager(
 
 
 try:
+    # prefer gnureadline if user has installed it
     import gnureadline as readline
 except ImportError:
     import readline
