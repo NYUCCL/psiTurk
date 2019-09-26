@@ -1,22 +1,37 @@
 language: python
-python:
-- '2.7'
-- '3.6'
-- '3.7'
-os:
-- linux
-- osx
-git:
-    quiet: true
 before_install:
 - sudo rm -f /etc/boto.cfg
+env:
+- PYTHON=python
+matrix:
+    include:
+        - name: "Python 2.7 on macOS"
+          os: osx
+          osx_image: xcode11
+          language: shell
+        - name: "Python 3.7 on macOS"
+          os: osx
+          osx_image: xcode11
+          language: shell
+          env: PIP=pip3 PYTHON=python3
+        - name: "Python 2.7 on linux"
+          python: 2.7
+          env: PIP=pip
+        - name: "Python 3.6 on linux"
+          python: 3.6
+          env: PIP=pip3
+        - name: "Python 3.7 on linux"
+          python: 3.7
+          env: PIP=pip3
 install:
-- pip install -r requirements.txt
-- pip install coverage
-- pip install coveralls
+- $PIP install -r requirements.txt
+- $PIP install coverage
+- $PIP install coveralls
 script:
-- python setup.py test
+- $PYTHON setup.py test
 - coverage run --source=psiturk setup.py test
+git:
+    quiet: true
 after_success: coveralls
 deploy:
     # test pypi pip deployment
