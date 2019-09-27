@@ -16,6 +16,7 @@ config.load_config()
 TABLENAME = config.get('Database Parameters', 'table_name')
 CODE_VERSION = config.get('Task Parameters', 'experiment_code_version')
 
+import six
 
 class Participant(Base):
     """
@@ -67,10 +68,14 @@ class Participant(Base):
             # There was no data to return.
             print(("No trial data found in record:", self))
             return("")
+        
+        my_io = io.StringIO
+        if six.PY2:
+            my_io = io.BytesIO
 
         try:
             ret = []
-            with io.BytesIO() as outstring:
+            with my_io() as outstring:
                 csvwriter = csv.writer(outstring)
                 for trial in trialdata:
                     csvwriter.writerow((
@@ -92,9 +97,13 @@ class Participant(Base):
             print(("No event data found in record:", self))
             return("")
 
+        my_io = io.StringIO
+        if six.PY2:
+            my_io = io.BytesIO
+
         try:
             ret = []
-            with io.BytesIO() as outstring:
+            with my_io() as outstring:
                 csvwriter = csv.writer(outstring)
                 for event in eventdata:
                     csvwriter.writerow(
@@ -113,9 +122,13 @@ class Participant(Base):
             print(("No question data found in record:", self))
             return("")
 
+        my_io = io.StringIO
+        if six.PY2:
+            my_io = io.BytesIO
+
         try:
             ret = []
-            with io.BytesIO() as outstring:
+            with my_io() as outstring:
                 csvwriter = csv.writer(outstring)
                 for question in questiondata:
                     csvwriter.writerow(
