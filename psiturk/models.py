@@ -88,7 +88,7 @@ class Participant(Base):
 
         try:
             ret = []
-            with io.BytesIO() as outstring:
+            with io.StringIO() as outstring:
                 csvwriter = csv.writer(outstring)
                 for trial in trialdata:
                     csvwriter.writerow((
@@ -112,7 +112,7 @@ class Participant(Base):
 
         try:
             ret = []
-            with io.BytesIO() as outstring:
+            with io.StringIO() as outstring:
                 csvwriter = csv.writer(outstring)
                 for event in eventdata:
                     csvwriter.writerow(
@@ -133,7 +133,7 @@ class Participant(Base):
 
         try:
             ret = []
-            with io.BytesIO() as outstring:
+            with io.StringIO() as outstring:
                 csvwriter = csv.writer(outstring)
                 for question in questiondata:
                     csvwriter.writerow(
