@@ -16,9 +16,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   See `/dashboard` route.
 - if a commonly-forgotten required template is missing when not using the psiturk ad server, raise an exception
 
+## [Unreleased 2.3.6]
+### Fixed
+- download_datafiles works on both python2 and python3 (#375)
+- gnureadline not forced onto macosx users (#371)
 
-
-## [Unreleased 2.3.x]
+## [2.3.5]
 ### Fixed
 - moved _get_local_hitids out of list comprehension (#380)
 
@@ -75,6 +78,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [Unreleased 3.0.0]: https://github.com/NYUCCL/psiTurk/tree/master
 [Unreleased 2.3.x]: https://github.com/NYUCCL/psiTurk/tree/python2
+[2.3.5]: https://github.com/NYUCCL/psiTurk/compare/2.3.4...2.3.5
 [2.3.4]: https://github.com/NYUCCL/psiTurk/compare/2.3.3...2.3.4
 [2.3.3]: https://github.com/NYUCCL/psiTurk/compare/2.3.2...2.3.3
 [2.3.2]: https://github.com/NYUCCL/psiTurk/compare/2.3.1...2.3.2
