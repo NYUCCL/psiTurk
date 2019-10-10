@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   See `/dashboard` route.
 - if a commonly-forgotten required template is missing when not using the psiturk ad server, raise an exception
 
-## [Unreleased 2.3.6]
+## [2.3.6]
 ### Fixed
 - download_datafiles works on both python2 and python3 (#375)
 - gnureadline not forced onto macosx users (#371)
