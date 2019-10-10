@@ -26,7 +26,6 @@ matrix:
               on:
                 tags: true
                 branch: python2
-                    env: PIP=pip PYTHON=python
         - name: "Python 3.6 on linux"
           python: 3.6
           env: PIP=pip3 PYTHON=python
