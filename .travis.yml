@@ -15,6 +15,7 @@ matrix:
           env: PIP=pip3 PYTHON=python3
         - name: "Python 2.7 on linux"
           python: 2.7
+          env: PIP=pip PYTHON=python
           deploy:
             # production pypi
             - provider: pypi
