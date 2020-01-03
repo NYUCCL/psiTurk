@@ -12,7 +12,6 @@ import datetime
 import logging
 from random import choice
 import user_agents
-import string
 import requests
 import re
 import json

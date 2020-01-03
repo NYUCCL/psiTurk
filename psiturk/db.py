@@ -4,8 +4,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.ext.declarative import declarative_base
 from .psiturk_config import PsiturkConfig
-import re
-import os
 import sys
 
 config = PsiturkConfig()

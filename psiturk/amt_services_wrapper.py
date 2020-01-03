@@ -9,9 +9,6 @@ from __future__ import absolute_import
 from functools import wraps
 from six import string_types
 
-import urllib.error
-import urllib.parse
-import urllib.request
 from .utils import *
 from .models import Participant, Hit
 from .db import db_session, init_db
@@ -20,30 +17,19 @@ from .psiturk_statuses import *
 from .psiturk_config import PsiturkConfig
 from .psiturk_org_services import PsiturkOrgServices
 from .amt_services import MTurkServices
-from sqlalchemy import or_, and_
+from sqlalchemy import and_
 import sqlalchemy as sa
-import webbrowser
-from fuzzywuzzy import process
-import signal
 import datetime
 import random
 import string
 import os
 import json
-import time
-import re
-import subprocess
 import sys
 from builtins import object
 from builtins import range
 from builtins import str
 from future import standard_library
 standard_library.install_aliases()
-
-try:
-    import gnureadline as readline
-except ImportError:
-    import readline
 
 
 class WrapperResponse(object):

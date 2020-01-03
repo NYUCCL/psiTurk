@@ -7,12 +7,9 @@ from functools import wraps
 from builtins import str
 from builtins import object
 import boto3
-import botocore
 import datetime
-import dateutil.tz
 
 from flask import jsonify
-import re as re
 from psiturk.psiturk_config import PsiturkConfig
 from .psiturk_exceptions import *
 

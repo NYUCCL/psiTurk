@@ -20,14 +20,11 @@ from psiturk.version import version_number
 from psiturk.psiturk_org_services import PsiturkOrgServices
 from psiturk.amt_services_wrapper import MTurkServicesWrapper
 from .psiturk_exceptions import *
-import sqlalchemy as sa
 import webbrowser
 from docopt import docopt, DocoptExit
-from cmd2 import Cmd, EmptyStatement
+from cmd2 import Cmd
 from fuzzywuzzy import process
-import signal
 import certifi
-import datetime
 import random
 import string
 import os

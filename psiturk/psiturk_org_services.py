@@ -12,12 +12,7 @@ try:
 except ImportError:
     from urllib2 import urlopen
     
-import psutil
-from psiturk.psiturk_config import PsiturkConfig
-from sys import platform as _platform
-import struct
-import signal
-import subprocess
+
 import git
 from psiturk.version import version_number
 import requests

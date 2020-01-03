@@ -3,7 +3,6 @@ try:
 except ImportError:
     from urllib2 import urlopen
 import json
-import os
 from future import standard_library
 standard_library.install_aliases()
 
