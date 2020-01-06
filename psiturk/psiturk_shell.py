@@ -158,7 +158,7 @@ class PsiturkShell(Cmd, object):
         ''' Print cabin mode message '''
         sys_status = open(self.help_path + 'cabin.txt', 'r')
         server_msg = sys_status.read()
-        return server_msg + colorize('psiTurk version ' + version_number +
+        return server_msg + "\n" + colorize('psiTurk version ' + version_number +
                                      '\nType "help" for more information.',
                                      'green', False)
 
@@ -820,7 +820,7 @@ class PsiturkNetworkShell(PsiturkShell):
         r = http.request('GET', status_msg_url)
         status_message = r.data.decode('utf-8')
 
-        return status_message + colorize('psiTurk version ' + version_number +
+        return status_message + "\n" + colorize('psiTurk version ' + version_number +
                                          '\nType "help" for more information.',
                                          'green', False)
 
