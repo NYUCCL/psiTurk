@@ -21,3 +21,4 @@ GitPython~=2.1.11
 gnureadline~=8.0.0
 python_dateutil~=2.8.1
 pyOpenSSL~=19.0.0
+setproctitle~=1.1.10
