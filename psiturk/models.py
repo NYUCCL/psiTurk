@@ -67,7 +67,7 @@ class Participant(Base):
         self.uniqueid = "{workerid}:{assignmentid}".format(**kwargs)
         self.status = 1
         self.codeversion = CODE_VERSION
-        self.beginhit = datetime.datetime.now(datetime.timezone.utc)
+        self.beginhit = datetime.datetime.now()
         for key in kwargs:
             setattr(self, key, kwargs[key])
 
@@ -283,7 +283,7 @@ class Campaign(Base):
             kwargs=_kwargs,
             trigger='interval', 
             minutes=new_campaign.minutes_between_rounds,
-            next_run_time=datetime.datetime.now() #why is this not utc?
+            next_run_time=datetime.datetime.now()
         )
         
         return new_campaign
