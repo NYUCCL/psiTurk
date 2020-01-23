@@ -237,7 +237,7 @@ class TaskList(Resource):
                 func=do_approve_all,
                 trigger='interval',
                 minutes=max(int(int(data['interval']) * 60), 30),
-                next_run_time=datetime.now()
+                next_run_time=datetime.datetime.now(datetime.timezone.utc)
             )
             return job, 201
             

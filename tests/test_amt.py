@@ -187,12 +187,12 @@ class TestAmtServices(object):
     def test_wrapper_approve_single_assignment(self, stubber, create_dummy_assignment, amt_services_wrapper):
         create_dummy_assignment({
                 'hitid': '123', 
-                'beginhit': datetime.datetime.utcnow() - datetime.timedelta(days=-2), 
+                'beginhit': datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=-2), 
                 'assignmentid': 'ABC', 
                 'status': psiturk_statuses.SUBMITTED, 
                 'mode': 'sandbox'})
         create_dummy_assignment({'hitid': '123', 
-            'beginhit': datetime.datetime.utcnow(), 
+            'beginhit': datetime.datetime.now(datetime.timezone.utc), 
             'assignmentid': 'DEF', 
             'status': psiturk_statuses.SUBMITTED, 
             'mode': 'sandbox'
