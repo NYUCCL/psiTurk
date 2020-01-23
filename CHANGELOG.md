@@ -16,6 +16,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   See `/dashboard` route.
 - if a commonly-forgotten required template is missing when not using the psiturk ad server, raise an exception
 
+## [2.3.8]
+### Fixed
+- specified `setproctitle` in requirements.txt, to fix "server blocked" status message. Necessary for gunicorn < 20.0, 
+  but gunicorn >=20.0 requires python3
+
 ## [2.3.7]
 ### Fixed
 - requirements.txt generated with help of `pipreqs` instead of `pip freeze`, removing stale child dependencies, one

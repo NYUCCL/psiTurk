@@ -39,13 +39,14 @@ A test suite can be run using `pytest` from within the base directory of psiturk
 
 # Citing 
 
-To credit psiTurk in your work, please cite both the original conference paper and a version of the Zenodo archive.
+To credit psiTurk in your work, please cite both the original journal paper and a version of the Zenodo archive.
 The former provides a high level description of the package, and the latter points to a permanent record of all psiTurk
 versions (we encourage you to cite the specific version you used). Example citations (for psiTurk 2.3.7):
 
+### Zenodo Archive:  
 Eargle, David, Gureckis, Todd, Rich, Alexander S., McDonnell, John, & Martin, Jay B. (2020, January 6). 
 psiTurk: An open platform for science on Amazon Mechanical Turk (Version v2.3.7). Zenodo. http://doi.org/10.5281/zenodo.3598652
 
-McDonnell, J.V., Martin, J.B., Markant, D.B., Coenen, A., Rich, A.S., and Gureckis, T.M. 
-(2012). psiTurk (Version 1.02) [Software]. New York, NY: New York University. 
-Available from https://github.com/NYUCCL/psiTurk
+### Journal Paper:  
+Gureckis, T.M., Martin, J., McDonnell, J., Rich, A.S., Markant, D., Coenen, A., Halpern, D., Hamrick, J.B., Chan, P. (2016) psiTurk: An open-source framework for conducting replicable behavioral experiments online. Behavioral Research Methods, 48 (3), 829-842.	DOI: http://doi.org/10.3758/s13428-015-0642-8 
+
