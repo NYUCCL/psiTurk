@@ -5,7 +5,7 @@ import datetime
 import io
 import csv
 import json
-from sqlalchemy import Column, Integer, String, DateTime, Float, Text, Boolean, func
+from sqlalchemy import Column, Integer, String, DateTime, Float, Text, Boolean, func, inspect
 from sqlalchemy.orm import validates
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.declarative import declarative_base
