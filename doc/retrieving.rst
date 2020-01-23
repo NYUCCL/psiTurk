@@ -128,7 +128,8 @@ called in the experiment:
 Here, ``<datalist>`` is whatever is passed to ``psiturk.recordTrialData()`` in the
 experiment. This could be in any format, such as a string or list, but we
 recommend saving data in a json format so that all data is stored in a clear,
-easy-to-parse "field-value" format. ``<dataTime>`` is recorded in UTC time.
+easy-to-parse "field-value" format.
+
 
 questiondata
 ~~~~~~~~~~~~

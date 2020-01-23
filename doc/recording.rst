@@ -24,7 +24,7 @@ add a line of data to the log, use ``psiturk.recordTrialData``:
 
 The list of values that you supply to ``recordTrialData`` will then be
 appended to the log. It is up to you how to structure those lists; you
-will have to parse them as part of your analysis. Each time you call ``psiturk.recordTrialData``, it will also record the time it was called (with a UTC timezone).
+will have to parse them as part of your analysis.
 
 .. _recording-unstructured-data-label:
 
