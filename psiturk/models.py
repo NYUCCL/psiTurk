@@ -250,7 +250,7 @@ class Campaign(Base):
     
     def end(self):
         self.is_active = False
-        self.ended = datetime.datetime.utcnow()
+        self.ended = datetime.datetime.now(datetime.timezone.utc)
         from .experiment import app
         try:
             app.apscheduler.remove_job(self.campaign_job_id)
@@ -283,7 +283,7 @@ class Campaign(Base):
             kwargs=_kwargs,
             trigger='interval', 
             minutes=new_campaign.minutes_between_rounds,
-            next_run_time=datetime.datetime.now() #why is this not utc?
+            next_run_time=datetime.datetime.now(datetime.timezone.utc) 
         )
         
         return new_campaign
