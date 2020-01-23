@@ -70,5 +70,5 @@ class PsiturkConfig(ConfigParser):
         # port to a fixed number database url is also dynamic
         if 'ON_HEROKU' in os.environ:
             self.set('Server Parameters', 'port', os.environ['PORT'])
-            self.set('Database Parameters', 'database_url',
-                     os.environ['DATABASE_URL'])
+            if self.get('Database Parameters', 'use_heroku_db') == 'true':
+                self.set('Database Parameters', 'database_url', os.environ['DATABASE_URL'])
