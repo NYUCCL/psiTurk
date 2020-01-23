@@ -547,7 +547,9 @@ def start_exp():
         adServerLoc=ad_server_location,
         mode=mode,
         contact_address=CONFIG.get(
-            'HIT Configuration', 'contact_email_on_error')
+            'HIT Configuration', 'contact_email_on_error'),
+        codeversion=CONFIG.get(
+            'Task Parameters', 'experiment_code_version')
     )
 
 
