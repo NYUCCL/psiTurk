@@ -174,7 +174,7 @@ def get_random_condcount(mode):
     """
     cutofftime = datetime.timedelta(minutes=-CONFIG.getint('Server Parameters',
                                                            'cutoff_time'))
-    starttime = datetime.datetime.now(datetime.timezone.utc) + cutofftime
+    starttime = datetime.datetime.now() + cutofftime
 
     try:
         conditions = json.load(
@@ -569,7 +569,7 @@ def enterexp():
         user = Participant.query.\
             filter(Participant.uniqueid == unique_id).one()
         user.status = STARTED
-        user.beginexp = datetime.datetime.now(datetime.timezone.utc)
+        user.beginexp = datetime.datetime.now()
         db_session.add(user)
         db_session.commit()
         resp = {"status": "success"}
@@ -686,7 +686,7 @@ def debug_complete():
             user = Participant.query.\
                 filter(Participant.uniqueid == unique_id).one()
             user.status = COMPLETED
-            user.endhit = datetime.datetime.now(datetime.timezone.utc)
+            user.endhit = datetime.datetime.now()
             db_session.add(user)
             db_session.commit()
         except:
@@ -714,7 +714,7 @@ def worker_complete():
             user = Participant.query.\
                 filter(Participant.uniqueid == unique_id).one()
             user.status = COMPLETED
-            user.endhit = datetime.datetime.now(datetime.timezone.utc)
+            user.endhit = datetime.datetime.now()
             db_session.add(user)
             db_session.commit()
             status = "success"
