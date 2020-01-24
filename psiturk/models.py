@@ -229,7 +229,7 @@ class Campaign(Base):
     
     @validates('mode')
     def validate_mode(self, key, mode):
-        assert mode in ['sandbox','mode'], 'Mode {} not recognized.'.format(mode)
+        assert mode in ['sandbox','live'], 'Mode {} not recognized.'.format(mode)
         return mode
     
     @validates('is_active')
