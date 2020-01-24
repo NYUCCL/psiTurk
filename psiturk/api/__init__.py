@@ -13,7 +13,8 @@ from psiturk.models import Base as DBModel
 from functools import wraps
 from apscheduler.job import Job
 from apscheduler.triggers.base import BaseTrigger
-from datetime import datetime, timedelta
+import datetime
+import pytz
 from pytz.tzinfo import BaseTzInfo
 
 api_blueprint = Blueprint('api', __name__, url_prefix='/api')
@@ -39,7 +40,7 @@ class PsiturkJSONEncoder(JSONEncoder): # flask's jsonencoder class
                 'message': str(obj)
             }
         
-        if isinstance(obj, timedelta):
+        if isinstance(obj, datetime.timedelta):
             return str(obj)
         
         if isinstance(obj, MTurkHIT):
@@ -237,7 +238,7 @@ class TaskList(Resource):
                 func=do_approve_all,
                 trigger='interval',
                 minutes=max(int(float(data['interval']) * 60), 30),
-                next_run_time=datetime.now()
+                next_run_time=datetime.datetime.now(pytz.utc)
             )
             return job, 201
             

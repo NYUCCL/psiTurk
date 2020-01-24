@@ -27,11 +27,13 @@ myauth = PsiTurkAuthorization(config)
 dashboard = Blueprint('dashboard', __name__,
                         template_folder='templates', static_folder='static', url_prefix='/dashboard')       
 
-from psiturk.experiment import app
+    
 from flask_login import LoginManager, UserMixin
 login_manager = LoginManager()
-login_manager.init_app(app)
 login_manager.login_view = 'dashboard.login'
+
+def init_app(app):
+    login_manager.init_app(app)
 
 class DashboardUser(UserMixin):
     def __init__(self, username=''):
@@ -43,13 +45,15 @@ def load_user(username):
 
 def login_required(view):
     @wraps(view)
-    def wrapped_view(**kwargs):
+    def wrapped_view(*args, **kwargs):
+        if current_app.login_manager._login_disabled: # for unit testing
+            return view(*args, **kwargs)
         is_logged_in = current_user.get_id() is not None
         is_static_resource_call = str(request.endpoint) == 'dashboard.static'
         is_login_route = str(request.url_rule) == '/dashboard/login'
         if not (is_static_resource_call or is_login_route or is_logged_in):
             return login_manager.unauthorized()
-        return view(**kwargs)
+        return view(*args, **kwargs)
     return wrapped_view
     
 def try_amt_services_wrapper(view):

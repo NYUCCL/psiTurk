@@ -67,7 +67,7 @@ class Participant(Base):
         self.uniqueid = "{workerid}:{assignmentid}".format(**kwargs)
         self.status = 1
         self.codeversion = CODE_VERSION
-        self.beginhit = datetime.datetime.now()
+        self.beginhit = datetime.datetime.now(datetime.timezone.utc)
         for key in kwargs:
             setattr(self, key, kwargs[key])
 
@@ -250,7 +250,7 @@ class Campaign(Base):
     
     def end(self):
         self.is_active = False
-        self.ended = datetime.datetime.utcnow()
+        self.ended = datetime.datetime.now(datetime.timezone.utc)
         from .experiment import app
         try:
             app.apscheduler.remove_job(self.campaign_job_id)
@@ -283,7 +283,7 @@ class Campaign(Base):
             kwargs=_kwargs,
             trigger='interval', 
             minutes=new_campaign.minutes_between_rounds,
-            next_run_time=datetime.datetime.now()
+            next_run_time=datetime.datetime.now(datetime.timezone.utc) 
         )
         
         return new_campaign
