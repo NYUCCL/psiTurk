@@ -92,6 +92,7 @@ else:
 # scheduler
 
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
+from pytz import utc
 
 from .db import engine
 jobstores = {
@@ -102,7 +103,7 @@ if 'gunicorn' in os.environ.get('SERVER_SOFTWARE',''):
 else:
     from apscheduler.schedulers.background import BackgroundScheduler as Scheduler
 logging.getLogger('apscheduler').setLevel(logging.DEBUG)
-scheduler = Scheduler(jobstores=jobstores)
+scheduler = Scheduler(jobstores=jobstores, timezone=utc)
 app.apscheduler = scheduler
 scheduler.app = app
 scheduler.start()
@@ -111,8 +112,9 @@ scheduler.start()
 #
 # Dashboard
 #
-from .dashboard import dashboard # management dashboard
+from .dashboard import dashboard, init_app as dashboard_init_app # management dashboard
 app.register_blueprint(dashboard)
+dashboard_init_app(app)
 
 from .api import api_blueprint
 app.register_blueprint(api_blueprint)
@@ -174,7 +176,7 @@ def get_random_condcount(mode):
     """
     cutofftime = datetime.timedelta(minutes=-CONFIG.getint('Server Parameters',
                                                            'cutoff_time'))
-    starttime = datetime.datetime.now() + cutofftime
+    starttime = datetime.datetime.now(datetime.timezone.utc) + cutofftime
 
     try:
         conditions = json.load(
@@ -571,7 +573,7 @@ def enterexp():
         user = Participant.query.\
             filter(Participant.uniqueid == unique_id).one()
         user.status = STARTED
-        user.beginexp = datetime.datetime.now()
+        user.beginexp = datetime.datetime.now(datetime.timezone.utc)
         db_session.add(user)
         db_session.commit()
         resp = {"status": "success"}
@@ -688,7 +690,7 @@ def debug_complete():
             user = Participant.query.\
                 filter(Participant.uniqueid == unique_id).one()
             user.status = COMPLETED
-            user.endhit = datetime.datetime.now()
+            user.endhit = datetime.datetime.now(datetime.timezone.utc)
             db_session.add(user)
             db_session.commit()
         except:
@@ -716,7 +718,7 @@ def worker_complete():
             user = Participant.query.\
                 filter(Participant.uniqueid == unique_id).one()
             user.status = COMPLETED
-            user.endhit = datetime.datetime.now()
+            user.endhit = datetime.datetime.now(datetime.timezone.utc)
             db_session.add(user)
             db_session.commit()
             status = "success"

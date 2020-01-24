@@ -193,7 +193,7 @@ def list_hits(stubber, helpers, amt_services_wrapper):
 @pytest.fixture()
 def expire_a_hit():
     def do_it(hits_json, index_of_hit_to_expire=0):
-        expired_time = datetime.datetime.now() - datetime.timedelta(hours=10)
+        expired_time = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(hours=10)
         hits_json['HITs'][index_of_hit_to_expire]['Expiration'] = expired_time
         return hits_json
     return do_it
@@ -201,7 +201,7 @@ def expire_a_hit():
 @pytest.fixture()
 def activate_a_hit():
     def do_it(hits_json, index_of_hit_to_be_active=1):
-        active_time = datetime.datetime.now() + datetime.timedelta(hours=10)
+        active_time = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=10)
         hits_json['HITs'][index_of_hit_to_be_active]['Expiration'] = active_time
         return hits_json
     return do_it
