@@ -1,3 +1,6 @@
+import logging
+logger = logging.getLogger('apscheduler')
+
 class TaskUtils():
     _scheduler_aws_services_wrapper = None
     
@@ -9,12 +12,11 @@ class TaskUtils():
         return self._scheduler_aws_services_wrapper
 
 task_utils = TaskUtils()
-import logging
-logger = logging.getLogger('apscheduler')
 
 def do_campaign_round(campaign, **kwargs):
     from .models import Participant
     from .experiment import app
+    from .db import db_session
     
     # cancel if codeversion changes
     config_code_version = task_utils.aws_services_wrapper.config['Task Parameters']['experiment_code_version']
@@ -26,7 +28,10 @@ def do_campaign_round(campaign, **kwargs):
     complete_count = Participant.count_completed(codeversion=campaign.codeversion, mode=campaign.mode)
     if complete_count >= campaign.goal:
         logger.info('Campaign goal met ({}), removing job.'.format(campaign.goal))
-        return app.apscheduler.remove_job(kwargs['job_id'])
+        campaign.end()
+        db_session.add(campaign)
+        db_session.commit()
+        return
         
     task_utils.aws_services_wrapper.set_mode(campaign.mode)
     
@@ -46,6 +51,8 @@ def do_campaign_round(campaign, **kwargs):
         task_utils.aws_services_wrapper.create_hit(
             num_workers=this_hit, reward=campaign.hit_reward, duration=campaign.hit_duration_hours)
         remaining = remaining - this_hit
+    
+    return
         
         
 # Approve All task_utils

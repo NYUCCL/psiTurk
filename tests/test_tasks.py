@@ -61,8 +61,10 @@ def test_campaign_goal_met_cancel(patch_aws_services, campaign, mocker, caplog, 
     
     import psiturk.experiment
     remove_job_mock = mocker.patch.object(psiturk.experiment.app.apscheduler, 'remove_job')
+    
     do_campaign_round(**campaign_args)
     remove_job_mock.assert_called()
+    assert not campaign.is_active
     
 def test_campaign_posts_hits(patch_aws_services, stubber, campaign, mocker, caplog):
     
