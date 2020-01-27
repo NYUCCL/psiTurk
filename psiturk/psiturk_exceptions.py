@@ -114,3 +114,12 @@ class AdHtmlTooLarge(AmtServicesWrapperError):
 #################
 class APIException(PsiturkException):
     pass
+
+class EphemeralContainerDBError(PsiturkException):
+    def __init__(self, db_address, *args, **kwargs):
+        super(EphemeralContainerDBError, self).__init__(**kwargs)
+        self.message = '\n'.join(['The database URL you gave is {}. This is unlikely to work '.format(db_address),
+            'in an ephemeral container like Heroku either because it is run on a localhost or because it uses SQLite ',
+            '(see https://devcenter.heroku.com/articles/sqlite3 for why that might not be a good idea). One better '
+            'option might be to use a Heroku PostGRES table. Instructions to do that can be found here: ',
+            'https://psiturk.readthedocs.io/en/latest/heroku.html'])
