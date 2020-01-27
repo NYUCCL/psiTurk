@@ -75,7 +75,6 @@ class PsiturkConfig(ConfigParser):
                 self.set('Database Parameters', 'database_url',
                         os.environ['DATABASE_URL'])
             database_url = self.get('Database Parameters', 'database_url')
-            print(database_url)
             if ('localhost' in database_url) or ('sqlite' in database_url):
                 raise EphemeralContainerDBError(database_url)
             if 'TABLE_NAME' in os.environ:
