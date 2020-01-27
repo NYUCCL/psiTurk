@@ -8,7 +8,7 @@ import os
 import sys
 from distutils import file_util
 import six
-from .experiment_errors import EphemeralContainerDBError
+from .psiturk_exceptions import EphemeralContainerDBError
 if six.PY2:
     from ConfigParser import ConfigParser
 else:
