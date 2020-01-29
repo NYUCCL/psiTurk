@@ -69,7 +69,7 @@ class PsiturkConfig(ConfigParser):
 
         # heroku dynamically assigns your app a port, so you can't set the
         # port to a fixed number database url is also dynamic
-        if 'ON_HEROKU' in os.environ:
+        if 'ON_CLOUD' in os.environ:
             self.set('Server Parameters', 'port', os.environ['PORT'])
             if 'DATABASE_URL' in os.environ:
                 self.set('Database Parameters', 'database_url',

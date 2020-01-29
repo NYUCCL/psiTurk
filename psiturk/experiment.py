@@ -38,7 +38,7 @@ CONFIG = PsiturkConfig()
 CONFIG.load_config()
 
 # Setup logging
-if 'ON_HEROKU' in os.environ:
+if 'ON_CLOUD' in os.environ:
     LOG_FILE_PATH = None
 else:
     LOG_FILE_PATH = os.path.join(os.getcwd(), CONFIG.get("Server Parameters",
