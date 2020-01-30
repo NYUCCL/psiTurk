@@ -35,6 +35,14 @@
                 <strong>Current codeversion:</strong> 
                 <span> {{codeversion}}</span>
             </p>
+            <p>
+                <strong>Current amt balance:</strong> 
+                <span> {{amt_balance}}</span>
+            </p>
+            <p>
+                <strong>Current aws id:</strong> 
+                <span> {{aws_access_key_id}}</span>
+            </p>
             </div>
             {%- endraw -%}
         </nav>
@@ -59,7 +67,9 @@
 
 var services_manager = {
         'codeversion': '', 
-        'mode': ''
+        'mode': '',
+        'amt_balance': '',
+        'aws_access_key_id': ''
     }
 
 let vm_services_manager = new Vue({
@@ -69,7 +79,9 @@ let vm_services_manager = new Vue({
     },
     computed: {
         mode: function(){ return this.services_manager.mode || '' },
-        codeversion: function() { return this.services_manager.codeversion || '' }
+        codeversion: function() { return this.services_manager.codeversion || '' },
+        amt_balance: function() { return this.services_manager.amt_balance || '' },
+        aws_access_key_id: function() { return this.services_manager.aws_access_key_id || '' }
     },
     created: function(){
         fetch('/api/services_manager/').then((response)=>{

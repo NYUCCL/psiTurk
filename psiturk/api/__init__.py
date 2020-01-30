@@ -74,11 +74,15 @@ class ServicesManager(Resource):
     def get(self):
         _return = {
             'mode': 'unavailable', 
-            'codeversion': 'unavailable'
+            'codeversion': 'unavailable',
+            'amt_balance': 'unavailable',
+            'aws_access_key_id': 'unavailable'
         }
         try:
             _return['mode'] = services_manager.mode
             _return['codeversion'] = services_manager.codeversion
+            _return['amt_balance'] = services_manager.amt_balance
+            _return['aws_access_key_id'] = services_manager.config.get('AWS Access','aws_access_key_id')
         except PsiturkException:
             pass
         return _return

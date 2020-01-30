@@ -21,4 +21,8 @@ class PsiturkServicesManager():
     def codeversion(self):
         return self.config['Task Parameters']['experiment_code_version']
         
+    @property
+    def amt_balance(self):
+        return self.amt_services_wrapper.amt_balance().data
+        
 psiturk_services_manager = PsiturkServicesManager()
