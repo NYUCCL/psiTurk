@@ -12,13 +12,13 @@ if six.PY2:
     from ConfigParser import ConfigParser
 else:
     from configparser import ConfigParser
-
+from dotenv import load_dotenv, find_dotenv
 
 class PsiturkConfig(ConfigParser):
 
     def __init__(self, localConfig="config.txt",
                  globalConfigName=".psiturkconfig", **kwargs):
-
+        load_dotenv(find_dotenv(usecwd=True))
         if 'PSITURK_GLOBAL_CONFIG_LOCATION' in os.environ:
             globalConfig = os.path.join(
                 os.environ['PSITURK_GLOBAL_CONFIG_LOCATION'], globalConfigName)

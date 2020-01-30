@@ -3,6 +3,9 @@
 from __future__ import print_function
 from __future__ import absolute_import
 
+from dotenv import load_dotenv, find_dotenv
+load_dotenv(find_dotenv(usecwd=True))
+
 from .psiturk_statuses import *
 from builtins import str
 from builtins import range

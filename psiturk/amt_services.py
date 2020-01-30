@@ -351,7 +351,8 @@ class MTurkServices(object):
     @amt_service_response
     def check_balance(self):
         ''' Check balance '''
-        return self.mtc.get_account_balance()['AvailableBalance']
+        response = self.mtc.get_account_balance()
+        return response['AvailableBalance']
         
     @amt_service_response
     def create_hit(self, hit_config):
