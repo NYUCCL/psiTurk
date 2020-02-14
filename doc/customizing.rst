@@ -184,7 +184,9 @@ Note the ``type`` argument should be consistent with what your route function wa
 Tips about debugging your custom route
 ----------------------
 Debugging custom.py is tricky since the error message won't just appear in your browser console. You will most likely see an "5000 internal error" which just means there is bug when calling your route. You may, however, can:
+
 * find your error message at `server.log`, which is automatically generated in your current psiturk folder and will record the error messages. This is usually the most informative tool.
+
 * you may print messages within your python function, which will appear in the psiturk shell.
-**`current_app.logger.info("blablah")` doesn't work for me?**
+
 * if you are not sure the route is being called, return some error message that will show in your browser (go to your browser with `http://localhost:5000/my_route`) 
