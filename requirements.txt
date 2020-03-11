@@ -19,7 +19,7 @@ docutils==0.14
 enum34==1.1.6
 Faker==1.0.7
 filelock==3.0.12
-Flask==1.0.3
+Flask==1.1.1
 Flask-Login==0.4.1
 Flask-RESTful==0.3.7
 funcsigs==1.0.2
@@ -70,5 +70,5 @@ urllib3==1.25.3
 user-agents==2.0
 virtualenv==16.6.1
 wcwidth==0.1.7
-Werkzeug==0.15.4
+Werkzeug==0.16.0
 zipp==0.5.1
