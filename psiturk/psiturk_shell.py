@@ -101,16 +101,16 @@ class PsiturkNetworkShell(Cmd, object):
                 _wrapper = MTurkServicesWrapper(
                     config=self.config, sandbox=self.sandbox)
                 self._cached_amt_services_wrapper = _wrapper
-            except AmtServicesException as e:
+            except AmtServicesException as e:                
                 still_can_do = '\n'.join([
                 '',
                 'You can still use the psiturk server by running non-AWS commands such as:',
                     '- `psiturk server <subcommand>`',
-                    '- `psiturk server start`',
-                    '- `psiturk server stop`',
+                    '- `psiturk server on`',
+                    '- `psiturk server off`',
                     '- `psiturk debug -p`'])
                 message = '{}{}'.format(e.message, still_can_do)
-                self.poutput(message)
+                self.pfeedback(message)
             except PsiturkException as e:
                 self.poutput(e)
             
@@ -152,7 +152,6 @@ class PsiturkNetworkShell(Cmd, object):
         self.super_header = 'basic CMD command help:'
         
         self.config = config
-        self.quiet = quiet
         self.server = server
         
         self.sandbox = sandbox
@@ -160,13 +159,13 @@ class PsiturkNetworkShell(Cmd, object):
         self.live_hits = 0
 
         Cmd.__init__(self, persistent_history_file=persistent_history_file)
+        self.quiet = quiet
         
-        if not self.amt_services_wrapper:
+        if not self.amt_services_wrapper and not self.quiet:
             sys.exit()
             
-        self.maybe_update_hit_tally()
-        
         if not self.quiet:
+            self.maybe_update_hit_tally()
             self.prompt = self.color_prompt()
             self.intro = self.get_intro_prompt()
         else:
