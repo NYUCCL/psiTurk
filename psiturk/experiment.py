@@ -91,6 +91,11 @@ except ImportError as e:
     raise
 else:
     app.register_blueprint(custom_code)
+    try:
+        from custom import init_app as custom_init_app
+        custom_init_app(app)
+    except ImportError as e:
+        pass
 
 # scheduler
 
