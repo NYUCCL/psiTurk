@@ -24,7 +24,7 @@ from collections import Counter
 
 # Setup flask
 from flask import Flask, render_template, render_template_string, request, \
-    jsonify
+    jsonify, send_from_directory
 
 # Setup database
 
@@ -787,25 +787,18 @@ def insert_mode(page_html, mode):
 # Generic route
 # =============
 
-@app.route('/<pagename>')
-@app.route('/<foldername>/<pagename>')
-def regularpage(foldername=None, pagename=None):
+@app.route('/<path:path>')
+def regularpage(path):
     """
     Route not found by the other routes above. May point to a static template.
     """
-    if foldername is None and pagename is None:
-        raise ExperimentError('page_not_found')
-    if foldername is None and pagename is not None:
-        return render_template(pagename)
-    else:
-        return render_template(foldername+"/"+pagename)
-
+    return send_from_directory('templates', path)
 
 def run_webserver():
     ''' Run web server '''
-    host = "0.0.0.0"
+    host = CONFIG.get('Server Parameters', 'host')
     port = CONFIG.getint('Server Parameters', 'port')
-    print("Serving on ", "http://" + host + ":" + str(port))
+    print("Serving on http://{}:{}".format(host, port))
     app.config['TEMPLATES_AUTO_RELOAD'] = True
     app.jinja_env.auto_reload = True
     app.run(debug=True, host=host, port=port)
