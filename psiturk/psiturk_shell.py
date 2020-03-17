@@ -881,7 +881,7 @@ class PsiturkNetworkShell(Cmd, object):
         else:
             self.help_hit()
 
-    hit_commands = ('create', 'extend', 'expire', 'delete', 'dispose', 'list')
+    hit_commands = ('create', 'extend', 'expire', 'delete', 'list')
 
     def complete_hit(self, text, line, begidx, endidx):
         ''' Tab-complete hit command. '''
