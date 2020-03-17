@@ -64,3 +64,6 @@ nosetests.xml
 doc/_build
 
 tests/shell_transcripts/*
+
+# Set the shell_help .txt files to be admissible, regardless of their name
+!/psiturk/shell_help/*.txt
