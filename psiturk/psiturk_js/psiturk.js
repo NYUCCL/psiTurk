@@ -322,7 +322,7 @@ var PsiTurk = function(uniqueId, adServerLoc, mode) {
 
 	/* initialized local variables */
 
-	var taskdata = new TaskData();
+	var taskdata = new TaskData({'id': uniqueId});
 	taskdata.fetch({async: false});
 	
 	/*  DATA: */
