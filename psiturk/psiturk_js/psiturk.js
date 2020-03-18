@@ -28,7 +28,6 @@ var PsiTurk = function(uniqueId, adServerLoc, mode) {
 	 ***************/
 	var TaskData = Backbone.Model.extend({
 		urlRoot: "/sync", // Fetch will GET from this url, while Save will PUT to this url, with mimetype 'application/JSON'
-		id: uniqueId,
 		adServerLoc: adServerLoc,
 		mode: mode,
 		
@@ -206,16 +205,17 @@ var PsiTurk = function(uniqueId, adServerLoc, mode) {
 	};
 	
 	self.preloadPages = function(pagenames) {
-		// Synchronously preload pages.
-		$(pagenames).each(function() {
-			$.ajax({
-				url: this,
-				success: function(page_html) { self.pages[this.url] = page_html;},
-				dataType: "html",
-				async: false
-			});
-		});
+		// asynchronously preload pages. 
+		return Promise.all($.map(pagenames, (pagename)=>{
+            return $.ajax({
+                url: pagename,
+                dataType: "html",
+            }).then((page_html)=>{
+                self.pages[pagename] = page_html
+            })
+        }));
 	};
+    
 	// Get HTML file from collection and pass on to a callback
 	self.getPage = function(pagename) {
 		if (!(pagename in self.pages)){
@@ -358,5 +358,3 @@ var PsiTurk = function(uniqueId, adServerLoc, mode) {
 
 	return self;
 };
-
-// vi: noexpandtab nosmartindent shiftwidth=4 tabstop=4

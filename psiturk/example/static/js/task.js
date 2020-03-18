@@ -21,7 +21,9 @@ var pages = [
 	"postquestionnaire.html"
 ];
 
-psiTurk.preloadPages(pages);
+const init = (async () => {
+    await psiTurk.preloadPages(pages);
+})()
 
 var instructionPages = [ // add as a list as many pages as you like
 	"instructions/instruct-1.html",
@@ -219,7 +221,8 @@ var currentview;
 /*******************
  * Run Task
  ******************/
-$(window).load( function(){
+$(window).on('load', async () => {
+    await init;
     psiTurk.doInstructions(
     	instructionPages, // a list of pages you want to display in sequence
     	function() { currentview = new StroopExperiment(); } // what you want to do when you are done with instructions
