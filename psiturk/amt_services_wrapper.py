@@ -23,7 +23,7 @@ from sqlalchemy import or_, and_
 from sqlalchemy.sql.operators import eq
 import sqlalchemy as sa
 import webbrowser
-from fuzzywuzzy import process
+from rapidfuzz import process
 import signal
 import datetime
 import random

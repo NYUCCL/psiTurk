@@ -24,7 +24,7 @@ import sqlalchemy as sa
 import webbrowser
 from docopt import docopt, DocoptExit
 from cmd2 import Cmd, EmptyStatement
-from fuzzywuzzy import process
+from rapidfuzz import process
 import signal
 import certifi
 import datetime
