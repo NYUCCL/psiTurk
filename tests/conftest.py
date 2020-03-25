@@ -9,7 +9,6 @@ import json
 import datetime
 import dateutil.parser
 import ciso8601
-import six
 import boto3
 from botocore.stub import Stubber
 import shutil
@@ -231,10 +230,7 @@ class Helpers(object):
             *[os.path.dirname(os.path.realpath(__file__)), 'boto3-returns', name])
         with open(filepath, 'rb') as infile:
             if filepath.endswith('.pickle'):
-                if six.PY2:
-                    return pickle.load(infile)
-                else:
-                    return pickle.load(infile, encoding='latin1')
+                return pickle.load(infile, encoding='latin1')
             elif filepath.endswith('.json'):
                 data = json.load(infile, object_hook=date_hook)
                 # print(data['HITs'][0])

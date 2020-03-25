@@ -1,5 +1,4 @@
 from __future__ import print_function
-import six
 from distutils import file_util
 import os
 from future import standard_library
@@ -7,11 +6,7 @@ standard_library.install_aliases()
 import os
 import sys
 from distutils import file_util
-import six
-if six.PY2:
-    from ConfigParser import ConfigParser
-else:
-    from configparser import ConfigParser
+from configparser import ConfigParser
 from dotenv import load_dotenv, find_dotenv
 
 class PsiturkConfig(ConfigParser):
