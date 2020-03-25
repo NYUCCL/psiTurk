@@ -2,7 +2,7 @@ Usage:
   hit create [<numWorkers> <reward> <duration>]
   hit extend <HITid> [--assignments <number>] [--expiration <time>]
   hit expire (--all | <HITid> ...)
-  hit dispose (--all | <HITid> ...)
+  hit delete (--all | <HITid> ...)
   hit list [--active | --reviewable]
   hit help
 
@@ -16,7 +16,7 @@ Usage:
   	      of time before the HIT expires.
   expire      Expire one or more existing HITs, or expire all HITs using
   	      the '--all' flag.
-  delete     Delete of one or more existing HITs, or delete of all HITs
+  delete      Delete of one or more existing HITs, or delete of all HITs
     	      using the '--all' flag.
   list	      List all HITs, or list all active or reviewable HITs using the
               provided flags.
