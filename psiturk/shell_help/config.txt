@@ -1,0 +1,9 @@
+Usage:
+  config print
+  config reload
+  config help
+
+'config' is used with the following subcommands:
+  print     Print the current configuration.
+  reload    Reload the configuration from config.txt.
+  help	    Display this screen.
