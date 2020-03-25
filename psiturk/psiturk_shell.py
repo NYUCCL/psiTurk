@@ -260,7 +260,7 @@ class PsiturkNetworkShell(Cmd, object):
         elif arg['reload']:
             self.reload_config(arg)
         else:
-            self.help_server()
+            self.help_config()
 
     config_commands = ('print', 'reload', 'help')
 
