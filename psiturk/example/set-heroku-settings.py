@@ -11,7 +11,7 @@ for section in sections:
         subprocess.call('heroku config:set ' + '='.join(item), shell=True)
         
 
-subprocess.call('heroku config:set ON_HEROKU=true', shell=True)
+subprocess.call('heroku config:set ON_CLOUD=true', shell=True)
 
     
 

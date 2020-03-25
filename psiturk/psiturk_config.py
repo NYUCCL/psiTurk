@@ -8,6 +8,7 @@ import os
 import sys
 from distutils import file_util
 import six
+from .psiturk_exceptions import EphemeralContainerDBError
 if six.PY2:
     from ConfigParser import ConfigParser
 else:
@@ -68,7 +69,14 @@ class PsiturkConfig(ConfigParser):
 
         # heroku dynamically assigns your app a port, so you can't set the
         # port to a fixed number database url is also dynamic
-        if 'ON_HEROKU' in os.environ:
+        if 'ON_CLOUD' in os.environ:
             self.set('Server Parameters', 'port', os.environ['PORT'])
-            self.set('Database Parameters', 'database_url',
-                     os.environ['DATABASE_URL'])
+            if 'DATABASE_URL' in os.environ:
+                self.set('Database Parameters', 'database_url',
+                        os.environ['DATABASE_URL'])
+            database_url = self.get('Database Parameters', 'database_url')
+            if ('localhost' in database_url) or ('sqlite' in database_url):
+                raise EphemeralContainerDBError(database_url)
+            if 'TABLE_NAME' in os.environ:
+                self.set('Database Parameters', 'table_name',
+                        os.environ['TABLE_NAME'])

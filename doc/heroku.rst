@@ -65,7 +65,7 @@ If you're starting from a preexisting psiturk app, you need to grab three files 
 
 #. Run the following commands, replacing `<XYZ>` with your access and secret keys for `Amazon Web Services <amt_setup.html#obtaining-aws-credentials>`_ and `psiTurk Secure Ad Server <psiturk_org_setup.html#obtaining-psiturk-org-api-credentials>`_ (you can also use `this Python script <https://github.com/NYUCCL/psiTurk/blob/908ce7bcfc8fb6b38d94dbae480449324c5d9d51/psiturk/example/set-heroku-settings.py>`_ to automatically run these commmands, provided that you've filled out your credentials in your `.psiturkconfig` file. Running this script is the recommended approach!): ::
 
-    heroku config:set ON_HEROKU=true
+    heroku config:set ON_CLOUD=true
     heroku config:set psiturk_access_key_id=<XYZ>
     heroku config:set psiturk_secret_access_id=<XYZ>
     heroku config:set aws_access_key_id=<XYZ>
