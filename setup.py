@@ -33,7 +33,8 @@ if __name__ == "__main__":
                 'psiturk = psiturk.command_line:process',
                 'psiturk-server = psiturk.command_line:process',
                 'psiturk-setup-example = psiturk.command_line:process',
-                'psiturk-install = psiturk.command_line:process'
+                'psiturk-install = psiturk.command_line:process',
+                'psiturk-heroku-config = psiturk.command_line:process'
             ]
         },
         setup_requires = ['pytest-runner'],

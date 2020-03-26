@@ -34,7 +34,7 @@ def setup_example():
         os.mkdir(EXAMPLE_TARGET)
         print("Copying", EXAMPLE_DIR, "to", EXAMPLE_TARGET)
         dir_util.copy_tree(EXAMPLE_DIR, EXAMPLE_TARGET)
-        # change to target director
+        # change to target directory
         print("Creating default configuration file (config.txt)")
         file_util.copy_file(DEFAULT_CONFIG_FILE, CONFIG_TARGET)
         os.chdir(EXAMPLE_TARGET)

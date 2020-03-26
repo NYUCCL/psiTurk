@@ -123,3 +123,23 @@ class EphemeralContainerDBError(PsiturkException):
             '(see https://devcenter.heroku.com/articles/sqlite3 for why that might not be a good idea). One better '
             'option might be to use a Heroku PostGRES table. Instructions to do that can be found here: ',
             'https://psiturk.readthedocs.io/en/latest/heroku.html'])
+            
+class HerokuCmdNotFound(PsiturkException):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.message = 'command `heroku` command not found. Please first install the heroku cmd cli.'
+        
+class HerokuNotLoggedIn(PsiturkException):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.message = 'Heroku cli not logged in. Please run `heroku auth:login` first.'
+
+class HerokuNotAGitRepo(PsiturkException):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.message = 'Current directory is not a git repository. See https://devcenter.heroku.com/articles/git for help.'
+
+class HerokuAppNotSet(PsiturkException):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.message = 'Heroku app not known. '

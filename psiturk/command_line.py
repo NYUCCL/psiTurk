@@ -22,6 +22,9 @@ def process():
         setup_example()
     elif invoked_as == "psiturk-install":
         install_from_exchange()
+    elif invoked_as == "psiturk-heroku-config":
+        from psiturk.do_heroku_setup import do_heroku_setup
+        do_heroku_setup()
 
 
 def install_from_exchange():
@@ -52,7 +55,7 @@ def setup_example():
     )
     args = parser.parse_args()
 
-    # If requested version just print and quite
+    # If requested version just print and quit
     if args.version:
         print(version_number)
     else:
@@ -73,7 +76,7 @@ def launch_server():
     )
     args = parser.parse_args()
 
-    # If requested version just print and quite
+    # If requested version just print and quit
     if args.version:
         print(version_number)
     else:
