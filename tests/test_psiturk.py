@@ -101,7 +101,6 @@ def test_custom_get_condition_can_import(mocker, psiturk_test_client):
     import custom
     reload(custom)
     
-    from mock import PropertyMock
     mocker.patch.object(custom,'custom_get_condition', lambda mode: (9,9), create=True)
     
     app = psiturk_test_client()

@@ -1,12 +1,8 @@
 from builtins import range
 from builtins import object
 import pytest
-try:
-    import mock
-    from mock import patch, PropertyMock
-except ImportError:
-    from unittest import mock
-    from unittest.mock import patch, PropertyMock
+from unittest import mock
+from unittest.mock import patch, PropertyMock
 import pickle
 import os
 import boto3

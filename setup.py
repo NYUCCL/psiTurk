@@ -12,6 +12,7 @@ try:
 except IOError:
     long_description = ""
 
+test_deps = ['pytest','ciso8601','pytest-mock','pytest-socket','pytz']
 
 if __name__ == "__main__":
     # remove file if it exists and re-write with current version number
@@ -36,10 +37,11 @@ if __name__ == "__main__":
             ]
         },
         setup_requires = ['pytest-runner'],
-        tests_require=['pytest','ciso8601','pytest-mock','pytest-socket','pytz'],
+        tests_require=test_deps,
         extras_require={
             ':python_version == "2.7"': ['futures'],
-            'dev': ['sphinx', 'sphinx_rtd_theme', 'sphinx-server']
+            'dev': ['sphinx', 'sphinx_rtd_theme', 'sphinx-server'],
+            'test': test_deps
         },
         author = "NYU Computation and Cognition Lab",
         author_email = "authors@psiturk.org",
