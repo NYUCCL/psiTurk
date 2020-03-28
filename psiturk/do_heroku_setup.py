@@ -66,7 +66,7 @@ def do_heroku_setup():
     _copy_heroku_files()
     _add_postgresql_db()
 
-    print().
+    print()
     print("Heroku config done.")
     print()
     print("Don't forget that your database needs to be a persistent datastore!")
