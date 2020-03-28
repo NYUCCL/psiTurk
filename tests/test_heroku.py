@@ -52,3 +52,9 @@ def test_heroku_copy_files(mocker, tmpdir):
     for heroku_file in files_in_heroku_dir:
         assert heroku_file in files_in_thisdir
         
+def test_add_heroku_psql_db(mocker):
+    from psiturk.do_heroku_setup import _add_postgresql_db
+    import subprocess
+    mocker.patch.object(subprocess, 'call', lambda *args, **kwargs: 0)
+    _add_postgresql_db()
+        

@@ -35,8 +35,16 @@ def _set_heroku_config_vars():
     for section in sections:
         for item in CONFIG.items(section):
             subprocess.call(['heroku', 'config:set', '='.join(item)])
-            
+    
+    print()
     print('psiturk has finished setting heroku config vars.')
+    
+def _add_postgresql_db():
+    subprocess.call(['heroku', 'addons:create', 'heroku-postgresql:hobby-dev'])
+    print()
+    print("\n".join([   "Your psiturk heroku app will use the just-added postgresql database instead of whatever is set in your config.txt.", 
+                        "If you don't want this, then change or unset the heroku config var 'DATABASE_URL'",
+                        "and/or remove the heroku postgresql addon."]))
 
 HEROKU_FILES_DIR = os.path.join(os.path.dirname(__file__), "heroku_files")
 def _copy_heroku_files():
@@ -56,9 +64,12 @@ def do_heroku_setup():
     _check_heroku_app_set()
     _set_heroku_config_vars()
     _copy_heroku_files()
+    _add_postgresql_db()
 
+    print().
     print("Heroku config done.")
-    print("Done. Don't forget that your database needs to be a persistent datastore!")
+    print()
+    print("Don't forget that your database needs to be a persistent datastore!")
     
 if __name__ == '__main__':
     do_heroku_setup()
