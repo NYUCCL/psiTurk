@@ -7,7 +7,7 @@ us_only = true
 approve_requirement = 95
 number_hits_approved = 0
 require_master_workers = false
-contact_email_on_error = youremail@gmail.com
+contact_email_on_error = 0
 ad_group = Default psiTurk Stroop Example
 psiturk_keywords = stroop
 organization_name = New Great University
@@ -19,7 +19,7 @@ database_url = sqlite:///participants.db
 table_name = turkdemo
 
 [Server Parameters]
-host = localhost
+host = 127.0.0.1
 port = 22362
 cutoff_time = 30
 logfile = server.log
