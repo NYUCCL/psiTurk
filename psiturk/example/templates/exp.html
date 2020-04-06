@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 
+<!--
   The exp.html is the main form that
   controls the experiment.
 
@@ -11,7 +11,7 @@
         <title>Psychology Experiment</title>
         <link rel="icon" href="/static/favicon.ico" />
 
-        <!-- libraries used in your experiment 
+        <!-- libraries used in your experiment
 			psiturk specifically depends on underscore.js, backbone.js and jquery
     	-->
 		<script src="/static/lib/jquery-3.4.1.min.js" type="text/javascript"> </script>
@@ -25,16 +25,16 @@
 			var condition = {{ condition }}; // the condition number
 			var counterbalance = {{ counterbalance }}; // a number indexing counterbalancing conditions
 			var codeversion = {{ codeversion }}; // a number indexing counterbalancing conditions
-			var contact_address = {{ contact_address }}; // a number indexing counterbalancing conditions
+			var contact_address = "{{ contact_address }}"; // a number indexing counterbalancing conditions
 			var adServerLoc = "{{ adServerLoc }}"; // the location of your ad (so you can send user back at end of experiment)
 			var mode = "{{ mode }}";
 		</script>
-				
+
 		<!-- utils.js and psiturk.js provide the basic psiturk functionality -->
 		<script src="/static/js/utils.js" type="text/javascript"> </script>
 		<script src="/static/js/psiturk.js" type="text/javascript"> </script>
 
-		<!-- task.js is where you experiment code actually lives 
+		<!-- task.js is where you experiment code actually lives
 			for most purposes this is where you want to focus debugging, development, etc...
 		-->
 		<script src="/static/js/task.js" type="text/javascript"> </script>
@@ -46,9 +46,8 @@
 	    <noscript>
 			<h1>Warning: Javascript seems to be disabled</h1>
 			<p>This website requires that Javascript be enabled on your browser.</p>
-			<p>Instructions for enabling Javascript in your browser can be found 
+			<p>Instructions for enabling Javascript in your browser can be found
 			<a href="http://support.google.com/bin/answer.py?hl=en&answer=23852">here</a></p>
 		</noscript>
     </body>
 </html>
-
