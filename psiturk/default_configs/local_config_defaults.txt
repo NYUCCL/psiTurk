@@ -7,7 +7,7 @@ us_only = true
 approve_requirement = 95
 number_hits_approved = 0
 require_master_workers = false
-contact_email_on_error = youremail@gmail.com
+contact_email_on_error = email_address@example.com
 ad_group = Default psiTurk Stroop Example
 psiturk_keywords = stroop
 organization_name = New Great University
@@ -19,7 +19,7 @@ database_url = sqlite:///participants.db
 table_name = turkdemo
 
 [Server Parameters]
-host = localhost
+host = 127.0.0.1
 port = 22362
 cutoff_time = 30
 logfile = server.log
@@ -29,7 +29,7 @@ login_username = examplename
 login_pw = examplepassword
 threads = auto
 secret_key = 'this is my secret key which is hard to guess, i should change this'
-#certfile = <path_to.crt> 
+#certfile = <path_to.crt>
 #keyfile = <path_to.key>
 #adserver_revproxy_host = www.location.of.your.revproxy.sans.protocol.com
 #adserver_revproxy_port = 80 # defaults to 80
@@ -47,7 +47,7 @@ persistent_history_file = .psiturk_history
 
 # If you are not using the psiturk ad server, set `use_psiturk_ad_server` to `false` and point `ad_location` to your proxy server <host> and <port>. Format the ad_location like this:
 #
-#   https://<host>:<port>/ad 
+#   https://<host>:<port>/ad
 
 use_psiturk_ad_server = true
 ad_location = false
