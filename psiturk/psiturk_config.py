@@ -67,7 +67,7 @@ class PsiturkConfig(ConfigParser):
         #      heroku dynamically assigns your app a port, so you
         #      can't set the port to a fixed number database url
         #      is also dynamic
-        if 'ON_CLOUD' in os.environ:
+        if 'ON_CLOUD' in os.environ or 'USE_ENV' in os.environ:
             # explicit enum b/c e.g. self['Server Parameters'] may be incomplete(?)
             #                   and it is easier to grep
             configs={
@@ -81,7 +81,8 @@ class PsiturkConfig(ConfigParser):
                         conf_var=env_var.lower()
                         self.set(section, conf_var, env_val)
 
-            # heroku files are ephemeral. error if we're trying to use a file as the db
+        # heroku files are ephemeral. Error if we're trying to use a file as the db
+        if 'ON_CLOUD' in os.environ:
             database_url = self.get('Database Parameters', 'database_url')
             if ('localhost' in database_url) or ('sqlite' in database_url):
                 raise EphemeralContainerDBError(database_url)
