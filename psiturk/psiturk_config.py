@@ -8,6 +8,7 @@ import sys
 from distutils import file_util
 from configparser import ConfigParser
 from dotenv import load_dotenv, find_dotenv
+from .psiturk_exceptions import EphemeralContainerDBError
 
 class PsiturkConfig(ConfigParser):
 
@@ -61,16 +62,26 @@ class PsiturkConfig(ConfigParser):
                 if name in os.environ:
                     self.set(section, name, os.environ[name])
 
-        # heroku dynamically assigns your app a port, so you can't set the
-        # port to a fixed number database url is also dynamic
+        # use environment if running in the cloud
+        # N.B. most are optional overrides. PORT is not!
+        #      heroku dynamically assigns your app a port, so you
+        #      can't set the port to a fixed number database url
+        #      is also dynamic
         if 'ON_CLOUD' in os.environ:
-            self.set('Server Parameters', 'port', os.environ['PORT'])
-            if 'DATABASE_URL' in os.environ:
-                self.set('Database Parameters', 'database_url',
-                        os.environ['DATABASE_URL'])
+            # explicit enum b/c e.g. self['Server Parameters'] may be incomplete(?)
+            #                   and it is easier to grep
+            configs={
+                'Server Parameters': ['HOST', 'PORT', 'LOGIN_USERNAME',
+                                      'LOGIN_PW', 'SECRET_KEY'],
+                'Database Parameters': ['DATABASE_URL','TABLE_NAME']}
+            for section, env_vars in configs.items():
+                for env_var in env_vars:
+                    env_val = os.environ.get(env_var)
+                    if env_val:
+                        conf_var=env_var.lower()
+                        self.set(section, conf_var, env_val)
+
+            # heroku files are ephemeral. error if we're trying to use a file as the db
             database_url = self.get('Database Parameters', 'database_url')
             if ('localhost' in database_url) or ('sqlite' in database_url):
                 raise EphemeralContainerDBError(database_url)
-            if 'TABLE_NAME' in os.environ:
-                self.set('Database Parameters', 'table_name',
-                        os.environ['TABLE_NAME'])
