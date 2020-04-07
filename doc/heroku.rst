@@ -6,7 +6,7 @@ Running psiTurk on Heroku
 The benefits of `Heroku` are that:
 
 - It's somewhat easier to manage than `Amazon Web Services EC2 <amazon_ec2.html>`_ for the tech-wary (no need for security groups, no need to ssh in).
-- You can set up a free PostgreSQL server (which is `highly recommended <configure_databases.html>`_ to use over the default SQLite database that `psiTurk` uses).
+- You can set up a free PostgreSQL server (which is `highly recommended <configure_databases.html>`_ to use over the default SQLite database that `psiTurk` uses). A database server is required on heroku as files, including `participants.db`, are ephemeral. Data would be lost every time the app spins down.
 - You get free SSL if you want to host your own ad, which is good because the `psiTurk Secure Ad Server <secure_ad_server.html>`_ goes down under heavy load.
 - It's scaleable.
 - You get a `Heroku` buffering server in front of your `psiTurk` gunicorn instance, which helps with performance a little bit (although it would be better to put nginx in front of gunicorn within the `psiTurk` instance).
@@ -55,7 +55,7 @@ If you're starting from a preexisting psiturk app, you need to grab three files 
 
     heroku domains
 
-#. In your psiTurk example, open the `config.txt` file. Here, find and make the following settings for the these rows, and then save the file: ::
+#. In your psiTurk example, open the `config.txt` file. Here, find and make the following settings for the these rows, and then save the file. Note: Heroku assigns a random port to every dyno. `psiTurk` handles this. The `port` setting in `config.txt` is ignored. ::
 
     database_url = <Your Postgres database URL that you retrieved above>
     host = 0.0.0.0
@@ -93,9 +93,9 @@ If you're starting from a preexisting psiturk app, you need to grab three files 
     
    From that url, you can conveniently obtain a debugging url by clicking "Begin by viewing the `ad`."
    
-#. Run through your experiment. You should now have some data in the database. To extract it into `csv` files, type: ::
+#. Run through your experiment hosted by heroku. You should now have some data in the database. To extract it into `csv` files, run locally: ::
 
-    download_datafiles
+    psiturk download_datafiles
 
 This should generate three datafiles for you in your local directory: `trialdata.csv`, `questiondata.csv`, and `eventdata.csv`. Congratulations, you've now gathered data from an experiment running on `Heroku`!
 
