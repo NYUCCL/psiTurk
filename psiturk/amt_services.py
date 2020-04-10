@@ -33,12 +33,12 @@ class AmtServicesResponse(object):
         self.data = data
         for k, v in kwargs.items():
             setattr(self, k, v)
-    
+
 class AmtServicesSuccessResponse(AmtServicesResponse):
     def __init__(self, *args, **kwargs):
         super(AmtServicesSuccessResponse, self).__init__(
             *args, status='success', success=True, **kwargs)
-    
+
 class AmtServicesErrorResponse(AmtServicesResponse):
     def __init__(self, *args, **kwargs):
         exception = kwargs.pop('exception', None)
@@ -55,7 +55,7 @@ def check_mturk_connection(func):
             raise NoMturkConnectionError()
         return func(self, *args, **kwargs)
     return wrapper
-    
+
 def amt_service_response(func):
     @check_mturk_connection
     @wraps(func)
@@ -67,7 +67,7 @@ def amt_service_response(func):
             # print(e)
             return AmtServicesErrorResponse(operation=func.__name__, exception=e)
     return wrapper
-        
+
 class MTurkHIT(object):
     ''' Structure for dealing with MTurk HITs '''
 
@@ -174,7 +174,7 @@ class MTurkServices(object):
             'status': assignment['AssignmentStatus'],
         } for assignment in assignments]
         return workers
-    
+
     @amt_service_response
     def get_assignment(self, assignment_id):
         assignment = self.mtc.get_assignment(
@@ -192,7 +192,7 @@ class MTurkServices(object):
     @amt_service_response
     def bonus_assignment(self, assignment_id, worker_id, amount, reason=""):
         ''' Bonus worker '''
-    
+
         if not worker_id:
             assignment = self.mtc.get_assignment(
                 AssignmentId=assignment_id)['Assignment']
@@ -207,14 +207,14 @@ class MTurkServices(object):
         self.mtc.approve_assignment(AssignmentId=assignment_id,
                                     OverrideRejection=override_rejection)
         return True
-    
+
     @amt_service_response
     def reject_assignment(self, assignment_id):
         ''' Reject worker '''
         self.mtc.reject_assignment(
             AssignmentId=assignment_id, RequesterFeedback='')
         return True
-    
+
     @amt_service_response
     def unreject_assignment(self, assignment_id):
         ''' Unreject worker '''
@@ -272,6 +272,7 @@ class MTurkServices(object):
             IntegerValues=[int(hit_config['number_hits_approved'])]
         ))
 
+
         if hit_config['require_master_workers']:
             master_qualId = MASTERS_SANDBOX_QUAL_ID if self.is_sandbox else MASTERS_QUAL_ID
             quals.append(dict(
@@ -285,6 +286,14 @@ class MTurkServices(object):
                 Comparator='EqualTo',
                 LocaleValues=[{'Country': 'US'}]
             ))
+
+        for qual_id in hit_config['whitelist_qualification_ids']:
+            quals.append(dict(
+            QualificationTypeId=qual_id, Comparator='Exists'))
+
+        for qual_id in hit_config['blacklist_qualification_ids']:
+            quals.append(dict(
+            QualificationTypeId=qual_id, Comparator='DoesNotExist'))
 
         # Create a HIT type for this HIT.
         hit_type = self.mtc.create_hit_type(
@@ -349,22 +358,41 @@ class MTurkServices(object):
         )
 
     @amt_service_response
+    def list_qualification_types(self,
+        Query='',
+        MustBeRequestable=False,
+        MustBeOwnedByCaller=True):
+
+        paginator = self.mtc.get_paginator('list_qualification_types')
+        qualification_types = []
+        kwargs = {
+            'MustBeRequestable':MustBeRequestable,
+            'MustBeOwnedByCaller':MustBeOwnedByCaller
+        }
+        if Query:
+            kwargs['Query'] = Query
+
+        for page in paginator.paginate(**kwargs):
+            qualification_types.extend(page['QualificationTypes'])
+
+        return qualification_types
+
+    @amt_service_response
     def check_balance(self):
         ''' Check balance '''
         response = self.mtc.get_account_balance()
         return response['AvailableBalance']
-        
+
     @amt_service_response
     def create_hit(self, hit_config):
         ''' Create HIT '''
         self.configure_hit(hit_config)
         myhit = self.mtc.create_hit_with_hit_type(**self.param_dict)['HIT']
         return myhit
-        
+
     @amt_service_response
     def expire_hit(self, hitid):
         ''' Expire HIT '''
-        
         time_in_past = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(-30)
         self.mtc.update_expiration_for_hit(
             HITId=hitid,
@@ -394,7 +422,7 @@ class MTurkServices(object):
                 HITId=hitid, ExpireAt=expiration)
 
         return True
-    
+
     @amt_service_response
     def get_hit(self, hitid):
         ''' Get HIT '''
@@ -413,7 +441,7 @@ class MTurkServices(object):
     @amt_service_response
     def get_summary(self):
         ''' Get summary '''
-        
+
         balance = self.check_balance()
         summary = jsonify(balance=str(balance))
         return summary

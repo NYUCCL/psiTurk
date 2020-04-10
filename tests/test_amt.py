@@ -6,6 +6,9 @@ from unittest.mock import patch, PropertyMock
 import pickle
 import os
 import boto3
+from botocore.stub import ANY
+from importlib import reload
+
 
 import datetime
 import ciso8601
@@ -16,6 +19,19 @@ SANDBOX_ENDPOINT_URL = 'https://mturk-requester-sandbox.us-east-1.amazonaws.com'
 LIVE_ENDPOINT_URL = 'https://mturk-requester.us-east-1.amazonaws.com'
 
 # pytest_plugins = ['pytest_profiling']
+
+# TODO: make it easier to import these quals which psiturk adds
+psiturk_standard_quals = [
+    {'Comparator': 'GreaterThanOrEqualTo',
+        'IntegerValues': [95],
+        'QualificationTypeId': '000000000000000000L0'},
+    {'Comparator': 'GreaterThanOrEqualTo',
+        'IntegerValues': [0],
+        'QualificationTypeId': '00000000000000000040'},
+    {'Comparator': 'EqualTo',
+        'LocaleValues': [{'Country': 'US'}],
+        'QualificationTypeId': '00000000000000000071'}
+]
 
 class TestAmtServices(object):
 
@@ -29,6 +45,170 @@ class TestAmtServices(object):
         assert Hit.query.get('3XJOUITW8URHJMX7F00H20LGRIAQTX') is not None
         # confirm that it's in the local db...
         assert Hit.query.get('ABCDUITW8URHJMX7F00H20LGRIAQTX') is not None
+
+
+    def test_wrapper_hit_create_with_whitelist_qualification(self, stubber, amt_services_wrapper):
+        '''
+        makes sure that whitelist_qualid finds its way into the qual list as EXISTS
+        '''
+
+        WHITELIST_QUAL_ID = 'WHITELISTQUAL_123'
+        quals = psiturk_standard_quals + [
+            {
+                'Comparator': 'Exists',
+                'QualificationTypeId': WHITELIST_QUAL_ID
+            }]
+
+        stubber.add_response('create_hit_type', {'HITTypeId': 'HITTypeId_123'}, {
+            'Title': ANY,
+            'Description': ANY,
+            'Reward': ANY,
+            'AssignmentDurationInSeconds': ANY,
+            'Keywords': ANY,
+            'QualificationRequirements': quals
+        })
+        stubber.add_response('create_hit_with_hit_type', {
+            'HIT': {
+                'HITId': 'ABC123'
+            }
+        })
+        # import pytest; pytest.set_trace()
+        response = amt_services_wrapper.create_hit(1, 0.01, 1, whitelist_qualification_ids=[WHITELIST_QUAL_ID])
+        if not response.success:
+            raise response.exception
+
+    def test_wrapper_hit_create_with_multiple_whitelist_qualifications(self, stubber, amt_services_wrapper):
+        '''
+        makes sure that whitelist_qualid finds its way into the qual list as EXISTS
+        '''
+
+        WHITELIST_QUAL_IDS = 'WHITELISTQUAL_123, WHITELISTQUAL_123'
+        quals = psiturk_standard_quals + [
+            {
+                'Comparator': 'Exists',
+                'QualificationTypeId': qual_id
+            } for qual_id in WHITELIST_QUAL_IDS]
+
+        stubber.add_response('create_hit_type', {'HITTypeId': 'HITTypeId_123'}, {
+            'Title': ANY,
+            'Description': ANY,
+            'Reward': ANY,
+            'AssignmentDurationInSeconds': ANY,
+            'Keywords': ANY,
+            'QualificationRequirements': quals
+        })
+        stubber.add_response('create_hit_with_hit_type', {
+            'HIT': {
+                'HITId': 'ABC123'
+            }
+        })
+        # import pytest; pytest.set_trace()
+        response = amt_services_wrapper.create_hit(1, 0.01, 1, whitelist_qualification_ids=WHITELIST_QUAL_IDS)
+        if not response.success:
+            raise response.exception
+
+    def test_wrapper_generate_hit_config_reads_qualifications_from_config_file(self, edit_config_file, stubber, amt_services_wrapper):
+        '''
+        makes sure that whitelist_qualid finds its way into the qual list as EXISTS
+        '''
+
+        whitelist_config_file_qual_ids = ['whitelist_config_123','whitelist_config_456']
+        blacklist_config_file_qual_ids = ['blacklist_config_123','blacklist_config_456']
+
+        edit_config_file('require_quals =','require_quals = {}'.format(','.join(whitelist_config_file_qual_ids)))
+        edit_config_file('block_quals =','block_quals = {}'.format(','.join(blacklist_config_file_qual_ids)))
+
+        whitelist_qualification_ids_passed = ['white_passed_123', 'white_passed_456']
+        blacklist_qualification_ids_passed = ['black_passed_123', 'black_passed_456']
+
+        # need to reset the amt_services_wrapper config after editing config file above.
+        from psiturk.psiturk_config import PsiturkConfig
+        config = PsiturkConfig()
+        config.load_config()
+        amt_services_wrapper.config = config
+
+        hit_config = amt_services_wrapper._generate_hit_config(
+            'loc_123', 1, '1.00', 1,
+            whitelist_qualification_ids=whitelist_qualification_ids_passed,
+            blacklist_qualification_ids=blacklist_qualification_ids_passed)
+
+        whitelist_qual_ids = whitelist_config_file_qual_ids + whitelist_qualification_ids_passed
+        blacklist_qual_ids = blacklist_config_file_qual_ids + blacklist_qualification_ids_passed
+
+        for qual in whitelist_qual_ids:
+            assert qual in hit_config['whitelist_qualification_ids']
+
+        for qual in blacklist_qual_ids:
+            assert qual in hit_config['blacklist_qualification_ids']
+
+
+
+
+
+    def test_wrapper_hit_create_with_blacklist_qualification(self, stubber, amt_services_wrapper):
+        '''
+        makes sure that whitelist_qualid finds its way into the qual list as EXISTS
+        '''
+
+        BLACKLIST_QUAL_ID = 'QUAL_123'
+        quals = psiturk_standard_quals + [
+            {
+                'Comparator': 'DoesNotExist',
+                'QualificationTypeId': BLACKLIST_QUAL_ID
+            }]
+
+        stubber.add_response('create_hit_type', {'HITTypeId': 'HITTypeId_123'}, {
+            'Title': ANY,
+            'Description': ANY,
+            'Reward': ANY,
+            'AssignmentDurationInSeconds': ANY,
+            'Keywords': ANY,
+            'QualificationRequirements': quals
+        })
+        stubber.add_response('create_hit_with_hit_type', {
+            'HIT': {
+                'HITId': 'ABC123'
+            }
+        })
+        # import pytest; pytest.set_trace()
+        response = amt_services_wrapper.create_hit(1, 0.01, 1, blacklist_qualification_ids=[BLACKLIST_QUAL_ID])
+        if not response.success:
+            raise response.exception
+
+    def test_wrapper_hit_create_with_whitelist_and_blacklist_qualifications(self, stubber, amt_services_wrapper):
+        '''
+        makes sure that whitelist_qualid finds its way into the qual list as EXISTS
+        '''
+
+        WHITELIST_QUAL_ID = 'WHITELISTQUAL_123'
+        BLACKLIST_QUAL_ID = 'BLACKLISTQUAL_123'
+        quals = psiturk_standard_quals + [
+            {
+                'Comparator': 'Exists',
+                'QualificationTypeId': WHITELIST_QUAL_ID
+            },
+            {
+                'Comparator': 'DoesNotExist',
+                'QualificationTypeId': BLACKLIST_QUAL_ID
+            }]
+
+        stubber.add_response('create_hit_type', {'HITTypeId': 'HITTypeId_123'}, {
+            'Title': ANY,
+            'Description': ANY,
+            'Reward': ANY,
+            'AssignmentDurationInSeconds': ANY,
+            'Keywords': ANY,
+            'QualificationRequirements': quals
+        })
+        stubber.add_response('create_hit_with_hit_type', {
+            'HIT': {
+                'HITId': 'ABC123'
+            }
+        })
+        # import pytest; pytest.set_trace()
+        response = amt_services_wrapper.create_hit(1, 0.01, 1, whitelist_qualification_ids=[WHITELIST_QUAL_ID], blacklist_qualification_ids=[BLACKLIST_QUAL_ID])
+        if not response.success:
+            raise response.exception
 
     def test_wrapper_get_all_hits(self, amt_services_wrapper, create_dummy_hit, list_hits, helpers):
 
@@ -179,18 +359,18 @@ class TestAmtServices(object):
         [stubber.add_response('list_assignments_for_hit',
                               assignments_data) for hit_id in hit_ids]
         assignments = amt_services_wrapper.get_assignments(hit_ids=hit_ids)
-    
+
     def test_wrapper_approve_single_assignment(self, stubber, create_dummy_assignment, amt_services_wrapper):
         create_dummy_assignment({
-                'hitid': '123', 
-                'beginhit': datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=-2), 
-                'assignmentid': 'ABC', 
-                'status': psiturk_statuses.SUBMITTED, 
+                'hitid': '123',
+                'beginhit': datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=-2),
+                'assignmentid': 'ABC',
+                'status': psiturk_statuses.SUBMITTED,
                 'mode': 'sandbox'})
-        create_dummy_assignment({'hitid': '123', 
-            'beginhit': datetime.datetime.now(datetime.timezone.utc), 
-            'assignmentid': 'DEF', 
-            'status': psiturk_statuses.SUBMITTED, 
+        create_dummy_assignment({'hitid': '123',
+            'beginhit': datetime.datetime.now(datetime.timezone.utc),
+            'assignmentid': 'DEF',
+            'status': psiturk_statuses.SUBMITTED,
             'mode': 'sandbox'
         })
         stubber.add_response('approve_assignment', {}, {'AssignmentId':'ABC', 'OverrideRejection': False})
@@ -241,14 +421,14 @@ class TestAmtServices(object):
             all_studies=True)).data['results']
         assert len([result for result in results if result.status ==
                     'success']) == number_approved
-                    
+
     def test_wrapper_approve_all_for_hit(self, stubber, activate_a_hit, helpers, create_dummy_assignment, create_dummy_hit, amt_services_wrapper):
         hits_json = helpers.get_boto3_return('list_hits.json')
         [activate_a_hit(hits_json, i) for (i, hit) in enumerate(hits_json['HITs'])]
-        
+
         first_hitid = hits_json['HITs'][0]['HITId']
         second_hitid = hits_json['HITs'][1]['HITId']
-        
+
         # set two to be for the first hit
         mode = 'sandbox'
         a_1 = create_dummy_assignment(
@@ -258,11 +438,11 @@ class TestAmtServices(object):
         a_3 = create_dummy_assignment(
             {'hitid': second_hitid, 'status': psiturk_statuses.SUBMITTED})
 
-            
+
         #set up stubber to expect two 'approve_hit' calls
         stubber.add_response('approve_assignment', {})
         stubber.add_response('approve_assignment', {})
-            
+
         response = amt_services_wrapper.approve_assignments_for_hit(first_hitid)
         for r in response.data['results']:
             assert r.success
@@ -412,3 +592,7 @@ class TestAmtServices(object):
         for result in results:
             assert isinstance(
                 result.exception, BonusReasonMissingError)
+
+    @pytest.mark.skip(reason='todo')
+    def test_wrapper_list_qualification_types(self):
+        pass
