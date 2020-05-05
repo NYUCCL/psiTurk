@@ -114,7 +114,8 @@ logging.getLogger('apscheduler').setLevel(logging.DEBUG)
 scheduler = Scheduler(jobstores=jobstores, timezone=utc)
 app.apscheduler = scheduler
 scheduler.app = app
-scheduler.start()
+if (os.getenv('PSITURK_DO_SCHEDULER', False)):
+    scheduler.start()
 
 
 #
