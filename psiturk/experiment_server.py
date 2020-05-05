@@ -8,6 +8,8 @@ import multiprocessing
 from psiturk.psiturk_config import PsiturkConfig
 import os
 import hashlib
+from gevent import monkey
+monkey.patch_all()
 
 config = PsiturkConfig()
 config.load_config()
