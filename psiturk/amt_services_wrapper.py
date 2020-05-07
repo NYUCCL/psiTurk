@@ -777,13 +777,18 @@ class MTurkServicesWrapper(object):
         return {'results': results}
 
     @amt_services_wrapper_response
-    def create_hit(self, num_workers, reward, duration, whitelist_qualification_ids=[], blacklist_qualification_ids=[]):
+    def create_hit(self, num_workers, reward, duration, whitelist_qualification_ids=None, blacklist_qualification_ids=None):
         '''
         Create a HIT
 
         `whitelist_qualification_ids` and `blacklist_qualification_ids` get extended
         with any values set in the config
         '''
+        if whitelist_qualification_ids is None:
+            whitelist_qualification_ids = []
+        if blacklist_qualification_ids is None:
+            blacklist_qualification_ids = []
+
         if self.sandbox:
             mode = 'sandbox'
         else:
@@ -922,7 +927,12 @@ class MTurkServicesWrapper(object):
             raise AdPsiturkOrgError('Error creating the ad.')
         return {'ad_id': ad_id}
 
-    def _generate_hit_config(self, ad_location, num_workers, reward, duration, whitelist_qualification_ids=[], blacklist_qualification_ids=[]):
+    def _generate_hit_config(self, ad_location, num_workers, reward, duration, whitelist_qualification_ids=None, blacklist_qualification_ids=None):
+        if whitelist_qualification_ids is None:
+            whitelist_qualification_ids = []
+
+        if blacklist_qualification_ids is None:
+            blacklist_qualification_ids = []
 
         require_quals = self.config.get('HIT Configuration', 'require_quals', fallback=None)
         if require_quals:

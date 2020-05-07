@@ -452,7 +452,12 @@ class PsiturkNetworkShell(Cmd, object):
             except:
                 response = input("Please respond 'y' or 'n': ").strip().lower()
 
-    def hit_create(self, numWorkers, reward, duration, whitelist_qualification_ids=[], blacklist_qualification_ids=[]):
+    def hit_create(self, numWorkers, reward, duration, whitelist_qualification_ids=None, blacklist_qualification_ids=None):
+
+        if whitelist_qualification_ids is None:
+            whitelist_qualification_ids = []
+        if blacklist_qualification_ids is None:
+            blacklist_qualification_ids = []
 
         if self.sandbox:
             mode = 'sandbox'
