@@ -55,14 +55,21 @@ class ExperimentServer(Application):
         if workers == "auto":
             workers = str(multiprocessing.cpu_count() * 2 + 1)
 
+        if int(workers) > 1 and os.getenv('PSITURK_DO_SCHEDULER', False):
+            raise Exception((
+                'Scheduler is not thread-safe, '
+                'but {} gunicorn workers requested! Refusing to start!'
+                ).format(workers)
+            )
+
         self.loglevels = ["debug", "info", "warning", "error", "critical"]
 
         def on_exit(server):
-            ''' 
-            this is hooked so that it can be called when 
+            '''
+            this is hooked so that it can be called when
             the server is shut down via CTRL+C. Otherwise
             there is no notification to the user that the server
-            has shut down until they hit `enter` and see that 
+            has shut down until they hit `enter` and see that
             the cmdloop prompt suddenly says "server off"
             '''
             print('Caught ^C, experiment server has shut down.')
