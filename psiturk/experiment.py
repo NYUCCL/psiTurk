@@ -121,12 +121,13 @@ if (os.getenv('PSITURK_DO_SCHEDULER', False)):
 #
 # Dashboard
 #
-from .dashboard import dashboard, init_app as dashboard_init_app # management dashboard
-app.register_blueprint(dashboard)
-dashboard_init_app(app)
+if (os.getenv('PSITURK_ENABLE_DASHBOARD', False)):
+    from .dashboard import dashboard, init_app as dashboard_init_app # management dashboard
+    app.register_blueprint(dashboard)
+    dashboard_init_app(app)
 
-from .api import api_blueprint
-app.register_blueprint(api_blueprint)
+    from .api import api_blueprint
+    app.register_blueprint(api_blueprint)
 
 init_db()
 
@@ -638,11 +639,11 @@ def update(uid=None):
             one()
     except exc.SQLAlchemyError:
         raise ExperimentApiError("DB error: Unique user not found.")
-    
+
     user.datastring = json.dumps(request.json)
     db_session.add(user)
-    db_session.commit()    
-    
+    db_session.commit()
+
     try:
         data = json.loads(user.datastring)
     except Exception as e:
@@ -710,7 +711,7 @@ def debug_complete():
                 return render_template('closepopup.html')
             else:
                 allow_repeats = CONFIG.getboolean('HIT Configuration', 'allow_repeats')
-                return render_template('complete.html', 
+                return render_template('complete.html',
                     allow_repeats=allow_repeats, worker_id=user.workerid)
 
 
