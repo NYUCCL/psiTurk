@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, jsonify, Response, abort, current_app, flash, session, g, redirect, url_for, make_response
+from flask import Blueprint, render_template, request, jsonify, Response, abort, current_app as app, flash, session, g, redirect, url_for, make_response
 from flask_login import UserMixin, login_user, logout_user, current_user
 from jinja2 import TemplateNotFound
 from functools import wraps
