@@ -42,7 +42,7 @@ CONFIG.load_config()
 
 # Setup logging
 if 'ON_CLOUD' in os.environ:
-    LOG_FILE_PATH = '-'
+    LOG_FILE_PATH = None
 else:
     LOG_FILE_PATH = os.path.join(os.getcwd(), CONFIG.get("Server Parameters",
                                                          "logfile"))
@@ -121,6 +121,7 @@ logging.getLogger('apscheduler').setLevel(logging.DEBUG)
 scheduler = Scheduler(jobstores=jobstores, timezone=utc)
 app.apscheduler = scheduler
 scheduler.app = app
+
 if (os.getenv('PSITURK_DO_SCHEDULER', False)):
     scheduler.start()
 
