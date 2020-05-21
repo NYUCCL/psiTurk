@@ -16,9 +16,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   See `/dashboard` route.
 - if a commonly-forgotten required template is missing when not using the psiturk ad server, raise an exception
 
+## [2.3.9]
+### Fixed
+- fix extend hit (#421)
+
 ## [2.3.8]
 ### Fixed
-- specified `setproctitle` in requirements.txt, to fix "server blocked" status message. Necessary for gunicorn < 20.0, 
+- specified `setproctitle` in requirements.txt, to fix "server blocked" status message. Necessary for gunicorn < 20.0,
   but gunicorn >=20.0 requires python3
 
 ## [2.3.7]
@@ -74,7 +78,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - psiturk status message is pulled from github repo instead of from an api call to the psiturk.org api server.
   Also, the call to load this does not depend directly on urllib2 anymore.
 - update many dependencies because why not
- 
+
 ### Removed
 - Shell support for EC2 MySQL
 
