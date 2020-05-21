@@ -416,7 +416,7 @@ class MTurkServices(object):
 
         if expiration_increment:
             hit = self.get_hit(hitid).data
-            expiration = hit['Expiration'] + \
+            expiration = hit.options['expiration'] + \
                 datetime.timedelta(minutes=int(expiration_increment))
             self.mtc.update_expiration_for_hit(
                 HITId=hitid, ExpireAt=expiration)
