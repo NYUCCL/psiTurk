@@ -196,19 +196,27 @@ class TestAmtServices(object):
     def test_wrapper_extend_hit(self, stubber, helpers, amt_services_wrapper):
         # uh, just test that boto doesn't throw an error...
         stubber.add_response('create_additional_assignments_for_hit', {})
-        amt_services_wrapper.extend_hit(
+        response = amt_services_wrapper.extend_hit(
             '3BFNCI9LYKQ2ENUY4MLKKW0NSU437W', assignments=10)
+        if not response.success:
+            raise response.exception
 
         stubber.add_response(
             'get_hit', helpers.get_boto3_return('get_hit.json'))
-        amt_services_wrapper.extend_hit(
+        stubber.add_response('update_expiration_for_hit', {})
+        response = amt_services_wrapper.extend_hit(
             '3BFNCI9LYKQ2ENUY4MLKKW0NSU437W', minutes=10)
+        if not response.success:
+            raise response.exception
 
         stubber.add_response('create_additional_assignments_for_hit', {})
         stubber.add_response(
             'get_hit', helpers.get_boto3_return('get_hit.json'))
-        amt_services_wrapper.extend_hit(
+        stubber.add_response('update_expiration_for_hit', {})
+        response = amt_services_wrapper.extend_hit(
             '3BFNCI9LYKQ2ENUY4MLKKW0NSU437W', assignments=10, minutes=10)
+        if not response.success:
+            raise response.exception
 
     def test_wrapper_expire_hit(self, stubber, amt_services_wrapper, helpers):
         # a list of ids...
