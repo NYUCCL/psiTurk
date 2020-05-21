@@ -36,7 +36,7 @@ if __name__ == "__main__":
             ]
         },
         setup_requires = ['pytest-runner'],
-        tests_require=['pytest','ciso8601','pytest-mock','pytz'],
+        tests_require=['pytest','ciso8601','pytest-mock~=1.13.0','pytz'],
         extras_require={
             ':python_version == "2.7"': ['futures']
         },
@@ -67,4 +67,3 @@ if __name__ == "__main__":
                 install_requires.append(req)
 
     setup(**setup_args)
-    
