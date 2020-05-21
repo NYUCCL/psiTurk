@@ -3,16 +3,16 @@ before_install:
 - sudo rm -f /etc/boto.cfg
 matrix:
     include:
-        - name: "Python 2.7 on macOS"
-          os: osx
-          osx_image: xcode11
-          language: shell
-          env: PIP=pip PYTHON=python
-        - name: "Python 3.7 on macOS"
-          os: osx
-          osx_image: xcode11
-          language: shell
-          env: PIP=pip3 PYTHON=python3
+#        - name: "Python 2.7 on macOS"
+#          os: osx
+#          osx_image: xcode11
+#          language: shell
+#          env: PIP=pip PYTHON=python
+#        - name: "Python 3.7 on macOS"
+#          os: osx
+#          osx_image: xcode11
+#          language: shell
+#          env: PIP=pip3 PYTHON=python3
         - name: "Python 2.7 on linux"
           python: 2.7
           env: PIP=pip PYTHON=python
