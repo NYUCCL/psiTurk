@@ -48,13 +48,13 @@ def do_campaign_round(campaign, **kwargs):
     logger.info('Posting total of {} assignments this round.'.format(remaining))
     while remaining:
         this_hit = min(remaining, 9) # max 9 to avoid steep 40% commission
-        task_utils.aws_services_wrapper.create_hit(
+        result = task_utils.aws_services_wrapper.create_hit(
             num_workers=this_hit, reward=campaign.hit_reward, duration=campaign.hit_duration_hours)
+        logger.info(result)
         remaining = remaining - this_hit
-    
     return
-        
-        
+
+
 # Approve All task_utils
 def do_approve_all(mode):
     task_utils.aws_services_wrapper.set_mode(mode)
@@ -63,6 +63,3 @@ def do_approve_all(mode):
         logger.info('Approved all.')
     else:
         logger.error(str(result.exception))
-    
-    
-    

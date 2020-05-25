@@ -23,20 +23,20 @@ def bork_aws_environ():
     os.environ['AWS_DEFAULT_REGION'] = 'us-west-2'
     os.environ.pop('AWS_PROFILE', None)
     yield
-    
-    
+
+
 @pytest.fixture()
 def edit_config_file():
     def do_it(find, replace):
         with open('config.txt', 'r') as file:
             config_file = file.read()
-            
+
         config_file = config_file.replace(find, replace)
-        
+
         with open('config.txt', 'w') as file:
             file.write(config_file)
     yield do_it
-    
+
 
 
 @pytest.fixture(scope='function', autouse=True)
@@ -48,7 +48,7 @@ def experiment_dir(tmpdir, bork_aws_environ, edit_config_file):
     edit_config_file('use_psiturk_ad_server = true', 'use_psiturk_ad_server = false')
     # os.chdir('psiturk-example') # the setup script already chdirs into here, although I don't like that it does that
     yield
-    
+
     os.chdir('..')
     shutil.rmtree('psiturk-example')
 
@@ -56,15 +56,15 @@ def experiment_dir(tmpdir, bork_aws_environ, edit_config_file):
 def db_setup(mocker, experiment_dir, tmpdir, request):
     import psiturk.db
     reload(psiturk.db)
-    
+
     import psiturk.models
     psiturk.models.Base.metadata.clear()
     reload(psiturk.models)
-    
+
     from psiturk.db import init_db
     init_db()
-    
-    yield 
+
+    yield
 
 
 
@@ -113,7 +113,7 @@ def patch_aws_services(client, mocker):
 def faker():
     faker = Faker()
     return faker
-    
+
 @pytest.fixture()
 def stubber_prepare_create_hit(stubber, helpers, faker):
     def do_it(with_hit_id=None):
@@ -136,12 +136,12 @@ def stubber_prepare_create_hit(stubber, helpers, faker):
 @pytest.fixture()
 def create_dummy_hit(stubber_prepare_create_hit, amt_services_wrapper):
 
-    def do_it(with_hit_id=None):
+    def do_it(with_hit_id=None, **kwargs):
         stubber_prepare_create_hit(with_hit_id)
-        result = amt_services_wrapper.create_hit(1, 0.01, 1)
+        result = amt_services_wrapper.create_hit(1, 0.01, 1, **kwargs)
 
     return do_it
-    
+
 @pytest.fixture()
 def create_dummy_assignment(faker):
     from psiturk.db import db_session, init_db
@@ -166,7 +166,7 @@ def create_dummy_assignment(faker):
         return participant
 
     return do_it
-    
+
 @pytest.fixture()
 def list_hits(stubber, helpers, amt_services_wrapper):
     '''
@@ -240,4 +240,3 @@ class Helpers(object):
 @pytest.fixture(scope='session')
 def helpers():
     return Helpers
-

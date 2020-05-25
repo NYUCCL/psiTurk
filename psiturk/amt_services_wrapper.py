@@ -777,8 +777,18 @@ class MTurkServicesWrapper(object):
         return {'results': results}
 
     @amt_services_wrapper_response
-    def create_hit(self, num_workers, reward, duration):
-        ''' Create a HIT '''
+    def create_hit(self, num_workers, reward, duration, whitelist_qualification_ids=None, blacklist_qualification_ids=None):
+        '''
+        Create a HIT
+
+        `whitelist_qualification_ids` and `blacklist_qualification_ids` get extended
+        with any values set in the config
+        '''
+        if whitelist_qualification_ids is None:
+            whitelist_qualification_ids = []
+        if blacklist_qualification_ids is None:
+            blacklist_qualification_ids = []
+
         if self.sandbox:
             mode = 'sandbox'
         else:
@@ -806,7 +816,7 @@ class MTurkServicesWrapper(object):
                 ad_location = self.web_services.get_ad_url(
                     ad_id, int(self.sandbox))
                 hit_config = self._generate_hit_config(
-                    ad_location, num_workers, reward, duration)
+                    ad_location, num_workers, reward, duration, whitelist_qualification_ids, blacklist_qualification_ids)
                 response = self.amt_services.create_hit(hit_config)
                 if not response.success:
                     raise response.exception
@@ -822,7 +832,7 @@ class MTurkServicesWrapper(object):
             ad_location = "{}?mode={}".format(self.config.get(
                 'Shell Parameters', 'ad_location'), mode)
             hit_config = self._generate_hit_config(
-                ad_location, num_workers, reward, duration)
+                ad_location, num_workers, reward, duration, whitelist_qualification_ids, blacklist_qualification_ids)
             response = self.amt_services.create_hit(hit_config)
             if not response.success:
                 raise response.exception
@@ -835,6 +845,29 @@ class MTurkServicesWrapper(object):
         db_session.commit()
 
         return {'hit_id': hit_id, 'ad_id': ad_id}
+
+    @amt_services_wrapper_response
+    def list_qualification_types(self, *args, **kwargs):
+        '''
+        client.list_qualification_types(
+            Query='string',
+            MustBeRequestable=True|False,
+            MustBeOwnedByCaller=True|False,
+            NextToken='string',
+            MaxResults=123
+        )
+
+        To just get the ones created by le user, call:
+
+            list_qualification_types(MustBeOwnedByCaller=True)
+        '''
+        response = self.amt_services.list_qualification_types(*args, **kwargs)
+        if not response.success:
+            raise response.exception
+        else:
+            qualification_types = response.data
+            return {'qualification_types': qualification_types}
+
 
     @amt_services_wrapper_response
     def create_psiturk_ad(self):
@@ -894,7 +927,21 @@ class MTurkServicesWrapper(object):
             raise AdPsiturkOrgError('Error creating the ad.')
         return {'ad_id': ad_id}
 
-    def _generate_hit_config(self, ad_location, num_workers, reward, duration):
+    def _generate_hit_config(self, ad_location, num_workers, reward, duration, whitelist_qualification_ids=None, blacklist_qualification_ids=None):
+        if whitelist_qualification_ids is None:
+            whitelist_qualification_ids = []
+
+        if blacklist_qualification_ids is None:
+            blacklist_qualification_ids = []
+
+        require_quals = self.config.get('HIT Configuration', 'require_quals', fallback=None)
+        if require_quals:
+            whitelist_qualification_ids.extend(require_quals.split(','))
+
+        block_quals = self.config.get('HIT Configuration', 'block_quals', fallback=None)
+        if block_quals:
+            blacklist_qualification_ids.extend(block_quals.split(','))
+
         hit_config = {
             "ad_location": ad_location,
             "approve_requirement": self.config.getint('HIT Configuration', 'Approve_Requirement'),
@@ -907,6 +954,8 @@ class MTurkServicesWrapper(object):
             "reward": reward,
             "duration": datetime.timedelta(hours=duration),
             "number_hits_approved": self.config.getint('HIT Configuration', 'number_hits_approved'),
-            "require_master_workers": self.config.getboolean('HIT Configuration', 'require_master_workers')
+            "require_master_workers": self.config.getboolean('HIT Configuration', 'require_master_workers'),
+            "whitelist_qualification_ids": whitelist_qualification_ids,
+            "blacklist_qualification_ids": blacklist_qualification_ids
         }
         return hit_config

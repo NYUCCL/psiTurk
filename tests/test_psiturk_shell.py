@@ -13,15 +13,15 @@ from distutils import file_util
 
 @pytest.fixture(scope='function')
 def get_shell(patch_aws_services, stubber, mocker):
-    
+
     def do_it():
         from psiturk.psiturk_shell import PsiturkNetworkShell
         import psiturk.experiment_server_controller as control
         from psiturk.psiturk_config import PsiturkConfig
-        
+
         import psiturk.experiment_server_controller
         mocker.patch.object(psiturk.experiment_server_controller.ExperimentServerController, 'is_port_available', lambda *args, **kwargs: True)
-        
+
         mocker.patch.object(PsiturkNetworkShell,'get_intro_prompt', lambda *args, **kwargs: '')
         mocker.patch.object(PsiturkNetworkShell,'update_hit_tally', lambda *args, **kwargs: None)
         mocker.patch.object(PsiturkNetworkShell,'_confirm_dialog', lambda *args, **kwargs: True)
@@ -40,16 +40,16 @@ def get_shell(patch_aws_services, stubber, mocker):
         shell.echo = True
         stubber.assert_no_pending_responses()
         return shell
-            
+
     return do_it
 
 def test_do_worker_bonus_reason(get_shell, mocker):
     from psiturk.psiturk_shell import MTurkServicesWrapper
     patched = mocker.patch.object(MTurkServicesWrapper, 'bonus_all_local_assignments')
     shell = get_shell()
-    
+
     shell.runcmds_plus_hooks(['worker bonus --amount 1.00 --all --reason "thanks for everything"'])
-    
+
     patched.assert_called_with(float('1.00'), "thanks for everything", False)
 
 @pytest.fixture()
@@ -66,6 +66,7 @@ commands=[
     (['mode live'], 'mode_live'),
     (['mode live', 'mode sandbox'],'mode_live_then_sandbox'),
     (['hit create 1 0.01 1'], 'hit_create'),
+    (['hit create 1 0.01 1 --whitelist-qualification-id abc123 --whitelist-qualification-id abc456'], 'hit_create_with_qualification'),
     (['hit extend ABC --assignments 1 --expiration 1'], 'hit_extend'),
     (['hit expire ABC'], 'hit_expire_hitid'),
     (['hit expire --all'], 'hit_expire_all'),
@@ -106,10 +107,10 @@ generate_transcripts = False
 @pytest.mark.parametrize('cmds,name', commands)
 def test_do_commands(get_shell, pytestconfig, cmds, name, stubber, capsys):
 # def test_do_commands(get_shell, pytestconfig, cmds, name, stubber):
-    
+
     transcript_name = '{}.transcript'.format(name)
     cmds = ['mode sandbox'] + cmds
-    
+
     # (out, err) = capfd.readouterr()
 
     shell = get_shell()
