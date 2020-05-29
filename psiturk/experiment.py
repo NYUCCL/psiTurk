@@ -69,7 +69,6 @@ if 'gunicorn' in os.environ.get('SERVER_SOFTWARE',''):
 # Set cache timeout to 10 seconds for static files
 app.config.update(SEND_FILE_MAX_AGE_DEFAULT=10)
 app.secret_key = CONFIG.get('Server Parameters', 'secret_key')
-app.logger.info("Secret key: " + app.secret_key)
 
 # this checks for templates that are required if you are hosting your own ad.
 def check_templates_exist():
