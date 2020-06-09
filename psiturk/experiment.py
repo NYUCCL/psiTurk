@@ -323,6 +323,7 @@ def advertisement():
 
     if not ('hitId' in request.args and 'assignmentId' in request.args):
         raise ExperimentError('hit_assign_worker_id_not_set_in_mturk')
+    
     hit_id = request.args['hitId']
     assignment_id = request.args['assignmentId']
     mode = request.args['mode']
@@ -331,7 +332,11 @@ def advertisement():
     else:
         debug_mode = False
     already_in_db = False
+
+    # FIXME PROLIFIC
     if 'workerId' in request.args:
+
+        # FIXME PROLIFIC
         worker_id = request.args['workerId']
         # First check if this workerId has completed the task before (v1).
         nrecords = Participant.query.\
@@ -358,6 +363,7 @@ def advertisement():
         # Once participants have finished the instructions, we do not allow
         # them to start the task again.
         raise ExperimentError('already_started_exp_mturk')
+    # FIXME resubmit for PROLIFIC
     elif status == COMPLETED or (status == SUBMITTED and not already_in_db):
         # 'or status == SUBMITTED' because we suspect that sometimes the post
         # to mturk fails after we've set status to SUBMITTED, so really they
@@ -368,13 +374,20 @@ def advertisement():
         if not use_psiturk_ad_server:
             # They've finished the experiment but haven't successfully submitted the HIT
             # yet.
-            return render_template(
-                'thanks-mturksubmit.html',
-                using_sandbox=(mode == "sandbox"),
-                hitid=hit_id,
-                assignmentid=assignment_id,
-                workerid=worker_id
-            )
+            if mode == 'prolific':
+                # TODO
+                completion_url = CONFIG.get("HIT Configuration", "completion_url")
+                return render_template(
+                        'complete-prolific.html',
+                        completion_url=completion_url)
+            else:
+                return render_template(
+                    'thanks-mturksubmit.html',
+                    using_sandbox=(mode == "sandbox"),
+                    hitid=hit_id,
+                    assignmentid=assignment_id,
+                    workerid=worker_id
+                )
         else:
             # Show them a thanks message and tell them to go away.
             return render_template('thanks.html')
@@ -402,6 +415,7 @@ def give_consent():
     """
     Serves up the consent in the popup window.
     """
+    # FIXME PROLIFIC
     if not ('hitId' in request.args and 'assignmentId' in request.args and
             'workerId' in request.args):
         raise ExperimentError('hit_assign_worker_id_not_set_in_consent')
@@ -447,6 +461,8 @@ def start_exp():
     assignment_id = request.args['assignmentId']
     worker_id = request.args['workerId']
     mode = request.args['mode']
+
+    # FIXME PROLIFIC
     app.logger.info("Accessing /exp: %(h)s %(a)s %(w)s " % {
         "h": hit_id,
         "a": assignment_id,
@@ -460,6 +476,7 @@ def start_exp():
     # Check first to see if this hitId or assignmentId exists.  If so, check to
     # see if inExp is set
     allow_repeats = CONFIG.getboolean('HIT Configuration', 'allow_repeats')
+    # FIXME PROLIFIC
     if allow_repeats:
         matches = Participant.query.\
             filter(Participant.workerid == worker_id).\
@@ -537,6 +554,7 @@ def start_exp():
     if use_psiturk_ad_server and (mode == 'sandbox' or mode == 'live'):
         # If everything goes ok here relatively safe to assume we can lookup
         # the ad.
+        # FIXME PROLIFIC
         ad_id = get_ad_via_hitid(hit_id)
         if ad_id != "error":
             if mode == "sandbox":
@@ -707,10 +725,14 @@ def debug_complete():
             # send them back to mturk.
             if (mode == 'sandbox' or mode == 'live'):
                 return render_template('closepopup.html')
+            elif mode == 'prolific':
+                completion_url = CONFIG.get('HIT Configuration', 'completion_url')
+                return render_template('complete-prolific.html', completion_url=completion_url)
             else:
                 allow_repeats = CONFIG.getboolean('HIT Configuration', 'allow_repeats')
                 return render_template('complete.html', 
                     allow_repeats=allow_repeats, worker_id=user.workerid)
+
 
 
 @app.route('/worker_complete', methods=['GET'])
