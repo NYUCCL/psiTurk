@@ -230,8 +230,11 @@ Windows
 
 **psiTurk** is currently not supported on Windows. This is due to a
 technical limitation in the ability to run server processes on Windows.
-We currently recommend that Windows users try a cloud-based install such
-as `openshift <https://www.openshift.com>`__.
+However, there are a number of options to get around this (see below for details
+on each option):
+ - Cloud-based install such as `openshift <https://www.openshift.com>`__.
+ - Virtualization through `VirtualBox <https://www.virtualbox.org/>`__ or similar software.
+ - `Windows Subsystem for Linux (WSL) <https://docs.microsoft.com/en-us/windows/wsl/install-win10>`__ on Windows 10.
 
 
 Cloud-based install (experimental)
@@ -285,3 +288,88 @@ To access the your openshift hosted database run
 
 Connect to the database using your favorite SQL app, the PostgreSQL
 Local specs, and your credentials.
+
+
+Virtualization
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can install a program like `VirtualBox <https://www.virtualbox.org/>`__ on your pc. Programs like
+these are called hypervisors and emulate a computer within your computer. Your physical machine is called
+a host and the virtual machine is called a guest. This technique allows you to install a Linux guest
+regardless of what OS the host is running.
+
+Virtualization requires some computing power from the host so this option is
+not recommended if your psiturk experiment requires a lot of computing power as well or if it's is expected
+to have a lot of participants active at once. However, it is a good option to develop and test your psiturk
+experiments on Windows systems prior to Windows 10. If you are running Windows 10 or higher see below for
+the WSL option, which is much easier on your system than virtualization.
+
+After you install the virtual machine software you need an installation image for a Linux based OS. You can
+choose any Linux distribution you like but `Ubuntu <https://ubuntu.com/download/desktop>`__ is a good choice
+if you don't know which one to pick. You can usually obtain an *.iso file for the Linux distribution you like.
+These are virtual cd-roms. You can load them into your virtual machine and begin installing the guest OS.
+Once that is complete you boot your virtual machine into Linux and follow the installation steps for Linux.
+
+
+Windows Subsystem for Linux (WSL)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Windows now has the option to run a Linux translation layer inside Windows (WSL 1) or even a full Linux kernel
+(WSL 2). Either will allow you to run psiturk within the Linux subsystem.
+See https://docs.microsoft.com/en-us/windows/wsl/install-win10 for instructions on how to activate WSL on your
+system.
+
+After you activate WSL and install a Linux distribution of choice as described you must make a small change to
+its configuration and install one or two libraries. Within the WSL environment create or edit the file ``/etc/wsl.conf``.
+If you don't know how to edit a file within WSL just run:
+
+::
+
+    sudo nano /etc/wsl.conf
+    
+You will need to edit the file with admin rights (the ``sudo`` part of the command) which requires your WSL admin
+password. You chose the password when you installed WSL. This is a different password from your Windows admin
+or Windows user password! Add these contents to the file:
+
+::
+
+    [automount]
+    options = "metadata"
+
+If you used ``nano`` press control + X to exit. Nano will ask you to save the file. Choose Y for yes and exit.
+Editing this file enables file permissions to work as they do in Linux. This is needed
+when psiturk tries to read ``~/.psiturkconfig``. After you're done editing ``wsl.conf`` exit all WSL windows and
+start a new one.
+
+Most Linux distributions come with many libraries pre-installed, but WSL omits many of them. In a WSL window run
+these commands
+
+::
+
+    sudo apt-get install libncurses5-dev
+    sudo apt-get install libpq-dev
+    
+The first one is needed for psiturk. The second one is optional and is only needed if you use a database other than
+sqlite. Run these commands next in a WSL window:
+
+::
+
+    pip3 install psiturk
+    pip3 install psycopg2
+    
+If you get an error saying ``Command 'pip3' not found`` try replacing it with ``pip``. If that still doesn't work
+run ``sudo apt-get install python3 python3-pip``. The first pip3 command installs psiturk itself. The second one is optional
+and again is only used if you use any database other than sqlite. Finally, create a file called ``~/.psiturkconfig``.
+You can use ``nano`` or any other text editor. You can enter your AWS and psiTurk access keys now or edit this
+file later. After you have created the file run this command
+
+::
+
+    sudo chmod +rw ~/.psiturkconfig
+
+This makes sure psiTurk is allowed to read the file. If you forget this step psiTurk will tell you the key is
+invalid but it really means it couldn't read your config file. You only have to run this command once however,
+so if you're sure you did it or just ran it again to be sure and psiTurk still tells you the keys are invalid
+then the keys really are invalid.
+
+You should now be able to run psiTurk in the WSL environment. The status line will look a bit different since
+WSL doesn't draw some box art characters properly but psiTurk will work just fine.
