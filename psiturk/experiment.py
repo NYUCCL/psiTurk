@@ -757,6 +757,20 @@ def worker_complete():
         resp = {"status": status}
         return jsonify(**resp)
 
+@app.route('/audio/<filename>', methods=['PUT'])
+def process_audio(filename=None):
+    # filename = request.filename
+    # data = request.data
+    #
+    os.makedirs('data/audio', exist_ok=True)
+    print(f"saving audio file to {filename}")
+
+    with open(os.path.join('data', 'audio', filename), 'wb') as f:
+        f.write(request.get_data())
+
+    resp = {"status": "user data saved"}
+    return jsonify(**resp)
+
 
 @app.route('/worker_submitted', methods=['GET'])
 def worker_submitted():
