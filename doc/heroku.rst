@@ -47,6 +47,30 @@ If you're starting from a preexisting psiturk app, you need to grab three files 
 
     heroku addons:create heroku-postgresql
 
+#. Run the following commands, replacing `<XYZ>` with your access and secret keys for `Amazon Web Services <amt_setup.html#obtaining-aws-credentials>`_ and `psiTurk Secure Ad Server <psiturk_org_setup.html#obtaining-psiturk-org-api-credentials>`_ (you can also use `this Python script <https://github.com/NYUCCL/psiTurk/blob/908ce7bcfc8fb6b38d94dbae480449324c5d9d51/psiturk/example/set-heroku-settings.py>`_ to automatically run these commmands, provided that you've filled out your credentials in your `.psiturkconfig` file. Running this script is the recommended approach!): ::
+
+    heroku config:set ON_CLOUD=true
+    heroku config:set psiturk_access_key_id=<XYZ>
+    heroku config:set psiturk_secret_access_id=<XYZ>
+    heroku config:set aws_access_key_id=<XYZ>
+    heroku config:set aws_secret_access_key=<XYZ>
+
+   You don't need all of these settings if you run psiTurk standalone, independent of Amazon Mechanical Turk.
+   However, you still need specify `ON_CLOUD=true` or psiTurk will not bind to the port specified by Heroku.
+   In that case the app log on Heroku will say `Error R10 (Boot timeout) -> Web process failed to bind to $PORT within 60 seconds of launch`.
+
+#. Stage all the files in your psiTurk example to your Git repository: ::
+
+    git add .
+
+#. Commit all the staged files to your Git repository: ::
+
+    git commit -m "Initial commit"
+
+#. Push the code to your `Heroku` git remote, which will trigger a build process on Heroku, which, in turn, runs the command specified in `Procfile`, which autolaunches your `psiTurk` server on the Heroku platform. Watch it run: ::
+
+    git push heroku master
+
 #. Get the URL of the Postgres database that you just created: ::
 
     heroku config:get DATABASE_URL
@@ -61,27 +85,12 @@ If you're starting from a preexisting psiturk app, you need to grab three files 
     host = 0.0.0.0
     threads = 1
     ad_location = https://<Your app URL that you retrieved above>/pub
-    use_psiturk_ad_server = false    
+    use_psiturk_ad_server = false
 
-#. Run the following commands, replacing `<XYZ>` with your access and secret keys for `Amazon Web Services <amt_setup.html#obtaining-aws-credentials>`_ and `psiTurk Secure Ad Server <psiturk_org_setup.html#obtaining-psiturk-org-api-credentials>`_ (you can also use `this Python script <https://github.com/NYUCCL/psiTurk/blob/908ce7bcfc8fb6b38d94dbae480449324c5d9d51/psiturk/example/set-heroku-settings.py>`_ to automatically run these commmands, provided that you've filled out your credentials in your `.psiturkconfig` file. Running this script is the recommended approach!): ::
-
-    heroku config:set ON_CLOUD=true
-    heroku config:set psiturk_access_key_id=<XYZ>
-    heroku config:set psiturk_secret_access_id=<XYZ>
-    heroku config:set aws_access_key_id=<XYZ>
-    heroku config:set aws_secret_access_key=<XYZ>
-
-#. Stage all the files in your psiTurk example to your Git repository: ::
-
-    git add .
-
-#. Commit all the staged files to your Git repository: ::
-
-    git commit -m "Initial commit"
-
-#. Push the code to your `Heroku` git remote, which will trigger a build process on Heroku, which, in turn, runs the command specified in `Procfile`, which autolaunches your `psiTurk` server on the Heroku platform. Watch it run: ::
-
-    git push heroku master
+   Your local psiTurk instance needs these settings to communicate with the database on Heroku.
+   You do not need to push these settings to Heroku to make them work.
+   Specifically, be careful who has access to this file and do not push this information to any public git repositories:
+   **anyone who has access to the database_url can connect to your database and has access to the data stored in it!**
 
 #. Run `psiTurk` locally on your machine: ::
 
