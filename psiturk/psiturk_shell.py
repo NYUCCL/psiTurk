@@ -513,7 +513,7 @@ class PsiturkShell(Cmd, object):
     def do_dev(self, arg):
         '''
         Usage: dev
-            dev 
+            dev
         '''
         results = self.amt_services_wrapper.approve_all_workers_for_study()
         self.poutput('\n'.join(results))
@@ -765,7 +765,7 @@ class PsiturkNetworkShell(PsiturkShell):
                 self._cached_amt_services_wrapper = _wrapper
             except PsiturkException as e:
                 self.poutput(e)
-            
+
         return self._cached_amt_services_wrapper
 
 
@@ -776,7 +776,7 @@ class PsiturkNetworkShell(PsiturkShell):
         self.sandbox_hits = 0
         self.live_hits = 0
         super(PsiturkNetworkShell, self).__init__(config, server, quiet)
-        
+
         if not self.amt_services_wrapper:
             sys.exit()
 
@@ -1155,7 +1155,7 @@ class PsiturkNetworkShell(PsiturkShell):
             if arg['--auto']:
                 amount = 'auto'
             else:
-                amount = arg['<amount>']
+                amount = float(arg['<amount>'])
 
             if arg['<hit_id>']:
                 result = (self.amt_services_wrapper.bonus_assignments_for_hit(
@@ -1175,7 +1175,7 @@ class PsiturkNetworkShell(PsiturkShell):
                 results = [
                     self.amt_services_wrapper.bonus_assignment_for_assignment_id(
                         assignment_id, amount, reason, override_bonused_status) for assignment_id in arg['<assignment_id>']]
-            
+
             if results:
                 [self.poutput(_result) for _result in results]
         else:
