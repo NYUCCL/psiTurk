@@ -11,6 +11,8 @@ from cmd2.history import History
 
 from distutils import file_util
 
+from psiturk import psiturk_statuses
+
 @pytest.fixture(scope='function')
 def get_shell(patch_aws_services, stubber, mocker):
 
@@ -51,6 +53,27 @@ def test_do_worker_bonus_reason(get_shell, mocker):
     shell.runcmds_plus_hooks(['worker bonus --amount 1.00 --all --reason "thanks for everything"'])
 
     patched.assert_called_with(float('1.00'), "thanks for everything", False)
+
+def test_bonus_amount_on_shell(get_shell, create_dummy_assignment, mocker):
+    from psiturk.psiturk_shell import MTurkServicesWrapper
+    patched = mocker.patch.object(MTurkServicesWrapper, 'bonus_nonlocal_assignment')
+    shell = get_shell()
+
+    assignment_id = 'ABC'
+    worker_id = '123'
+    reason = 'yiss'
+
+    create_dummy_assignment({
+        'status': psiturk_statuses.CREDITED,
+        'mode': 'sandbox',
+        'assignmentid': assignment_id,
+        'workerid': worker_id
+        })
+
+
+    shell.runcmds_plus_hooks(['worker bonus --amount 1.00 --all --reason "{}"'.format(reason)])
+
+    patched.assert_called_with(assignment_id, float('1.00'), reason, worker_id=worker_id)
 
 @pytest.fixture()
 def populate_db_for_shell_cmds(create_dummy_hit, create_dummy_assignment):
@@ -129,9 +152,9 @@ def test_do_commands(get_shell, pytestconfig, cmds, name, stubber, capsys):
             # pytest.set_trace()
         response = shell.runcmds_plus_hooks(cmds)
         captured = capsys.readouterr()
-        # with capsys.disabled():
-            # print(captured.out)
-            # print(captured.err)
+        with capsys.disabled():
+            print(captured.out)
+            print(captured.err)
         assert not captured.err
 
 # #########################
