@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   See `/dashboard` route.
 - if a commonly-forgotten required template is missing when not using the psiturk ad server, raise an exception
 
+## [2.3.10]
+### Fixed
+-- patch pass bonus amount as shell arg
+
 ## [2.3.9]
 ### Fixed
 - fix extend hit (#421)
