@@ -32,7 +32,7 @@ class PsiturkConfig(ConfigParser):
         # prefer environment
         these_as_they_are = ['PORT','DATABASE_URL'] # heroku sets these
         for section in self.sections():
-            for config_var in self[section]:        
+            for config_var in self[section]:
                 config_var_upper = config_var.upper()
                 config_val_env_override = None
 
@@ -54,15 +54,15 @@ class PsiturkConfig(ConfigParser):
                 raise EphemeralContainerDBError(database_url)
 
     def get_ad_url(self):
-        if self.has_option('hit_configuration', 'ad_url'):
-            return self.get('hit_configuration', 'ad_url')
+        if self.has_option('hit_configuration.ad_url', 'ad_url'):
+            return self.get('hit_configuration.ad_url', 'ad_url')
         else:
             need_these = ['ad_url_domain','ad_url_protocol','ad_url_port','ad_url_route']
             for need_this in need_these:
-                if not self.get('hit_configuration', need_this):
+                if not self.get('hit_configuration.ad_url', need_this):
                     raise PsiturkException(message=f'missing ad_url config var `{need_this}`')
-            ad_url_domain = self.get('hit_configuration', 'ad_url_domain')
-            ad_url_protocol = self.get('hit_configuration', 'ad_url_protocol')
-            ad_url_port = self.get('hit_configuration', 'ad_url_port')
-            ad_url_route = self.get('hit_configuration', 'ad_url_route')
+            ad_url_domain = self.get('hit_configuration.ad_url', 'ad_url_domain')
+            ad_url_protocol = self.get('hit_configuration.ad_url', 'ad_url_protocol')
+            ad_url_port = self.get('hit_configuration.ad_url', 'ad_url_port')
+            ad_url_route = self.get('hit_configuration.ad_url', 'ad_url_route')
             return f"{ad_url_protocol}://{ad_url_domain}:{ad_url_port}:{ad_url_route}"
