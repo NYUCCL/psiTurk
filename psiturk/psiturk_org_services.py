@@ -6,12 +6,12 @@ try:
     from urllib.error import HTTPError
 except ImportError:
     from urllib2 import HTTPError
-    
+
 try:
     from urllib.request import urlopen
 except ImportError:
     from urllib2 import urlopen
-    
+
 import psutil
 from psiturk.psiturk_config import PsiturkConfig
 from sys import platform as _platform
@@ -41,8 +41,6 @@ class PsiturkOrgServices(object):
 
         # 'https://api.psiturk.org' # by default for now
         self.api_server = 'https://api.psiturk.org'
-        self.ad_server = 'https://ad.psiturk.org'
-        self.sandbox_ad_server = 'https://sandbox.ad.psiturk.org'
         self.update_credentials(key, secret)
         if not self.check_credentials():
             print('WARNING *****************************')
@@ -120,52 +118,6 @@ class PsiturkOrgServices(object):
         req = requests.get(self.api_server + '/api/' + name + "/" + query,
                            auth=(username, password))
         return req
-
-    def get_ad_url(self, ad_id, sandbox):
-        """
-            get_ad_url:
-            gets ad server thing
-        """
-        if sandbox:
-            return self.sandbox_ad_server + '/view/' + str(ad_id)
-        else:
-            return self.ad_server + '/view/' + str(ad_id)
-
-    def set_ad_hitid(self, ad_id, hit_id, sandbox):
-        """
-            get_ad_hitid:
-            updates the ad with the corresponding hitid
-        """
-        if sandbox:
-            req = self.update_record('sandboxad', ad_id, {'amt_hit_id': hit_id},
-                                     self.access_key, self.secret_key)
-        else:
-            req = self.update_record('ad', ad_id, {'amt_hit_id': hit_id},
-                                     self.access_key, self.secret_key)
-        if req.status_code == 201:
-            return True
-        else:
-            return False
-
-    def create_ad(self, ad_content):
-        """
-            create_ad:
-        """
-        if not 'is_sandbox' in ad_content:
-            return False
-        else:
-            if ad_content['is_sandbox']:
-                req = self.create_record(
-                    'sandboxad', ad_content, self.access_key, self.secret_key
-                )
-            else:
-                req = self.create_record(
-                    'ad', ad_content, self.access_key, self.secret_key
-                )
-            if req.status_code == 201:
-                return req.json()['ad_id']
-            else:
-                return False
 
     def download_experiment(self, experiment_id):
         """

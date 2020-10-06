@@ -3,7 +3,7 @@ logger = logging.getLogger('apscheduler')
 
 class TaskUtils():
     _scheduler_aws_services_wrapper = None
-    
+
     @property
     def aws_services_wrapper(self):
         if not self._scheduler_aws_services_wrapper:
@@ -17,35 +17,35 @@ def do_campaign_round(campaign, **kwargs):
     from .models import Participant
     from .experiment import app
     from .db import db_session
-    
+
     # cancel if codeversion changes
-    config_code_version = task_utils.aws_services_wrapper.config['Task Parameters']['experiment_code_version']
+    config_code_version = task_utils.aws_services_wrapper.config['task']['experiment_code_version']
     if config_code_version != campaign.codeversion:
-        logger.info('Codeversion changed (campaign: {}, config {}), removing job.'.format(campaign.codeversion, config_code_version))
+        logger.info(f'Codeversion changed (campaign: {campaign.codeversion}, config {config_code_version}), removing job.')
         return app.apscheduler.remove_job(kwargs['job_id'])
-    
+
     # cancel if campaign goal met
     complete_count = Participant.count_completed(codeversion=campaign.codeversion, mode=campaign.mode)
     if complete_count >= campaign.goal:
-        logger.info('Campaign goal met ({}), removing job.'.format(campaign.goal))
+        logger.info(f'Campaign goal met ({campaign.goal}), removing job.')
         campaign.end()
         db_session.add(campaign)
         db_session.commit()
         return
-        
+
     task_utils.aws_services_wrapper.set_mode(campaign.mode)
-    
+
     # how many for this round?
     all_hits = task_utils.aws_services_wrapper.get_all_hits().data
     available_count = task_utils.aws_services_wrapper.count_available(hits=all_hits).data
     pending_count = task_utils.aws_services_wrapper.count_pending(hits=all_hits).data
-    
+
     maybe_will_complete_count = available_count + pending_count
-    
+
     campaign_remaining = campaign.goal - maybe_will_complete_count - complete_count
     round_remaining = campaign.assignments_per_round
     remaining = min(campaign_remaining, round_remaining)
-    logger.info('Posting total of {} assignments this round.'.format(remaining))
+    logger.info(f'Posting total of {remaining} assignments this round.')
     while remaining:
         this_hit = min(remaining, 9) # max 9 to avoid steep 40% commission
         result = task_utils.aws_services_wrapper.create_hit(

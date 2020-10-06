@@ -17,7 +17,7 @@ def _check_is_git_repo():
     if subprocess.getstatusoutput('git rev-parse --git-dir')[0]:
         from psiturk.psiturk_exceptions import HerokuNotAGitRepo
         raise HerokuNotAGitRepo()
-    
+
 def _check_heroku_app_set():
     if subprocess.getstatusoutput('heroku config')[0]:
         from psiturk.psiturk_exceptions import HerokuAppNotSet
@@ -25,31 +25,26 @@ def _check_heroku_app_set():
 
 def _set_heroku_config_vars():
     from psiturk.psiturk_config import PsiturkConfig
-    
+
     CONFIG = PsiturkConfig()
     CONFIG.load_config()
 
     subprocess.call(['heroku', 'config:set', 'ON_CLOUD=true'])
-    
-    sections = ['psiTurk Access','AWS Access']
-    for section in sections:
-        for item in CONFIG.items(section):
-            subprocess.call(['heroku', 'config:set', '='.join(item)])
-    
+
     print()
     print('psiturk has finished setting heroku config vars.')
-    
+
 def _add_postgresql_db():
     subprocess.call(['heroku', 'addons:create', 'heroku-postgresql:hobby-dev'])
     print()
-    print("\n".join([   "Your psiturk heroku app will use the just-added postgresql database instead of whatever is set in your config.txt.", 
+    print("\n".join([   "Your psiturk heroku app will use the just-added postgresql database instead of whatever is set in your config.txt.",
                         "If you don't want this, then change or unset the heroku config var 'DATABASE_URL'",
                         "and/or remove the heroku postgresql addon."]))
 
 HEROKU_FILES_DIR = os.path.join(os.path.dirname(__file__), "heroku_files")
 def _copy_heroku_files():
     '''
-    Heroku needs a Procfile, a requirements.txt, and a file that stores the 
+    Heroku needs a Procfile, a requirements.txt, and a file that stores the
     '''
     _TARGET = os.curdir
     from distutils import dir_util
@@ -70,6 +65,6 @@ def do_heroku_setup():
     print("Heroku config done.")
     print()
     print("Don't forget that your database needs to be a persistent datastore!")
-    
+
 if __name__ == '__main__':
     do_heroku_setup()

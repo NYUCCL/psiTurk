@@ -115,8 +115,9 @@ class ExperimentServerController(object):
 
     def get_ppid(self):
         if not self.is_port_available():
-            url = "http://{hostname}:{port}/ppid".format(hostname=self.config.get(
-                "Server Parameters", "host"), port=self.config.getint("Server Parameters", "port"))
+            hostname = self.config.get("psiturk_server", "host")
+            port = self.config.getint("psiturk_server", "port")
+            url = f"http://{hostname}:{port}/ppid"
             ppid_request = urllib.request.Request(url)
             ppid = urllib.request.urlopen(ppid_request).read()
             return ppid
@@ -183,14 +184,12 @@ class ExperimentServerController(object):
             return 'yes'
 
     def is_port_available(self):
-        return is_port_available(self.config.get("Server Parameters", "host"), self.config.getint("Server Parameters", "port"))
+        return is_port_available(self.config.get("psiturk_server", "host"), self.config.getint("psiturk_server", "port"))
 
     def startup(self):
-        server_command = "{python_exec} '{server_script}'".format(
-            python_exec=sys.executable,
-            server_script=os.path.join(os.path.dirname(
-                __file__), "experiment_server.py")
-        )
+        server_script = os.path.join(os.path.dirname(
+            __file__), "experiment_server.py")
+        server_command = f"{sys.executable} '{server_script}'"
         server_status = self.is_server_running()
         if server_status == 'no':
             #print "Running experiment server with command:", server_command

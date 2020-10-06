@@ -108,34 +108,19 @@ def amt_services_wrapper_response(func):
 
 class MTurkServicesWrapper(object):
 
-    _cached_web_services = None
     _cached_dbs_services = None
     _cached_amt_services = None
-
-    @property
-    def web_services(self):
-        if not self._cached_web_services:
-            self._cached_web_services = PsiturkOrgServices(
-                self.config.get('psiTurk Access', 'psiturk_access_key_id'),
-                self.config.get('psiTurk Access', 'psiturk_secret_access_id'))
-        return self._cached_web_services
-
-    def set_web_services(self, web_services):
-        self._cached_web_services = web_services
 
     @property
     def amt_services(self):
         if not self._cached_amt_services:
             try:
-                self._cached_amt_services = MTurkServices(
-                    self.config.get('AWS Access', 'aws_access_key_id'),
-                    self.config.get('AWS Access', 'aws_secret_access_key'),
-                    self.sandbox)
+                self._cached_amt_services = MTurkServices(mode=self.mode)
             except PsiturkException:
                 raise
         return self._cached_amt_services
 
-    def __init__(self, config=None, web_services=None, sandbox=None):
+    def __init__(self, config=None, web_services=None, mode='sandbox'):
         init_db()
 
         if not config:
@@ -143,17 +128,12 @@ class MTurkServicesWrapper(object):
             config.load_config()
         self.config = config
 
-        if not sandbox:
-            sandbox = config.getboolean(
-                'Shell Parameters', 'launch_in_sandbox_mode')
-        mode = 'sandbox' if sandbox else 'live'
         self.set_mode(mode)
 
         if web_services:
             self._cached_web_services = web_services
 
         _ = self.amt_services # may throw an exception. Let it throw!
-
 
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #   Miscellaneous
@@ -165,20 +145,12 @@ class MTurkServicesWrapper(object):
     @amt_services_wrapper_response
     def set_mode(self, mode):
         if mode not in ['sandbox','live']:
-            raise PsiturkException('mode not recognized: {}'.format(mode))
+            raise PsiturkException(f'mode not recognized: {mode}')
 
         self.mode = mode
-
-        if mode == 'sandbox':
-            self.set_sandbox(True)
-        elif mode == 'live':
-            self.set_sandbox(False)
+        self.amt_services.set_mode(mode)
 
         return {'success': True}
-
-    def set_sandbox(self, is_sandbox):
-        self.sandbox = is_sandbox
-        self.amt_services.set_sandbox(is_sandbox)
 
     def random_id_generator(self, size=6, chars=string.ascii_uppercase +
                             string.digits):
@@ -197,8 +169,7 @@ class MTurkServicesWrapper(object):
     def add_bonus_info(assignment_dict):
         " Adds DB-logged worker bonus to worker list data "
         try:
-            unique_id = '{}:{}'.format(
-                assignment_dict['workerId'], assignment_dict['assignmentId'])
+            unique_id = f"{assignment_dict['workerId']}:{assignment_dict['assignmentId']}"
             worker = Participant.query.filter(
                 Participant.uniqueid == unique_id).one()
             assignment_dict['bonus'] = worker.bonus
@@ -215,7 +186,7 @@ class MTurkServicesWrapper(object):
         '''
         if codeversion == 'latest':
             codeversion = [self.config.get(
-                'Task Parameters', 'experiment_code_version')]
+                'task', 'experiment_code_version')]
 
         if status == 'completed':
             status = [3,4,5,7]
@@ -516,9 +487,8 @@ class MTurkServicesWrapper(object):
 
     @amt_services_wrapper_response
     def bonus_all_local_assignments(self, amount, reason, override_bonused_status=False):
-        mode = 'sandbox' if self.sandbox else 'live'
         assignments = Participant.query.filter(Participant.status == CREDITED)\
-            .filter(Participant.mode == mode)\
+            .filter(Participant.mode == self.mode)\
             .all()
 
         results = []
@@ -621,7 +591,6 @@ class MTurkServicesWrapper(object):
         Otherwise, just give at least an assignment_id. Worker_id is nice if you have it, but if
         you don't, amt_services will look it up.
         '''
-        mode = 'sandbox' if self.sandbox else 'live'
 
         result = {}
         try:
@@ -753,10 +722,7 @@ class MTurkServicesWrapper(object):
         if not response.success:
             return {'exception': response.exception, 'hit_id': hit_id}
         else:
-            if self.sandbox:
-                success_message = "deleted sandbox HIT {}".format(hit_id)
-            else:
-                success_message = "deleted live HIT {}".format(hit_id)
+            success_message = f"deleted {mode} HIT {hit_id}"
             return {'hit_id': hit_id, 'success': True, 'message': success_message}
 
     @amt_services_wrapper_response
@@ -789,62 +755,27 @@ class MTurkServicesWrapper(object):
         if blacklist_qualification_ids is None:
             blacklist_qualification_ids = []
 
-        if self.sandbox:
-            mode = 'sandbox'
-        else:
-            mode = 'live'
-        server_loc = str(self.config.get('Server Parameters', 'host'))
-
-        use_psiturk_ad_server = self.config.getboolean(
-            'Shell Parameters', 'use_psiturk_ad_server')
-
-        if use_psiturk_ad_server:
-            if not self.web_services.check_credentials():
-                raise InvalidPsiturkCredentialsError()
+        server_loc = str(self.config.get('psiturk_server', 'host'))
 
         if not self.amt_services.verify_aws_login():
             raise InvalidAWSCredentialsError()
 
-        ad_id = None
-        if use_psiturk_ad_server:
-            create_ad_id_response = self.create_psiturk_ad()
-            if not create_ad_id_response.success:
-                raise create_ad_id_response.exception
-            else:
-                ad_id = create_ad_id_response.data['ad_id']
-            if ad_id:
-                ad_location = self.web_services.get_ad_url(
-                    ad_id, int(self.sandbox))
-                hit_config = self._generate_hit_config(
-                    ad_location, num_workers, reward, duration, whitelist_qualification_ids, blacklist_qualification_ids)
-                response = self.amt_services.create_hit(hit_config)
-                if not response.success:
-                    raise response.exception
-                else:
-                    hit_id = response.data['HITId']
-                    if not self.web_services.set_ad_hitid(ad_id, hit_id, int(self.sandbox)):
-                        raise AdPsiturkOrgError("Unable to update Ad on http://ad.psiturk.org to point at HIT.")
-            else:
-                create_failed = True
-                raise AdPsiturkOrgError("Unable to create Ad on http://ad.psiturk.org.")
-
-        else:  # not using psiturk ad server
-            ad_location = "{}?mode={}".format(self.config.get(
-                'Shell Parameters', 'ad_location'), mode)
-            hit_config = self._generate_hit_config(
-                ad_location, num_workers, reward, duration, whitelist_qualification_ids, blacklist_qualification_ids)
-            response = self.amt_services.create_hit(hit_config)
-            if not response.success:
-                raise response.exception
-            else:
-                hit_id = response.data['HITId']
+        ad_url = self.config.get_ad_url()
+        ad_url = f"{ad_url}?mode={self.mode}"
+        hit_config = self._generate_hit_config(
+            ad_url, num_workers, reward, duration, whitelist_qualification_ids, blacklist_qualification_ids)
+        response = self.amt_services.create_hit(hit_config)
+        if not response.success:
+            raise response.exception
+        else:
+            hit_id = response.data['HITId']
 
         # stash hit id in psiturk database
         hit = Hit(hitid=hit_id)
         db_session.add(hit)
         db_session.commit()
 
-        return {'hit_id': hit_id, 'ad_id': ad_id}
+        return {'hit_id': hit_id}
 
     @amt_services_wrapper_response
     def list_qualification_types(self, *args, **kwargs):
@@ -869,92 +800,34 @@ class MTurkServicesWrapper(object):
             return {'qualification_types': qualification_types}
 
 
-    @amt_services_wrapper_response
-    def create_psiturk_ad(self):
-        # register with the ad server (psiturk.org/ad/register) using POST
-        if os.path.exists('templates/ad.html'):
-            ad_html = open('templates/ad.html').read()
-        else:
-            raise AdHtmlNotFoundError()
-
-        size_of_ad = sys.getsizeof(ad_html)
-        if size_of_ad >= 1048576:
-            raise AdHtmlTooLarge(size_of_ad)
-
-        # what all do we need to send to server?
-        # 1. server
-        # 2. port
-        # 3. support_ie?
-        # 4. ad.html template
-        # 5. contact_email in case an error happens
-
-        if self.config.has_option('Server Parameters', 'adserver_revproxy_host'):
-            # misnomer, could actually be a fqdn sans protocol
-            ip_address = self.config.get(
-                'Server Parameters', 'adserver_revproxy_host')
-            if self.config.has_option('Server Parameters', 'adserver_revproxy_port'):
-                port = self.config.getint(
-                    'Server Parameters', 'adserver_revproxy_port')
-            else:
-                port = 80
-        else:
-            ip_address = str(get_my_ip())
-            port = str(self.config.get('Server Parameters', 'port'))
-
-        if self.config.has_option('HIT Configuration', 'allow_repeats'):
-            allow_repeats = self.config.getboolean(
-                'HIT Configuration', 'allow_repeats')
-        else:
-            allow_repeats = False
-
-        ad_content = {
-            'psiturk_external': True,
-            'server': ip_address,
-            'port': port,
-            'browser_exclude_rule': str(self.config.get('HIT Configuration', 'browser_exclude_rule')),
-            'is_sandbox': int(self.sandbox),
-            'ad_html': ad_html,
-            # 'amt_hit_id': hitid, Don't know this yet
-            'organization_name': str(self.config.get('HIT Configuration', 'organization_name')),
-            'experiment_name': str(self.config.get('HIT Configuration', 'title', raw=True)),
-            'contact_email_on_error': str(self.config.get('HIT Configuration', 'contact_email_on_error')),
-            'ad_group': str(self.config.get('HIT Configuration', 'ad_group')),
-            'keywords': str(self.config.get('HIT Configuration', 'psiturk_keywords')),
-            'allow_repeats': int(allow_repeats)
-        }
-        ad_id = self.web_services.create_ad(ad_content)
-        if not ad_id:
-            raise AdPsiturkOrgError('Error creating the ad.')
-        return {'ad_id': ad_id}
-
-    def _generate_hit_config(self, ad_location, num_workers, reward, duration, whitelist_qualification_ids=None, blacklist_qualification_ids=None):
+    def _generate_hit_config(self, ad_url, num_workers, reward, duration, whitelist_qualification_ids=None, blacklist_qualification_ids=None):
         if whitelist_qualification_ids is None:
             whitelist_qualification_ids = []
 
         if blacklist_qualification_ids is None:
             blacklist_qualification_ids = []
 
-        require_quals = self.config.get('HIT Configuration', 'require_quals', fallback=None)
+        require_quals = self.config.get('hit_configuration', 'require_quals', fallback=None)
         if require_quals:
             whitelist_qualification_ids.extend(require_quals.split(','))
 
-        block_quals = self.config.get('HIT Configuration', 'block_quals', fallback=None)
+        block_quals = self.config.get('hit_configuration', 'block_quals', fallback=None)
         if block_quals:
             blacklist_qualification_ids.extend(block_quals.split(','))
 
         hit_config = {
-            "ad_location": ad_location,
-            "approve_requirement": self.config.getint('HIT Configuration', 'Approve_Requirement'),
-            "us_only": self.config.getboolean('HIT Configuration', 'US_only'),
-            "lifetime": datetime.timedelta(hours=self.config.getfloat('HIT Configuration', 'lifetime')),
+            "ad_location": ad_url,
+            "approve_requirement": self.config.getint('hit_configuration', 'Approve_Requirement'),
+            "us_only": self.config.getboolean('hit_configuration', 'US_only'),
+            "lifetime": datetime.timedelta(hours=self.config.getfloat('hit_configuration', 'lifetime')),
             "max_assignments": num_workers,
-            "title": self.config.get('HIT Configuration', 'title', raw=True),
-            "description": self.config.get('HIT Configuration', 'description', raw=True),
-            "keywords": self.config.get('HIT Configuration', 'amt_keywords'),
+            "title": self.config.get('hit_configuration', 'title', raw=True),
+            "description": self.config.get('hit_configuration', 'description', raw=True),
+            "keywords": self.config.get('hit_configuration', 'keywords'),
             "reward": reward,
             "duration": datetime.timedelta(hours=duration),
-            "number_hits_approved": self.config.getint('HIT Configuration', 'number_hits_approved'),
-            "require_master_workers": self.config.getboolean('HIT Configuration', 'require_master_workers'),
+            "number_hits_approved": self.config.getint('hit_configuration', 'number_hits_approved'),
+            "require_master_workers": self.config.getboolean('hit_configuration', 'require_master_workers'),
             "whitelist_qualification_ids": whitelist_qualification_ids,
             "blacklist_qualification_ids": blacklist_qualification_ids
         }

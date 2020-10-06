@@ -52,7 +52,7 @@ class PsiturkUnitTest(unittest.TestCase):
         '''Build up fixtures'''
         import psiturk.experiment
         reload(psiturk.experiment)
-        
+
         psiturk.experiment.app.wsgi_app = FlaskTestClientProxy(
             psiturk.experiment.app.wsgi_app)
         self.app = psiturk.experiment.app.test_client()
@@ -100,21 +100,21 @@ def test_custom_get_condition_can_import(mocker, psiturk_test_client):
     sys.path.append(os.getcwd())
     import custom
     reload(custom)
-    
+
     mocker.patch.object(custom,'custom_get_condition', lambda mode: (9,9), create=True)
-    
+
     app = psiturk_test_client()
-    
+
     from psiturk.experiment import get_condition
     assert get_condition('') == (9,9)
-    
+
 def test_custom_get_condition_not_necessary(tmpdir, mocker, psiturk_test_client):
     import sys
     sys.path.append(os.getcwd())
     import custom
     reload(custom)
     app = psiturk_test_client()
-    
+
     from psiturk.experiment import get_condition
     assert get_condition('') == (0,0)
 
@@ -123,19 +123,19 @@ def test_missing_template_exception(edit_config_file, remove_template, psiturk_t
     remove_template('closepopup.html')
     with pytest.raises(RuntimeError):
         app = psiturk_test_client()
-        
+
 def test_notmissing_template(edit_config_file, remove_template, psiturk_test_client):
     edit_config_file('use_psiturk_ad_server = true', 'use_psiturk_ad_server = false')
     psiturk_test_client()
-    
+
 def test_does_not_die_if_no_custompy(remove_file, psiturk_test_client):
     remove_file('custom.py')
     psiturk_test_client()
-    
+
 def test_insert_mode(psiturk_test_client):
     with open('templates/ad.html', 'r') as temp_file:
         ad_string = temp_file.read()
-    
+
     from psiturk.experiment import insert_mode
     insert_mode(ad_string, 'debug')
 
@@ -172,7 +172,7 @@ class PsiTurkStandardTests(PsiturkUnitTest):
             'mode=sandbox'])
         rv = self.app.get('/ad?%s' % args)
         assert 'Thank you for accepting this HIT!' in rv.get_data(as_text=True)
-    
+
     @pytest.mark.skip('psiturk api server is slow for this test')
     def test_exp_with_all_url_vars_not_registered_on_ad_server(self):
         '''Test that exp page throws Error #1018 with all url vars but not registered.'''
@@ -195,7 +195,7 @@ class PsiTurkStandardTests(PsiturkUnitTest):
         # put the user in the database
         rv = self.app.get("/exp?%s" % request)
 
-        
+
         # try putting the sync, simulating a Backbone PUT payload
         uniqueid = "debug%s:debug%s" % (self.worker_id, self.assignment_id)
         payload = {"condition":5,"counterbalance":0,"assignmentId":self.assignment_id,"workerId":self.worker_id,"hitId":self.hit_id,"currenttrial":2,"bonus":0,"data":[{"uniqueid":uniqueid,"current_trial":0,"dateTime":1564425799481,"trialdata":{"phase":"postquestionnaire","status":"begin"}},{"uniqueid":uniqueid,"current_trial":1,"dateTime":1564425802158,"trialdata":{"phase":"postquestionnaire","status":"submit"}}],"questiondata":{"engagement":"5","difficulty":"5"},"eventdata":[{"eventtype":"initialized","value":'',"timestamp":1564425799139,"interval":0},{"eventtype":"window_resize","value":[933,708],"timestamp":1564425799139,"interval":0}],"useragent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36","mode":"debug"}
@@ -207,7 +207,7 @@ class PsiTurkStandardTests(PsiturkUnitTest):
         self.assignment_id = "debug%s" % self.assignment_id
         self.worker_id = "debug%s" % self.worker_id
         self.hit_id = "debug%s" % self.hit_id
-        
+
         request = "&".join([
            "assignmentId=%s" % self.assignment_id,
            "workerId=%s" % self.worker_id,
@@ -302,7 +302,7 @@ class PsiTurkStandardTests(PsiturkUnitTest):
 
     def test_repeat_experiment_success(self):
         '''Test that a participant can repeat the experiment.'''
-        self.set_config(u'HIT Configuration', u'allow_repeats', u'true')
+        self.set_config(u'task', u'allow_repeats', u'true')
         request = "&".join([
             "assignmentId=%s" % self.assignment_id,
             "workerId=%s" % self.worker_id,
@@ -397,7 +397,7 @@ class PsiTurkStandardTests(PsiturkUnitTest):
 
     def test_repeat_experiment_quit_allow_repeats(self):
         '''Test that a participant cannot restart the experiment, even when repeats are allowed.'''
-        self.set_config(u'HIT Configuration', u'allow_repeats', u'true')
+        self.set_config(u'task', u'allow_repeats', u'true')
         request = "&".join([
             "assignmentId=%s" % self.assignment_id,
             "workerId=%s" % self.worker_id,
@@ -445,7 +445,7 @@ class BadUserAgent(PsiturkUnitTest):
         '''Build up fixtures'''
         import psiturk.experiment
         reload(psiturk.experiment)
-        
+
         psiturk.experiment.app.wsgi_app = BadFlaskTestClientProxy(
             psiturk.experiment.app.wsgi_app)
         self.app = psiturk.experiment.app.test_client()
@@ -472,7 +472,7 @@ class PsiTurkTestPsiturkJS(PsiturkUnitTest):
         os.rename(self.PSITURK_JS_FILE, self.PSITURK_JS_FILE + '.bup')
         import psiturk.experiment
         reload(psiturk.experiment)
-        
+
         psiturk.experiment.app.wsgi_app = FlaskTestClientProxy(
             psiturk.experiment.app.wsgi_app)
         self.app = psiturk.experiment.app.test_client()

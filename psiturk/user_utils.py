@@ -33,8 +33,8 @@ class PsiTurkAuthorization(object):
     ''' Authorize route '''
 
     def __init__(self, config):
-        self.queryname = config.get('Server Parameters', 'login_username')
-        self.querypw = config.get('Server Parameters', 'login_pw')
+        self.queryname = config.get('psiturk_server', 'login_username')
+        self.querypw = config.get('psiturk_server', 'login_pw')
 
     @classmethod
     def wrapper(cls, func, args):
