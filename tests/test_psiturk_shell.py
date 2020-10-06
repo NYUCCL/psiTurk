@@ -32,11 +32,11 @@ def get_shell(patch_aws_services, stubber, mocker):
         config.load_config()
         server = control.ExperimentServerController(config)
 
-        launch_in_sandbox_mode = True
         quiet = False
         shell = PsiturkNetworkShell(
-            config, server,
-            launch_in_sandbox_mode,
+            config,
+            server,
+            mode='sandbox',
             quiet=quiet)
         shell.persistent_history_file = None
         shell.echo = True
@@ -45,7 +45,10 @@ def get_shell(patch_aws_services, stubber, mocker):
 
     return do_it
 
-def test_do_worker_bonus_reason(get_shell, mocker):
+def test_do_worker_bonus_reason(amt_services_wrapper, get_shell, mocker):
+    # don't remember why rn, but need to import `amt_services_wrapper` to reload
+    # something-or-other so that other uses of it in the same test run
+    # don't break
     from psiturk.psiturk_shell import MTurkServicesWrapper
     patched = mocker.patch.object(MTurkServicesWrapper, 'bonus_all_local_assignments')
     shell = get_shell()
@@ -54,7 +57,10 @@ def test_do_worker_bonus_reason(get_shell, mocker):
 
     patched.assert_called_with(float('1.00'), "thanks for everything", False)
 
-def test_bonus_amount_on_shell(get_shell, create_dummy_assignment, mocker):
+def test_bonus_amount_on_shell(amt_services_wrapper, get_shell, create_dummy_assignment, mocker):
+    # don't remember why rn, but need to import `amt_services_wrapper` to reload
+    # something-or-other so that other uses of it in the same test run
+    # don't break
     from psiturk.psiturk_shell import MTurkServicesWrapper
     patched = mocker.patch.object(MTurkServicesWrapper, 'bonus_nonlocal_assignment')
     shell = get_shell()
@@ -63,17 +69,18 @@ def test_bonus_amount_on_shell(get_shell, create_dummy_assignment, mocker):
     worker_id = '123'
     reason = 'yiss'
 
-    create_dummy_assignment({
+    result = create_dummy_assignment({
         'status': psiturk_statuses.CREDITED,
         'mode': 'sandbox',
         'assignmentid': assignment_id,
         'workerid': worker_id
         })
 
-
-    shell.runcmds_plus_hooks(['worker bonus --amount 1.00 --all --reason "{}"'.format(reason)])
+    shell.runcmds_plus_hooks([f'worker bonus --amount 1.00 --all --reason "{reason}"'])
 
     patched.assert_called_with(assignment_id, float('1.00'), reason, worker_id=worker_id)
+
+
 
 @pytest.fixture()
 def populate_db_for_shell_cmds(create_dummy_hit, create_dummy_assignment):
@@ -152,9 +159,9 @@ def test_do_commands(get_shell, pytestconfig, cmds, name, stubber, capsys):
             # pytest.set_trace()
         response = shell.runcmds_plus_hooks(cmds)
         captured = capsys.readouterr()
-        with capsys.disabled():
-            print(captured.out)
-            print(captured.err)
+        #with capsys.disabled():
+        #    print(captured.out)
+        #    print(captured.err)
         assert not captured.err
 
 # #########################

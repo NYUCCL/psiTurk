@@ -18,8 +18,8 @@ from itertools import groupby
 config = PsiturkConfig()
 config.load_config()
 
-TABLENAME = config.get('Database Parameters', 'table_name')
-CODE_VERSION = config.get('Task Parameters', 'experiment_code_version')
+TABLENAME = config.get('database', 'table_name')
+CODE_VERSION = config.get('task', 'experiment_code_version')
 
 from .tasks import do_campaign_round
 from apscheduler.jobstores.base import JobLookupError
@@ -58,7 +58,7 @@ class Participant(Base):
     bonus = Column(Float, default=0)
     status = Column(Integer, default=1)
     mode = Column(String(128))
-    if 'postgres://' in config.get('Database Parameters', 'database_url').lower():
+    if 'postgres://' in config.get('database', 'database_url').lower():
         datastring = Column(Text)
     else:
         datastring = Column(Text(4294967295))
@@ -143,7 +143,7 @@ class Participant(Base):
         except:
             print(("Error reading record:", self))
             return("")
-            
+
     @classmethod
     def count_completed(cls, codeversion, mode):
         completed_statuses = [3,4,5,7]
@@ -152,7 +152,7 @@ class Participant(Base):
                 cls.codeversion==codeversion,
                 cls.mode==mode
             ).scalar()
-            
+
     @classmethod
     def count_workers_grouped(cls, query=None, group_bys=['codeversion','mode','status']):
         group_by_labels = group_bys + ['count']
@@ -162,10 +162,10 @@ class Participant(Base):
         for group_by in group_bys:
             query = query.group_by(group_by).order_by(group_by.desc())
         entities = group_bys + [func.count()]
-            
+
         query = query.with_entities(*entities)
         results = query.all()
-        
+
         def list_to_grouped_dicts(results):
             parsed_results = {}
             for k, group in groupby(results, lambda row: row[0]): # k will be codeversion
@@ -175,25 +175,25 @@ class Participant(Base):
                 else:
                     parsed_results.update({k:v for k,v in group})
             return parsed_results
-        
+
         parsed_results = list_to_grouped_dicts(results)
-        
+
         zipped_results = [dict(zip(group_by_labels, row)) for row in results]
         return zipped_results
-        
+
     @classmethod
     def all_but_datastring(cls):
         query = cls.query
         query = query.with_entities(*[c for c in cls.__table__.c if c.name != 'datastring'])
         return query.all()
-            
+
 
 class Hit(Base):
     '''
     '''
     __tablename__ = 'amt_hit'
     hitid = Column(String(128), primary_key=True)
-    
+
 class Campaign(Base):
     '''
     '''
@@ -209,7 +209,7 @@ class Campaign(Base):
     is_active = Column(Boolean, default=True)
     created = Column(DateTime, default=datetime.datetime.utcnow)
     ended = Column(DateTime, default=None)
-    
+
     @validates('goal', 'minutes_between_rounds','assignments_per_round',
         'hit_duration_hours')
     def validate_greater_than_zero(self, key, value):
@@ -217,37 +217,37 @@ class Campaign(Base):
             self._validate_greater_than_already_completed(value)
         assert value > 0, 'Property `{}` must be greater than 0'.format(key)
         return value
-        
+
     @validates('hit_reward')
     def validate_hit_reward(self, key, hit_reward):
         assert hit_reward >= 0, 'Hit reward must be greater than or equal to zero, got {}'.hit_reward
         return hit_reward
-    
+
     def _validate_greater_than_already_completed(self, goal):
         count_completed = Participant.count_completed(codeversion=self.codeversion, mode=self.mode)
         assert goal > count_completed, 'Goal ({}) must be greater than the count of already-completed ({}).'.format(goal, count_completed)
-    
+
     @validates('mode')
     def validate_mode(self, key, mode):
         assert mode in ['sandbox','live'], 'Mode {} not recognized.'.format(mode)
         return mode
-    
+
     @validates('is_active')
     def validate_is_active(self, key, is_active):
         if is_active:
             assert not self.active_campaign_exists(), 'No no, there can be only one active campaign.'
         return is_active
-        
-    
+
+
     def __init__(self, **kwargs):
         self.codeversion = CODE_VERSION
         for key in kwargs:
             setattr(self, key, kwargs[key])
-            
+
     @property
     def campaign_job_id(self):
         return 'campaign-{}'.format(self.id)
-    
+
     def end(self):
         self.is_active = False
         self.ended = datetime.datetime.now(datetime.timezone.utc)
@@ -257,23 +257,23 @@ class Campaign(Base):
         except JobLookupError:
             pass
         return self
-    
+
     @classmethod
     def active_campaign_exists(cls):
         subquery = cls.query.filter(cls.is_active.is_(True)).exists()
         query = db_session.query(subquery)
         _return = query.scalar()
         return _return
-    
+
     @classmethod
     def launch_new_campaign(cls, **kwargs):
         kwargs['is_active'] = True
         new_campaign = cls(**kwargs)
         db_session.add(new_campaign)
         db_session.commit()
-        
+
         _kwargs = {
-            'campaign': new_campaign, 
+            'campaign': new_campaign,
             'job_id': new_campaign.campaign_job_id
         }
         from .experiment import app
@@ -281,9 +281,9 @@ class Campaign(Base):
             id=new_campaign.campaign_job_id,
             func=do_campaign_round,
             kwargs=_kwargs,
-            trigger='interval', 
+            trigger='interval',
             minutes=new_campaign.minutes_between_rounds,
-            next_run_time=datetime.datetime.now(datetime.timezone.utc) 
+            next_run_time=datetime.datetime.now(datetime.timezone.utc)
         )
-        
+
         return new_campaign

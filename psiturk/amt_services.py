@@ -94,23 +94,16 @@ class MTurkHIT(object):
 class MTurkServices(object):
     ''' MTurk services '''
 
-    def __init__(self, aws_access_key_id, aws_secret_access_key, is_sandbox):
-        self.update_credentials(aws_access_key_id, aws_secret_access_key)
-        self.is_sandbox = is_sandbox
-        self.setup_mturk_connection() # may throw AWSAccessKeysNotSet
+    def __init__(self, mode='sandbox'):
+        self.set_mode(mode)
         self.valid_login = self.verify_aws_login()
 
         if not self.valid_login:
             raise NoMturkConnectionError()
 
-    def update_credentials(self, aws_access_key_id, aws_secret_access_key):
-        ''' Update credentials '''
-        self.aws_access_key_id = aws_access_key_id
-        self.aws_secret_access_key = aws_secret_access_key
-
-    def set_sandbox(self, is_sandbox):
-        ''' Set sandbox '''
-        self.is_sandbox = is_sandbox
+    def set_mode(self, mode):
+        ''' Set mode '''
+        self.mode = mode
         self.setup_mturk_connection()
 
     @staticmethod
@@ -222,19 +215,13 @@ class MTurkServices(object):
 
     def setup_mturk_connection(self):
         ''' Connect to turk '''
-        if ((self.aws_access_key_id == 'YourAccessKeyId') or
-                (self.aws_secret_access_key == 'YourSecretAccessKey')):
-            raise AWSAccessKeysNotSetError()
-
-        if self.is_sandbox:
+        if self.mode == 'sandbox':
             endpoint_url = 'https://mturk-requester-sandbox.us-east-1.amazonaws.com'
         else:
             endpoint_url = 'https://mturk-requester.us-east-1.amazonaws.com'
 
         self.mtc = boto3.client('mturk',
                                 region_name='us-east-1',
-                                aws_access_key_id=self.aws_access_key_id,
-                                aws_secret_access_key=self.aws_secret_access_key,
                                 endpoint_url=endpoint_url)
         return True
 
@@ -274,7 +261,7 @@ class MTurkServices(object):
 
 
         if hit_config['require_master_workers']:
-            master_qualId = MASTERS_SANDBOX_QUAL_ID if self.is_sandbox else MASTERS_QUAL_ID
+            master_qualId = MASTERS_SANDBOX_QUAL_ID if self.mode == 'sandbox' else MASTERS_QUAL_ID
             quals.append(dict(
                 QualificationTypeId=master_qualId,
                 Comparator='Exists'
@@ -304,36 +291,6 @@ class MTurkServices(object):
                 hit_config['duration'].total_seconds()),
             Keywords=hit_config['keywords'],
             QualificationRequirements=quals)
-
-        # Check the config file to see if notifications are wanted.
-        config = PsiturkConfig()
-        config.load_config()
-
-        try:
-            url = config.get('Server Parameters', 'notification_url')
-
-            all_event_types = [
-                "AssignmentAccepted",
-                "AssignmentAbandoned",
-                "AssignmentReturned",
-                "AssignmentSubmitted",
-                "HITReviewable",
-                "HITExpired",
-            ]
-
-            # TODO: not sure if this works. Can't find documentation in PsiTurk or MTurk
-            self.mtc.update_notification_settings(
-                HitTypeId=hit_type['HITTypeId'],
-                Notification=dict(
-                    Destination=url,
-                    Transport='REST',
-                    Version=NOTIFICATION_VERSION,
-                    EventTypes=all_event_types,
-                ),
-            )
-
-        except Exception as e:
-            pass
 
         schema_url = "http://mechanicalturk.amazonaws.com/AWSMechanicalTurkDataSchemas/2006-07-14/ExternalQuestion.xsd"
         template = '<ExternalQuestion xmlns="%(schema_url)s"><ExternalURL>%%(external_url)s</ExternalURL><FrameHeight>%%(frame_height)s</FrameHeight></ExternalQuestion>' % vars()

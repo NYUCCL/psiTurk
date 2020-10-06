@@ -41,11 +41,11 @@ def edit_config_file():
 
 @pytest.fixture(scope='function', autouse=True)
 def experiment_dir(tmpdir, bork_aws_environ, edit_config_file):
-    # pytest.set_trace()
     os.chdir(tmpdir)
     import psiturk.setup_example as se
     se.setup_example()
     edit_config_file('use_psiturk_ad_server = true', 'use_psiturk_ad_server = false')
+    os.environ['PSITURK_AD_URL_DOMAIN'] = 'example.com'
     # os.chdir('psiturk-example') # the setup script already chdirs into here, although I don't like that it does that
     yield
 
@@ -65,7 +65,6 @@ def db_setup(mocker, experiment_dir, tmpdir, request):
     init_db()
 
     yield
-
 
 
 #############
@@ -104,8 +103,7 @@ def patch_aws_services(client, mocker):
     mocker.patch.object(psiturk.amt_services.MTurkServices,
                         'setup_mturk_connection', setup_mturk_connection)
 
-    my_amt_services = psiturk.amt_services.MTurkServices(
-        '', '', is_sandbox=True)
+    my_amt_services = psiturk.amt_services.MTurkServices(mode='sandbox')
     mocker.patch.object(
         psiturk.amt_services_wrapper.MTurkServicesWrapper, 'amt_services', my_amt_services)
 
@@ -139,6 +137,8 @@ def create_dummy_hit(stubber_prepare_create_hit, amt_services_wrapper):
     def do_it(with_hit_id=None, **kwargs):
         stubber_prepare_create_hit(with_hit_id)
         result = amt_services_wrapper.create_hit(1, 0.01, 1, **kwargs)
+        if not result.success:
+            raise result.exception
 
     return do_it
 
@@ -147,7 +147,9 @@ def create_dummy_assignment(faker):
     from psiturk.db import db_session, init_db
     from psiturk.models import Participant
 
-    def do_it(participant_attributes={}):
+    def do_it(participant_attributes=None):
+        if not participant_attributes:
+            participant_attributes = {}
 
         participant_attribute_defaults = {
             'workerid': faker.md5(raw_output=False),
