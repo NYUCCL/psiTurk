@@ -5,10 +5,8 @@ matrix:
           python: 3.6
         - name: "Python 3.7 on Linux"
           python: 3.7
-        - name: "Python 3.7 on macOS"
-          os: osx
-          osx_image: xcode11
-          language: shell
+        - name: "Python 3.8 on Linux"
+          python: 3.8
 git:
     quiet: true
 before_install:
@@ -31,7 +29,7 @@ deploy:
 #    on:
 #      tags: false
 #      branch: master
-         
+
     # production pypi
     provider: pypi
     user: nyuccl
