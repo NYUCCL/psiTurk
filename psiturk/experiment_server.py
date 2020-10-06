@@ -82,7 +82,7 @@ class ExperimentServer(Application):
             'workers': workers,
             'worker_class': 'gevent',
             'loglevels': self.loglevels,
-            'loglevel': self.loglevels[config.getint("Server Parameters", "loglevel")],
+            'loglevel': self.loglevels[config.getint("psiturk_server", "loglevel")],
             # 'accesslog': config.get('psiturk_server', "logfile"),
             'errorlog': config.get('psiturk_server', "logfile"),
             'proc_name': 'psiturk_experiment_server_' + project_hash,
@@ -90,7 +90,7 @@ class ExperimentServer(Application):
             'on_exit': on_exit
         }
 
-        if config.has_option("Server Parameters", "certfile") and config.has_option("Server Parameters", "keyfile"):
+        if config.get("psiturk_server", "certfile") and config.get("psiturk_server", "keyfile"):
             print("Loading SSL certs for server...")
             ssl_options = {
                 'certfile': config.get('psiturk_server', "certfile"),
@@ -98,7 +98,7 @@ class ExperimentServer(Application):
             }
             self.user_options.update(ssl_options)
 
-        if config.has_option("Server Parameters", "server_timeout"):
+        if config.has_option("psiturk_server", "server_timeout"):
             self.user_options.update(
                 {'timeout': config.get('psiturk_server', "server_timeout")})
 
