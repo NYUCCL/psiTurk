@@ -141,47 +141,23 @@ class ExperimentServerController(object):
         else:
             self.server_running = False
 
-    def kill_child_processes(self, parent_pid, sig=signal.SIGTERM):
-        if os.uname()[0] is 'Linux':
-            ps_command = subprocess.Popen('pstree -p %d | perl -ne \'print "$1 "\
-                                          while /\((\d+)\)/g\'' % parent.pid,
-                                          shell=True, stdout=subprocess.PIPE)
-            ps_output = ps_command.stdout.read()
-            retcode = ps_command.wait()
-            assert retcode == 0, "ps command returned %d" % retcode
-            for pid_str in ps_output.split("\n")[:-1]:
-                os.kill(int(pid_str), sig)
-        if os.uname()[0] is 'Darwin':
-            child_pid = parent.get_children(recursive=True)
-            for pid in child_pid:
-                pid.send_signal(signal.SIGTERM)
-
     def is_server_running(self):
         project_hash = hashlib.sha1(os.getcwd().encode()).hexdigest()[:12]
-        # find server processes run by this user from this folder
-        PROCNAME = "psiturk_experiment_server_" + project_hash
-        cmd = "ps -o pid,command | grep '" + PROCNAME + \
-            "' | grep -v grep | awk '{print $1}'"
-        psiturk_exp_processes = subprocess.Popen(
-            cmd, shell=True, stdout=subprocess.PIPE)
-        output = psiturk_exp_processes.stdout.readlines()
-        parent = psutil.Process(psiturk_exp_processes.pid)
-        self.kill_child_processes(parent.pid)
-
-        if output:
-            is_psiturk_using_port = True
-        else:
-            is_psiturk_using_port = False
-        is_port_open = self.is_port_available()
-        #print self.server_running, " ", portopen
-        if is_port_open and is_psiturk_using_port:  # This should never occur
+        proc_name = "psiturk_experiment_server_" + project_hash
+        server_process_running = False
+        for proc in psutil.process_iter():
+            if proc_name in str(proc.as_dict(['cmdline'])):
+                server_process_running = True
+                break
+        port_is_open = self.is_port_available()
+        if port_is_open and server_process_running:  # This should never occur
             return 'maybe'
-        elif not is_port_open and not is_psiturk_using_port:
-            return 'blocked'
-        elif is_port_open and not is_psiturk_using_port:
+        elif port_is_open and not server_process_running:
             return 'no'
-        elif not is_port_open and is_psiturk_using_port:
+        elif not port_is_open and server_process_running:
             return 'yes'
+        elif not port_is_open and not server_process_running:
+            return 'blocked'
 
     def is_port_available(self):
         return is_port_available(self.config.get("psiturk_server", "host"), self.config.getint("psiturk_server", "port"))

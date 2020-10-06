@@ -14,7 +14,7 @@ from distutils import file_util
 from psiturk import psiturk_statuses
 
 @pytest.fixture(scope='function')
-def get_shell(patch_aws_services, stubber, mocker):
+def get_shell(amt_services_wrapper, patch_aws_services, stubber, mocker):
 
     def do_it():
         from psiturk.psiturk_shell import PsiturkNetworkShell
