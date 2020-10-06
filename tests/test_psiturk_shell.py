@@ -14,7 +14,7 @@ from distutils import file_util
 from psiturk import psiturk_statuses
 
 @pytest.fixture(scope='function')
-def get_shell(patch_aws_services, stubber, mocker):
+def get_shell(amt_services_wrapper, patch_aws_services, stubber, mocker):
 
     def do_it():
         from psiturk.psiturk_shell import PsiturkNetworkShell
@@ -152,9 +152,9 @@ def test_do_commands(get_shell, pytestconfig, cmds, name, stubber, capsys):
             # pytest.set_trace()
         response = shell.runcmds_plus_hooks(cmds)
         captured = capsys.readouterr()
-        with capsys.disabled():
-            print(captured.out)
-            print(captured.err)
+        #with capsys.disabled():
+        #    print(captured.out)
+        #    print(captured.err)
         assert not captured.err
 
 # #########################
