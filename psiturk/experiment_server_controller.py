@@ -8,7 +8,6 @@ import psutil
 import socket
 from threading import Thread, Event
 import webbrowser
-import signal
 import subprocess
 import sys
 import os
@@ -113,41 +112,64 @@ class ExperimentServerController(object):
         self.config = config
         self.server_running = False
 
-    def get_ppid(self):
-        if not self.is_port_available():
-            url = "http://{hostname}:{port}/ppid".format(hostname=self.config.get(
-                "Server Parameters", "host"), port=self.config.getint("Server Parameters", "port"))
-            ppid_request = urllib.request.Request(url)
-            ppid = urllib.request.urlopen(ppid_request).read()
-            return ppid
-        else:
-            raise ExperimentServerControllerException(
-                "Cannot shut down experiment server, server not online")
-
     def restart(self):
         self.shutdown()
         self.startup()
 
-    def shutdown(self, ppid=None):
-        if not ppid:
-            ppid = self.get_ppid()
-        print("Shutting down experiment server at pid %s..." % ppid)
-        try:
-            os.kill(int(ppid), signal.SIGKILL)
-            self.server_running = False
-        except ExperimentServerControllerException:
-            print(ExperimentServerControllerException)
-        else:
-            self.server_running = False
+    def on_terminate(self, proc: psutil.Process):
+        print("process {} terminated with exit code {}".format(
+            proc, proc.returncode))
 
-    def is_server_running(self):
-        project_hash = hashlib.sha1(os.getcwd().encode()).hexdigest()[:12]
-        proc_name = "psiturk_experiment_server_" + project_hash
+    def kill_process_tree(self, proc: psutil.Process):
+        """Kill process tree with given process object.
+
+        Caller should be prepared to catch psutil Process class exceptions.
+        """
+        children = proc.children(recursive=True)
+        children.append(proc)
+        for c in children:
+            c.terminate()
+        gone, alive = psutil.wait_procs(children, timeout=10, callback=self.on_terminate)
+        for survivor in alive:
+            survivor.kill()
+
+    def shutdown(self, ppid=None):
+        proc_hash = self.get_project_hash()
+        psiturk_master_procs = [p for p in psutil.process_iter(
+            ['pid', 'cmdline', 'exe', 'name']) if proc_hash in str(p.info) and
+                               'master' in str(p.info)]
+        if len(psiturk_master_procs) < 1:
+            print('No active server process found.')
+            self.server_running = False
+            return
+        for p in psiturk_master_procs:
+            print('Shutting down experiment server at pid %s ... ' % p.info['pid'])
+            try:
+                self.kill_process_tree(p)
+            except psutil.NoSuchProcess as e:
+                print('Attempt to shut down PID {} failed with exception {}'.format(
+                    p.as_dict['pid'], e
+                ))
+        # NoSuchProcess exceptions imply server is not running, so seems safe.
+        self.server_running = False
+
+    def check_server_process_running(self, process_hash):
         server_process_running = False
         for proc in psutil.process_iter():
-            if proc_name in str(proc.as_dict(['cmdline'])):
+            if process_hash in str(proc.as_dict(['cmdline'])):
                 server_process_running = True
                 break
+        return server_process_running
+
+    def get_project_hash(self):
+        project_hash = 'psiturk_experiment_server_{}'.format(
+            hashlib.sha1(os.getcwd().encode()).hexdigest()[:12]
+        )
+        return project_hash
+
+    def is_server_running(self):
+        process_hash = self.get_project_hash()
+        server_process_running = self.check_server_process_running(process_hash)
         port_is_open = self.is_port_available()
         if port_is_open and server_process_running:  # This should never occur
             return 'maybe'

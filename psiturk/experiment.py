@@ -21,6 +21,7 @@ import re
 import json
 from jinja2 import TemplateNotFound
 from collections import Counter
+import signal
 
 # Setup flask
 from flask import Flask, render_template, render_template_string, request, \
@@ -58,6 +59,14 @@ logging.basicConfig(filename=LOG_FILE_PATH, format='%(asctime)s %(message)s',
 
 # Let's start
 # ===========
+
+# Unfortunately, this does not tell psiturk interactive to update server status
+def sigint_handler(signal, frame):
+    print('^C: shutting down server processes.')
+    sys.exit(0)
+
+
+signal.signal(signal.SIGINT, sigint_handler)
 
 app = Flask("Experiment_Server")
 
