@@ -1,2 +1,0 @@
-psiturk.org RESTful API
-=======================
