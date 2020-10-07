@@ -1,0 +1,115 @@
+---
+layout: base_page_plain
+permalink: /ee
+---
+
+<style>
+  .exps {
+    padding: 2% 2% 0;
+    background: white;
+    position: relative;
+    min-height: 580px;
+    overflow: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+
+  .exps  .mix,
+  .exps  .gap{
+    display: inline-block;
+    text-align: left;
+    clear: left;
+  }
+
+
+  .exps  .mix{
+    background: white;
+    margin-bottom: 2%;
+    display: none;
+    min-height: 180px;
+    overflow: hidden;
+    vertical-align: top;
+
+  }
+
+  .exps  .mix.category-1{
+  }
+
+  .exps  .mix.category-2{
+  }
+/*
+  .exps  .mix:after{
+    color: black;
+    font-size: 16px;
+    display: inline-block;
+    vertical-align: top;
+    font-weight: 700;
+  }*/
+
+</style>
+<div class="infopage">
+  <div class="row">
+    <div class="col-md-12">
+
+      <div class="main-subsection-name">{{ page_name }}</div>
+
+      <p>
+      The experiment exchange allows researchers to share the code for <b>psiTurk</b>-compatible experiments. Other researchers can easily download the code from the exchange and re-run them online using the same population and
+      task code.  In addition, researchers can use the experiment exchange to learn about the code used in other people's experiments.
+      If you used <b>psiTurk</b> to design your experiment, please consider sharing the code!
+      More information about how to do this available in your <b>psiTurk</b> <a href="/dashboard/experiment_exchange">dashboard</a>.
+      </p>
+      <br><br>
+
+      <div class="main-subsection-name">Find an experiment to replicate or to learn from:</div>
+
+
+      <!--
+      <div class="controls">
+        <label>Filter:</label>
+
+        <button type="button" class="filter btn-md btn-default" data-filter="all">All</button>
+        <button type="button" class="filter btn-md btn-default" data-filter=".category-1">Cool experiments</button>
+        <button type="button" class="filter btn-md btn-default active" data-filter=".category-2">Other cool experiments</button>
+
+        <label>Sort:</label>
+
+        <button type="button" class="sort btn-md btn-default" style="margin-left:10px;" data-sort="myorder:asc">Asc</button>
+        <button type="button" class="sort btn-md btn-default" data-sort="myorder:desc">Desc</button>
+      </div>
+      -->
+
+
+
+      <div id="ExperimentList" class="exps experimentlist">
+
+          {% for exp in experiments %}
+          <div class="mix category-1 experimentexchange-main" data-myorder="{{exp.name}}">
+            <button type="button" style="background: url('{{ exp.icon_url }}') no-repeat scroll 0 0 transparent;"class="btn btn-default btn-sm experiment-button" onclick="location.href='/ee/{{exp.experiment_id}}';">
+            </button>
+            <b>{{exp.name}}</b>
+          </div>
+
+        {% endfor %}
+
+        <div class="gap"></div>
+        <div class="gap"></div>
+
+      </div>
+
+      <script type="text/javascript">
+        $(function(){
+          // Instantiate MixItUp:
+          $('#ExperimentList').mixItUp({
+              animation: {
+                effects: 'fade stagger(300ms)'
+              }
+          });
+        });
+      </script>
+
+      <div style="clear:both;"></div>
+
+    </div>
+  </div>
+</div>

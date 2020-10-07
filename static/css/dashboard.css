@@ -1,0 +1,64 @@
+.center-block {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+
+
+.form-dashboard {
+  padding: 15px;
+  margin: 0 auto;
+}
+.form-dashboard .form-dashboard-heading,
+.form-dashboard .checkbox {
+  margin-bottom: 10px;
+}
+.form-dashboard .checkbox {
+  font-weight: normal;
+}
+.form-dashboard .form-control {
+  position: relative;
+  height: auto;
+  -webkit-box-sizing: border-box;
+     -moz-box-sizing: border-box;
+          box-sizing: border-box;
+  padding: 10px;
+  font-size: 16px;
+}
+.form-dashboard .form-control:focus {
+  z-index: 2;
+}
+
+
+.firstinpair {
+  margin-bottom: -1px;
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
+}
+.secondinpair {
+  margin-bottom: 10px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+.drop-zone {
+	width: 150px;
+	height: 150px;
+	border: 1px dashed #ccc;
+	background: #f1f1f1;
+	padding-top: 90px;
+	margin: 0 auto;
+}
+
+.create-exp-intro,
+.create-exp-github-version,
+.create-exp-imagetile,
+.create-exp-title-keywords,
+.create-exp-describe,
+.create-exp-doi,
+.create-exp-summary 
+ {
+  display: none;
+}
+.panel-group .panel { overflow: visible; } /* fix bug in bootstrap v3.1.0 */

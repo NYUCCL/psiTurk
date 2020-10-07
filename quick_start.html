@@ -1,0 +1,440 @@
+---
+layout: base_page_plain
+---
+
+<div class="infopage">
+  <div class="row">
+    <div class="col-md-12">
+          <div class="main-subsection-name">Quick Start Guide</div>
+          <p>
+            Interested in <b>psiTurk</b>?  Try out this quick start guide to running
+            a simple experiment online! It steps you from installing to paying
+            participants and should work for most people using updated versions of Linux
+            or Mac OS X.  The complete set of docs is available <a href="/docs">here</a>.
+          </p>
+          <p>
+            This guide uses a simple example experiment provided in the defaul <b>psiTurk</b> installation, but can be used to run any psiTurk experiment.
+          </p>
+          <br><br>
+    </div>
+  </div>
+
+
+  <!-- A step -->
+  <div class="row rowtop">
+    <div class="col-md-12">
+          <div class="main-subsection-name-step"><b>Step 1</b>: Install <b>psiTurk</b></div>
+    </div>
+  </div>
+
+  <div class="row rowbottom">
+    <div class="col-sm-5">
+          <p>
+            <b>psiTurk</b> can be installed easily on any system that has the
+            python package manager <code>pip</code>.   More information on
+            installation options is available <a href="http://psiturk.readthedocs.org/en/latest/install.html">here</a>.
+          </p>
+          <br>
+    </div>
+    <div class="col-sm-7">
+<small>Input:</small>
+<pre><code>$ pip install psiturk</code></pre>
+    </div>
+  </div>
+  <!-- end step -->
+
+
+  <!-- A step -->
+  <div class="row rowtop">
+    <div class="col-md-12">
+          <div class="main-subsection-name-step"><b>Step 2</b>: Create a default project structure</div>
+    </div>
+  </div>
+
+  <div class="row rowbottom">
+    <div class="col-sm-5">
+          <p>
+            <b>psiTurk</b> includes a simple example project which you can use
+            to get started.
+          </p>
+          <br>
+    </div>
+    <div class="col-sm-7">
+<small>Input:</small>
+<pre><code>$ psiturk-setup-example</code></pre>
+
+<small>Output:</small>
+<pre class="alert-info">Creating new folder `psiturk-example` in the current working directory
+...
+Creating default configuration file (config.txt)
+No '.psiturkconfig' file found in your home directory.
+Creating default '~/.psiturkconfig' file.</pre>
+    </div>
+  </div>
+  <!-- end step -->
+
+
+  <!-- A step -->
+  <div class="row rowtop">
+    <div class="col-md-12">
+          <div class="main-subsection-name-step"><b>Step 3</b>: Enter credentials</div>
+    </div>
+  </div>
+
+  <div class="row rowbottom">
+    <div class="col-sm-5">
+          <p>
+            In order to get access to all the <b>psiTurk</b> features you
+            need to enter credentials for accessing Amazon Web Services and
+            psiturk.org.  Both of these can be added to ~/.psiturkconfig.
+          </p>
+          <p>
+            To access Amazon Mechanical Turk and other Amazon Web Services features
+            you needs to enter your AWS Credentials (see <a href="http://docs.aws.amazon.com/AWSMechTurk/latest/AWSMechanicalTurkGettingStartedGuide/SetUp.html">these</a> instructions for details).  You can leave the <code>aws_region</code>
+            at the default value.
+          </p>
+          <p>
+            To access <b>psiTurk</b> online features such as the <a href="/ad_server">Ad Server</a> you need to create an account on psiturk.org.  Please visit
+            <a href="http://psiturk.org/register">http://psiturk.org/register</a>
+            to sign up or <a href="http://psiturk.org/login">http://psiturk.org/login</a>
+            to obtain your crediations.  On your <b>psiTurk</b> dashboard click
+            "API Keys" and enter them into your file.
+          </p>
+          <br>
+    </div>
+    <div class="col-sm-7">
+<small>Input:</small>
+<pre><code>$ cat ~/.psiturkconfig</code></pre>
+<small>Output:</small>
+<pre class="alert-info">[AWS Access]
+aws_access_key_id = YourAccessKeyId
+aws_secret_access_key = YourSecretAccessKey
+aws_region = us-east-1
+
+[psiTurk Access]
+psiturk_access_key_id = YourAccessKeyId
+psiturk_secret_access_id = YourSecretAccessKey</pre>
+    </div>
+  </div>
+  <!-- end step -->
+
+
+  <!-- A step -->
+  <div class="row rowtop">
+    <div class="col-md-12">
+          <div class="main-subsection-name-step"><b>Step 4</b>: Launch <b>psiTurk</b> in the new project directory</div>
+    </div>
+  </div>
+
+  <div class="row rowbottom">
+    <div class="col-sm-5">
+          <p>
+            <b>psiTurk</b> should be run in the top level folder of your
+            project.  You should be greeted with a welcome screen and
+            command prompt.
+          </p>
+          <p>
+            There is also an extensive help system in the command line.
+            Type <code>help</code> to see a list of available commands.
+            Type <code>help &lt;cmd&gt;</code> to get more information about
+            a particular command (e.g., <code>help server</code>).
+          </p>
+          <br>
+    </div>
+    <div class="col-sm-7">
+<small>Input:</small>
+<pre><code>$ cd psiturk-example
+$ psiturk </code></pre>
+<small>Output:</small>
+<pre class="alert-info">
+welcome...
+psiTurk version 2.1.1
+Type "help" for more information.
+[<b>psiTurk</b> server:<font color="red">off</font> mode:<b>sdbx</b> #HITs:0]$</pre>
+
+    </div>
+  </div>
+  <!-- end step -->
+
+
+
+  <!-- A step -->
+  <div class="row rowtop">
+    <div class="col-md-12">
+          <div class="main-subsection-name-step"><b>Step 5</b>: Start the server</div>
+    </div>
+  </div>
+
+  <div class="row rowbottom">
+    <div class="col-sm-5">
+          <p>
+            The <b>psiTurk</b> server is the web server which responds
+            to external requests (no need for Apache!).  To start or
+            stop the server type <code>server on</code>, <code>server off</code>,
+            or <code>server restart</code>.
+          </p>
+          <br>
+    </div>
+    <div class="col-sm-7">
+<small>Input:</small>
+<pre><code>[<b>psiTurk</b> server:<font color="red">off</font> mode:<b>sdbx</b> #HITs:0]$ server on</code></pre>
+<small>Output:</small>
+
+<pre class="alert-info">Experiment server launching...
+Now serving on http://localhost:22362
+[<b>psiTurk</b> server:<font color="green">on</font> mode:<b>sdbx</b> #HITs:0]$</pre>
+
+    </div>
+  </div>
+  <!-- end step -->
+
+
+  <!-- A step -->
+  <div class="row rowtop">
+    <div class="col-md-12">
+          <div class="main-subsection-name-step"><b>Step 6</b>: Debug/view your experiment</div>
+    </div>
+  </div>
+
+  <div class="row rowbottom">
+    <div class="col-sm-5">
+          <p>
+            To debug or test the experiment, simply type <code>debug</code>.
+            This will launch the default web browser on your system and
+            point it at your experiment in a method which is helpful
+            for testing.
+          </p>
+          <p>
+            Hint: If you are running on a remote server and want to disable
+            launching the browser type <code>debug -p</code> (print only)
+            which will print the debugging URL but not launch the browser.
+          </p>
+          <p>
+            Altering the experiment code is beyond the scope of the quick
+            start, but see <a href="http://psiturk.readthedocs.org/en/latest/decompose_stroop.html">this guide</a> for details on how to modify and extend the stroop example.
+          </p>
+
+          <br>
+    </div>
+    <div class="col-sm-7">
+<small>Input:</small>
+<pre><code>[<b>psiTurk</b> server:<font color="green">on</font> mode:<b>sdbx</b> #HITs:0]$ debug</code></pre>
+<small>Output:</small>
+
+<pre class="alert-info">Launching browser pointed at your randomized debug link, feel free to request another.
+http://localhost:22362/ad?assignmentId=debugX12JJ8&hitId=debugA7NP2T&workerId=debugS9K039
+[<b>psiTurk</b> server:<font color="green">on</font> mode:sdbx #HITs:0]$</pre>
+
+    </div>
+  </div>
+  <!-- end step -->
+
+
+
+  <!-- A step -->
+  <div class="row rowtop">
+    <div class="col-md-12">
+          <div class="main-subsection-name-step"><b>Step 7</b>: Create a sandboxed HIT/Ad</div>
+    </div>
+  </div>
+
+  <div class="row rowbottom">
+    <div class="col-sm-5">
+          <p>
+            In order to make the experiment available to workers on
+            Amazon Mechanical Turk you need to:
+          </p>
+          <ol>
+            <li><b>Important</b>: Edit <code>config.txt</code> and set the <code>host</code>
+              field under <code>[Server Parameters]</code> to <code>0.0.0.0</code>.</li>
+            <li>Create HIT on AMT and corresponding Ad on the
+              <b>psiTurk</b> <a href="/ad_server">Ad Server</a>.</li>
+          </ol>
+          <p>
+            In the example on  the right you will be using the Amazon "sandbox"
+            which is a place for testing your task without actually
+            offering it live to real paid workers.
+
+          </p>
+          <p>
+              Your HIT should be visible on <a href="http://workersandbox.mturk.com">http://workersandbox.mturk.com</a> if you search for your requester account name or the word "Stroop" (set in <code>config.txt</code>).
+          </p>
+           <p>
+              Statistics about page views and accepts for this HIT/Ad should appear in the
+              <b>psiTurk</b> web <a href="/dashboard">dashboard</a>.  This is a great place to
+              test your code and make sure everything looks ok.
+          </p>
+          <br>
+    </div>
+    <div class="col-sm-7">
+<p>
+To create a HIT with one assignent (i.e., room for one subject) which pays
+$1.00 as a base rate and is available for the next 24 hours:
+</p>
+<small>Input:</small>
+<pre><code>[<b>psiTurk</b> server:<font color="green">on</font> mode:<b>sdbx</b> #HITs:0]$ hit create
+number of participants? 10
+reward per HIT? 1.00
+duration of hit (in hours)? 24</code></pre>
+<small>Output:</small>
+<pre class="alert-info">*****************************
+Creating sandbox HIT
+HITid:  28K4SME3ZZ2MZI004SETTTXTTAG44LT
+Max workers: 10
+Reward: $1.00
+Duration: 24 hours
+Fee: $1.00
+________________________
+Total: $11.00
+Ad URL: https://sandbox.ad.psiturk.org/view/XXXXXXX?assignmentId=debugC1R1G1&hitId=debugFM1NWB
+Sandbox URL: https://workersandbox.mturk.com/mturk/searchbar?selectedSearchType=hitgroups&searchWords=XXXX
+</pre>
+
+    </div>
+  </div>
+  <!-- end step -->
+
+
+  <!-- A step -->
+  <div class="row rowtop">
+    <div class="col-md-12">
+          <div class="main-subsection-name-step"><b>Step 8</b>: Check your data</div>
+    </div>
+  </div>
+
+  <div class="row rowbottom">
+    <div class="col-sm-7">
+          <p>
+            By default <b>psiTurk</b> saves your data to a SQLLite database
+            <code>participants.db</code> in your base project folder.  You
+            can check that everything is being recorded properly by opening
+            that file in a SQLLite tool like <a href="http://menial.co.uk/base/">Base</a>.
+          </p>
+          <p>
+            More information about databases can be found <a href="http://psiturk.readthedocs.org/en/latest/configure_databases.html">here</a>.
+          </p>
+          <br>
+    </div>
+    <div class="col-sm-5">
+
+    </div>
+  </div>
+  <!-- end step -->
+
+
+  <!-- A step -->
+  <div class="row rowtop">
+    <div class="col-md-12">
+          <div class="main-subsection-name-step"><b>Step 9</b>: Monitor progress</div>
+    </div>
+  </div>
+
+  <div class="row rowbottom">
+    <div class="col-sm-4">
+          <p>
+            One simple way to monitor how many people have actually accepted your
+            HIT is with the <code>hit list --active</code> or <code>hit list --reviewable</code>
+            commands.
+          </p>
+          <p>
+            This shows the HITid for each task, how many have completed, and how
+            many are pending.
+          </p>
+          <br>
+    </div>
+    <div class="col-sm-8">
+<small>Input:</small>
+<pre><code>[<b>psiTurk</b> server:<font color="green">on</font> mode:<b>sdbx</b> #HITs:0]$ hit list --active</code></pre>
+<small>Output:</small>
+<pre class="alert-info">
+Stroop task
+Status: Reviewable
+HITid: 28K4SME3ZZ2MZI004SETTTXTTAG44LT
+max:10/pending:1/complete:0/remain:9
+Created:2014-04-02T19:45:42Z
+Expires:2014-04-02T19:48:48Z
+</pre>
+    </div>
+  </div>
+  <!-- end step -->
+
+
+  <!-- A step -->
+  <div class="row rowtop">
+    <div class="col-md-12">
+          <div class="main-subsection-name-step"><b>Step 10</b>: Approve workers</div>
+    </div>
+  </div>
+
+  <div class="row rowbottom">
+    <div class="col-sm-4">
+          <p>
+            <b>psiTurk</b> provides many tools for approving workers, assigning
+            bonuses, etc...  Try <code>help hit</code> and <code>help worker</code>.
+          </p>
+          <p>
+            One simple approach is to approve all the workers associated with a
+            particular HIT (one all the assignments are complete).  To do this use
+            the <code>worker approve --hit HITID</code> command.
+          </p>
+          <br>
+    </div>
+    <div class="col-sm-8">
+<small>Input:</small>
+<pre><code>[<b>psiTurk</b> server:<font color="green">on</font> mode:<b>sdbx</b> #HITs:0]$ worker approve --hit 28K4SME3ZZ2MZI004SETTTXTTAG44LT</code></pre>
+<small>Output:</small>
+<pre class="alert-info">
+Approving....
+</pre>
+    </div>
+  </div>
+  <!-- end step -->
+
+
+  <!-- A step -->
+  <div class="row rowtop">
+    <div class="col-md-12">
+          <div class="main-subsection-name-step"><b>Step 11</b>: Switch to "live" mode</div>
+    </div>
+  </div>
+
+  <div class="row rowbottom">
+    <div class="col-sm-5">
+          <p>
+            In order to create public hits on the "live" AMT site you need to switch
+            modes in the command shell using the <code>mode</code> command.  To get
+            back to the sandbox just type <code>mode</code> again.
+          </p>
+          <p>
+            To avoid mistakes, <b>psiTurk</b> defaults to sandbox mode (this behavior can be changed in <code>config.txt</code>)
+          </p>
+          <p>
+            From here, everything is exactly the same as described for sandbox
+            hits above.
+          </p>
+          <br>
+    </div>
+    <div class="col-sm-7">
+<small>Input:</small>
+<pre><code>[<b>psiTurk</b> server:<font color="green">on</font> mode:<b>sdbx</b> #HITs:1]$ mode</code></pre>
+<small>Output:</small>
+<pre class="alert-info">Entered live mode
+[psiTurk server:<font color="green">on</font> mode:<b>live</b> #HITs:0]$ </pre>
+    </div>
+  </div>
+  <!-- end step -->
+
+
+  <div class="row">
+    <div class="col-md-12">
+      <center>
+        That's the basics.
+      <h3 class="main-subsection-name">
+          Sound exciting? <a href='http://psiturk.readthedocs.org/en/latest/'>Jump into the full docs!</a>
+      </h3>
+      <br><br>
+      </center>
+    </div>
+  </div>
+
+</div>

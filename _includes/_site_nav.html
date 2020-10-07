@@ -1,0 +1,26 @@
+<div class="jumbotron">
+
+<div id="mainlogo">
+      <img alt="psiturk" class="img-responsive" src="/static/images/psiturk_logo.jpg" align="center"/>
+    </div>
+     <p>An open platform for science on Amazon Mechanical Turk.</p>
+
+<nav class="menu-navigation">
+      <ul class="menu-navigation-list">
+        {% if page_name %}
+        <li class="menu-navigation-list-item"><a href="/"><span class="glyphicon glyphicon-home"></span></a></li>
+        {% else %}
+        <li class="menu-navigation-list-item"><span class="glyphicon glyphicon-home"></span></li>
+        {% endif %}
+        {% for item in pages_list %}
+          {% if selected.name == item.name %}
+            <li class="menu-navigation-list-item">{{ item.name }}</li>
+          {% else %}
+            <li class="menu-navigation-list-item"><a href="{{ item.url }}">{{ item.name }}</a></li>
+          {% endif %}
+        {% endfor %}
+
+      </ul>
+    </nav>
+
+</div>
