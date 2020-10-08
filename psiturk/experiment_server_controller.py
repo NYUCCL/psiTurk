@@ -17,13 +17,12 @@ from future import standard_library
 standard_library.install_aliases()
 
 stream_handler = logging.StreamHandler(sys.stdout)
-stream_handler.setLevel(logging.DEBUG)  # TODO: let this be configurable
+stream_handler.setLevel(logging.INFO)  # TODO: let this be configurable
 stream_formatter = logging.Formatter('%(message)s')
 stream_handler.setFormatter(stream_formatter)
 logger = logging.getLogger(__name__)
-logger.addHandler()
-logger.setLevel(logging.INFO)
-logger.debug('Logging set up.')
+logger.addHandler(stream_handler)
+logger.setLevel(logging.DEBUG)
 
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # Supporting functions
