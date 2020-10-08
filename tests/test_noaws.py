@@ -20,7 +20,7 @@ def test_awskeys_invalid_shell(capfd, experiment_server_controller, psiturk_shel
 
     config = PsiturkConfig()
     config.load_config()
-    config.set('shell', 'persistent_history_file', '')
+    config.set('Shell Parameters', 'persistent_history_file', '')
     server = psiturk.experiment_server_controller.ExperimentServerController(config)
 
     quiet = False

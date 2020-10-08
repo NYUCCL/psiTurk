@@ -755,7 +755,7 @@ class MTurkServicesWrapper(object):
         if blacklist_qualification_ids is None:
             blacklist_qualification_ids = []
 
-        server_loc = str(self.config.get('psiturk_server', 'host'))
+        server_loc = str(self.config.get('Server Parameters', 'host'))
 
         if not self.amt_services.verify_aws_login():
             raise InvalidAWSCredentialsError()
@@ -807,27 +807,27 @@ class MTurkServicesWrapper(object):
         if blacklist_qualification_ids is None:
             blacklist_qualification_ids = []
 
-        require_quals = self.config.get('hit_configuration', 'require_quals', fallback=None)
+        require_quals = self.config.get('HIT Configuration', 'require_quals', fallback=None)
         if require_quals:
             whitelist_qualification_ids.extend(require_quals.split(','))
 
-        block_quals = self.config.get('hit_configuration', 'block_quals', fallback=None)
+        block_quals = self.config.get('HIT Configuration', 'block_quals', fallback=None)
         if block_quals:
             blacklist_qualification_ids.extend(block_quals.split(','))
 
         hit_config = {
             "ad_location": ad_url,
-            "approve_requirement": self.config.getint('hit_configuration', 'Approve_Requirement'),
-            "us_only": self.config.getboolean('hit_configuration', 'US_only'),
-            "lifetime": datetime.timedelta(hours=self.config.getfloat('hit_configuration', 'lifetime')),
+            "approve_requirement": self.config.getint('HIT Configuration', 'Approve_Requirement'),
+            "us_only": self.config.getboolean('HIT Configuration', 'US_only'),
+            "lifetime": datetime.timedelta(hours=self.config.getfloat('HIT Configuration', 'lifetime')),
             "max_assignments": num_workers,
-            "title": self.config.get('hit_configuration', 'title', raw=True),
-            "description": self.config.get('hit_configuration', 'description', raw=True),
-            "keywords": self.config.get('hit_configuration', 'keywords'),
+            "title": self.config.get('HIT Configuration', 'title', raw=True),
+            "description": self.config.get('HIT Configuration', 'description', raw=True),
+            "keywords": self.config.get('HIT Configuration', 'keywords'),
             "reward": reward,
             "duration": datetime.timedelta(hours=duration),
-            "number_hits_approved": self.config.getint('hit_configuration', 'number_hits_approved'),
-            "require_master_workers": self.config.getboolean('hit_configuration', 'require_master_workers'),
+            "number_hits_approved": self.config.getint('HIT Configuration', 'number_hits_approved'),
+            "require_master_workers": self.config.getboolean('HIT Configuration', 'require_master_workers'),
             "whitelist_qualification_ids": whitelist_qualification_ids,
             "blacklist_qualification_ids": blacklist_qualification_ids
         }

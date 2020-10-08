@@ -133,7 +133,7 @@ class PsiturkNetworkShell(Cmd, object):
             self.poutput("Did you mean this?\n\t{}".format(guess[0]))
 
     def __init__(self, config, server, mode='sandbox', quiet=False):
-        persistent_history_file=config.get('shell','persistent_history_file')
+        persistent_history_file=config.get('Shell Parameters','persistent_history_file')
 
         # Prevents running of commands by abbreviation
         self.abbrev = False
@@ -502,7 +502,7 @@ class PsiturkNetworkShell(Cmd, object):
             else: # self.mode == 'live':
                 mturk_url_base = 'https://worker.mturk.com'
             title = quote_plus(
-                str(self.config.get('hit_configuration', 'title', raw=True)))
+                str(self.config.get('HIT Configuration', 'title', raw=True)))
             mturk_url = f'{mturk_url_base}/projects?filters%5Bsearch_term%5D={title}'
 
             self.poutput(f'  MTurk URL: {mturk_url}')
@@ -627,7 +627,7 @@ class PsiturkNetworkShell(Cmd, object):
 
     def server_log(self):
         ''' Launch log '''
-        logfilename = self.config.get('shell', 'logfile')
+        logfilename = self.config.get('Shell Parameters', 'logfile')
         if sys.platform == "darwin":
             args = ["open", "-a", "Console.app", logfilename]
         else:
@@ -890,7 +890,7 @@ class PsiturkNetworkShell(Cmd, object):
             if isinstance(reason, list):
                 reason = ' '.join(reason)
             if not reason:
-                if self.config.get('shell', 'bonus_message'):
+                if self.config.get('Shell Parameters', 'bonus_message'):
                     reason = self.config.get(
                         'shell', 'bonus_message')
                     self.poutput(
@@ -956,9 +956,9 @@ class PsiturkNetworkShell(Cmd, object):
         if base_url:
             self.pfeedback('generating debug url using `ad_url` config var')
         else:
-            self.pfeedback('`ad_url_*` config vars not set; using psiturk_server host and port vars.')
-            host = self.config.get('psiturk_server', 'host')
-            port = self.config.get('psiturk_server', 'port')
+            self.pfeedback('`ad_url_*` config vars not set; using Server Parameters host and port vars.')
+            host = self.config.get('Server Parameters', 'host')
+            port = self.config.get('Server Parameters', 'port')
             base_url = f"http://{host}:{port}/ad"
 
         launch_url = base_url + "?assignmentId=debug" + \
@@ -1046,7 +1046,7 @@ def run(script=None, execute=None, testfile=None, quiet=False):
     server = control.ExperimentServerController(config)
     shell = PsiturkNetworkShell(
         config, server,
-        mode=config.get('shell', 'launch_in_mode'),
+        mode=config.get('Shell Parameters', 'launch_in_mode'),
         quiet=quiet)
 
     if script:

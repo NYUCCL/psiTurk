@@ -49,20 +49,20 @@ class PsiturkConfig(ConfigParser):
 
         # heroku files are ephemeral. Error if we're trying to use a file as the db
         if 'ON_CLOUD' in os.environ:
-            database_url = self.get('Database Parameters', 'database_url')
+            database_url = self.get('Database Parameters Parameters', 'database_url')
             if ('localhost' in database_url) or ('sqlite' in database_url):
                 raise EphemeralContainerDBError(database_url)
 
     def get_ad_url(self):
-        if self.has_option('hit_configuration.ad_url', 'ad_url'):
-            return self.get('hit_configuration.ad_url', 'ad_url')
+        if self.has_option('HIT Configuration', 'ad_url'):
+            return self.get('HIT Configuration', 'ad_url')
         else:
             need_these = ['ad_url_domain','ad_url_protocol','ad_url_port','ad_url_route']
             for need_this in need_these:
-                if not self.get('hit_configuration.ad_url', need_this):
+                if not self.get('HIT Configuration', need_this):
                     raise PsiturkException(message=f'missing ad_url config var `{need_this}`')
-            ad_url_domain = self.get('hit_configuration.ad_url', 'ad_url_domain')
-            ad_url_protocol = self.get('hit_configuration.ad_url', 'ad_url_protocol')
-            ad_url_port = self.get('hit_configuration.ad_url', 'ad_url_port')
-            ad_url_route = self.get('hit_configuration.ad_url', 'ad_url_route')
+            ad_url_domain = self.get('HIT Configuration', 'ad_url_domain')
+            ad_url_protocol = self.get('HIT Configuration', 'ad_url_protocol')
+            ad_url_port = self.get('HIT Configuration', 'ad_url_port')
+            ad_url_route = self.get('HIT Configuration', 'ad_url_route')
             return f"{ad_url_protocol}://{ad_url_domain}:{ad_url_port}:{ad_url_route}"

@@ -20,7 +20,6 @@ else:
 
 GLOBAL_CONFIG_FILE = os.path.expanduser(GLOBAL_CONFIG_PATH)
 EXAMPLE_TARGET = os.path.join(os.curdir, "psiturk-example")
-CONFIG_TARGET = os.path.join(EXAMPLE_TARGET, "config.txt")
 
 
 def setup_example():
@@ -35,10 +34,7 @@ def setup_example():
 
         print("Copying", EXAMPLE_DIR, "to", EXAMPLE_TARGET)
         dir_util.copy_tree(EXAMPLE_DIR, EXAMPLE_TARGET)
-
-        print("Creating default configuration file (config.txt)")
-        file_util.copy_file(DEFAULT_CONFIG_FILE, CONFIG_TARGET)
-
+        file_util.move_file(os.path.join(EXAMPLE_TARGET, 'config.txt.sample'), os.path.join(EXAMPLE_TARGET, 'config.txt'))
         # change to target directory
         os.chdir(EXAMPLE_TARGET)
 

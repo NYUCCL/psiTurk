@@ -19,7 +19,7 @@ def do_campaign_round(campaign, **kwargs):
     from .db import db_session
 
     # cancel if codeversion changes
-    config_code_version = task_utils.aws_services_wrapper.config['task']['experiment_code_version']
+    config_code_version = task_utils.aws_services_wrapper.config['Task Parameters']['experiment_code_version']
     if config_code_version != campaign.codeversion:
         logger.info(f'Codeversion changed (campaign: {campaign.codeversion}, config {config_code_version}), removing job.')
         return app.apscheduler.remove_job(kwargs['job_id'])

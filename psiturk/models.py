@@ -18,8 +18,8 @@ from itertools import groupby
 config = PsiturkConfig()
 config.load_config()
 
-TABLENAME = config.get('database', 'table_name')
-CODE_VERSION = config.get('task', 'experiment_code_version')
+TABLENAME = config.get('Database Parameters', 'table_name')
+CODE_VERSION = config.get('Task Parameters', 'experiment_code_version')
 
 from .tasks import do_campaign_round
 from apscheduler.jobstores.base import JobLookupError
@@ -58,7 +58,7 @@ class Participant(Base):
     bonus = Column(Float, default=0)
     status = Column(Integer, default=1)
     mode = Column(String(128))
-    if 'postgres://' in config.get('database', 'database_url').lower():
+    if 'postgres://' in config.get('Database Parameters', 'database_url').lower():
         datastring = Column(Text)
     else:
         datastring = Column(Text(4294967295))

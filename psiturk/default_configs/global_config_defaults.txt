@@ -1,4 +1,0 @@
-[AWS Access]
-aws_access_key_id = YourAccessKeyId
-aws_secret_access_key = YourSecretAccessKey
-aws_region = us-east-1

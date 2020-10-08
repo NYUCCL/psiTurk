@@ -11,7 +11,7 @@ import sys
 config = PsiturkConfig()
 config.load_config()
 
-DATABASE = config.get('database', 'database_url')
+DATABASE = config.get('Database Parameters', 'database_url')
 
 if 'mysql://' in DATABASE.lower():
 	try:

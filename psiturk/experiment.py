@@ -44,12 +44,12 @@ CONFIG.load_config()
 if 'ON_CLOUD' in os.environ:
     LOG_FILE_PATH = None
 else:
-    LOG_FILE_PATH = os.path.join(os.getcwd(), CONFIG.get("psiturk_server",
+    LOG_FILE_PATH = os.path.join(os.getcwd(), CONFIG.get("Server Parameters",
                                                          "logfile"))
 
 LOG_LEVELS = [logging.DEBUG, logging.INFO, logging.WARNING, logging.ERROR,
               logging.CRITICAL]
-LOG_LEVEL = LOG_LEVELS[CONFIG.getint('psiturk_server', 'loglevel')]
+LOG_LEVEL = LOG_LEVELS[CONFIG.getint('Server Parameters', 'loglevel')]
 logging.basicConfig(filename=LOG_FILE_PATH, format='%(asctime)s %(message)s',
                     level=LOG_LEVEL)
 
@@ -68,7 +68,7 @@ if 'gunicorn' in os.environ.get('SERVER_SOFTWARE',''):
 
 # Set cache timeout to 10 seconds for static files
 app.config.update(SEND_FILE_MAX_AGE_DEFAULT=10)
-app.secret_key = CONFIG.get('psiturk_server', 'secret_key')
+app.secret_key = CONFIG.get('Server Parameters', 'secret_key')
 
 # this checks for templates that are required if you are hosting your own ad.
 def check_templates_exist():
@@ -162,7 +162,7 @@ def handle_exp_error(exception):
     """Handle errors by sending an error page."""
     app.logger.error(
         "%s (%s) %s", exception.value, exception.errornum, str(dict(request.args)))
-    return exception.error_page(request, CONFIG.get('task',
+    return exception.error_page(request, CONFIG.get('Task Parameters',
                                                     'contact_email_on_error'))
 
 # for use with API errors
@@ -195,7 +195,7 @@ def get_random_condcount(mode):
 
     Returns a tuple: (cond, condition)
     """
-    cutofftime = datetime.timedelta(minutes=-CONFIG.getint('task',
+    cutofftime = datetime.timedelta(minutes=-CONFIG.getint('Task Parameters',
                                                            'cutoff_time'))
     starttime = datetime.datetime.now(datetime.timezone.utc) + cutofftime
 
@@ -205,12 +205,12 @@ def get_random_condcount(mode):
         numconds = len(list(conditions.keys()))
         numcounts = 1
     except IOError as e:
-        numconds = CONFIG.getint('task', 'num_conds')
-        numcounts = CONFIG.getint('task', 'num_counters')
+        numconds = CONFIG.getint('Task Parameters', 'num_conds')
+        numcounts = CONFIG.getint('Task Parameters', 'num_counters')
 
     participants = Participant.query.\
         filter(Participant.codeversion ==
-               CONFIG.get('task', 'experiment_code_version')).\
+               CONFIG.get('Task Parameters', 'experiment_code_version')).\
         filter(Participant.mode == mode).\
         filter(or_(Participant.status == COMPLETED,
                    Participant.status == CREDITED,
@@ -270,7 +270,7 @@ def check_worker_status():
     else:
         worker_id = request.args['workerId']
         assignment_id = request.args['assignmentId']
-        allow_repeats = CONFIG.getboolean('task', 'allow_repeats')
+        allow_repeats = CONFIG.getboolean('Task Parameters', 'allow_repeats')
         if allow_repeats:  # if you allow repeats focus on current worker/assignment combo
             try:
                 part = Participant.query.\
@@ -312,7 +312,7 @@ def advertisement():
     user_agent_string = request.user_agent.string
     user_agent_obj = user_agents.parse(user_agent_string)
     browser_ok = True
-    browser_exclude_rule = CONFIG.get('task', 'browser_exclude_rule')
+    browser_exclude_rule = CONFIG.get('Task Parameters', 'browser_exclude_rule')
     for rule in browser_exclude_rule.split(','):
         myrule = rule.strip()
         if myrule in ["mobile", "tablet", "touchcapable", "pc", "bot"]:
@@ -366,7 +366,7 @@ def advertisement():
     except exc.SQLAlchemyError:
         status = None
 
-    allow_repeats = CONFIG.getboolean('task', 'allow_repeats')
+    allow_repeats = CONFIG.getboolean('Task Parameters', 'allow_repeats')
     if (status == STARTED or status == QUITEARLY) and not debug_mode:
         # Once participants have finished the instructions, we do not allow
         # them to start the task again.
@@ -451,7 +451,7 @@ def start_exp():
 
     # Check first to see if this hitId or assignmentId exists.  If so, check to
     # see if inExp is set
-    allow_repeats = CONFIG.getboolean('task', 'allow_repeats')
+    allow_repeats = CONFIG.getboolean('Task Parameters', 'allow_repeats')
     if allow_repeats:
         matches = Participant.query.\
             filter(Participant.workerid == worker_id).\
@@ -533,9 +533,9 @@ def start_exp():
         adServerLoc=ad_server_location,
         mode=mode,
         contact_address=CONFIG.get(
-            'task', 'contact_email_on_error'),
+            'Task Parameters', 'contact_email_on_error'),
         codeversion=CONFIG.get(
-            'task', 'experiment_code_version')
+            'Task Parameters', 'experiment_code_version')
     )
 
 
@@ -684,7 +684,7 @@ def debug_complete():
             if (mode == 'sandbox' or mode == 'live'):
                 return render_template('closepopup.html')
             else:
-                allow_repeats = CONFIG.getboolean('task', 'allow_repeats')
+                allow_repeats = CONFIG.getboolean('Task Parameters', 'allow_repeats')
                 return render_template('complete.html',
                     allow_repeats=allow_repeats, worker_id=user.workerid)
 
@@ -772,8 +772,8 @@ def regularpage(path):
 
 def run_webserver():
     ''' Run web server '''
-    host = CONFIG.get('psiturk_server', 'host')
-    port = CONFIG.getint('psiturk_server', 'port')
+    host = CONFIG.get('Server Parameters', 'host')
+    port = CONFIG.getint('Server Parameters', 'port')
     print(f"Serving on http://{host}:{port}")
     app.config['TEMPLATES_AUTO_RELOAD'] = True
     app.jinja_env.auto_reload = True

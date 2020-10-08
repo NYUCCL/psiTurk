@@ -36,7 +36,7 @@ def test_campaign_round_codeversion_change_cancel(patch_aws_services, campaign, 
 
     from psiturk.amt_services_wrapper import MTurkServicesWrapper
     aws_services_wrapper = MTurkServicesWrapper()
-    aws_services_wrapper.config['task']['experiment_code_version'] = NEW_CODEVERSION
+    aws_services_wrapper.config['Task Parameters']['experiment_code_version'] = NEW_CODEVERSION
 
     import psiturk.tasks
     mocker.patch.object(psiturk.tasks.TaskUtils, 'aws_services_wrapper', aws_services_wrapper)

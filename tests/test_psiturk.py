@@ -302,7 +302,7 @@ class PsiTurkStandardTests(PsiturkUnitTest):
 
     def test_repeat_experiment_success(self):
         '''Test that a participant can repeat the experiment.'''
-        self.set_config(u'task', u'allow_repeats', u'true')
+        self.set_config(u'Task Parameters', u'allow_repeats', u'true')
         request = "&".join([
             "assignmentId=%s" % self.assignment_id,
             "workerId=%s" % self.worker_id,
@@ -397,7 +397,7 @@ class PsiTurkStandardTests(PsiturkUnitTest):
 
     def test_repeat_experiment_quit_allow_repeats(self):
         '''Test that a participant cannot restart the experiment, even when repeats are allowed.'''
-        self.set_config(u'task', u'allow_repeats', u'true')
+        self.set_config(u'Task Parameters', u'allow_repeats', u'true')
         request = "&".join([
             "assignmentId=%s" % self.assignment_id,
             "workerId=%s" % self.worker_id,

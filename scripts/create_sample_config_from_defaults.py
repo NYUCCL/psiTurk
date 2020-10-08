@@ -18,5 +18,5 @@ for line in lines:
     new_lines.append(line)
     line_num += 1
 
-with open('psiturk/example/config.txt','w') as f:
+with open('psiturk/example/config.txt.sample','w') as f:
     f.writelines(new_lines)
