@@ -11,10 +11,19 @@ import webbrowser
 import subprocess
 import sys
 import os
+import logging
 from builtins import object
 from future import standard_library
 standard_library.install_aliases()
 
+stream_handler = logging.StreamHandler(sys.stdout)
+stream_handler.setLevel(logging.DEBUG)  # TODO: let this be configurable
+stream_formatter = logging.Formatter('%(message)s')
+stream_handler.setFormatter(stream_formatter)
+logger = logging.getLogger(__name__)
+logger.addHandler()
+logger.setLevel(logging.INFO)
+logger.debug('Logging set up.')
 
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # Supporting functions
@@ -28,7 +37,8 @@ def is_port_available(ip, port):
         s.shutdown(2)
         return False
     except socket.timeout:
-        print("*** Failed to test port availability. Check that host\nis set properly in config.txt")
+        logger.error("*** Failed to test port availability. "
+                     "Check that host is set properly in config.txt")
         return True
     except socket.error as e:
         return True
@@ -117,7 +127,7 @@ class ExperimentServerController(object):
         self.startup()
 
     def on_terminate(self, proc: psutil.Process):
-        print("process {} terminated with exit code {}".format(
+        logger.debug("process {} terminated with exit code {}".format(
             proc, proc.returncode))
 
     def kill_process_tree(self, proc: psutil.Process):
@@ -139,15 +149,15 @@ class ExperimentServerController(object):
             ['pid', 'cmdline', 'exe', 'name']) if proc_hash in str(p.info) and
                                'master' in str(p.info)]
         if len(psiturk_master_procs) < 1:
-            print('No active server process found.')
+            logger.warning('No active server process found.')
             self.server_running = False
             return
         for p in psiturk_master_procs:
-            print('Shutting down experiment server at pid %s ... ' % p.info['pid'])
+            logger.info('Shutting down experiment server at pid %s ... ' % p.info['pid'])
             try:
                 self.kill_process_tree(p)
             except psutil.NoSuchProcess as e:
-                print('Attempt to shut down PID {} failed with exception {}'.format(
+                logger.error('Attempt to shut down PID {} failed with exception {}'.format(
                     p.as_dict['pid'], e
                 ))
         # NoSuchProcess exceptions imply server is not running, so seems safe.
@@ -192,15 +202,14 @@ class ExperimentServerController(object):
         )
         server_status = self.is_server_running()
         if server_status == 'no':
-            #print "Running experiment server with command:", server_command
             subprocess.Popen(server_command, shell=True, close_fds=True)
-            print("Experiment server launching...")
+            logging.info("Experiment server launching...")
             self.server_running = True
         elif server_status == 'maybe':
-            print("Error: Not sure what to tell you...")
+            logging.error("Error: Not sure what to tell you...")
         elif server_status == 'yes':
-            print("Experiment server may be already running...")
+            logging.warning("Experiment server may be already running...")
         elif server_status == 'blocked':
-            print(
+            logging.warning(
                 "Another process is running on the desired port. Try using a different port number.")
         time.sleep(1.2)  # Allow CLI to catch up.
