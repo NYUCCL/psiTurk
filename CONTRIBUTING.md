@@ -4,7 +4,7 @@ Note: This guide is copied more or less from the [contributors guidelines](https
 of the [gunicorn](https://github.com/benoitc/gunicorn) project. Alternations
 were made for the nature of this particular project.
 
-Want to contributed to **psiTurk**? Awesome! Here are instructions to get you
+Want to contributed to psiTurk? Awesome! Here are instructions to get you
 started. We want to improve these as we go, so please provide feedback.
 
 ## Contribution guidelines
@@ -19,10 +19,10 @@ If your pull request is not accepted on the first try, don't be
 discouraged! If there's a problem with the implementation, hopefully you
 received feedback on what to improve.
 
-We're trying very hard to keep **psiTurk** lean, focused, and useable. We don't want it
+We're trying very hard to keep psiTurk lean, focused, and useable. We don't want it
 to do everything for everybody. This means that we might decide against
 incorporating a new feature. However, there might be a way to implement
-that feature *on top of* **psiTurk**.
+that feature *on top of* psiTurk.
 
 Please create pull requests for the **master** branch
 so they can go through regular testing and evaluation prior to being
@@ -146,7 +146,7 @@ Whenever you include a code example, put this line before:
 
 ### How are decisions made?
 
-In general, all decisions affecting **psiTurk**, big and small, follow the same 3 steps:
+In general, all decisions affecting psiTurk, big and small, follow the same 3 steps:
 
 * Step 1: Open a pull request. Anyone can do this.
 

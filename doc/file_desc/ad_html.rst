@@ -7,7 +7,7 @@ participants taking your experiment will see.
 This file exists locally.  When you are `debugging <../command_line/debug.html>`__
 in local mode, the local file will be used.
 When you create an ad on the `Ad Server <../secure_ad_server.html>`__, a copy
-of this file is uploaded to the **psiTurk** cloud
+of this file is uploaded to the psiTurk cloud
 server.
 
 

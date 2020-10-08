@@ -2,7 +2,7 @@ Recording data
 ==============
 
 To record data in your task you make calls to the `psiturk.js Javascript API <api.html>`__.
-There are three kinds of data that **psiTurk** will help you produce:
+There are three kinds of data that psiTurk will help you produce:
 
 1. `Trial-by-trial log file <recording.html#recording-trial-data>`__
 

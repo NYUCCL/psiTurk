@@ -1,8 +1,8 @@
-Using external survey tools with **psiTurk**
+Using external survey tools with psiTurk
 =============================================
 
 With the magic of ``iframes`` and javascript window messaging, you can integrate
-external survey tools into your **psiTurk** experiment. This is possible as long as the survey tool
+external survey tools into your psiTurk experiment. This is possible as long as the survey tool
 allows custom javascript to be triggered.
 
 Window messaging allows cross-domain messaging via javascript, without having to configure security settings on the server. `MDN`_ says it best:
@@ -11,19 +11,19 @@ Window messaging allows cross-domain messaging via javascript, without having to
 
 .. _MDN: https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage
 
-Three special steps to hook up your survey to **psiTurk**:
+Three special steps to hook up your survey to psiTurk:
 
-1. Embed your survey as an ``iframe`` within one of your **psiTurk** pages or views.
-2. Add a ``message`` event listener to your **psiTurk** window
-3. Post a ``message`` from the survey tool to the ``window.top`` when the survey is complete. ``window.top`` will be your **psiTurk** window. Do whatever you want via javascript once you receive the expected ``message``.
+1. Embed your survey as an ``iframe`` within one of your psiTurk pages or views.
+2. Add a ``message`` event listener to your psiTurk window
+3. Post a ``message`` from the survey tool to the ``window.top`` when the survey is complete. ``window.top`` will be your psiTurk window. Do whatever you want via javascript once you receive the expected ``message``.
 
-To tie the **psiTurk** data and the external survey data together, embed a unique id into the iframe url you load, and then record that unique url into your survey data. *Don't forget to do this. If you forget, you won't know to who to connect your survey data.* If you want to tie things both ways, post back your survey session id as part of the survey-complete post-back.
+To tie the psiTurk data and the external survey data together, embed a unique id into the iframe url you load, and then record that unique url into your survey data. *Don't forget to do this. If you forget, you won't know to who to connect your survey data.* If you want to tie things both ways, post back your survey session id as part of the survey-complete post-back.
 
 
 An example with Qualtrics
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-As of the time this documentation page was written, Qualtrics has an undocumented "feature". Qualtrics automatically posts a window ``message`` to ``window.top`` when the Qualtrics "end of the survey event" is triggered. For Qualtrics surveys embedded as ``iframes`` in **psiTurk** experiments, we can take advantage of this behavior. The Qualtrics-posted message contains your ``survey_id`` and the participant's Qualtrics-created unique ``session_id``. You should already know the ``survey_id`` (because you just embedded a link containing this id), but the ``session_id`` is Qualtric's unique id for whoever just finished your survey. You can record that with **psiTurk** as unstructured data (see :ref:`recording-unstructured-data-label`) if you desire.
+As of the time this documentation page was written, Qualtrics has an undocumented "feature". Qualtrics automatically posts a window ``message`` to ``window.top`` when the Qualtrics "end of the survey event" is triggered. For Qualtrics surveys embedded as ``iframes`` in psiTurk experiments, we can take advantage of this behavior. The Qualtrics-posted message contains your ``survey_id`` and the participant's Qualtrics-created unique ``session_id``. You should already know the ``survey_id`` (because you just embedded a link containing this id), but the ``session_id`` is Qualtric's unique id for whoever just finished your survey. You can record that with psiTurk as unstructured data (see :ref:`recording-unstructured-data-label`) if you desire.
 
 *Don't forget to explicitly log the psiTurk unique id as embedded data within Qualtrics.* See `here`__ for more about embedding data into Qualtrics surveys.
 
@@ -34,7 +34,7 @@ The posted message when they finish a qualtrics survey is a string that looks li
 
     QualtricsEOS|<survey_id>|<qualtrics_session_id>
 
-So you can do something like this on your **psiTurk** page:
+So you can do something like this on your psiTurk page:
 
 .. code-block:: javascript
 
@@ -75,4 +75,4 @@ If your survey tool isn't posting messages to window.top for you, just ``window.
 
     window.top.postMessage("all_done|<survey_session_id>","*")
 
-Then just listen for that event back on your **psiTurk** page, as in the Qualtrics example above.
+Then just listen for that event back on your psiTurk page, as in the Qualtrics example above.

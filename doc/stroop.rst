@@ -1,3 +1,5 @@
+.. _stroop:
+
 Getting up and running with the basic Stroop task
 =================================================
 
@@ -15,7 +17,7 @@ great starting place for developing your own experiment.
 	installed.  Instruction `here <install.html>`__.
 
 	This guide also assumes you are using version 1.0.10dev
-	or higher of the **psiTurk** command line tool.  Type
+	or higher of the psiTurk command line tool.  Type
 	``psiturk --version`` in your command shell/terminal
 	program to verify your version number.
 
@@ -65,10 +67,10 @@ named "psiturk-example" with the following listing of files::
 
 	A full description of the individual files is provided `here <anatomy_of_project.html>`__.
 	A few of the files described on the full documentation will not appear
-	until the first time you start ``psiturk`` and launch the **psiTurk** server.
+	until the first time you start ``psiturk`` and launch the psiTurk server.
 
 
-Configure your global **psiTurk** options
+Configure your global psiTurk options
 -----------------------------------------
 When you run ``psiturk-setup-example`` the first time,
 a `global configuration file <configuration.html#global-configuration-file>`__
@@ -155,7 +157,7 @@ The psiTurk shell prompt displays several useful pieces of information: whether 
 Start/stop the experiment server
 --------------------------------
 
-The **psiTurk** experiment server is a separate process that acts as a custom, local
+The psiTurk experiment server is a separate process that acts as a custom, local
 web server (similar to Apache).  To launch the server type ``server on`` in the
 command line interface::
 
@@ -193,7 +195,7 @@ to change the host option to ``0.0.0.0``.
 
 The remaining part of the URL created random (i.e., fake) identifiers which stand-in
 for the values that Amazon provides identifying the user, hit, etc... Since by default
-**psiTurk** does not allow individuals to take the same experiment more than once (it
+psiTurk does not allow individuals to take the same experiment more than once (it
 checks for you to see if the worker has already completed the task or read too far into
 the instructions) these random values are helpful during debugging.
 
@@ -396,7 +398,7 @@ Further learning...
 -------------------
 
 This concludes the conceptual overview of the Stroop example that
-ships with **psiTurk**.  Continue reading the `decomposing the
+ships with psiTurk.  Continue reading the `decomposing the
 Stroop task <decompose_stroop.html>` section to learn more about
 the gritty details.
 This concludes the conceptual

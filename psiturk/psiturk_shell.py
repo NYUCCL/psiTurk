@@ -53,7 +53,11 @@ try:
     # prefer gnureadline if user has installed it
     import gnureadline as readline
 except ImportError:
-    import readline
+    try:
+        # next pyreadline if user has installed it (windows)
+        import pyreadline as readline
+    except ImportError:
+        import readline
 
 def docopt_cmd(func):
     """
@@ -1028,16 +1032,19 @@ class PsiturkNetworkShell(Cmd, object):
 
 
 def run(script=None, execute=None, testfile=None, quiet=False):
-    using_libedit = 'libedit' in readline.__doc__
-    if using_libedit:
-        self.poutput(colorize('\n'.join([
-            'libedit version of readline detected.',
-            'readline will not be well behaved, which may cause all sorts',
-            'of problems for the psiTurk shell. We highly recommend installing',
-            'the gnu version of readline by running "sudo pip install gnureadline".',
-            'Note: "pip install readline" will NOT work because of how the OSX',
-            'pythonpath is structured.'
-        ]), 'red', False))
+    try:
+        using_libedit = 'libedit' in readline.__doc__
+        if using_libedit:
+            self.poutput(colorize('\n'.join([
+                'libedit version of readline detected.',
+                'readline will not be well behaved, which may cause all sorts',
+                'of problems for the psiTurk shell. We highly recommend installing',
+                'the gnu version of readline by running "sudo pip install gnureadline".',
+                'Note: "pip install readline" will NOT work because of how the OSX',
+                'pythonpath is structured.'
+            ]), 'red', False))
+    except TypeError:
+        pass # pyreadline doesn't have anything for __doc__
     # Drop arguments which were already processed in command_line.py
     sys.argv = [sys.argv[0]]
     #opt = docopt(__doc__, sys.argv[1:])

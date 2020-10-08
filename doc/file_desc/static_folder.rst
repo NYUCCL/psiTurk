@@ -2,7 +2,7 @@ The `static/` directory
 =======================
 
 The static folder holds files which are not
-dynamically altered by the **psiTurk** server (i.e., templated).  This
+dynamically altered by the psiTurk server (i.e., templated).  This
 includes images, javascript libraries, CSS style
 sheets etc...
 You can add additional files and folders for static files if you

@@ -1,7 +1,7 @@
 Disclaimer
 ==========
 
-**psiTurk** is free, open source software provided to scientists
+psiTurk is free, open source software provided to scientists
 to aid in research.  Because it helps you run paid experiments online
 using Amazon Mechanical Turk errors in the software, or in your
 use of the software, can lead to **loss of money**.  This is the very
@@ -34,7 +34,7 @@ suggestions on how to fix things.
 Some suggestion to avoid costly mistakes from happening are
 
 1. Test your code a lot in the sandbox to make sure every stage is working
-and you understand what **psiTurk** is doing.
+and you understand what psiTurk is doing.
 
 2. Run small batches at a time to verify everything is working
 
@@ -42,8 +42,8 @@ and you understand what **psiTurk** is doing.
 in time.  It is impossible to spend more money than is in your account
 at any point in time.
 
-4. Exit the **psiTurk** server when you are not using it to collect data
-(i.e., do not leave **psiTurk** server running indefinitely).  This ensures
+4. Exit the psiTurk server when you are not using it to collect data
+(i.e., do not leave psiTurk server running indefinitely).  This ensures
 that no one will be able to actually perform your task and then claim
 they are owed payment.  This also limits the ability of bots and other
 scammers to reverse engineer your task.
