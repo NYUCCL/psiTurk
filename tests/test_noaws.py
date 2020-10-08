@@ -38,8 +38,8 @@ def test_awskeys_invalid_shell(capfd, experiment_server_controller, psiturk_shel
 def test_nonaws_still_can_do(capfd, edit_config_file, experiment_server_controller, psiturk_shell):
     import os
     from psiturk.psiturk_shell import run
-    edit_config_file('persistent_history_file = .psiturk_history', 'persistent_history_file = ')
-    edit_config_file('launch_in_sandbox_mode = false', 'launch_in_sandbox_mode = true')
+    edit_config_file(';persistent_history_file = .psiturk_history', 'persistent_history_file = ')
+    edit_config_file(';launch_in_sandbox_mode = false', 'launch_in_sandbox_mode = true')
     os.environ['AWS_ACCESS_KEY_ID'] = ''
     os.environ['AWS_SECRET_ACCESS_KEY'] = ''
 

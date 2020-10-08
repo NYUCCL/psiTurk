@@ -115,8 +115,8 @@ class TestAmtServices(object):
         whitelist_config_file_qual_ids = ['whitelist_config_123','whitelist_config_456']
         blacklist_config_file_qual_ids = ['blacklist_config_123','blacklist_config_456']
 
-        edit_config_file('require_quals =','require_quals = {}'.format(','.join(whitelist_config_file_qual_ids)))
-        edit_config_file('block_quals =','block_quals = {}'.format(','.join(blacklist_config_file_qual_ids)))
+        edit_config_file(';require_quals =','require_quals = {}'.format(','.join(whitelist_config_file_qual_ids)))
+        edit_config_file(';block_quals =','block_quals = {}'.format(','.join(blacklist_config_file_qual_ids)))
 
         whitelist_qualification_ids_passed = ['white_passed_123', 'white_passed_456']
         blacklist_qualification_ids_passed = ['black_passed_123', 'black_passed_456']
