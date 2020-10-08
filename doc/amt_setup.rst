@@ -1,104 +1,72 @@
-Getting setup with Amazon Mechanical Turk
-==========================================
+.. _amt-setup:
 
-**psiTurk** is a system for interfacing with Amazon
-Mechanical Turk.  Thus, you need to create an account
-on Amazon's website in order to use it.  There are a number
-of steps involved here which have to do with signing up with Amazon.
-Luckily they are a one-time process (possibly once for your
-entire lab if everyone shares a single AWS account).
+============================================
+Setting Up an Amazon Mechanical Turk Account
+============================================
 
+psiTurk can interface with Amazon Mechanical Turk (although it doesn't have to!).
+To do so, you need to create an account on Amazon's website in order to use it.
+There are a number of steps involved here which have to do with signing up with
+Amazon and creating several accounts. Luckily they are a one-time process for a given AWS account.
 
-Creating an AWS account
-~~~~~~~~~~~~~~~~~~~~~~~
+Accounts Creation and Linking
+----------------------------
 
-Start by going to the Amazon Web Services page `here <http://aws.amazon.com>`__. If you made a Mechanical Turk account prior to this, sign in to your account and may skip to the next paragraph. Otherwise, click the Sign Up button at the top.
+Carefully follow `AWS's guide`_ for setting up the necessary accounts for using
+Amazon Mechanical Turk. Before doing so, note the following:
 
-.. image:: images/docs_AWS_signup_button.png
-	:align: center
+.. _AWS's guide: https://docs.aws.amazon.com/AWSMechTurk/latest/AWSMechanicalTurkGettingStartedGuide/SetUp.html#setup-aws-account
 
+* **Step 5** discusses setting up the Developer Sandbox. Carefully follow all steps
+  in this section, including the steps in the note for linking your aws account
+  *specifically to the sandbox.*
 
-You should be redirected to a form asking for your contact information. Fill out the form and continue to the next section.
+* **Step 6** in the guide is "Set up an AWS SDK". You may skip this step -- psiTurk
+  uses the `Python/Boto <https://aws.amazon.com/sdk-for-python/>`__ (Boto3) SDK
+  under the hood.
 
-.. image:: images/docs_AWS_form_contact_info.png
-	:align: center
+* **Step 7** in the guide suggests the option of enabling AWS Billing for your account.
+  However, at least one psiTurk user has reported difficulties doing so, needing
+  to contact AWS customer support before being able to post hits.
 
-Next, you will need you credit card and your phone. The form should now ask for your credit card information.
+.. _amt-credentials:
+AWS Credentials
+---------------
 
-.. image:: images/docs_AWS_form_credit_card.png
-	:align: center
+psiTurk uses the `Python/Boto <https://aws.amazon.com/sdk-for-python/>`__ (Boto3)
+SDK to communicate with the AWS API. In order to do so, boto must have access to
+the user's AWS credentials, generated in section :ref:`amt-setup`.
+While earlier versions of psiturk had users specify AWS credentials in a
+global ``.psiturkconfig`` file, psiturk > v3.x has no such config file. Rather,
+psiTurk users should store AWS credentials `in a way that Boto expects <https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html>`__.
+Specifically, *credentials* should be set via one of the following methods,
+listed in order of Boto3 preference:
 
-If you do not see the forms to fill in your credit card information, go to the Payment Methods page either by clicking the link on the toolbar to the left or `here <https://portal.aws.amazon.com/gp/aws/developer/account?ie=UTF8&action=payment-method>`__. Enter in your credit card information. (Amazon will only charge you, if you use their cloud services. Signing up for an account should not incur any charges.)
+#. Environment variables
+#. Shared credential file (``~/.aws/credentials``)
+#. AWS config file (``~/.aws/config``)
+#. Boto2 config file (``/etc/boto.cfg`` and ``~/.boto``)
 
-On the next page, you will be asked to enter your phone number. Have your phone nearby. After you put in your phone number the webpage will display a 4-digit pin code and Amazon will call you. Enter the pin on your phone's keypad when prompted by the call.
+At a minimum, the following credentials must be set for psiTurk to work:
 
-.. image:: images/docs_AWS_form_phone.png
-	:align: center
+* ``AWS_ACCESS_KEY_ID``
+* ``AWS_SECRET_ACCESSS_KEY``
 
+Boto3 *configuration* settings can be set in any of the above *except* for the
+shared credential file location. The following configuration *must* be set
+in order for psiTurk to be able to interface with AWS:
 
-.. image:: images/docs_AWS_form_pin.png
-	:align: center
+* ``AWS_DEFAULT_REGION`` (For example, ``us-west-1`` or ``us-east-1``)
 
-Amazon will ask you to select a support plan. For the purposes of psiTurk, you only need the Basic(Free) plan. Click continue.
+For example, if a user's AWS_ACCESS_KEY_ID were 'foo', their AWS_SECRET_ACCESS_KEY
+'bar', and their preferred AWS_DEFAULT_REGION was 'us-east-1', they might set the
+following in their ``~/.aws/config`` file::
 
-Your Amazon Web Service account should be set up now.
+  AWS_ACCESS_KEY_ID=foo
+  AWS_SECRET_ACCESSS_KEY=bar
+  AWS_DEFAULT_REGION=us-east-1
 
-
-Obtaining AWS credentials
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-An AWS access key id and secret access key is required for posting new HITs to Mechanical Turk as well as monitoring existing HITs. If you created an AWS access key and did not save your secret access key, you will need to create a new access key. After April 21, 2014, AWS no longer allows users to retrieve their secret access key. Follow the steps below to create a new key.
-
-You can create your keys after you open an Amazon Web Services account. Your keys can be generated in the `AWS Management Console <https://console.aws.amazon.com/iam/home?#security_credential>`__.
-
-Click on the "Access Keys" tab. Your screen should look like this:
-
-.. image:: images/docs_AWS_credentials_page.png
-	:align: center
-
-Press the "Create New Access Key" button to generate a set of access keys.
-
-.. image:: images/docs_AWS_credentials_create_button.png
-	:align: center
-
-A popup window should appear on the screen to tell you that your access key has been created. Your access keys will appear in the popup box.
-
-.. image:: images/docs_AWS_credentials_created_popup.png
-	:align: center
-
-If you do not see your access key, click the "Show Access Key" link in the popup box.
-
-.. image:: images/docs_AWS_credentials_show_button.png
-	:align: center
-
-We recommend that you also download your access keys just in case. The "Download Key File" button will download the keys onto your computer in a CSV file.
-
-.. image:: images/docs_AWS_credentials_download_button.png
-	:align: center
-
-The values of these keys need to be placed in your global ``~/.psiturkconfig`` file. The file is by default located in your home directory
-(see `Configuration files <configuration.html>`__ for more info)
-
-.. note::
-
-    If you are using IAM authentication, **psiTurk** requires that the *AmazonMechanicalTurkFullAccess* policy be added to the credentials it uses to connect to MTurk.
-    See `here <http://docs.aws.amazon.com/AWSMechTurk/latest/AWSMechanicalTurkGettingStartedGuide/SetUp.html#create-iam-user-or-role>`__ for how to set up an IAM user.
-
-
-Creating an AMT Requester account
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-To use your AWS keys to interface with Amazon Mechanical Turk, you need to create a requester account.
-Please see `Amazon's instructions <http://docs.aws.amazon.com/AWSMechTurk/latest/AWSMechanicalTurkGettingStartedGuide/SetUp.html>`__ for this.  In particular, it is necessary to at least once login to the requester site (`http://requester.mturk.com <http://requester.mturk.com>`__) and also to at least once login to the sandbox requester site (`https://requestersandbox.mturk.com <https://requestersandbox.mturk.com>`__), so that you can agree to the terms of service. You will also need to to link your AWS Account to both requester and sandbox requester account, you can do that by clicking on the developer tab once logged in the sites, and following instructions therein.
-
-
-Linking funds
-~~~~~~~~~~~~~
-
-Under construction.
-
-
-Additional instructions
-~~~~~~~~~~~~~~~~~~~~~~~
-
-Under construction.
+Note that Boto3 respects certain environment variables that alter which files are
+searched for credentials and configuration settings. See
+`here <https://boto3.amazonaws.com/v1/documentation/api/latest/guide/configuration.html>`__
+for more information.

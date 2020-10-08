@@ -2,7 +2,7 @@ list.html
 =========
 
 A placeholder example of adding custom URLs/routes
-to your **psiTurk** application.
+to your psiTurk application.
 
 .. seealso::
 

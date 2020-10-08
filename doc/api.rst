@@ -4,13 +4,13 @@ psiturk.js API
 Everything in the **psiturk.js** API is scoped under the ``psiturk``
 namespace.
 
-Creating the **psiTurk** object
+Creating the psiTurk object
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To use the **psiTurk** library, a ``psiturk`` object must be created at
+To use the psiTurk library, a ``psiturk`` object must be created at
 the beginning of your experiment.  It takes two key arguments ``uniqueId``
 and ``adServerLoc``.  These two variables are first created in
-`exp.html <file_desc/exp_html.html>`.  They tell **psiTurk** which unique
+`exp.html <file_desc/exp_html.html>`.  They tell psiTurk which unique
 number/code corresponds to the current participant (allowing updating
 of data as the task progresses) and the location of the `ad <secure_ad_server.html>`__
 where users should be sent when the task is complete.
@@ -142,7 +142,7 @@ Example:
 ``psiturk.saveData([callbacks])``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Sync the current **psiTurk** task data to the database.
+Sync the current psiTurk task data to the database.
 
 An optional argument ``callbacks`` can provide functions to run upon
 success or failure of the saving.
@@ -174,7 +174,7 @@ site.
 ``psiturk.doInstructions(pages, callback)``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**psiTurk** includes a basic method for showing a sequence of
+psiTurk includes a basic method for showing a sequence of
 instructions.  You are always free to write your own instructions
 code (and may need to).  However, this provides a basic template
 for a pretty simple typical type of instructions composed of

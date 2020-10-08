@@ -1,4 +1,4 @@
-Customizing **psiTurk**
+Customizing psiTurk
 ========================
 
 Sometimes you might like to add additional urls or "routes" to your project.  For instance you could make a password protected dashboard to visualize your data as it comes in, add additional functionality to your psiturk experiment, or add more complex server-side computations (e.g., fitting a computational model to the subject in real time and using that to adapt the stimuli people view).

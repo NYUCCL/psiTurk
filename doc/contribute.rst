@@ -6,7 +6,7 @@ of the `gunicorn <https://github.com/benoitc/gunicorn>`_ project. Alternations
 were made for the nature of this particular project.  An up to date copy of this guide
 always resides `here <https://github.com/NYUCCL/psiTurk/blob/master/CONTRIBUTING.md>`_.
 
-Want to contributed to **psiTurk**? Awesome! Here are instructions to get you
+Want to contributed to psiTurk? Awesome! Here are instructions to get you
 started. We want to improve these as we go, so please provide feedback.
 
 
@@ -25,10 +25,10 @@ If your pull request is not accepted on the first try, don't be
 discouraged! If there's a problem with the implementation, hopefully you
 received feedback on what to improve.
 
-We're trying very hard to keep **psiTurk** lean, focused, and useable. We don't want it
+We're trying very hard to keep psiTurk lean, focused, and useable. We don't want it
 to do everything for everybody. This means that we might decide against
 incorporating a new feature. However, there might be a way to implement
-that feature *on top of* **psiTurk**.
+that feature *on top of* psiTurk.
 
 
 Discuss your design on the mailing list
@@ -186,7 +186,7 @@ Decision process
 How are decisions made?
 -----------------------
 
-In general, all decisions affecting **psiTurk**, big and small, follow the same 3 steps:
+In general, all decisions affecting psiTurk, big and small, follow the same 3 steps:
 
 * Step 1: Open a pull request. Anyone can do this.
 

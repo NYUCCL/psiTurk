@@ -6,7 +6,7 @@ people can complete your experiment at the same time, you need a system which ca
 Databases are optimized for this type of environment and are thus very useful for experiments.
 
 Databases can be configured via the command line or by editing the configuration files directly.
-See the `db command documentation <command_line/db.html>`__ for a full list of database commands available in the **psiTurk** shell.  You can also view your current
+See the `db command documentation <command_line/db.html>`__ for a full list of database commands available in the psiTurk shell.  You can also view your current
 database settings by typing::
 
 	[psiTurk server:off mode:sdbx #HITs:0]$ db get_config
@@ -26,19 +26,19 @@ in the command line shell.
 Using SQLite
 ~~~~~~~~~~~~
 
-Perhaps the simplest solution is to use SQLite.  This is a simple, easy to use database solution that is written to a local file on the same computer as is running the psiTurk shell/server.  By default **psiTurk** will use a local `SQLite <http://www.sqlite.org/>`__ database.
+Perhaps the simplest solution is to use SQLite.  This is a simple, easy to use database solution that is written to a local file on the same computer as is running the psiTurk shell/server.  By default psiTurk will use a local `SQLite <http://www.sqlite.org/>`__ database.
 
 To use a SQLite data base, simply set the `database_url` field in your `local configuration file <configuration.html#local-configuration-file>`__ (`config.txt`)::
 
 	database_url = sqlite:///FILENAME.db
 
-where FILENAME is of your choosing.  By default, **psiTurk** sets this like this::
+where FILENAME is of your choosing.  By default, psiTurk sets this like this::
 
 	database_url = sqlite:///participants.db
 
 This will make a SQLite database file in the top-level folder of your project.  If you change the `database_url`
-and restart **psiTurk** a new database corresponding to the new filename will be created.  If you set it to an
-existing file name, **psiTurk** will attempt to connect to this database.
+and restart psiTurk a new database corresponding to the new filename will be created.  If you set it to an
+existing file name, psiTurk will attempt to connect to this database.
 
 You can also change this setting using the `command line <command_line_overview.html>`__::
 
@@ -56,7 +56,7 @@ If you change this while the server is running you will need to type::
 
 While great for debugging, SQLite has a number of important downsides for deploying experiments. In particular SQLite does not allow concurrent access to the database, so if the locks work properly, simultaneous access (say, from multiple users submitting their data at the same time) could destabilize your database. In the worst scenario, the database could become corrupted, resulting in data loss.
 
-As a result, we recommend using a more robust database solution when actually running your experiment. Luckily, **psiTurk** can help you set up such a database (usually for free).
+As a result, we recommend using a more robust database solution when actually running your experiment. Luckily, psiTurk can help you set up such a database (usually for free).
 
 However, SQLite is a good solution particularly for initial testing.  It is also possible to try to "throttle" the
 rate of signups on Mechanical Turk (by only posting one assignment slot at a time) so that database errors are
@@ -70,7 +70,7 @@ less likely using SQLite.
 Using a self-hosted MySQL database (recommended)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-A more robust solution is to set up a `MySQL <http://www.mysql.com/>`__ database.  **psiTurk** relies on `SQLAlchemy <http://www.sqlalchemy.org/>`__ for interfacing with database which means it is easy to switch between MySQL, PostgreSQL, or SQLite.  We recommend
+A more robust solution is to set up a `MySQL <http://www.mysql.com/>`__ database.  psiTurk relies on `SQLAlchemy <http://www.sqlalchemy.org/>`__ for interfacing with database which means it is easy to switch between MySQL, PostgreSQL, or SQLite.  We recommend
 MySQL because we have tested it, but other relational database engines may works as well.
 
 To use an existing MySQL database::
@@ -92,7 +92,7 @@ launching.  `Sequel Pro <http://www.sequelpro.com/>`__ is a nice GUI database
 client for MySQL for Mac OS X.
 
 Here's an example of setting up a minimal MySQL database for use with
-**psiTurk**:
+psiTurk:
 
 ::
 
@@ -149,7 +149,7 @@ applications and business."
 	and shutting down your own database instances if you use this approach.
 	**PROCEED WITH CAUTION.**
 
-The **psiTurk** `command line <command_line_overview.html>`__ provides a way to
+The psiTurk `command line <command_line_overview.html>`__ provides a way to
 create a small MySQL database on Amazon's cloud using the RDS service.
 The command for this are available under the `db` command.  Type::
 
@@ -287,7 +287,7 @@ now see your database in the cloud::
 Notice the status is "creating" (this means the database is not available yet).  Just
 wait a bit longer.  It really can take 10-15 minutes!  Other possible status messages
 for an instance include `backing-up` (AWS automatically backs up your database in case
-of data loss.  At this time **psiTurk** does not help you access those backups, you'll
+of data loss.  At this time psiTurk does not help you access those backups, you'll
 have to do that from the AWS web console.)
 
 When your database is ready the message from `db aws_list_instances` should look like::
@@ -313,7 +313,7 @@ previously::
 	Current database setting (database_url):
 		sqlite:///participants.db
 
-To actually **use** your instance you need to tell **psiTurk** which instance::
+To actually **use** your instance you need to tell psiTurk which instance::
 
 	[psiTurk server:off mode:sdbx #HITs:0]$ db use_aws_instance mydb
 	Switching your DB settings to use this instance.  Are you sure you want to do this? y
@@ -328,11 +328,11 @@ To actually **use** your instance you need to tell **psiTurk** which instance::
 And now your experiment will save data to this MySQL database in the Amazon cloud!
 Notice that Amazon has assigned your computer a random looking hostname/ip (mydb.cdukgn44bkrv.us-east-1.rds.amazonaws.com).
 You can connect using any standard MySQL client (e.g., `Sequel Pro <http://www.sequelpro.com/>`__)
-which is running on the same computer as you **psiTurk** process
+which is running on the same computer as you psiTurk process
 
 .. note::
 
-	**psiTurk** automatically makes instances so that only the current computer's ip address
+	psiTurk automatically makes instances so that only the current computer's ip address
 	can access the database for security reasons.  To modify that you can use the Amazon Web
 	Services control panel or simple delete and spin up a new database instance.
 
@@ -386,7 +386,7 @@ afford to pay the hosting fee and would like everything in one place.
 Obtaining a free MySQL database via OpenShift
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If you are hosting your experiment on OpenShift, if you add a `MySQL` cartridge to your gear, **psiTurk** will automatically
+If you are hosting your experiment on OpenShift, if you add a `MySQL` cartridge to your gear, psiTurk will automatically
 save data to that db instead of to whatever is specified in your `database_url` config. OpenShift gears, including using MySQL
 cartridges, are free unless you change default configuration settings.
 

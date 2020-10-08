@@ -25,7 +25,7 @@ snippet
 	<script src="static/js/psiturk.js" type="text/javascript"> </script>
 
 In the header of the file.  This sets up the necessary variables for
-communication with the **psiTurk** experiment server.
+communication with the psiTurk experiment server.
 
 The last function that should be called in this file is
 `psiturk.completeHIT() <../api.html#psiturk-completehit>`__

@@ -1,7 +1,7 @@
 Project Roadmap
 ===============
 
-**psiTurk** is always looking to improve and to increase
+psiTurk is always looking to improve and to increase
 the number of contributors.  We thought it would be helpful
 to lay out a basic roadmap of where we would like to see the
 project go in the future.  This roadmap may inspire you to
@@ -15,7 +15,7 @@ Documentation
 -------------
 
 The documentation is greatly lagging behind progress on
-the **psiTurk** platform.  We need help with people debugging
+the psiTurk platform.  We need help with people debugging
 documentation, improving it, and making additions!  Notice how
 all documentation pages (including this one!) include a link
 to "Edit on GitHub".  Make a pull request and help us
@@ -36,7 +36,7 @@ looks, and chances of getting in heaven.
 Alternative database solutions
 ------------------------------
 
-Currently **psiTurk** offers a variety of database solutions
+Currently psiTurk offers a variety of database solutions
 including local SQLite files, self-administered MySQL
 servers, and MySQL processes hosted on Amazon's Web
 Services (RDS) platform.  However, all of these are a little
@@ -80,7 +80,7 @@ location, etc...
 Unique IP issues
 ----------------
 
-A major issue with **psiTurk** is that it requires
+A major issue with psiTurk is that it requires
 a unique, Internet addressable IP address.  This is
 a hurdle at some universities or companies.  This is
 a bug and a feature at some level.  The feature side
