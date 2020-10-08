@@ -34,15 +34,9 @@ def setup_example():
 
         print("Copying", EXAMPLE_DIR, "to", EXAMPLE_TARGET)
         dir_util.copy_tree(EXAMPLE_DIR, EXAMPLE_TARGET)
-        file_util.move_file(os.path.join(EXAMPLE_TARGET, 'config.txt.sample'), os.path.join(EXAMPLE_TARGET, 'config.txt'))
+
         # change to target directory
         os.chdir(EXAMPLE_TARGET)
-
-        if not os.path.exists(GLOBAL_CONFIG_FILE):
-            print("The following config file does not exist:\n{}\
-                \nCreating default config file at that \
-                location.".format(GLOBAL_CONFIG_FILE))
-            file_util.copy_file(DEFAULT_GLOBAL_CONFIG_FILE, GLOBAL_CONFIG_FILE)
 
 
 if __name__ == "__main__":
