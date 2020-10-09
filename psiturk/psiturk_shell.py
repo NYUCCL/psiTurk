@@ -425,7 +425,7 @@ class PsiturkNetworkShell(Cmd, object):
         while True:
             try:
                 return valid[response]
-            except:
+            except KeyError:
                 response = input("Please respond 'y' or 'n': ").strip().lower()
 
     def hit_create(self, num_workers, reward, duration,
@@ -462,7 +462,7 @@ class PsiturkNetworkShell(Cmd, object):
             return
         try:
             reward = float(reward)
-        except:
+        except (ValueError, OverflowError):
             self.poutput('*** reward must be in format [dollars].[cents]')
             return
 
@@ -1088,7 +1088,7 @@ class PsiturkNetworkShell(Cmd, object):
             super_names = dir(Cmd)
             new_names = [m for m in names if m not in super_names]
             help_struct = {}
-            cmds_psiTurk = []
+            cmds_psiturk = []
             cmds_super = []
             for name in names:
                 if name[:5] == 'help_':
@@ -1104,11 +1104,11 @@ class PsiturkNetworkShell(Cmd, object):
                     if cmd in help_struct:
                         del help_struct[cmd]
                     if name in new_names:
-                        cmds_psiTurk.append(cmd)
+                        cmds_psiturk.append(cmd)
                     else:
                         cmds_super.append(cmd)
             self.stdout.write("%s\n" % str(self.doc_leader))
-            self.print_topics(self.psiturk_header, cmds_psiTurk, 15, 80)
+            self.print_topics(self.psiturk_header, cmds_psiturk, 15, 80)
             self.print_topics(self.misc_header, list(
                 help_struct.keys()), 15, 80)
             self.print_topics(self.super_header, cmds_super, 15, 80)
