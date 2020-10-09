@@ -9,25 +9,20 @@ try:
     from urllib.parse import quote_plus
 except ImportError:
     from urllib import quote_plus
-import urllib3
 import urllib3.contrib.pyopenssl
 from psiturk.utils import *
 from psiturk.models import Participant
 from psiturk import experiment_server_controller as control
-from psiturk.psiturk_statuses import *
 from psiturk.psiturk_config import PsiturkConfig
 from psiturk.version import version_number
 from psiturk.psiturk_org_services import PsiturkOrgServices
 from psiturk.amt_services_wrapper import MTurkServicesWrapper
 from .psiturk_exceptions import *
-import sqlalchemy as sa
 import webbrowser
 from docopt import docopt, DocoptExit
-from cmd2 import Cmd, EmptyStatement
+from cmd2 import Cmd
 from fuzzywuzzy import process
-import signal
 import certifi
-import datetime
 import random
 import string
 import os
@@ -55,6 +50,7 @@ try:
 except ImportError:
     import readline
 
+
 def docopt_cmd(func):
     """
     This decorator is used to simplify the try/except block and pass the result
@@ -62,7 +58,7 @@ def docopt_cmd(func):
     """
     @wraps(func)
     def helper_fn(self, arg):
-        '''helper function for docopt'''
+        """helper function for docopt"""
         try:
             arg = shlex.split(arg)
             opt = docopt(helper_fn.__doc__, arg)
@@ -80,8 +76,9 @@ def docopt_cmd(func):
 
     return helper_fn
 
+
 class PsiturkNetworkShell(Cmd, object):
-    ''' Extends PsiturkShell class to include online psiTurk.org features '''
+    """ Creates the Psiturk Network Shell interfrace """
 
     _cached_web_services = None
     _cached_amt_services_wrapper = None
@@ -103,8 +100,8 @@ class PsiturkNetworkShell(Cmd, object):
                 self._cached_amt_services_wrapper = _wrapper
             except AmtServicesException as e:
                 still_can_do = '\n'.join([
-                '',
-                'You can still use the psiturk server by running non-AWS commands such as:',
+                    '',
+                    'You can still use the psiturk server by running non-AWS commands such as:',
                     '- `psiturk server <subcommand>`',
                     '- `psiturk server on`',
                     '- `psiturk server off`',
@@ -122,10 +119,9 @@ class PsiturkNetworkShell(Cmd, object):
         return Cmd.postcmd(self, *args)
 
     def complete(self, text, state):
-        ''' Add space after a completion, makes tab completion with
-        multi-word commands cleaner. '''
+        """ Add space after a completion, makes tab completion with
+        multi-word commands cleaner. """
         return Cmd.complete(self, text, state) + ' '
-
 
     def default(self, statement):
         cmd = statement.command
@@ -142,7 +138,8 @@ class PsiturkNetworkShell(Cmd, object):
             self.poutput("Did you mean this?\n\t{}".format(guess[0]))
 
     def __init__(self, config, server, sandbox, quiet=False):
-        persistent_history_file=config.get('Shell Parameters','persistent_history_file')
+        persistent_history_file = config.get('Shell Parameters',
+                                             'persistent_history_file')
 
         # Prevents running of commands by abbreviation
         self.abbrev = False
@@ -171,20 +168,6 @@ class PsiturkNetworkShell(Cmd, object):
         else:
             self.intro = ''
 
-
-
-    def do_quit(self, _):
-        '''Override do_quit for network clean up.'''
-        if (self.server.is_server_running() == 'yes' or
-                self.server.is_server_running() == 'maybe'):
-            user_input = input("Quitting shell will shut down experiment "
-                               "server. Really quit? y or n: ")
-            if user_input == 'y':
-                self.server_off()
-            else:
-                return False
-        return True
-
     def server_off(self):
         if (self.server.is_server_running() == 'yes' or
                 self.server.is_server_running() == 'maybe'):
@@ -195,18 +178,13 @@ class PsiturkNetworkShell(Cmd, object):
         else:
             self.poutput('Your server is already off.')
 
-    def server_restart(self):
-        ''' Restart server '''
-        self.server_off()
-        self.server_on()
-
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #   basic command line functions
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
 
     def get_intro_prompt(self):
-        ''' Overloads intro prompt with network-aware version if you can reach
-        psiTurk.org, request system status message'''
+        """ Overloads intro prompt with network-aware version if you can reach
+        psiTurk.org, request system status message. """
         status_msg_url = 'https://raw.githubusercontent.com/NYUCCL/psiTurk/master/status_msg.txt'
         r = http.request('GET', status_msg_url)
         status_message = r.data.decode('utf-8')
@@ -244,7 +222,7 @@ class PsiturkNetworkShell(Cmd, object):
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
 
     def do_version(self, _):
-        ''' Print version number '''
+        """ Print version number """
         self.poutput('psiTurk version ' + version_number)
 
     @docopt_cmd
@@ -262,19 +240,19 @@ class PsiturkNetworkShell(Cmd, object):
         else:
             self.help_config()
 
-    config_commands = ('print', 'reload', 'help')
-
+    # TODO: this method does not appear to be used; remove?
     def complete_config(self, text, line, begidx, endidx):
-        ''' Tab-complete config command '''
+        """ Tab-complete config command """
+        config_commands = ('print', 'reload', 'help')
         return [i for i in config_commands if i.startswith(text)]
 
     def help_config(self):
-        ''' Help for config '''
+        """ Help for config """
         with open(self.help_path + 'config.txt', 'r') as help_text:
             self.poutput(help_text.read())
 
     def print_config(self, _):
-        ''' Print configuration. '''
+        """ Print configuration. """
         for section in self.config.sections():
             self.poutput('[%s]' % section)
             items = dict(self.config.items(section))
@@ -283,7 +261,7 @@ class PsiturkNetworkShell(Cmd, object):
             print('')
 
     def reload_config(self, _):
-        ''' Reload config. '''
+        """ Reload config. """
         # TODO: I don't think that this follows all the way through!
         restart_server = False
         if (self.server.is_server_running() == 'yes' or
@@ -298,7 +276,7 @@ class PsiturkNetworkShell(Cmd, object):
             self.server_restart()
 
     def do_setup_example(self, _):
-        ''' Load psiTurk demo.'''
+        """ Load psiTurk demo."""
         from . import setup_example as se
         se.setup_example()
 
@@ -347,10 +325,9 @@ class PsiturkNetworkShell(Cmd, object):
             webbrowser.open(launch_url, new=1, autoraise=True)
 
     def help_debug(self):
-        ''' Help for debug '''
+        """ Help for debug """
         with open(self.help_path + 'debug.txt', 'r') as help_text:
             self.poutput(help_text.read())
-
 
     @docopt_cmd
     def do_open(self, arg):
@@ -367,15 +344,15 @@ class PsiturkNetworkShell(Cmd, object):
             subprocess.call(["open", arg['<folder>']])
 
     def do_eof(self, arg):
-        ''' Execute on EOF '''
+        """ Execute on EOF """
         return self.do_quit(arg)
 
     def do_exit(self, arg):
-        ''' Execute on exit '''
+        """ Execute on exit """
         return self.do_quit(arg)
 
     def do_quit(self, _):
-        ''' Execute on quit '''
+        """ Execute on quit """
         if (self.server.is_server_running() == 'yes' or
                 self.server.is_server_running() == 'maybe'):
             user_input = input("Quitting shell will shut down experiment "
@@ -387,16 +364,15 @@ class PsiturkNetworkShell(Cmd, object):
         return True
 
     def do_psiturk_status(self, _):
-        ''' Print psiTurk news '''
+        """ Print psiTurk news """
         self.poutput(self.get_intro_prompt())
-
 
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #   Local SQL database commands
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
 
     def do_download_datafiles(self, _):
-        ''' Download datafiles. '''
+        """ Download datafiles. """
         contents = {"trialdata": lambda p: p.get_trial_data(), "eventdata":
                     lambda p: p.get_event_data(), "questiondata": lambda p:
                     p.get_question_data()}
@@ -411,7 +387,7 @@ class PsiturkNetworkShell(Cmd, object):
     #   hit management
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     def hit_list(self, active_hits, reviewable_hits, all_studies):
-        ''' List hits. '''
+        """ List hits. """
         if active_hits:
             hits_data = (self.amt_services_wrapper.get_active_hits(
                 all_studies)).data
@@ -428,9 +404,9 @@ class PsiturkNetworkShell(Cmd, object):
                 self.poutput(hit)
 
     def _estimate_expenses(self, num_workers, reward):
-        ''' Returns tuple describing expenses:
+        """ Returns tuple describing expenses:
         amount paid to workers
-        amount paid to amazon'''
+        amount paid to amazon"""
 
         # fee structure changed 07.22.15:
         # 20% for HITS with < 10 assignments
@@ -440,10 +416,10 @@ class PsiturkNetworkShell(Cmd, object):
             commission = 0.4
         work = float(num_workers) * float(reward)
         fee = work * commission
-        return (work, fee, work+fee)
+        return work, fee, work + fee
 
     def _confirm_dialog(self, prompt):
-        ''' Prompts for a 'yes' or 'no' to given prompt. '''
+        """ Prompts for a 'yes' or 'no' to given prompt. """
         response = input(prompt).strip().lower()
         valid = {'y': True, 'ye': True, 'yes': True, 'n': False, 'no': False}
         while True:
@@ -452,7 +428,8 @@ class PsiturkNetworkShell(Cmd, object):
             except:
                 response = input("Please respond 'y' or 'n': ").strip().lower()
 
-    def hit_create(self, numWorkers, reward, duration, whitelist_qualification_ids=None, blacklist_qualification_ids=None):
+    def hit_create(self, num_workers, reward, duration,
+                   whitelist_qualification_ids=None, blacklist_qualification_ids=None):
 
         if whitelist_qualification_ids is None:
             whitelist_qualification_ids = []
@@ -465,20 +442,20 @@ class PsiturkNetworkShell(Cmd, object):
             mode = 'live'
 
         # Argument retrieval and validation
-        if numWorkers is None:
-            numWorkers = input('number of participants? ').strip()
+        if num_workers is None:
+            num_workers = input('number of participants? ').strip()
         try:
-            numWorkers = int(numWorkers)
+            num_workers = int(num_workers)
         except ValueError:
             self.poutput('*** number of participants must be a whole number')
             return
-        if numWorkers <= 0:
+        if num_workers <= 0:
             self.poutput('*** number of participants must be greater than 0')
             return
 
         if reward is None:
             reward = input('reward per HIT? ').strip()
-        p = re.compile('^\d*\.\d\d$')
+        p = re.compile(r'^\d*\.\d\d$')
         m = p.match(reward)
         if m is None:
             self.poutput('*** reward must have format [dollars].[cents]')
@@ -501,11 +478,11 @@ class PsiturkNetworkShell(Cmd, object):
             self.poutput('*** duration must be greater than 0')
             return
 
-        _, fee, total = self._estimate_expenses(numWorkers, reward)
+        _, fee, total = self._estimate_expenses(num_workers, reward)
 
         if not self.quiet:
             dialog_query = '\n'.join(['*****************************',
-                                      '    Max workers: %d' % numWorkers,
+                                      '    Max workers: %d' % num_workers,
                                       '    Reward: $%.2f' % reward,
                                       '    Duration: %s hours' % duration,
                                       '    Fee: $%.2f' % fee,
@@ -517,7 +494,7 @@ class PsiturkNetworkShell(Cmd, object):
                 return
 
         try:
-            create_hit_response = self.amt_services_wrapper.create_hit(num_workers=numWorkers, reward=reward,
+            create_hit_response = self.amt_services_wrapper.create_hit(num_workers=num_workers, reward=reward,
                                                                        duration=duration,
                                                                        whitelist_qualification_ids=whitelist_qualification_ids,
                                                                        blacklist_qualification_ids=blacklist_qualification_ids)
@@ -532,18 +509,17 @@ class PsiturkNetworkShell(Cmd, object):
             hit_id = create_hit_response.data['hit_id']
             ad_id = create_hit_response.data['ad_id']
 
+            # TODO: "with qualification type ids..."
             self.poutput('\n'.join(['*****************************',
                                     '  Created %s HIT' % colorize(
                                         mode, 'bold'),
                                     '    HITid: %s' % str(hit_id),
-                                    '    Max workers: %d' % numWorkers,
+                                    '    Max workers: %d' % num_workers,
                                     '    Reward: $%.2f' % reward,
                                     '    Duration: %s hours' % duration,
                                     '    Fee: $%.2f' % fee,
                                     '    ________________________',
                                     '    Total: $%.2f' % total]))
-
-                                    # TODO: "with qualification type ids..."
 
             # Print the Ad Url
             use_psiturk_ad_server = self.config.getboolean(
@@ -610,6 +586,7 @@ class PsiturkNetworkShell(Cmd, object):
         except Exception as e:
             self.poutput(colorize(repr(e), 'red'))
 
+    # TODO: consider renaming all to all_hits; shadows built-in
     def worker_approve(self, all=False, chosen_hits=None, assignment_ids=None, all_studies=False, force=False):
 
         if all_studies and not force:
@@ -652,10 +629,10 @@ class PsiturkNetworkShell(Cmd, object):
                     assignment_id, all_studies=all_studies)
                 self.poutput(result)
 
-
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #   server management
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
+
     @docopt_cmd
     def do_server(self, arg):
         """
@@ -677,37 +654,29 @@ class PsiturkNetworkShell(Cmd, object):
         else:
             self.help_server()
 
-    server_commands = ('on', 'off', 'restart', 'log', 'help')
-
+    # TODO: This method does not appear to be used; remove?
     def complete_server(self, text, line, begidx, endidx):
-        ''' Tab-complete server command '''
+        """ Tab-complete server command """
+        server_commands = ('on', 'off', 'restart', 'log', 'help')
         return [i for i in server_commands if i.startswith(text)]
 
     def help_server(self):
-        ''' Help for server '''
+        """ Help for server """
         with open(self.help_path + 'server.txt', 'r') as help_text:
             self.poutput(help_text.read())
 
     def server_on(self):
-        ''' Start experiment server '''
+        """ Start experiment server """
         self.server.startup()
         time.sleep(0.5)
 
-    def server_off(self):
-        ''' Stop experiment server '''
-        if (self.server.is_server_running() == 'yes' or
-                self.server.is_server_running() == 'maybe'):
-            self.server.shutdown()
-            self.poutput('Please wait. This could take a few seconds.')
-            time.sleep(0.5)
-
     def server_restart(self):
-        ''' Restart experiment server '''
+        """ Restart experiment server """
         self.server_off()
         self.server_on()
 
     def server_log(self):
-        ''' Launch log '''
+        """ Launch log """
         logfilename = self.config.get('Server Parameters', 'logfile')
         if sys.platform == "darwin":
             args = ["open", "-a", "Console.app", logfilename]
@@ -717,7 +686,7 @@ class PsiturkNetworkShell(Cmd, object):
         self.poutput("Log program launching...")
 
     def do_status(self, arg):  # overloads do_status with AMT info
-        ''' Notify user of server status. '''
+        """ Notify user of server status. """
         server_status = self.server.is_server_running()
         if server_status == 'yes':
             self.poutput('Server: ' + colorize('currently online', 'green'))
@@ -742,7 +711,7 @@ class PsiturkNetworkShell(Cmd, object):
             self.update_hit_tally()
 
     def update_hit_tally(self):
-        ''' Tally hits '''
+        """ Tally hits """
         num_hits = (self.amt_services_wrapper.tally_hits()).data['hit_tally']
         if self.sandbox:
             self.sandbox_hits = num_hits
@@ -753,12 +722,12 @@ class PsiturkNetworkShell(Cmd, object):
     #   hit management
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     def do_amt_balance(self, _):
-        ''' Get MTurk balance '''
+        """ Get MTurk balance """
         balance = (self.amt_services_wrapper.amt_balance()).data
         self.poutput(balance)
 
     def help_amt_balance(self):
-        ''' Get help for amt_balance. '''
+        """ Get help for amt_balance. """
         with open(self.help_path + 'amt.txt', 'r') as help_text:
             self.poutput(help_text.read())
 
@@ -776,7 +745,7 @@ class PsiturkNetworkShell(Cmd, object):
     def do_list_qualifications(self):
         result = (self.amt_services_wrapper.list_qualification_types(MustBeOwnedByCaller=True))
         if not result.success:
-            return p.output(result)
+            return self.poutput(result)
         qualification_types = result.data['qualification_types']
         only_these_keys = ['Name', 'Description', 'QualificationTypeId']
         q_type_projection = [{key: q_type[key] for key in only_these_keys} for q_type in qualification_types if q_type['QualificationTypeStatus'] == 'Active']
@@ -804,7 +773,7 @@ class PsiturkNetworkShell(Cmd, object):
         self.set_mode(mode)
 
     def help_mode(self):
-        ''' Help '''
+        """ Help """
         with open(self.help_path + 'mode.txt', 'r') as help_text:
             self.poutput(help_text.read())
 
@@ -857,7 +826,7 @@ class PsiturkNetworkShell(Cmd, object):
     def do_hit(self, arg):
         """
         Usage:
-          hit create [<numWorkers> <reward> <duration>] [--whitelist-qualification-id <whitelist_qualification_id>]... [--blacklist-qualification-id <blacklist_qualification_id>]...
+          hit create [<num_workers> <reward> <duration>] [--whitelist-qualification-id <whitelist_qualification_id>]... [--blacklist-qualification-id <blacklist_qualification_id>]...
           hit extend <HITid> [(--assignments <number>)] [(--expiration <minutes>)]
           hit expire (--all | <HITid> ...)
           hit delete (--all | <HITid> ...) [--all-studies]
@@ -868,7 +837,7 @@ class PsiturkNetworkShell(Cmd, object):
         all_studies = arg['--all-studies']
 
         if arg['create']:
-            self.hit_create(arg['<numWorkers>'], arg['<reward>'], arg['<duration>'],
+            self.hit_create(arg['<num_workers>'], arg['<reward>'], arg['<duration>'],
                             whitelist_qualification_ids=arg['<whitelist_qualification_id>'],
                             blacklist_qualification_ids=arg['<blacklist_qualification_id>'])
         elif arg['extend']:
@@ -917,12 +886,12 @@ class PsiturkNetworkShell(Cmd, object):
     hit_commands = ('create', 'extend', 'expire', 'delete', 'list')
 
     def complete_hit(self, text, line, begidx, endidx):
-        ''' Tab-complete hit command. '''
+        """ Tab-complete hit command. """
         return [i for i in PsiturkNetworkShell.hit_commands if
                 i.startswith(text)]
 
     def help_hit(self):
-        ''' HIT help '''
+        """ HIT help """
         with open(self.help_path + 'hit.txt', 'r') as help_text:
             self.poutput(help_text.read())
 
@@ -945,7 +914,7 @@ class PsiturkNetworkShell(Cmd, object):
             self.worker_approve(arg['--all'], arg['<hit_id>'],
                                 arg['<assignment_id>'], all_studies, arg['--force'])
         elif arg['reject']:
-            result = None
+            results = None
             if arg['<hit_id>']:
                 result = self.amt_services_wrapper.reject_assignments_for_hit(
                     arg['<hit_id>'], all_studies=all_studies)
@@ -1008,6 +977,7 @@ class PsiturkNetworkShell(Cmd, object):
             else:
                 amount = float(arg['<amount>'])
 
+            results = None
             if arg['<hit_id>']:
                 result = (self.amt_services_wrapper.bonus_assignments_for_hit(
                     arg['<hit_id>'][0], amount, reason, all_studies=all_studies, override_bonused_status=override_bonused_status))
@@ -1036,12 +1006,12 @@ class PsiturkNetworkShell(Cmd, object):
                        'bonus', 'list', 'help')
 
     def complete_worker(self, text, line, begidx, endidx):
-        ''' Tab-complete worker command. '''
+        """ Tab-complete worker command. """
         return [i for i in PsiturkNetworkShell.worker_commands if
                 i.startswith(text)]
 
     def help_worker(self):
-        ''' Help for worker command. '''
+        """ Help for worker command. """
         with open(self.help_path + 'worker.txt', 'r') as help_text:
             self.poutput(help_text.read())
 
@@ -1093,7 +1063,7 @@ class PsiturkNetworkShell(Cmd, object):
 
     def random_id_generator(self, size=6, chars=string.ascii_uppercase +
                             string.digits):
-        ''' Generate random id numbers '''
+        """ Generate random id numbers """
         return ''.join(random.choice(chars) for x in range(size))
 
     # Modified version of standard cmd help which lists psiturk commands first.
@@ -1147,14 +1117,27 @@ class PsiturkNetworkShell(Cmd, object):
 def run(script=None, execute=None, testfile=None, quiet=False):
     using_libedit = 'libedit' in readline.__doc__
     if using_libedit:
-        self.poutput(colorize('\n'.join([
+        # TODO Resolve temporary fix of unresolved references. See comment.
+        # Replacing the call to self.poutput with a print
+        # because `self` is undefined in this function and
+        # Cmd is not instantiated here as an object, and poutput is not a static method,
+        # of Cmd.
+        print('\n'.join([
             'libedit version of readline detected.',
             'readline will not be well behaved, which may cause all sorts',
             'of problems for the psiTurk shell. We highly recommend installing',
             'the gnu version of readline by running "sudo pip install gnureadline".',
             'Note: "pip install readline" will NOT work because of how the OSX',
-            'pythonpath is structured.'
-        ]), 'red', False))
+            'pythonpath is structured.']))
+
+        # self.poutput(colorize('\n'.join([
+        #     'libedit version of readline detected.',
+        #     'readline will not be well behaved, which may cause all sorts',
+        #     'of problems for the psiTurk shell. We highly recommend installing',
+        #     'the gnu version of readline by running "sudo pip install gnureadline".',
+        #     'Note: "pip install readline" will NOT work because of how the OSX',
+        #     'pythonpath is structured.'
+        # ]), 'red', False))
     # Drop arguments which were already processed in command_line.py
     sys.argv = [sys.argv[0]]
     #opt = docopt(__doc__, sys.argv[1:])
@@ -1170,7 +1153,8 @@ def run(script=None, execute=None, testfile=None, quiet=False):
         shell.runcmds_plus_hooks(['load {}'.format(script)])
     elif execute:
         shell.runcmds_plus_hooks([execute])
-    elif testfile:
-        shell.run_transcript_tests(testfile)
+    # TODO: the following method is undefined; either define or remove
+    #elif testfile:
+    #    shell.run_transcript_tests(testfile)
     else:
         shell.cmdloop()
