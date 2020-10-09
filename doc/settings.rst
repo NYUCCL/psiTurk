@@ -139,21 +139,6 @@ See `Who Are Amazon Mechanical Turk Masters? <https://requester.mturk.com/help/f
 **Note:** Master workers cost an extra 5%.
 
 
-.. _contact_email_on_error:
-
-contact_email_on_error
-~~~~~~~~~~~~~~~~~~~~~~
-
-The email you would like to display to
-workers in case there is an error in the task.
-
-:Type: ``string``, valid email address
-
-Workers will often try
-to contact you to explain what when want and request partial or full
-payment for their time. Providing a email address that you monitor
-regularly is important to being a good member of the AMT community.
-
 
 .. _browser_exclude_rule:
 
@@ -319,17 +304,6 @@ If not running as ``root``, must be greater than 1024. Max 65535.
 Typically a number greater than 5000 will work. If another process
 is already using a given port you will usually get an
 error message.
-
-
-cutoff_time
-~~~~~~~~~~~
-
-Maximum time in minutes that it should take for a participant to
-finish the task.
-
-.. todo:: explain how this only impacts random assignment!
-
-:Type: ``integer``
 
 
 
@@ -513,6 +487,38 @@ behaves as if there are `num_cond*num_counters` conditions
 and assigns subjects randomly to the the expanded design.
 See `Issue #53 <https://github.com/NYUCCL/psiTurk/issues/53>`__
 for more info.
+
+
+.. _contact_email_on_error:
+
+contact_email_on_error
+~~~~~~~~~~~~~~~~~~~~~~
+
+The email you would like to display to
+workers in case there is an error in the task.
+
+:Type: ``string``, valid email address
+
+Workers will often try
+to contact you to explain what when want and request partial or full
+payment for their time. Providing a email address that you monitor
+regularly is important to being a good member of the AMT community.
+
+
+cutoff_time
+~~~~~~~~~~~
+
+Maximum time in minutes that it should take for a participant to
+finish the task.
+
+:Type: ``integer``
+
+Exclusively used in determining random assignment -- basically, how long should
+a participant be given to complete the task after starting? How long should the
+task last? This is different than the `duration` specified when running
+`hit create`, because a participant may not start the task immediately after
+accepting it, while the hit `duration` starts ticking as soon as the hit is
+accepted (some workers queue their accepted hits before starting it).
 
 
 
