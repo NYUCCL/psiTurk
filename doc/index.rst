@@ -10,14 +10,18 @@ psiTurk Documentation
 :Usage questions: https://groups.google.com/forum/#!forum/psiturk
 :Twitter: https://twitter.com/psiturk
 
-Welcome to psiTurk's documentation. To learn more about the project
+Welcome to psiTurk's documentation. To learn more about the project,
 please visit https://psiturk.org.
 
-To actually use psiTurk you'll first need to install it on your local
-computer or server. Instructions can be found on the :ref:`install`  page.
-Afterwards, head over to our :ref:`quickstart`,
-or for a more detailed tutorial demonstrating how to setup a simple experiment
+To actually use psiTurk, you'll first need to install it on your local
+computer or server. Instructions can be found on the :ref:`install` page.
+Afterwards, head over to our :ref:`quickstart`.
+For a more detailed tutorial demonstrating how to setup a simple experiment
 with psiTurk, visit :ref:`stroop`.
+
+.. contents:: Contents
+  :depth: 1
+  :local:
 
 User's Guide
 ------------
@@ -26,22 +30,20 @@ User's Guide
    :maxdepth: 2
 
    forward
+   quickstart
    install
    amt_setup
-   quickstart
    configuration-overview
    settings
    command_line_overview
+   command_line
    configure_databases
-   step_by_step
+   tutorials
    anatomy_of_project
    recording
    retrieving
    customizing
-   external_surveys
-   heroku
-   amazon_ec2
-   error
+   dashboard
    faq
    getting_help
    disclaimer
@@ -63,3 +65,14 @@ API Reference
    :maxdepth: 2
 
    api
+
+Citing
+------
+
+See `the github repo README <https://github.com/NYUCCL/psiTurk#citing>`__
+for how to cite usage of psiTurk.
+
+License
+-------
+
+See `the LICENSEFILE on github <https://github.com/NYUCCL/psiTurk/blob/master/LICENSE>`__.

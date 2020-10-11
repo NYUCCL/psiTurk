@@ -84,9 +84,7 @@ Basic Requirement: A publicly-accessible server
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Be aware that you will need to host your experiment on a server to which
-your participants have access. See the :ref:`deployment` section for deployment
-options.
-
+your participants have access.
 
 
 Do I have to learn how to code?
@@ -99,6 +97,6 @@ JavaScript.
 To get you started, psiTurk provides a fully functioning example
 experiment in the :ref:`stroop` section that
 you can use as a template for your own study. psiTurk also includes
-a library of basic Javascript functions (see :ref:`api`) that you can
+a library of basic Javascript functions (see :ref:`api-overview`) that you can
 insert into your code to handle page transitions, load images, and
 record data.

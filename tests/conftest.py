@@ -44,14 +44,20 @@ def experiment_dir(tmpdir, bork_aws_environ, edit_config_file):
     os.chdir(tmpdir)
     import psiturk.setup_example as se
     se.setup_example()
-    file_util.move_file(os.path.join(os.getcwd(),'config.txt.sample'), os.path.join(os.getcwd(),'config.txt'))
-    file_util.move_file(os.path.join(os.getcwd(),'custom.py.sample'), os.path.join(os.getcwd(),'custom.py'))
+    file_util.move_file(os.path.join(os.getcwd(), 'config.txt.sample'),
+                        os.path.join(os.getcwd(), 'config.txt'))
+    file_util.move_file(os.path.join(os.getcwd(), 'custom.py.sample'),
+                        os.path.join(os.getcwd(), 'custom.py'))
     os.environ['PSITURK_AD_URL_DOMAIN'] = 'example.com'
-    # os.chdir('psiturk-example') # the setup script already chdirs into here, although I don't like that it does that
+
+    # the setup script already chdirs into here,
+    # although I don't like that it does that
+    # os.chdir('psiturk-example')
     yield
 
     os.chdir('..')
     shutil.rmtree('psiturk-example')
+
 
 @pytest.fixture(autouse=True)
 def db_setup(mocker, experiment_dir, tmpdir, request):
@@ -76,12 +82,14 @@ def client():
     client = boto3.client('mturk')
     return client
 
+
 @pytest.fixture(scope='function')
 def stubber(client):
     stubber = Stubber(client)
     stubber.activate()
     yield stubber
     stubber.deactivate()
+
 
 @pytest.fixture()
 def amt_services_wrapper(patch_aws_services):

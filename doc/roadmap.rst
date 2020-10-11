@@ -81,18 +81,18 @@ Unique IP issues
 ----------------
 
 A major issue with psiTurk is that it requires
-a unique, Internet addressable IP address.  This is
-a hurdle at some universities or companies.  This is
-a bug and a feature at some level.  The feature side
+a unique, Internet addressable IP address. This is
+a hurdle at some universities or companies. This is
+a bug and a feature at some level. The feature side
 is that for many users the ability to serve
 experiments off their local computer obviates the
 need for a dedicated server and simplifies some
-web security issues.  For other users thought this
+web security issues. For other users thought this
 is a fustrating hurdle to overcome in order to
 use psiturk.  We are interesting in the community's
 thoughts about this and suggestions about best
 practices include cloud based hosting systems like
-Red Hat's OpenShift and Amazon's AWS.
+SalesForce's Heroku and Amazon's AWS.
 
 
 Version 3.0
@@ -109,4 +109,5 @@ but future version could emphasize novice web programmers
 who are new to online experiments (e.g., undergrads).
 
 If you have ideas about future directions for the project
-the Github `issues tracker <https://github.com/NYUCCL/psiTurk/issues?state=open>`__ is a great place to share them.
+the Github `issues tracker <https://github.com/NYUCCL/psiTurk/issues>`__
+is a great place to share them.

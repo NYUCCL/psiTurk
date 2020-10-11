@@ -7,7 +7,13 @@ allows custom javascript to be triggered.
 
 Window messaging allows cross-domain messaging via javascript, without having to configure security settings on the server. `MDN`_ says it best:
 
-    "The ``window.postMessage`` method safely enables cross-origin communication. Normally, scripts on different pages are allowed to access each other if and only if the pages that executed them are at locations with the same protocol (usually both ``https``), port number (443 being the default for ``https``), and host (modulo ``document.domain`` being set by both pages to the same value). ``window.postMessage`` provides a controlled mechanism to circumvent this restriction in a way which is secure when properly used."
+    "The ``window.postMessage`` method safely enables cross-origin communication.
+    Normally, scripts on different pages are allowed to access each other if and
+    only if the pages that executed them are at locations with the same protocol
+    (usually both ``https``), port number (443 being the default for ``https``),
+    and host (modulo ``document.domain`` being set by both pages to the same
+    value). ``window.postMessage`` provides a controlled mechanism to circumvent
+    this restriction in a way which is secure when properly used."
 
 .. _MDN: https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage
 
@@ -23,12 +29,21 @@ To tie the psiTurk data and the external survey data together, embed a unique id
 An example with Qualtrics
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-As of the time this documentation page was written, Qualtrics has an undocumented "feature". Qualtrics automatically posts a window ``message`` to ``window.top`` when the Qualtrics "end of the survey event" is triggered. For Qualtrics surveys embedded as ``iframes`` in psiTurk experiments, we can take advantage of this behavior. The Qualtrics-posted message contains your ``survey_id`` and the participant's Qualtrics-created unique ``session_id``. You should already know the ``survey_id`` (because you just embedded a link containing this id), but the ``session_id`` is Qualtric's unique id for whoever just finished your survey. You can record that with psiTurk as unstructured data (see :ref:`recording-unstructured-data-label`) if you desire.
+As of the time this documentation page was written, Qualtrics has an undocumented
+"feature". Qualtrics automatically posts a window ``message`` to ``window.top``
+when the Qualtrics "end of the survey event" is triggered. For Qualtrics surveys
+embedded as ``iframes`` in psiTurk experiments, we can take advantage of this
+behavior. The Qualtrics-posted message contains your ``survey_id`` and the
+participant's Qualtrics-created unique ``session_id``. You should already know
+the ``survey_id`` (because you just embedded a link containing this id), but the
+``session_id`` is Qualtric's unique id for whoever just finished your survey.
+You can record that with psiTurk as unstructured data
+(see :ref:`recording-unstructured-data`) if you desire.
 
-*Don't forget to explicitly log the psiTurk unique id as embedded data within Qualtrics.* See `here`__ for more about embedding data into Qualtrics surveys.
+*Don't forget to explicitly log the psiTurk unique id as embedded data within Qualtrics.*
+See `here`__ for more about embedding data into Qualtrics surveys.
 
-.. _qualtrics-embedded-data: https://www.qualtrics.com/university/researchsuite/advanced-building/survey-flow/embedded-data/
-__ qualtrics-embedded-data_
+__ https://www.qualtrics.com/support/survey-platform/survey-module/survey-flow/standard-elements/embedded-data/
 
 The posted message when they finish a qualtrics survey is a string that looks like this::
 

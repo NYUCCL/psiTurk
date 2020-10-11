@@ -55,7 +55,8 @@ class ExperimentServer(Application):
         if workers == "auto":
             workers = str(multiprocessing.cpu_count() * 2 + 1)
 
-        if int(workers) > 1 and os.getenv('PSITURK_DO_SCHEDULER', False):
+        if int(workers) > 1 and config.get('Server Parameters',
+                                           'do_scheduler'):
             raise Exception((
                 'Scheduler is not thread-safe, '
                 'but {} gunicorn workers requested! Refusing to start!'

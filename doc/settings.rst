@@ -134,7 +134,7 @@ can take your study.
 
 :Type: ``bool``
 
-See `Who Are Amazon Mechanical Turk Masters? <https://requester.mturk.com/help/faq#what_are_masters>`__
+See `Who Are Amazon Mechanical Turk Masters? <https://www.mturk.com/help#what_are_masters>`__
 
 **Note:** Master workers cost an extra 5%.
 
@@ -163,9 +163,12 @@ agent string for Internet Explorer 10.0 on Mac OS X might looks like this::
 
   Mozilla/5.0 (compatible; MSIE 10.0; Macintosh; Intel Mac OS X 10_7_3; Trident/6.0)
 
-This browser could be excluded by including this full line (see `this website <http://www.useragentstring.com/pages/Browserlist/>`__ for a partial list of UserAgent strings).  Also
-"MSIE" would match this string or "Mozilla/5.0" or "Mac OS X" or "Trident".
-Thus you should be careful in applying these rules.
+This browser could be excluded by including this full line (see `this website`__
+for a partial list of UserAgent strings). Also, "MSIE" would match this string
+or "Mozilla/5.0" or "Mac OS X" or "Trident". Thus you should be careful in
+applying these rules.
+
+__ https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/User-Agent
 
 There are also a few special terms that apply to a cross section of browsers.
 `mobile` will attempt to deny any browser for a mobile device (including
@@ -214,6 +217,8 @@ your database.
    `Recording Data <../recording.html>`__
    	  For details on how to put data into your database.
 
+
+.. _settings-database-url:
 
 database_url
 ~~~~~~~~~~~~
@@ -325,21 +330,54 @@ loglevel
 :Type: ``integer``
 
 Sets how "verbose" the log messages are.  See
-the python `logging <http://docs.python.org/2/library/logging.html#logging-levels>`__
+the python `logging <https://docs.python.org/3/library/logging.html>`__
 library.
 
+
+.. _settings-enable-dashboard:
+
+enable_dashboard
+~~~~~~~~~~~~~~~~
+
+Whether to enable the dashbaord. If True, then the ``login_username`` and
+``login_pw`` must also be set.
+
+:Type: ``bool``
+:Default: False
+
+
+.. _settings-do-scheduler:
+
+do_scheduler
+~~~~~~~~~~~~
+
+Whether to run the task scheduler, which is viewable and configurable from the
+dashboard.
+
+:Type: ``bool``
+:Default: False
+
+Tasks are loaded from the database. If True, then ``threads`` must be no greater
+than 1, because the task runner is not threadsafe. Will only run while the
+psiturk server is running.
+
+
+
+.. _settings-login-username:
 
 login_username
 ~~~~~~~~~~~~~~
 
 :Type: ``string``
 
-If you want to have  custom-login section of your
+If you want to have custom-login section of your
 web application (e.g., see `customizing psiturk <../customizing.html>`__)
 then you can set a login and password on certain
 web pages urls/routes. By default if you aren't
 using them, this is ignored.
 
+
+.. _settings-login-pw:
 
 login_pw
 ~~~~~~~~
@@ -352,6 +390,8 @@ then you can set a login and password on certain
 web pages urls/routes.  By default if you aren't
 using them, this is ignored.
 
+
+.. _settings-threads:
 
 threads
 ~~~~~~~
@@ -391,7 +431,7 @@ psiturk/gunicorn which handles ssl connections.
 to serve the content in your /static folder. An SSL-enabled psiturk/gunicorn
 server will not serve static content -- it will only serve dynamic content.**
 
-See http://docs.gunicorn.org/en/stable/deploy.html for more information on
+See https://docs.gunicorn.org/en/stable/deploy.html for more information on
 setting up proxy servers with the psiturk (gunicorn) server.
 
 
@@ -424,7 +464,7 @@ If you expect that your experiment may take more than 30 seconds to respond to
 a request, you may want to increase this.
 
 .. note::
-    See http://docs.gunicorn.org/en/stable/settings.html#timeout for more information.
+    See https://docs.gunicorn.org/en/stable/settings.html#timeout for more information.
 
 
 
@@ -434,6 +474,8 @@ Task Parameters
 The ``[Task Parameters]`` section contains details about
 your task.
 
+
+.. _settings-experiment-code-version:
 
 experiment_code_version
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -539,10 +581,6 @@ If set to `true`, the psiturk shell will launch in sandbox mode. if set to
 `false`, the shell will launch in live mode. We recommend leaving this option
 to `true` to lessen the chance of accidentally posting a live HIT to mTurk.
 
-.. seealso::
-
-   `Overview of the command-line interface <../command_line_overview.html>`__
-   	  The basic features of the psiTurk command line.
 
 
 bonus_message
@@ -554,8 +592,3 @@ If set, automatically uses this string as the message to
 participants when bonusing them for an assignment. If not set, you will be
 prompted to type in a message each time you bonus participants. (This message is
 required by AMT.)
-
-
-.. seealso::
-
-    See the information for the `use_psiturk_ad_server` configuration above as well.

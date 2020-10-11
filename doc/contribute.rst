@@ -1,10 +1,12 @@
+.. _contributing-to-psiTurk:
+
 Contributing to psiTurk
 =======================
 
-Note: This guide is copied more or less from the `contributors guidelines <https://github.com/gureckis/gunicorn/blob/master/CONTRIBUTING.md>`_
+Note: This guide is copied more or less from the `contributors guidelines <https://github.com/benoitc/gunicorn/blob/master/CONTRIBUTING.md>`_
 of the `gunicorn <https://github.com/benoitc/gunicorn>`_ project. Alternations
-were made for the nature of this particular project.  An up to date copy of this guide
-always resides `here <https://github.com/NYUCCL/psiTurk/blob/master/CONTRIBUTING.md>`_.
+were made for the nature of this particular project. An up to date copy of this guide
+always resides `here <https://github.com/NYUCCL/psiTurk/blob/master/CONTRIBUTING.md>`__.
 
 Want to contributed to psiTurk? Awesome! Here are instructions to get you
 started. We want to improve these as we go, so please provide feedback.
@@ -12,7 +14,6 @@ started. We want to improve these as we go, so please provide feedback.
 
 Contribution guidelines
 ~~~~~~~~~~~~~~~~~~~~~~~
-
 
 Pull requests are always welcome
 --------------------------------
@@ -112,7 +113,7 @@ will show you the available subcommands.
 
 All documentation files are in the docs folder and are formatted as
 reStructured Text. A good, detailed manual for the reStructured Text
-syntax can be found `here <http://docutils.sourceforge.net/docs/user/rst/quickstart.html>`_.
+syntax can be found `here <http://docutils.sourceforge.net/docs/user/rst/quickstart.html>`__.
 
 Some essentials:
 
@@ -121,7 +122,7 @@ docs. It is also how readthedocs generates the sidebar that contains all
 the names of individual pages in the documentary so it is important that
 this is formatted correctly.
 
-The main important feature is the `toctree <http://sphinx-doc.org/markup/toctree.html>`_.
+The main important feature is the `toctree <http://sphinx-doc.org/markup/toctree.html>`__.
 
 The toctree just looks like this:
 

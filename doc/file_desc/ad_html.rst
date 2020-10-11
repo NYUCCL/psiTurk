@@ -48,7 +48,7 @@ The basic structure is:
 
 	You cannot directly reference addition CSS or JS files
 	in the ad since the ad server will host the ad
-	using https://.  As a result you need to include all
+	using ``https://``.  As a result you need to include all
 	CSS styles you want applied to your ad directly in the
 	file.  boostrap.min.css is provided for free by
 	the ad server.

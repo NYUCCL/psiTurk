@@ -125,14 +125,14 @@ scheduler = Scheduler(jobstores=jobstores, timezone=utc)
 app.apscheduler = scheduler
 scheduler.app = app
 
-if (os.getenv('PSITURK_DO_SCHEDULER', False)):
+if CONFIG.get('Server Parameters', 'do_scheduler'):
     scheduler.start()
 
 
 #
 # Dashboard
 #
-if (os.getenv('PSITURK_ENABLE_DASHBOARD', False)):
+if CONFIG.get('Server Parameters', 'enable_dashboard'):
     from .dashboard import dashboard, init_app as dashboard_init_app # management dashboard
     app.register_blueprint(dashboard)
     dashboard_init_app(app)

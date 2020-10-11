@@ -26,7 +26,7 @@ Linux.
 
 
 I need an experiment to do X, will psiTurk be able to do this?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Generally any standard psychology experiment can be run using psiTurk.
 This means experiments with multiple trials, trials which change
@@ -109,8 +109,7 @@ I'm having Javascript errors when designing my experiment.  Can you help?
 
 Sorry, but probably not.  See the above about programming experiments.  There are many
 ways of `getting help <getting_help.html>`__ with psiTurk specifically and many
-excellent tutorials online for developing web applications using Javascript.  A good
-example is `CodeAcademy's Javascript lessons <http://www.codecademy.com/tracks/javascript>`__.
+excellent tutorials online for developing web applications using Javascript.
 
 
 Where is the **/static/js/psiturk.js** file?  It doesn't appear in any of the experiments I have downloaded!
@@ -122,3 +121,27 @@ The best way to view it is by “view source” in your browser while debugging 
 While somewhat unintuitive, this ensures that changes to psiturk.js are linked
 to new versions of the overall psiturk command line tool (since they are tightly
 interdependent).
+
+
+.. _interpret-hit-status:
+
+How do I interpret the ``hit list`` counts of "Pending," "Complete," and "Remain"?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* MTurk defines "Completed" as submissions that you have either Approved or Rejected.
+
+* MTurk defines "Pending" as submissions that have been "accepted" by a worker
+  or that are being "viewed" by a worker. A worker has the "hit duration" to
+  complete the hit. Many users use tools that automatically accept HITs for them
+  and put them in a queue. Workers may not begin working on your hit until it is
+  close to the duration expiry.
+
+* Outstanding submissions that need to be either approved or rejected before the hit can be deleted.
+
+
+.. _why-no-hits-available:
+
+Immediately after I post my HIT on the "live" mode of AMT, I cannot find it via an mturk dashboard search, and ``hit list`` shows [0 pending, 0 complete, 0 remain]. What's going on?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. todo:: copy-paste a googlegroup or github-issue response here.

@@ -1,11 +1,20 @@
+.. _retrieving-datasets-overview:
+
+===================
 Retrieving Datasets
 ===================
 
-There are several ways to retrieve experiment data from the database:
+This section covers methods for retrieving datasets, as well as the structure
+of saved data.
+
+Methods
+-------
+
+There are several ways to retrieve experiment data from the database.
 
 
 Retrieving using ``download_datafiles``
----------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The simplest way to retrieve data is using the `download_datafiles
 command <./command_line/download_datafiles.html>`__. This creates
@@ -14,7 +23,7 @@ three csv files containing the three kinds of data: `trial data
 <./recording.html#recording-unstructured-data>`__, and `event data <./recording.html#browser-event-data>`__.
 
 Retrieving programmatically
----------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 While the ``download_datafiles`` shell command is the simplest way to retrieve
 experiment data, a more powerful and flexible solution is to retrieve the data
@@ -84,8 +93,10 @@ string of text in the `datastring` field of the data table. Understanding how th
 is structured is important to be able to parse the string into a useful format
 for your analyses.
 
-The `datastring` is structured as a `json object <http://w3schools.com/json/>`__. In the description that
+The `datastring` is structured as a `json object`__. In the description that
 follows, sub-objects are indicated by names wrapped in angle brackets (< >).
+
+__ https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON
 
 
 Top Level
@@ -118,12 +129,16 @@ called in the experiment:
 
 .. code-block:: javascript
 
-    [{"uniqueid": uniqueid,
-    "current_trial": current_trial_based_on_#_of_calls_to_recordTrialData,
-    "dataTime": current_time_in_system_time,
-    "trialdata": <datalist>},
-    ...
-    ]
+      [
+        {
+          "uniqueid": uniqueid,
+          "current_trial": current_trial_based_on_num_of_calls_to_recordTrialData,
+          "dataTime": current_time_in_system_time,
+          "trialdata": //<datalist>
+        }
+        //,
+        // ...
+      ]
 
 Here, ``<datalist>`` is whatever is passed to ``psiturk.recordTrialData()`` in the
 experiment. This could be in any format, such as a string or list, but we

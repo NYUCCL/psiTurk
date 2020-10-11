@@ -4,7 +4,7 @@
 Installation
 ============
 
-psiTurk can be run using python >= v3.6 on any `Unix-Like`_ operating system
+psiTurk is supported for python >= v3.6 on any `Unix-Like`_ operating system
 (i.e., :ref:`not Windows <install-on-windows>`).
 
 .. _Unix-Like: https://en.wikipedia.org/wiki/Unix-like
@@ -20,8 +20,6 @@ Requirements:
 
 * ``python`` (>= v3.6)
 * ``pip`` (to install, see `here <https://pip.pypa.io/en/stable/installing/>`__.)
-
-
 
 To install the latest released version of psiTurk::
 
@@ -180,8 +178,8 @@ within a WSL-connected command prompt as above for :ref:`install-linux`.
 Virtualization
 ^^^^^^^^^^^^^^
 
-.. note::
-    WSL and other hypervisors may not be compatible.
+.. warning::
+    WSL may not be compatible with concurrent usage of other hypervisors.
 
 You can install a program like `VirtualBox`_ on your pc. Programs like
 these are called hypervisors and emulate a computer within your computer. Your physical machine is called
