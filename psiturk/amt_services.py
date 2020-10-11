@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-""" This module is a facade for AMT (Boto) services. """
+"""This module is a facade for AMT (Boto) services."""
 from __future__ import print_function
 
 from functools import wraps
@@ -7,12 +7,9 @@ from functools import wraps
 from builtins import str
 from builtins import object
 import boto3
-import botocore
 import datetime
-import dateutil.tz
 
 from flask import jsonify
-import re as re
 from psiturk.psiturk_config import PsiturkConfig
 from .psiturk_exceptions import *
 
@@ -24,8 +21,13 @@ MASTERS_SANDBOX_QUAL_ID = '2ARFPLSP75KLA8M8DH1HTEQVJT3SY6'
 
 NOTIFICATION_VERSION = '2006-05-05'
 
+
 class AmtServicesResponse(object):
-    def __init__(self, status=None, success=None, operation='', message='', data={}, **kwargs):
+    """class AmtServicesResponse."""
+
+    def __init__(self, status=None, success=None, operation='', message='',
+                 data={}, **kwargs):
+        """Init."""
         self.success = success
         self.status = status
         self.operation = operation,
@@ -34,21 +36,35 @@ class AmtServicesResponse(object):
         for k, v in kwargs.items():
             setattr(self, k, v)
 
+
 class AmtServicesSuccessResponse(AmtServicesResponse):
+    """class AmtServicesSuccessResponse."""
+
     def __init__(self, *args, **kwargs):
+        """__init__."""
         super(AmtServicesSuccessResponse, self).__init__(
             *args, status='success', success=True, **kwargs)
 
+
 class AmtServicesErrorResponse(AmtServicesResponse):
+    """class AmtServicesErrorResponse."""
+
     def __init__(self, *args, **kwargs):
+        """__init__."""
         exception = kwargs.pop('exception', None)
         super(AmtServicesErrorResponse, self).__init__(
-            *args, status='error', success=False, exception=exception, **kwargs)
+            *args, status='error', success=False, exception=exception,
+            **kwargs)
+
 
 class NoHitDataError(AmtServicesException):
+    """class NoHitDataError."""
+
     pass
 
+
 def check_mturk_connection(func):
+    """Return check_mturk_connection decorator."""
     @wraps(func)
     def wrapper(self, *args, **kwargs):
         if not self.connect_to_turk():
@@ -56,7 +72,9 @@ def check_mturk_connection(func):
         return func(self, *args, **kwargs)
     return wrapper
 
+
 def amt_service_response(func):
+    """Return amt_service_response decorator."""
     @check_mturk_connection
     @wraps(func)
     def wrapper(*args, **kwargs):
@@ -68,13 +86,16 @@ def amt_service_response(func):
             return AmtServicesErrorResponse(operation=func.__name__, exception=e)
     return wrapper
 
+
 class MTurkHIT(object):
-    ''' Structure for dealing with MTurk HITs '''
+    """Structure for dealing with MTurk HITs."""
 
     def __init__(self, options):
+        """__init__."""
         self.options = options
 
     def __repr__(self):
+        """__repr__."""
         return "%s \n\tStatus: %s \n\tHITid: %s \
             \n\tmax:%s/pending:%s/complete:%s/remain:%s \n\tCreated:%s \
             \n\tExpires:%s\n\tIs Expired:%s\n" % (
@@ -92,9 +113,17 @@ class MTurkHIT(object):
 
 
 class MTurkServices(object):
-    ''' MTurk services '''
+    """MTurk services."""
 
-    def __init__(self, mode='sandbox'):
+    def __init__(self, config=None, mode='sandbox'):
+        """__init__."""
+        if config:
+            self.config = config
+        else:
+            config = PsiturkConfig()
+            config.load_config()
+            self.config = config
+
         self.set_mode(mode)
         self.valid_login = self.verify_aws_login()
 
@@ -102,7 +131,7 @@ class MTurkServices(object):
             raise NoMturkConnectionError()
 
     def set_mode(self, mode):
-        ''' Set mode '''
+        """Set mode."""
         self.mode = mode
         self.setup_mturk_connection()
 
@@ -115,22 +144,30 @@ class MTurkServices(object):
             'title': hit['Title'],
             'status': hit['HITStatus'],
             'max_assignments': hit['MaxAssignments'],
-            'number_assignments_completed': hit['NumberOfAssignmentsCompleted'],
-            'number_assignments_pending': hit['NumberOfAssignmentsPending'],
-            'number_assignments_available': hit['NumberOfAssignmentsAvailable'],
+            'number_assignments_completed':
+                hit['NumberOfAssignmentsCompleted'],
+            'number_assignments_pending':
+                hit['NumberOfAssignmentsPending'],
+            'number_assignments_available':
+                hit['NumberOfAssignmentsAvailable'],
             'creation_time': hit['CreationTime'],
             'expiration': hit['Expiration'],
-            'is_expired': datetime.datetime.now(hit['Expiration'].tzinfo) >= hit['Expiration'],
+            'is_expired': datetime.datetime.now(
+                hit['Expiration'].tzinfo) >= hit['Expiration'],
             'duration_in_seconds': hit['AssignmentDurationInSeconds'],
             'reward': hit['Reward'],
             'description': hit['Description'],
-            'number_submissions_needing_action': hit['MaxAssignments'] - hit['NumberOfAssignmentsCompleted'] - hit['NumberOfAssignmentsPending'] - hit['NumberOfAssignmentsAvailable']
+            'number_submissions_needing_action':
+                hit['MaxAssignments'] -
+                hit['NumberOfAssignmentsCompleted'] -
+                hit['NumberOfAssignmentsPending'] -
+                hit['NumberOfAssignmentsAvailable']
         }) for hit in hits]
         return hits_data
 
     @amt_service_response
     def get_all_hits(self):
-        ''' Get all HITs '''
+        """Get all HITs."""
         hits = []
         paginator = self.mtc.get_paginator('list_hits')
         for page in paginator.paginate():
@@ -140,7 +177,7 @@ class MTurkServices(object):
 
     @amt_service_response
     def get_assignments(self, assignment_status=None, hit_ids=None):
-        ''' Get workers '''
+        """Get workers."""
         if not hit_ids:
             hits = self.get_all_hits().data
             hit_ids = [hit.options['hitid'] for hit in hits]
@@ -170,6 +207,7 @@ class MTurkServices(object):
 
     @amt_service_response
     def get_assignment(self, assignment_id):
+        """Get assignment."""
         assignment = self.mtc.get_assignment(
             AssignmentId=assignment_id)['Assignment']
         worker_data = {
@@ -184,67 +222,75 @@ class MTurkServices(object):
 
     @amt_service_response
     def bonus_assignment(self, assignment_id, worker_id, amount, reason=""):
-        ''' Bonus worker '''
-
+        """Bonus worker."""
         if not worker_id:
             assignment = self.mtc.get_assignment(
                 AssignmentId=assignment_id)['Assignment']
             worker_id = assignment['WorkerId']
-        self.mtc.send_bonus(WorkerId=worker_id, AssignmentId=assignment_id, BonusAmount=str(
-            amount), Reason=reason)
+        self.mtc.send_bonus(WorkerId=worker_id, AssignmentId=assignment_id,
+                            BonusAmount=str(amount), Reason=reason)
         return True
 
     @amt_service_response
     def approve_assignment(self, assignment_id, override_rejection=False):
-        ''' Approve worker '''
+        """Approve worker."""
         self.mtc.approve_assignment(AssignmentId=assignment_id,
                                     OverrideRejection=override_rejection)
         return True
 
     @amt_service_response
     def reject_assignment(self, assignment_id):
-        ''' Reject worker '''
+        """Reject worker."""
         self.mtc.reject_assignment(
             AssignmentId=assignment_id, RequesterFeedback='')
         return True
 
     @amt_service_response
     def unreject_assignment(self, assignment_id):
-        ''' Unreject worker '''
+        """Unreject worker."""
         return self.approve_assignment(assignment_id, override_rejection=True)
 
     def setup_mturk_connection(self):
-        ''' Connect to turk '''
+        """Connect to turk."""
         if self.mode == 'sandbox':
             endpoint_url = 'https://mturk-requester-sandbox.us-east-1.amazonaws.com'
         else:
             endpoint_url = 'https://mturk-requester.us-east-1.amazonaws.com'
 
-        self.mtc = boto3.client('mturk',
-                                region_name='us-east-1',
-                                endpoint_url=endpoint_url)
+        kwargs = {
+            'region_name': 'us-east-1',
+            'endpoint_url': endpoint_url
+        }
+        aws_access_key_id = self.config.get('AWS Access', 'aws_access_key_id')
+        aws_secret_access_key = self.config.get('AWS Access',
+                                                'aws_secret_access_key')
+
+        if aws_access_key_id and aws_secret_access_key:
+            kwargs['aws_access_key_id'] = aws_access_key_id
+            kwargs['aws_secret_access_key'] = aws_secret_access_key
+
+        self.mtc = boto3.client('mturk', **kwargs)
         return True
 
     def verify_aws_login(self):
-        ''' Verify AWS login '''
+        """Verify AWS login."""
         if not self.mtc:
             return False
 
         try:
             self.mtc.get_account_balance()
             return True
-        except Exception as e:
+        except Exception:
             return False
 
     def connect_to_turk(self):
-        ''' Connect to turk '''
+        """Connect to turk."""
         if not self.valid_login or not self.mtc:
             return False
         return True
 
     def configure_hit(self, hit_config):
-        ''' Configure HIT '''
-
+        """Configure HIT."""
         # Qualification:
         quals = []
         quals.append(dict(
@@ -259,9 +305,9 @@ class MTurkServices(object):
             IntegerValues=[int(hit_config['number_hits_approved'])]
         ))
 
-
         if hit_config['require_master_workers']:
-            master_qualId = MASTERS_SANDBOX_QUAL_ID if self.mode == 'sandbox' else MASTERS_QUAL_ID
+            master_qualId = (MASTERS_SANDBOX_QUAL_ID if self.mode == 'sandbox'
+                             else MASTERS_QUAL_ID)
             quals.append(dict(
                 QualificationTypeId=master_qualId,
                 Comparator='Exists'
@@ -275,12 +321,12 @@ class MTurkServices(object):
             ))
 
         for qual_id in hit_config['whitelist_qualification_ids']:
-            quals.append(dict(
-            QualificationTypeId=qual_id, Comparator='Exists'))
+            quals.append(dict(QualificationTypeId=qual_id,
+                              Comparator='Exists'))
 
         for qual_id in hit_config['blacklist_qualification_ids']:
-            quals.append(dict(
-            QualificationTypeId=qual_id, Comparator='DoesNotExist'))
+            quals.append(dict(QualificationTypeId=qual_id,
+                              Comparator='DoesNotExist'))
 
         # Create a HIT type for this HIT.
         hit_type = self.mtc.create_hit_type(
@@ -315,16 +361,14 @@ class MTurkServices(object):
         )
 
     @amt_service_response
-    def list_qualification_types(self,
-        Query='',
-        MustBeRequestable=False,
-        MustBeOwnedByCaller=True):
-
+    def list_qualification_types(self, Query='', MustBeRequestable=False,
+                                 MustBeOwnedByCaller=True):
+        """list_qualification_types."""
         paginator = self.mtc.get_paginator('list_qualification_types')
         qualification_types = []
         kwargs = {
-            'MustBeRequestable':MustBeRequestable,
-            'MustBeOwnedByCaller':MustBeOwnedByCaller
+            'MustBeRequestable': MustBeRequestable,
+            'MustBeOwnedByCaller': MustBeOwnedByCaller
         }
         if Query:
             kwargs['Query'] = Query
@@ -336,21 +380,22 @@ class MTurkServices(object):
 
     @amt_service_response
     def check_balance(self):
-        ''' Check balance '''
+        """Check balance."""
         response = self.mtc.get_account_balance()
         return response['AvailableBalance']
 
     @amt_service_response
     def create_hit(self, hit_config):
-        ''' Create HIT '''
+        """Create HIT."""
         self.configure_hit(hit_config)
         myhit = self.mtc.create_hit_with_hit_type(**self.param_dict)['HIT']
         return myhit
 
     @amt_service_response
     def expire_hit(self, hitid):
-        ''' Expire HIT '''
-        time_in_past = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(-30)
+        """Expire HIT."""
+        time_in_past = (datetime.datetime.now(datetime.timezone.utc) +
+                        datetime.timedelta(-30))
         self.mtc.update_expiration_for_hit(
             HITId=hitid,
             ExpireAt=time_in_past
@@ -359,17 +404,18 @@ class MTurkServices(object):
 
     @amt_service_response
     def delete_hit(self, hitid):
-        ''' Delete HIT '''
+        """Delete HIT."""
         self.mtc.delete_hit(HITId=hitid)
         return True
 
     @amt_service_response
     def extend_hit(self, hitid, assignments_increment=None,
                    expiration_increment=None):
-
+        """extend_hit."""
         if assignments_increment:
-            self.mtc.create_additional_assignments_for_hit(HITId=hitid,
-                                                           NumberOfAdditionalAssignments=int(assignments_increment))
+            self.mtc.create_additional_assignments_for_hit(
+                HITId=hitid,
+                NumberOfAdditionalAssignments=int(assignments_increment))
 
         if expiration_increment:
             hit = self.get_hit(hitid).data
@@ -382,13 +428,13 @@ class MTurkServices(object):
 
     @amt_service_response
     def get_hit(self, hitid):
-        ''' Get HIT '''
+        """Get HIT."""
         hitdata = self.mtc.get_hit(HITId=hitid)
         return self._hit_xml_to_object(hitdata['HIT'])[0]
 
     @amt_service_response
     def get_hit_status(self, hitid):
-        ''' Get HIT status '''
+        """Get HIT status."""
         response = self.get_hit(hitid)
         if not response.success:
             raise response.exception
@@ -397,8 +443,7 @@ class MTurkServices(object):
 
     @amt_service_response
     def get_summary(self):
-        ''' Get summary '''
-
+        """Get summary."""
         balance = self.check_balance()
         summary = jsonify(balance=str(balance))
         return summary

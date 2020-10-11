@@ -92,7 +92,9 @@ class WrapperResponseError(WrapperResponse):
         self.dict_keys.append('exception')
         self.exception = kwargs.pop('exception', None)
 
+
 def amt_services_wrapper_response(func):
+    """Return amt_services_wrapper_response decorator."""
     @wraps(func)
     def wrapper(self, *args, **kwargs):
         try:
@@ -100,27 +102,36 @@ def amt_services_wrapper_response(func):
             if isinstance(response, WrapperResponse):
                 return response
             if isinstance(response, dict) and 'exception' in response:
-                return WrapperResponseError(operation=func.__name__, exception=response.pop('exception'), data=response)
-            return WrapperResponseSuccess(operation=func.__name__, data=response)
+                return WrapperResponseError(
+                    operation=func.__name__,
+                    exception=response.pop('exception'), data=response)
+            return WrapperResponseSuccess(
+                operation=func.__name__,
+                data=response)
         except Exception as e:
             return WrapperResponseError(operation=func.__name__, exception=e)
     return wrapper
 
+
 class MTurkServicesWrapper(object):
+    """class MTurkServicesWrapper."""
 
     _cached_dbs_services = None
     _cached_amt_services = None
 
     @property
     def amt_services(self):
+        """Get amt_services."""
         if not self._cached_amt_services:
             try:
-                self._cached_amt_services = MTurkServices(mode=self.mode)
+                self._cached_amt_services = MTurkServices(mode=self.mode,
+                                                          config=self.config)
             except PsiturkException:
                 raise
         return self._cached_amt_services
 
     def __init__(self, config=None, web_services=None, mode='sandbox'):
+        """__init__."""
         init_db()
 
         if not config:
@@ -133,18 +144,20 @@ class MTurkServicesWrapper(object):
         if web_services:
             self._cached_web_services = web_services
 
-        _ = self.amt_services # may throw an exception. Let it throw!
+        _ = self.amt_services  # may throw an exception. Let it throw!
 
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     #   Miscellaneous
     # +-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.+-+.
     @amt_services_wrapper_response
     def get_mode(self):
+        """Get mode."""
         return self.mode
 
     @amt_services_wrapper_response
     def set_mode(self, mode):
-        if mode not in ['sandbox','live']:
+        """set_mode."""
+        if mode not in ['sandbox', 'live']:
             raise PsiturkException(f'mode not recognized: {mode}')
 
         self.mode = mode
