@@ -12,10 +12,10 @@ Amazon and creating several accounts. Luckily they are a one-time process for a 
 Accounts Creation and Linking
 ----------------------------
 
-Carefully follow `AWS's guide`_ for setting up the necessary accounts for using
+Carefully follow `AWS's guide`__ for setting up the necessary accounts for using
 Amazon Mechanical Turk. Before doing so, note the following:
 
-.. _AWS's guide: https://docs.aws.amazon.com/AWSMechTurk/latest/AWSMechanicalTurkGettingStartedGuide/SetUp.html#setup-aws-account
+__ https://docs.aws.amazon.com/AWSMechTurk/latest/AWSMechanicalTurkGettingStartedGuide/SetUp.html#setup-aws-account
 
 * **Step 5** discusses setting up the Developer Sandbox. Carefully follow all steps
   in this section, including the steps in the note for linking your aws account
