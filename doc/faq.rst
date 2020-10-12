@@ -155,7 +155,9 @@ How do I interpret the ``hit list`` counts of "Pending," "Complete," and "Remain
 
 .. _why-no-hits-available:
 
-Immediately after I post my HIT on the "live" mode of AMT, I cannot find it via an mturk dashboard search, and ``hit list`` shows [0 pending, 0 complete, 0 remain]. What's going on?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Immediately after I post my HIT on the "live" mode of AMT, I cannot find it via an mturk dashboard search?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. todo:: copy-paste a googlegroup or github-issue response here.
+Many MTurkers use tools that automatically accept HITs for them
+and put them in a queue. If all of your HITs get gobbled up before the MTurk GUI
+refreshes, then your HIT will *never* appear via a search on the MTurk GUI.
