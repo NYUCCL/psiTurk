@@ -15,6 +15,20 @@ to `forward a port <http://www.howtogeek.com/66214/how-to-forward-ports-on-your-
 from your home routers to you personal computer.
 
 
+There was an error in my experiment and I need to pay participants, but I can't because they weren't able to complete my HIT. How can I pay them?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You need *Whoops y'all*.
+
+Whoops y'all is a psiTurk compatible experiment for paying people when an
+experiment goes badly for some reason. You enter the worker IDs of people who
+you owe money to and can reject all others. Payment is handled quickly and
+easily via psiTurk's command line features. When you make a whoops, use
+"whoops y'all"!
+
+See `Whoops y'all <https://github.com/NYUCCL/whoops_yall>`__ on GitHub.
+
+
 Why doesn't psiTurk work on Windows?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

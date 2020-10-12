@@ -44,6 +44,7 @@ User's Guide
    retrieving
    customizing
    dashboard
+   experiment-exchange
    faq
    getting_help
    disclaimer
@@ -66,11 +67,13 @@ API Reference
 
    api
 
+
 Citing
 ------
 
 See `the github repo README <https://github.com/NYUCCL/psiTurk#citing>`__
 for how to cite usage of psiTurk.
+
 
 License
 -------
