@@ -6,8 +6,8 @@ def test_awskeys_invalid(capfd):
     from psiturk.psiturk_config import PsiturkConfig
     from psiturk.psiturk_shell import PsiturkNetworkShell
     import psiturk.psiturk_shell as ps
-    
-    
+
+
     config = PsiturkConfig()
     config.load_config()
     config.set('Shell Parameters', 'persistent_history_file', '')
@@ -24,24 +24,24 @@ def test_awskeys_invalid(capfd):
             quiet=quiet)
     except SystemExit:
         pass
-    
+
     out, err = capfd.readouterr()
-    assert NoMturkConnectionError().message in out
-    
-    
+    assert NoMturkConnectionError().message in err
+
+
 def test_awscreds_notset(capfd):
     import psiturk.experiment_server_controller as control
     from psiturk.psiturk_config import PsiturkConfig
     from psiturk.psiturk_shell import PsiturkNetworkShell
     import psiturk.psiturk_shell as ps
-    
-    
+
+
     config = PsiturkConfig()
     config.load_config()
     config.set('Shell Parameters', 'persistent_history_file', '')
     config.set('AWS Access','aws_access_key_id', 'YourAccessKeyId')
     config.set('AWS Access','aws_secret_access_key', 'YourSecretAccessKey')
-    
+
     server = control.ExperimentServerController(config)
 
     launch_in_sandbox_mode = True
@@ -53,6 +53,6 @@ def test_awscreds_notset(capfd):
             quiet=quiet)
     except SystemExit:
         pass
-    
+
     out, err = capfd.readouterr()
-    assert AWSAccessKeysNotSetError().message in out
+    assert AWSAccessKeysNotSetError().message in err

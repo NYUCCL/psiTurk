@@ -763,6 +763,8 @@ class PsiturkNetworkShell(PsiturkShell):
                 _wrapper = MTurkServicesWrapper(
                     config=self.config, sandbox=self.sandbox)
                 self._cached_amt_services_wrapper = _wrapper
+            except AmtServicesException as e:
+                self.pfeedback(e.message)
             except PsiturkException as e:
                 self.poutput(e)
 
@@ -777,7 +779,7 @@ class PsiturkNetworkShell(PsiturkShell):
         self.live_hits = 0
         super(PsiturkNetworkShell, self).__init__(config, server, quiet)
 
-        if not self.amt_services_wrapper:
+        if not self.amt_services_wrapper and not self.quiet:
             sys.exit()
 
         self.maybe_update_hit_tally()
