@@ -10,9 +10,9 @@ Creating the psiTurk object
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To use the psiTurk library, a ``psiturk`` object must be created at
-the beginning of your experiment.  It takes two key arguments ``uniqueId``
-and ``adServerLoc``.  These two variables are first created in
-`exp.html <file_desc/exp_html.html>`.  They tell psiTurk which unique
+the beginning of your experiment. It takes two key arguments ``uniqueId``
+and ``adServerLoc``. These two variables are first created in
+`exp.html <file_desc/exp_html.html>`. They tell psiTurk which unique
 number/code corresponds to the current participant (allowing updating
 of data as the task progresses) and the location of the `ad <secure_ad_server.html>`__
 where users should be sent when the task is complete.
@@ -165,8 +165,8 @@ success or failure of the saving.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This finishes the task by passing control of the experiment back
-to the `Secure Ad Server <secure_ad_server.html>`.  When in
-``debug`` mode this just cleans up the task.  When running live
+to the `Secure Ad Server <secure_ad_server.html>`. When in
+``debug`` mode this just cleans up the task. When running live
 on the sandbox or live site this passes control of the browser
 back to the Ad Server so that the subject can be marked as complete
 and the user's browser will correctly finish the HIT on Amazon's
@@ -177,16 +177,16 @@ site.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 psiTurk includes a basic method for showing a sequence of
-instructions.  You are always free to write your own instructions
-code (and may need to).  However, this provides a basic template
+instructions. You are always free to write your own instructions
+code (and may need to). However, this provides a basic template
 for a pretty simple typical type of instructions composed of
 a sequence of multiple pages of text and graphics along with
 a "next" and (optionally) "previous" button.
 
 The ``doInstructions()`` method takes two arguments.
 The first is a list of HTML pages that you would like
-to display.  These should appear in the order you would
-like them to be displayed to participants.  The instructions
+to display. These should appear in the order you would
+like them to be displayed to participants. The instructions
 method uses the `showPage() <api.html#psiturk-showpage-pagename>`__
 method to display the HTML of the page.
 
@@ -207,7 +207,7 @@ An `Bootstrap <https://getbootstrap.com>`__ example is::
 
 In addition, if the HTML document includes an element
 with class ``previous`` it will, when clicked, go to the previous
-page.  As a result you should not include a previous button on the
+page. As a result you should not include a previous button on the
 first HTML page.
 
 An example previous button using `Bootstrap <https://getbootstrap.com>`__ is: ::
@@ -252,7 +252,7 @@ attempt to close (or reload) the page, they will get an alert asking
 them to confirm that they want to leave the experiment.
 
 You do not have to use ``doInstructions()`` in order to call
-``finishInstructions()``.  In the example above you would
+``finishInstructions()``. In the example above you would
 want to call ``psiturk.finishInstructions()`` in the ``StroopExperiment()`` class.
 
 Example

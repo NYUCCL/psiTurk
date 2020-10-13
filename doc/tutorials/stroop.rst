@@ -39,7 +39,7 @@ Initialize the demo code
 
 The first step is to obtain the archive of code and resources
 specific to the Stroop demo. Additional
-experiments are shared on the psiTurk `experiment exchange <http://psiturk.org/ee>`__.
+experiments are shared on the psiTurk :ref:`experiment exchange <experiment-exchange>`.
 However, the Stroop demo comes bundled within the psiturk command line tool.
 
 First use the ``psiturk-setup-example`` command to place fresh copies of the files into
@@ -319,7 +319,7 @@ To test your HIT, go to the worker sandbox and search for your HIT by entering t
 
 Click "view a HIT in this group" to open a hit. You should see an ad for your HIT appear on the screen. Click "accept HIT", then click the link in the HIT ad to open the experiment in a full-screen window.
 If you complete the HIT in this manner you it should go through all the steps of the AMT process.
-Afterwards you will have some data in your `database <configure_databases.html>`__.
+Afterwards you will have some data in your `database <databases_overview.html>`__.
 
 
 Accessing your data
@@ -331,7 +331,7 @@ three csv files containing the three kinds of data: `trial data
 <./recording.html#recording-trial-data>`__, `question data
 <./recording.html#recording-unstructured-data>`__, and `event data <./recording.html#browser-event-data>`__.
 
-If you are using the default SQLite database (see `configuring databases <configure_databases.html>`__)
+If you are using the default SQLite database (see `configuring databases <databases_overview.html>`__)
 then another option is to use a GUI tool like `Base <http://menial.co.uk/base/>`__ to access
 the data in the ``participants.db`` file in your project folder.
 

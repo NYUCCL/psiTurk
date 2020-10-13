@@ -16,8 +16,11 @@ please visit https://psiturk.org.
 To actually use psiTurk, you'll first need to install it on your local
 computer or server. Instructions can be found on the :ref:`install` page.
 Afterwards, head over to our :ref:`quickstart`.
+
 For a more detailed tutorial demonstrating how to setup a simple experiment
-with psiTurk, visit :ref:`stroop`.
+with psiTurk, visit :ref:`stroop`. Also, check out the :ref:`experiment-exchange`
+for examples to learn from, including demonstrations of integration with
+`jspsych <https://www.jspsych.org/>`_.
 
 .. contents:: Contents
   :depth: 1
@@ -37,7 +40,7 @@ User's Guide
    settings
    command_line_overview
    command_line
-   configure_databases
+   databases_overview
    tutorials
    anatomy_of_project
    recording

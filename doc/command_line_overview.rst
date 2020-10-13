@@ -7,7 +7,7 @@ The **psiTurk shell** is a command line interface which
 allows users to communicate with their experiment server, and also
 with Amazon Mechanical Turk.
 
-The ``psiturk`` command has several uses.
+The ``psiturk`` command has several invocations.
 
 Options
 ~~~~~~~
@@ -71,3 +71,10 @@ and contains several pieces of useful information:
 * **#HITs field** -- displays the number of HITs currently active, either in the
   worker sandbox when in sandbox mode or on the live AMT site when in live
   mode.
+
+Create an Example Project
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To create a sample project, run the following::
+
+    psiturk-setup-example

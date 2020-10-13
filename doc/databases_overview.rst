@@ -1,39 +1,46 @@
 .. _databases-overview:
 
+==================
 Databases Overview
 ==================
 
-Databases provide a critical aspect of psiTurk as they store data from
+Databases provide a critical aspect of psiTurk, as they store data from
 experiments and help to prevent the same user from completing your experiment
-more than once. Databases provide an important function for web-based experiments.
+more than once. Databases provide an important function for web-based experiments --
 Because multiple people can complete your experiment at the same time, you need
 a system which can simultaneously write/read data. Databases are optimized for
 this type of environment and are thus very useful for experiments.
 
+psiTurk can integrate with any database that is compatible with `SQLAlchemy`_.
+
+.. _SQLAlchemy: https://www.sqlalchemy.org/
+
 .. seealso::
 
-   `Database parameters <config/database_parameters.html>`__
-      For details on how to configure databases in `config.txt`.
+   :ref:`settings-database-url` -- For details on how to configure databases in `config.txt`
 
+.. contents:: Contents
+  :local:
+  :depth: 1
 
 Using SQLite
 ~~~~~~~~~~~~
 
-Perhaps the simplest solution is to use SQLite. This database solution writes
-to a local file on the same computer as is running the psiTurk server.
+Perhaps the simplest quickstart solution is to use SQLite. This database solution
+writes to a local file on the same computer as is running the psiTurk server.
 
 To use a SQLite data base, simply set the `database_url` field in your
 `local configuration file <configuration.html#local-configuration-file>`__ (`config.txt`)::
 
 	database_url = sqlite:///FILENAME.db
 
-where FILENAME is of your choosing.  By default, psiTurk sets this like this::
+where FILENAME is of your choosing. By default, psiTurk sets this like this::
 
 	database_url = sqlite:///participants.db
 
 This will make a SQLite database file in the top-level folder of your project.
 If you change the `database_url` and restart psiTurk, a new database corresponding
-to the new filename will be created.  If you set it to an
+to the new filename will be created. If you set it to an
 existing file name, psiTurk will attempt to connect to this database.
 
 It is best to do this while the server is not running (note in this example the "server" status says "off").
@@ -60,13 +67,21 @@ less likely using SQLite.
 
 	SQLite database are fine for local testing but more robust databases like
 	MySQL are recommended especially if you plan to run many participants simultaneously.
-	Any server compatible with SQLAlchemy can be used.
+	Again, any server compatible with `SQLAlchemy`_ can be used.
+
+
+Using a postgresql database on Heroku
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The Heroku free tier includes access to a postgresql database.
+See :ref:`deploy-on-heroku`.
+
 
 Using a SQL database server
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 A more robust solution is to set up a `MySQL <http://www.mysql.com/>`__ database.
-psiTurk relies on `SQLAlchemy <http://www.sqlalchemy.org/>`__ for interfacing
+psiTurk's reliance on `SQLAlchemy`_ for interfacing
 with database which means it is easy to switch between MySQL, PostgreSQL, or SQLite.
 
 For example, to use an existing MySQL database::
@@ -139,12 +154,7 @@ applications and business."
 	recently signed up for Amazon Web Services. However, older account have to
 	pay according to the `current rates <http://aws.amazon.com/rds/pricing/>`__.
 	This does **NOT** use the pre-paid mechanism that is used on Amazon
-	Mechanical Turk.  Thus launching a database server on the cloud and leaving
-	it running run up monthly charges.  You are responsible for launching
+	Mechanical Turk. Thus launching a database server on the cloud and leaving
+	it running run up monthly charges. You are responsible for launching
 	and shutting down your own database instances if you use this approach.
 	**PROCEED WITH CAUTION.**
-
-Using a postgresql database on Heroku
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. seealso:: :ref:`deploy-on-heroku`

@@ -7,5 +7,5 @@ or a MySQL database.
 
 .. seealso::
 
-   `Configuring Databases <../configure_databases.html>`__
+   `Configuring Databases <../databases_overview.html>`__
    	  For a complete guides to databases with psiTurk.

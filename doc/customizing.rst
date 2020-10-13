@@ -18,7 +18,7 @@ import any blueprint from that module named ``custom_code``. See below for examp
 Example: Automatically computing performance bonus
 --------------------------------------------------
 
-It is hard to use the main task to directly modify the database. However, you may use ``custom.py`` file with a function called ``compute_bonus`` to put the correct amount of bonus in the database. You could do this in Javascript perhaps but the problem is that participants can modify the javascript in their browser and increase their bonus.  Instead it is better if bonuses are computed on the server side.  The ``custom.py`` script may look like the following:
+It is hard to use the main task to directly modify the database. However, you may use ``custom.py`` file with a function called ``compute_bonus`` to put the correct amount of bonus in the database. You could do this in Javascript perhaps but the problem is that participants can modify the javascript in their browser and increase their bonus. Instead it is better if bonuses are computed on the server side. The ``custom.py`` script may look like the following:
 
 .. code-block:: python
 
@@ -45,7 +45,7 @@ It is hard to use the main task to directly modify the database. However, you ma
       # errors will not be that gracefull here if being
       # accessed by the Javascrip client
       if not 'uniqueId' in request.args:
-          # i don't like returning HTML to JSON requests...  maybe should change this
+          # i don't like returning HTML to JSON requests... maybe should change this
           raise ExperimentError('improper_inputs')
       uniqueId = request.args['uniqueId']
 
@@ -116,7 +116,7 @@ this concept is `here <https://www.artima.com/weblogs/viewpost.jsp?thread=240808
 
   def compute_bonus():
       if not 'uniqueId' in request.args:
-          # i don't like returning HTML to JSON requests...  maybe should change this
+          # i don't like returning HTML to JSON requests... maybe should change this
           raise ExperimentError('improper_inputs')
       uniqueId = request.args['uniqueId']
 

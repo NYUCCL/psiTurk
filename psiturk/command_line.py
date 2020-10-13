@@ -9,7 +9,7 @@ from psiturk.psiturk_org_services import ExperimentExchangeServices
 
 
 def process():
-    ''' Figure out how we were invoked '''
+    """Figure out how we were invoked."""
     invoked_as = os.path.basename(sys.argv[0])
 
     if invoked_as == "psiturk":
@@ -20,30 +20,12 @@ def process():
         launch_shell()
     elif invoked_as == "psiturk-setup-example":
         setup_example()
-    elif invoked_as == "psiturk-install":
-        install_from_exchange()
     elif invoked_as == "psiturk-heroku-config":
         from psiturk.do_heroku_setup import do_heroku_setup
         do_heroku_setup()
 
-
-def install_from_exchange():
-    ''' Install from experiment exchange. '''
-    parser = argparse.ArgumentParser(
-        description='Download experiment from the psiturk.org experiment\
-        exchange (http://psiturk.org/ee).'
-    )
-    parser.add_argument(
-        'exp_id', metavar='exp_id', type=str, help='the id number of the\
-        experiment in the exchange'
-    )
-    args = parser.parse_args()
-    exp_exch = ExperimentExchangeServices()
-    exp_exch.download_experiment(args.exp_id)
-
-
 def setup_example():
-    ''' Add commands for testing, etc. '''
+    """Add commands for testing, etc."""
     parser = argparse.ArgumentParser(
         description='Creates a simple default project (stroop) in the current\
         directory with the necessary psiTurk files.'
@@ -64,7 +46,7 @@ def setup_example():
 
 
 def launch_server():
-    ''' Add commands for testing, etc.. '''
+    """Add commands for testing, etc."""
     parser = argparse.ArgumentParser(
         description='Launch psiTurk experiment webserver process on the\
         host/port defined in config.txt.'
@@ -85,7 +67,7 @@ def launch_server():
 
 
 def launch_shell():
-    ''' Add commands for testing, etc.. '''
+    """Add commands for testing, etc."""
     parser = argparse.ArgumentParser(
         description='Launch the psiTurk interactive shell.'
     )
@@ -94,7 +76,7 @@ def launch_shell():
     parser.add_argument(
         '-v', '--version', help='Print version number.', action="store_true"
     )
-    
+
     script_group = parser.add_mutually_exclusive_group()
     script_group.add_argument(
         '-s', '--script', help='Run commands from a script file'

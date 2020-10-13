@@ -123,7 +123,7 @@ default in most distributions.
 
 If you encounter install problems when installing using pip as above, a
 likely cause is that you are missing the package from your distribution
-that contains a needed header file.  In this case, one way to troubleshoot
+that contains a needed header file. In this case, one way to troubleshoot
 the problem is to do a web search for the name of your distribution and
 the name of the missing header file (which often appears in the error text
 produced by a failed pip install). That search will likely turn up the name of
@@ -137,7 +137,7 @@ example command::
     apt install python-pip python-dev libncurses-dev
 
 If you would like to use mysql as your backend database (which is optional, and can
-be done at any time), further packages are needed.  On a Debian system, they are::
+be done at any time), further packages are needed. On a Debian system, they are::
 
     apt install python-pymysql python-sqlalchemy libmysqlclient-dev
 

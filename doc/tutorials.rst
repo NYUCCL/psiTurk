@@ -5,6 +5,7 @@ Tutorials
 
 .. toctree::
     :maxdepth: 1
-    :glob:
 
-    tutorials/*
+    tutorials/stroop
+    tutorials/heroku
+    tutorials/external_surveys

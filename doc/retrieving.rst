@@ -1,8 +1,8 @@
 .. _retrieving-datasets-overview:
 
-===================
-Retrieving Datasets
-===================
+===============
+Retrieving Data
+===============
 
 This section covers methods for retrieving datasets, as well as the structure
 of saved data.

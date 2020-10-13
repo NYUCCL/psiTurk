@@ -10,7 +10,7 @@ There are a number of steps involved here which have to do with signing up with
 Amazon and creating several accounts. Luckily they are a one-time process for a given AWS account.
 
 Accounts Creation and Linking
-----------------------------
+-----------------------------
 
 Carefully follow `AWS's guide`__ for setting up the necessary accounts for using
 Amazon Mechanical Turk. Before doing so, note the following:
@@ -39,7 +39,8 @@ SDK to communicate with the AWS API. In order to do so, boto must have access to
 the user's AWS credentials, generated in section :ref:`amt-setup`.
 
 There are two approaches for setting the keys: (1) in a file called
-``.psiturkconfig``, and (2) in any of the ways that Boto expects.
+``.psiturkconfig`` located in the user's home directory, and (2) in any of the
+ways that Boto expects.
 
 .. _amt-creds-psiturkconfig-approach:
 
@@ -59,10 +60,10 @@ Boto approach
 
 If AWS credentials are not found via the :ref:`amt-creds-psiturkconfig-approach`,
 then Boto will search for them via its typical methods. That is,
-psiTurk users can store AWS credentials `in a way that Boto expects`__.
+psiTurk users can store AWS credentials `in any way that Boto expects`__.
 Specifically, the credentials variables ``AWS_ACCESS_KEY_ID`` and
 ``AWS_SECRET_ACCESSS_KEY`` can be set via one of the following methods,
-listed in order of preference:
+listed in order of Boto-preference:
 
 __ https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html
 

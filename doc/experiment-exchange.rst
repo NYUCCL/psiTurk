@@ -1,3 +1,5 @@
+.. _experiment-exchange:
+
 ===================
 Experiment Exchange
 ===================
@@ -9,13 +11,17 @@ and re-run it using the same population and task code. In addition, researchers
 can use the experiment exchange to learn about the code used in other people's
 experiments.
 
+
+Contributing to the exchange
+============================
+
 If you use psiTurk to design your experiment, please consider sharing the code!
 To do so, do the following:
 
 * upload your code to a GitHub repository
 
   * Be sure not to commit any sensitive information, such as AWS credentials
-    or a ``database_url`` containing credentials!
+    or a :ref:`database_url <settings-database-url>` containing credentials!
 * propose an edit to this page, listing information about your experiment. This
   documentation page is hosted on GitHub.
 
@@ -25,8 +31,11 @@ be glad to help you share your project. *Science!*
 
 
 
-Find an experiment to replicate or learn from:
-=============================================
+Browse experiments for study or replication
+===========================================
+
+If you find one of these to be useful, consider "star"-ing it on GitHub to show
+your appreciation and to signal its usefulness to others.
 
 .. contents:: Experiments
   :depth: 1
@@ -218,7 +227,7 @@ the representation of two feature dimensions is manipulated in order to affect
 the kinds of hypotheses people generate as they attempt to learn an unknown
 category boundary (i.e., either 1D or 2D boundaries). Experiment 1 is a
 perceptual task while Experiment 2 applies the same design to a more abstract
-problem. For more information, see http://dougmarkant.com/assets/Markant_CogSci2016.pdf
+problem.
 
 
 

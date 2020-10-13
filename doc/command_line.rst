@@ -3,6 +3,10 @@
 psiTurk commands
 ================
 
+Each of these commands can be run either from an interactive shell, or as
+arguments to the psiturk command (e.g., ``psiturk amt_balance`` or
+``psiturk hit create 1 0.01 1`` from a bash prompt).
+
 .. seealso:: :ref:`command-line-overview`
 
 .. contents:: Commands
@@ -99,7 +103,7 @@ experiment on the fly and reload the debugging window to see the results.
 
 Accesses the current experiment database table (defined in `config.txt
 <../config/database_parameters.html>`__) and creates a copy of the
-experiment data in a csv format.  ``download_datafiles`` creates three
+experiment data in a csv format. ``download_datafiles`` creates three
 files in your current folder:
 
 * ```eventdata.csv``
@@ -161,7 +165,7 @@ that command.
 
 Examples:
 
-1.  List all commands:
+1. List all commands:
 
     ::
 
@@ -184,7 +188,7 @@ Examples:
     python `cmd2` module. More information about `cmd2` commands can be found
     `here <https://cmd2.readthedocs.io/en/latest/overview/index.html>`__.
 
-2.  View the help menu for a command and its subcommands
+2. View the help menu for a command and its subcommands
 
     ::
 
@@ -691,7 +695,7 @@ Examples:
      Entered sandbox mode
      [psiTurk server:off mode:sdbx #HITs:0]$
 
-2.  Switching mode with the server running:
+2. Switching mode with the server running:
 
     ::
 

@@ -6,6 +6,11 @@ Settings
 
 This page is organized by each of the sections of a ``config.txt`` file.
 
+Any of these settings can be set via an environment variable by setting the
+setting name (sans section name) prefixed by the key string ``PSITURK_``. For
+instance, to set the number of server threads (:ref:`settings-threads`, section
+'Server Parameters') to ``1`` via env var, one would set: ``PSITURK_THREADS=1``.
+
 .. seealso:: :ref:`configuration-overview`
 
 .. contents::
@@ -102,11 +107,11 @@ Minimum approval percentage for a worker to be able to accept your study.
 :Type: ``integer``
 
 Sets a qualification for what type of workers
-you want to allow to perform your task.  It is expressed as a
-percentage of past HITs from a worker which were approved.  Thus
-95 means 95% of past tasks were successfully approved.  You may want
+you want to allow to perform your task. It is expressed as a
+percentage of past HITs from a worker which were approved. Thus
+95 means 95% of past tasks were successfully approved. You may want
 to be careful with this as it tends to select more seasoned and
-expert workers.  This is desirable to avoid bots and scammers, but also
+expert workers. This is desirable to avoid bots and scammers, but also
 may exclude new sign-ups to the system.
 
 
@@ -152,13 +157,13 @@ particular web browsers from performing your task.
 
 When a users contact your psiturk server, the server checks
 to see if the User Agent reported by the browser matches any of the
-terms in this string.  It if does the worker is shown a message
+terms in this string. It if does the worker is shown a message
 indicating that their browser is incompatible with the task.
 
 Matching works as follows. First the string is broken up
-by the commas into sub-string.  Then a string matching rule is
+by the commas into sub-string. Then a string matching rule is
 applied such that it counts as a match anytime a sub-string
-exactly matches in the UserAgent string.  For example, a user
+exactly matches in the UserAgent string. For example, a user
 agent string for Internet Explorer 10.0 on Mac OS X might looks like this::
 
   Mozilla/5.0 (compatible; MSIE 10.0; Macintosh; Intel Mac OS X 10_7_3; Trident/6.0)
@@ -172,11 +177,11 @@ __ https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/User-Agent
 
 There are also a few special terms that apply to a cross section of browsers.
 `mobile` will attempt to deny any browser for a mobile device (including
-cell phone or tablet).  This matching is not perfect but can be more general
+cell phone or tablet). This matching is not perfect but can be more general
 since it would exclude mobile version of Chrome and Safari for instance.
-`tablet` denys tablet based computers (but not phones).  `touchcapable` would
+`tablet` denys tablet based computers (but not phones). `touchcapable` would
 try to exclude computers or browser with gesture or touch capabilities
-(if this would be a problem for your experiment interface).  `pc` denies
+(if this would be a problem for your experiment interface). `pc` denies
 standard computers (sort of the opposite to the `mobile` and `tablet` exclusions).
 Finally `bot` tries to exclude web spiders and non-browser agents like
 the Unix curl command.
@@ -210,7 +215,7 @@ your database.
 
 .. seealso::
 
-   `Configuring Databases <../configure_databases.html>`__
+   `Configuring Databases <../databases_overview.html>`__
       For details on how to set up different databases and
       get your data back out.
 
@@ -244,7 +249,7 @@ To use an existing MySQL database::
 where USERNAME and PASSWORD are your access credentials for
 the database, HOSTNAME and is the DNS entry or IP address for the
 database, PORT is the port number (standard is 3306) and DATABASE
-is the name of the database on the server.  It is wise to test
+is the name of the database on the server. It is wise to test
 that you can connect to this url with a MySQL client prior to
 launching.
 
@@ -258,9 +263,9 @@ Specifies the table of the database you would like to write to.
 
 **IMPORTANT**: psiTurk prevents the same worker
 from performing as task by checking to see if the worker
-appears in the current database table already.  Thus, for a
+appears in the current database table already. Thus, for a
 single experiment (or sequence of related experiments) you want
-to keep the `table_name` value the same.  If you start a new
+to keep the `table_name` value the same. If you start a new
 design where it not longer matters that someone has done a
 previous version of the task, you can change the `table_name`
 value and begin sorting the data into a new table.
@@ -288,7 +293,7 @@ There are two common values for this.
 If host is set to ``localhost`` (or synonymously ``127.0.0.1``), then your
 experiment will only work for testing (i.e., even if you
 have an internet addressable computer, people outside
-of your local machine will not be able to connect).  This
+of your local machine will not be able to connect). This
 is a security feature for developing and testing your
 application.
 
@@ -317,10 +322,10 @@ logfile
 
 :Type: ``string``
 
-The location of the server log file.  Error messages for
+The location of the server log file. Error messages for
 the server process are not printed to the terminal or
-command line.  To help in debugging they are stored in
-a log file of your choosing.  This file will be located
+command line. To help in debugging they are stored in
+a log file of your choosing. This file will be located
 in the top-level folder of your project.
 
 
@@ -329,7 +334,7 @@ loglevel
 
 :Type: ``integer``
 
-Sets how "verbose" the log messages are.  See
+Sets how "verbose" the log messages are. See
 the python `logging <https://docs.python.org/3/library/logging.html>`__
 library.
 
@@ -357,9 +362,9 @@ dashboard.
 :Type: ``bool``
 :Default: False
 
-Tasks are loaded from the database. If True, then ``threads`` must be no greater
-than 1, because the task runner is not threadsafe. Will only run while the
-psiturk server is running.
+Tasks are loaded from the database. If True, then :ref:`settings-threads` must
+be no greater than 1, because the task runner is not threadsafe. Will only run
+while the psiturk server is running.
 
 
 
@@ -387,7 +392,7 @@ login_pw
 If you want to have  custom-login section of your
 web application (e.g., see `customizing psiturk <../customizing.html>`__)
 then you can set a login and password on certain
-web pages urls/routes.  By default if you aren't
+web pages urls/routes. By default if you aren't
 using them, this is ignored.
 
 
@@ -399,7 +404,7 @@ threads
 :Type: the ``string`` 'auto' or ``integer``
 
 `threads` controls the number of process threads
-the the psiturk webserver will run.  This enables multiple
+the the psiturk webserver will run. This enables multiple
 simultanous connections from internet users. If you select
 `auto` it will set this based on the number of processor
 cores on your current computer.
@@ -503,12 +508,12 @@ num_conds
 :Type: ``integer``
 
 psiTurk includes a primitive system for counterbalancing
-participants to conditions.  If you specify a number of
+participants to conditions. If you specify a number of
 condition greater than 1, then psiTurk will attempt to
 assign new participants to conditions to keep them all
-with equal N.  It also takes into account the time delay
+with equal N. It also takes into account the time delay
 between a person being assigned to a condition and completing
-a condition (or possibly withdrawing).  Thus, you can be
+a condition (or possibly withdrawing). Thus, you can be
 fairly assured that after running 100 subjects in two conditions
 each condition will have 50+/- completed participants.
 

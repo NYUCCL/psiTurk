@@ -37,7 +37,7 @@ Discuss your design on the mailing list
 
 We recommend discussing your plans in our `Google group <https://groups.google.com/d/forum/psiturk>`__
 before starting to code -
-especially for more ambitious contributions.  This gives other
+especially for more ambitious contributions. This gives other
 contributors a chance to point you in the right direction, give feedback
 on your design, and maybe point out if someone else is working on the
 same thing.
@@ -202,11 +202,11 @@ Who decides what?
 psiTurk, like gunicorn, follows the timeless, highly efficient and totally unfair system
 known as `Benevolent dictator for life <http://en.wikipedia.org/wiki/Benevolent_Dictator_for_Life>`_.
 In the case of psiTurk, there are multiple little dictators which are the core members of the
-`gureckislab <http://gureckislab.org>`__ research group and alumni.  The dictators
+`gureckislab <http://gureckislab.org>`__ research group and alumni. The dictators
 can be emailed at `authors@psiturk.org <mailto:authors@psiturk.org>`_.
 
 For new features from outside contributors, the hope is that friendly
-consensus can be reached in the discussion on a pull request.  In cases where it
+consensus can be reached in the discussion on a pull request. In cases where it
 isn't the original project creators `John McDonnell <https://github.com/johnmcdonnell>`_
 and/or `Todd Gureckis <https://github.com/gureckis>`_ will intervene to decide.
 

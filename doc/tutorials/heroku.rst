@@ -1,7 +1,9 @@
 .. _deploy-on-heroku:
+.. _heroku-guide:
 
+=========================
 Running psiTurk on Heroku
-==========================
+=========================
 
 `Heroku <https://www.heroku.com>`_ is a cloud service that lets you run
 applications in the cloud. You can run `psiTurk` on `Heroku` by preparing a git
@@ -13,7 +15,7 @@ The benefits of `Heroku` include the following:
 - It's somewhat easier to manage than `Amazon Web Services EC2 <amazon_ec2.html>`_
   for the tech-wary (no need for security groups, no need to ssh in).
 - You can set up a free PostgreSQL server
-  (which is `highly recommended <configure_databases.html>`_ to use over the
+  (which is `highly recommended <databases_overview.html>`_ to use over the
   default SQLite database that `psiTurk` uses). A database server is required on
   heroku as files, including `participants.db`, are ephemeral. Data would be
   lost every time the app spins down.

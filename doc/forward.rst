@@ -20,7 +20,7 @@ walkman or boombox). People would trade tapes, make copies of tapes,
 make mixtapes of their favorite songs. It was awesome.
 
 psiTurk is like a player but instead of playing music, it plays
-(i.e., runs) experiments.  You download and install the psiTurk application
+(i.e., runs) experiments. You download and install the psiTurk application
 to your computer. This installs a command line tool ``psiturk`` which serves as a
 multi-function "player." It can (figuratively speaking) run, pause,
 eject, and configure a given experiment.
