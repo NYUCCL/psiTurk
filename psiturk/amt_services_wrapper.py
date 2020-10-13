@@ -17,7 +17,6 @@ from .db import db_session, init_db
 from .psiturk_exceptions import *
 from .psiturk_statuses import *
 from .psiturk_config import PsiturkConfig
-from .psiturk_org_services import PsiturkOrgServices
 from .amt_services import MTurkServices
 from sqlalchemy import or_, and_
 from sqlalchemy.sql.operators import eq

@@ -17,7 +17,6 @@ from psiturk import experiment_server_controller as control
 from psiturk.psiturk_statuses import *
 from psiturk.psiturk_config import PsiturkConfig
 from psiturk.version import version_number
-from psiturk.psiturk_org_services import PsiturkOrgServices
 from psiturk.amt_services_wrapper import MTurkServicesWrapper
 from .psiturk_exceptions import *
 import sqlalchemy as sa

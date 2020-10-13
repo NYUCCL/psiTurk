@@ -5,7 +5,6 @@ import argparse
 import sys
 import os
 from psiturk.version import version_number
-from psiturk.psiturk_org_services import ExperimentExchangeServices
 
 
 def process():
