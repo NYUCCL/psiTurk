@@ -98,7 +98,7 @@ visit the "Campaigns" tab.
    thread for task-running.
 
    **Note!**: if :ref:`settings-do-scheduler` is set to True, and :ref:`settings-threads` is greater
-   than 1, psiTurk will refuse to start! This is a safeguard, because, Again,
+   than 1, psiTurk will refuse to start! This is a safeguard, because, again,
    APScheduler cannot handle interprocess task-running synchronization.
 
 
