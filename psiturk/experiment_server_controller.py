@@ -159,7 +159,8 @@ class ExperimentServerController(object):
             return 'blocked'
 
     def is_port_available(self):
-        return is_port_available(self.config.get("Server Parameters", "host"), self.config.getint("Server Parameters", "port"))
+        return is_port_available(self.config.get("Server Parameters", "host"),
+                                 self.config.getint("Server Parameters", "port"))
 
     def startup(self):
         server_command = "{python_exec} '{server_script}'".format(
