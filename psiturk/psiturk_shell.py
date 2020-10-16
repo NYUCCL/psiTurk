@@ -240,7 +240,6 @@ class PsiturkNetworkShell(Cmd, object):
         else:
             self.help_config()
 
-    # TODO: this method does not appear to be used; remove?
     def complete_config(self, text, line, begidx, endidx):
         """ Tab-complete config command """
         config_commands = ('print', 'reload', 'help')
@@ -654,7 +653,6 @@ class PsiturkNetworkShell(Cmd, object):
         else:
             self.help_server()
 
-    # TODO: This method does not appear to be used; remove?
     def complete_server(self, text, line, begidx, endidx):
         """ Tab-complete server command """
         server_commands = ('on', 'off', 'restart', 'log', 'help')
@@ -1140,7 +1138,6 @@ def run(script=None, execute=None, testfile=None, quiet=False):
         # ]), 'red', False))
     # Drop arguments which were already processed in command_line.py
     sys.argv = [sys.argv[0]]
-    #opt = docopt(__doc__, sys.argv[1:])
     config = PsiturkConfig()
     config.load_config()
     server = control.ExperimentServerController(config)
@@ -1153,8 +1150,5 @@ def run(script=None, execute=None, testfile=None, quiet=False):
         shell.runcmds_plus_hooks(['load {}'.format(script)])
     elif execute:
         shell.runcmds_plus_hooks([execute])
-    # TODO: the following method is undefined; either define or remove
-    #elif testfile:
-    #    shell.run_transcript_tests(testfile)
     else:
         shell.cmdloop()
