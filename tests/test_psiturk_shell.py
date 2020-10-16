@@ -213,7 +213,7 @@ def test_do_commands(get_shell, pytestconfig, cmds, name, stubber, capsys):
 # def do_hit(self, arg):
 #    """
 #    Usage:
-# []      hit create [<numWorkers> <reward> <duration>]
+# []      hit create [<num_workers> <reward> <duration>]
 # []      hit extend <HITid> [(--assignments <number>)] [(--expiration <minutes>)]
 # []      hit expire (--all | <HITid> ...)
 # []      hit delete (--all | <HITid> ...)
