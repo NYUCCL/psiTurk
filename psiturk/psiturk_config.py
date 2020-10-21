@@ -1,18 +1,20 @@
+"""Module psiturk_config."""
 from __future__ import print_function
-from distutils import file_util
-import os
 from future import standard_library
-standard_library.install_aliases()
-import os
-import sys
 from distutils import file_util
+import os
 from configparser import ConfigParser
 from dotenv import load_dotenv, find_dotenv
+from .psiturk_exceptions import EphemeralContainerDBError, PsiturkException
+standard_library.install_aliases()
+
 
 class PsiturkConfig(ConfigParser):
+    """PsiturkConfig class."""
 
     def __init__(self, localConfig="config.txt",
                  globalConfigName=".psiturkconfig", **kwargs):
+        """Init."""
         load_dotenv(find_dotenv(usecwd=True))
         if 'PSITURK_GLOBAL_CONFIG_LOCATION' in os.environ:
             globalConfig = os.path.join(
@@ -25,52 +27,63 @@ class PsiturkConfig(ConfigParser):
         self.globalFile = os.path.expanduser(globalConfig)
 
     def load_config(self):
+        """Load config."""
         defaults_folder = os.path.join(
             os.path.dirname(__file__), "default_configs")
         local_defaults_file = os.path.join(
             defaults_folder, "local_config_defaults.txt")
         global_defaults_file = os.path.join(
             defaults_folder, "global_config_defaults.txt")
-        if not os.path.exists(self.localFile):
-            print ("ERROR - no config.txt file in the current "
-                   "directory. \n\n Are you sure this directory "
-                   "is a valid psiTurk experiment?  "
-                   "If you are starting a new project run "
-                   "'psiturk-setup-example' first.")
-            sys.exit()
-        if not os.path.exists(self.globalFile):
-            if 'PSITURK_GLOBAL_CONFIG_LOCATION' in os.environ:
-                print ("No '.psiturkconfig' file found in your " +
-                       os.environ['PSITURK_GLOBAL_CONFIG_LOCATION'] +
-                       " directory.\nCreating default " +
-                       self.globalFile + " file.")
-            else:
-                print ("No '.psiturkconfig' file found in your "
-                       "home directory.\nCreating default "
-                       "~/.psiturkconfig file.")
-            file_util.copy_file(global_defaults_file, self.globalFile)
 
-        # Read default global and local, then user's global and local. This way
-        # any field not in the user's files will be set to the default value.
+        # Read files in this order, with later settings overriding
+        # earlier ones:
+        #
+        # * global default
+        # * local default
+        # * user's global file
+        # * user's local's file
+        # * env vars
         self.read([global_defaults_file, local_defaults_file,
                    self.globalFile, self.localFile])
+        # prefer environment
+        these_as_they_are = ['PORT', 'DATABASE_URL']  # heroku sets these
+        for section in self.sections():
+            for config_var in self[section]:
+                config_var_upper = config_var.upper()
+                config_val_env_override = None
 
-        # heroku reads from env vars instead of .psiturkconfig
-        for section in ['psiTurk Access', 'AWS Access']:
-            for (name, value) in self.items(section):
-                if name in os.environ:
-                    self.set(section, name, os.environ[name])
+                if config_var_upper in these_as_they_are:
+                    config_val_env_override = os.environ.get(config_var_upper)
 
-        # heroku dynamically assigns your app a port, so you can't set the
-        # port to a fixed number database url is also dynamic
+                # prefer any `PSITURK_` key over `these_as_they_are` variants
+                psiturk_key = f'PSITURK_{config_var_upper}'
+                if psiturk_key in os.environ:
+                    config_val_env_override = os.environ.get(psiturk_key)
+
+                if config_val_env_override:
+                    self.set(section, config_var, config_val_env_override)
+
+        # heroku files are ephemeral.
+        # Error if we're trying to use a file as the db
         if 'ON_CLOUD' in os.environ:
-            self.set('Server Parameters', 'port', os.environ['PORT'])
-            if 'DATABASE_URL' in os.environ:
-                self.set('Database Parameters', 'database_url',
-                        os.environ['DATABASE_URL'])
-            database_url = self.get('Database Parameters', 'database_url')
+            database_url = self.get('Database Parameters Parameters',
+                                    'database_url')
             if ('localhost' in database_url) or ('sqlite' in database_url):
                 raise EphemeralContainerDBError(database_url)
-            if 'TABLE_NAME' in os.environ:
-                self.set('Database Parameters', 'table_name',
-                        os.environ['TABLE_NAME'])
+
+    def get_ad_url(self):
+        """Get ad url."""
+        if self.has_option('HIT Configuration', 'ad_url'):
+            return self.get('HIT Configuration', 'ad_url')
+        else:
+            need_these = ['ad_url_domain', 'ad_url_protocol', 'ad_url_port',
+                          'ad_url_route']
+            for need_this in need_these:
+                if not self.get('HIT Configuration', need_this):
+                    raise PsiturkException(
+                        message=f'missing ad_url config var `{need_this}`')
+            ad_url_domain = self.get('HIT Configuration', 'ad_url_domain')
+            ad_url_protocol = self.get('HIT Configuration', 'ad_url_protocol')
+            ad_url_port = self.get('HIT Configuration', 'ad_url_port')
+            ad_url_route = self.get('HIT Configuration', 'ad_url_route')
+            return f"{ad_url_protocol}://{ad_url_domain}:{ad_url_port}:{ad_url_route}"

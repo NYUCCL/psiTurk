@@ -51,11 +51,12 @@ class ExperimentServer(Application):
 
     def load_user_config(self):
         # config calls these threads to avoid confusing with workers
-        workers = config.get("Server Parameters", "threads")
+        workers = config.get('Server Parameters', "threads")
         if workers == "auto":
             workers = str(multiprocessing.cpu_count() * 2 + 1)
 
-        if int(workers) > 1 and os.getenv('PSITURK_DO_SCHEDULER', False):
+        if int(workers) > 1 and config.getboolean('Server Parameters',
+                                           'do_scheduler'):
             raise Exception((
                 'Scheduler is not thread-safe, '
                 'but {} gunicorn workers requested! Refusing to start!'
@@ -78,29 +79,29 @@ class ExperimentServer(Application):
         # add unique identifier of this psiturk project folder
         project_hash = hashlib.sha1(os.getcwd().encode()).hexdigest()[:12]
         self.user_options = {
-            'bind': config.get("Server Parameters", "host") + ":" + config.get("Server Parameters", "port"),
+            'bind': config.get('Server Parameters', "host") + ":" + config.get('Server Parameters', "port"),
             'workers': workers,
             'worker_class': 'gevent',
             'loglevels': self.loglevels,
             'loglevel': self.loglevels[config.getint("Server Parameters", "loglevel")],
-            # 'accesslog': config.get("Server Parameters", "logfile"),
-            'errorlog': config.get("Server Parameters", "logfile"),
+            # 'accesslog': config.get('Server Parameters', "logfile"),
+            'errorlog': config.get('Server Parameters', "logfile"),
             'proc_name': 'psiturk_experiment_server_' + project_hash,
             'limit_request_line': '0',
             'on_exit': on_exit
         }
 
-        if config.has_option("Server Parameters", "certfile") and config.has_option("Server Parameters", "keyfile"):
+        if config.get("Server Parameters", "certfile") and config.get("Server Parameters", "keyfile"):
             print("Loading SSL certs for server...")
             ssl_options = {
-                'certfile': config.get("Server Parameters", "certfile"),
-                'keyfile': config.get("Server Parameters", "keyfile")
+                'certfile': config.get('Server Parameters', "certfile"),
+                'keyfile': config.get('Server Parameters', "keyfile")
             }
             self.user_options.update(ssl_options)
 
         if config.has_option("Server Parameters", "server_timeout"):
             self.user_options.update(
-                {'timeout': config.get("Server Parameters", "server_timeout")})
+                {'timeout': config.get('Server Parameters', "server_timeout")})
 
         if 'ON_CLOUD' in os.environ:
             self.user_options.update({

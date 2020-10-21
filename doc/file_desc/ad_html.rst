@@ -7,7 +7,7 @@ participants taking your experiment will see.
 This file exists locally.  When you are `debugging <../command_line/debug.html>`__
 in local mode, the local file will be used.
 When you create an ad on the `Ad Server <../secure_ad_server.html>`__, a copy
-of this file is uploaded to the **psiTurk** cloud
+of this file is uploaded to the psiTurk cloud
 server.
 
 
@@ -48,7 +48,7 @@ The basic structure is:
 
 	You cannot directly reference addition CSS or JS files
 	in the ad since the ad server will host the ad
-	using https://.  As a result you need to include all
+	using ``https://``.  As a result you need to include all
 	CSS styles you want applied to your ad directly in the
 	file.  boostrap.min.css is provided for free by
 	the ad server.

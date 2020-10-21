@@ -25,7 +25,7 @@ if 'mysql://' in DATABASE.lower():
 	# the pymysql package
 	DATABASE = DATABASE.replace('mysql://', 'mysql+pymysql://')
 
-engine = create_engine(DATABASE, echo=False, pool_recycle=3600) 
+engine = create_engine(DATABASE, echo=False, pool_recycle=3600)
 db_session = scoped_session(sessionmaker(autocommit=False,
                                          autoflush=False,
                                          bind=engine))

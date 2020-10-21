@@ -15,7 +15,6 @@ from psiturk.models import Participant
 from psiturk import experiment_server_controller as control
 from psiturk.psiturk_config import PsiturkConfig
 from psiturk.version import version_number
-from psiturk.psiturk_org_services import PsiturkOrgServices
 from psiturk.amt_services_wrapper import MTurkServicesWrapper
 from .psiturk_exceptions import *
 import webbrowser
@@ -48,7 +47,11 @@ try:
     # prefer gnureadline if user has installed it
     import gnureadline as readline
 except ImportError:
-    import readline
+    try:
+        # next pyreadline if user has installed it (windows)
+        import pyreadline as readline
+    except ImportError:
+        import readline
 
 
 def docopt_cmd(func):
@@ -80,23 +83,14 @@ def docopt_cmd(func):
 class PsiturkNetworkShell(Cmd, object):
     """ Creates the Psiturk Network Shell interfrace """
 
-    _cached_web_services = None
     _cached_amt_services_wrapper = None
-
-    @property
-    def web_services(self):
-        if not self._cached_web_services:
-            self._cached_web_services = PsiturkOrgServices(
-                self.config.get('psiTurk Access', 'psiturk_access_key_id'),
-                self.config.get('psiTurk Access', 'psiturk_secret_access_id'))
-        return self._cached_web_services
 
     @property
     def amt_services_wrapper(self):
         if not self._cached_amt_services_wrapper:
             try:
                 _wrapper = MTurkServicesWrapper(
-                    config=self.config, sandbox=self.sandbox)
+                    config=self.config, mode=self.mode)
                 self._cached_amt_services_wrapper = _wrapper
             except AmtServicesException as e:
                 still_can_do = '\n'.join([
@@ -137,7 +131,7 @@ class PsiturkNetworkShell(Cmd, object):
         if guess and guess[1] > 50:
             self.poutput("Did you mean this?\n\t{}".format(guess[0]))
 
-    def __init__(self, config, server, sandbox, quiet=False):
+    def __init__(self, config, server, mode='sandbox', quiet=False):
         persistent_history_file = config.get('Shell Parameters',
                                              'persistent_history_file')
 
@@ -151,7 +145,7 @@ class PsiturkNetworkShell(Cmd, object):
         self.config = config
         self.server = server
 
-        self.sandbox = sandbox
+        self.mode = mode
         self.sandbox_hits = 0
         self.live_hits = 0
 
@@ -206,14 +200,10 @@ class PsiturkNetworkShell(Cmd, object):
         elif server_status == 'blocked':
             server_string = colorize('blocked', 'red')
         prompt += ' server:' + server_string
-        if self.sandbox:
-            prompt += ' mode:' + colorize('sdbx', 'bold')
-        else:
-            prompt += ' mode:' + colorize('live', 'bold')
-        if self.sandbox:
-            prompt += ' #HITs:' + str(self.sandbox_hits)
-        else:
-            prompt += ' #HITs:' + str(self.live_hits)
+        mode_str = 'sdbx' if self.mode == 'sandbox' else 'live'
+        prompt += ' mode:' + colorize(mode_str, 'bold')
+        hit_count = self.sandbox_hits if self.mode == 'sandbox' else self.live_hits
+        prompt += ' #HITs:' + str(hit_count)
         prompt += ']$ '
         return prompt
 
@@ -278,50 +268,6 @@ class PsiturkNetworkShell(Cmd, object):
         """ Load psiTurk demo."""
         from . import setup_example as se
         se.setup_example()
-
-    @docopt_cmd
-    def do_debug(self, arg):
-        """
-        Usage: debug [options]
-
-        -p, --print-only        just provides the URL, doesn't attempt to
-                                launch browser
-        """
-        if (self.server.is_server_running() == 'no' or
-                self.server.is_server_running() == 'maybe'):
-            self.poutput("Error: Sorry, you need to have the server running to debug "
-                         "your experiment.  Try 'server on' first.")
-            return
-
-        revproxy_url = False
-        if self.config.has_option('Server Parameters', 'adserver_revproxy_host'):
-            if self.config.has_option('Server Parameters', 'adserver_revproxy_port'):
-                port = self.config.get(
-                    'Server Parameters', 'adserver_revproxy_port')
-            else:
-                port = 80
-            revproxy_url = "http://{}:{}/ad".format(self.config.get('Server Parameters',
-                                                                    'adserver_revproxy_host'),
-                                                    port)
-
-        if revproxy_url:
-            base_url = revproxy_url
-        else:
-            base_url = "http://" + self.config.get('Server Parameters', 'host')\
-                + ":" + self.config.get('Server Parameters', 'port') + "/ad"
-
-        launch_url = base_url + "?assignmentId=debug" \
-            + str(self.random_id_generator()) + "&hitId=debug" \
-            + str(self.random_id_generator()) + "&workerId=debug" \
-            + str(self.random_id_generator() + "&mode=debug")
-
-        if arg['--print-only']:
-            self.poutput("Here's your randomized debug link, feel free to request "
-                         "another:\n\t" + launch_url)
-        else:
-            self.poutput("Launching browser pointed at your randomized debug link, "
-                         "feel free to request another.\n\t" + launch_url)
-            webbrowser.open(launch_url, new=1, autoraise=True)
 
     def help_debug(self):
         """ Help for debug """
@@ -435,11 +381,6 @@ class PsiturkNetworkShell(Cmd, object):
         if blacklist_qualification_ids is None:
             blacklist_qualification_ids = []
 
-        if self.sandbox:
-            mode = 'sandbox'
-        else:
-            mode = 'live'
-
         # Argument retrieval and validation
         if num_workers is None:
             num_workers = input('number of participants? ').strip()
@@ -487,7 +428,7 @@ class PsiturkNetworkShell(Cmd, object):
                                       '    Fee: $%.2f' % fee,
                                       '    ________________________',
                                       '    Total: $%.2f' % total,
-                                      'Create %s HIT [y/n]? ' % colorize(mode, 'bold')])
+                                      'Create %s HIT [y/n]? ' % colorize(self.mode, 'bold')])
             if not self._confirm_dialog(dialog_query):
                 self.poutput('*** Cancelling HIT creation.')
                 return
@@ -511,7 +452,7 @@ class PsiturkNetworkShell(Cmd, object):
             # TODO: "with qualification type ids..."
             self.poutput('\n'.join(['*****************************',
                                     '  Created %s HIT' % colorize(
-                                        mode, 'bold'),
+                                        self.mode, 'bold'),
                                     '    HITid: %s' % str(hit_id),
                                     '    Max workers: %d' % num_workers,
                                     '    Reward: $%.2f' % reward,
@@ -521,49 +462,31 @@ class PsiturkNetworkShell(Cmd, object):
                                     '    Total: $%.2f' % total]))
 
             # Print the Ad Url
-            use_psiturk_ad_server = self.config.getboolean(
-                'Shell Parameters', 'use_psiturk_ad_server')
-            if use_psiturk_ad_server:
-                ad_url = ''
-                if use_psiturk_ad_server:
-                    if self.sandbox:
-                        ad_url_base = 'https://sandbox.ad.psiturk.org/view'
-                    else:
-                        ad_url_base = 'https://ad.psiturk.org/view'
-                    ad_url = '{}/{}?assignmentId=debug{}&hitId=debug{}&workerId=debug{}'.format(
-                        ad_url_base, str(ad_id), str(self.random_id_generator()), str(self.random_id_generator()), str(self.random_id_generator()))
+            base = self.config.get_ad_url()
+            assignmentid = str(self.random_id_generator()),
+            hitid = str(self.random_id_generator()),
+            workerid = str(self.random_id_generator())
 
-            else:
-                options = {
-                    'base': self.config.get('Shell Parameters', 'ad_location'),
-                    'mode': mode,
-                    'assignmentid': str(self.random_id_generator()),
-                    'hitid': str(self.random_id_generator()),
-                    'workerid': str(self.random_id_generator())
-                }
-                ad_url = '{base}?mode={mode}&assignmentId=debug{assignmentid}&hitId=debug{hitid}&workerId=debug{workerid}'.format(
-                    **options)
-            self.poutput('  Ad URL: {}'.format(ad_url))
+            ad_url = f'{base}?mode={self.mode}&assignmentId=debug{assignmentid}&hitId=debug{hitid}&workerId=debug{workerid}'
+            self.poutput(f'  Ad URL: {ad_url}')
             self.poutput(
-                "Note: This url cannot be used to run your full psiTurk experiment.  It is only for testing your ad.")
+                "Note: This url cannot be used to run your full psiTurk experiment."
+                "It is only for testing your ad."
+            )
 
             # Print the Mturk Url
             mturk_url = ''
-            if self.sandbox:
+            if self.mode == 'sandbox':
                 mturk_url_base = 'https://workersandbox.mturk.com'
-            else:
+            else: # self.mode == 'live':
                 mturk_url_base = 'https://worker.mturk.com'
-            mturk_url = '{}/projects?filters%5Bsearch_term%5D={}'.format(
-                mturk_url_base,
-                quote_plus(
-                    str(self.config.get('HIT Configuration', 'title', raw=True))))
+            title = quote_plus(
+                str(self.config.get('HIT Configuration', 'title', raw=True)))
+            mturk_url = f'{mturk_url_base}/projects?filters%5Bsearch_term%5D={title}'
 
-            self.poutput('  MTurk URL: {}'.format(mturk_url))
+            self.poutput(f'  MTurk URL: {mturk_url}')
             self.poutput(
                 "Hint: In OSX, you can open a terminal link using cmd + click")
-            if self.sandbox and use_psiturk_ad_server:
-                self.poutput(
-                    "Note: This sandboxed ad will expire from the server in 16 days.")
         except Exception as e:
             self.poutput(e)
 
@@ -697,12 +620,9 @@ class PsiturkNetworkShell(Cmd, object):
 
         # server_status = self.server.is_server_running()  # Not used
         self.update_hit_tally()
-        if self.sandbox:
-            self.poutput('AMT worker site - ' + colorize('sandbox', 'bold') + ': '
-                         + str(self.sandbox_hits) + ' HITs available')
-        else:
-            self.poutput('AMT worker site - ' + colorize('live', 'bold') + ': '
-                         + str(self.live_hits) + ' HITs available')
+        hit_count = self.sandbox_hits if self.mode == 'sandbox' else self.live_hits
+        self.poutput('AMT worker site - ' + colorize(self.mode, 'bold') + ': '
+                     + str(hit_count) + ' HITs available')
 
     def maybe_update_hit_tally(self):
         if not self.quiet:
@@ -711,7 +631,7 @@ class PsiturkNetworkShell(Cmd, object):
     def update_hit_tally(self):
         """ Tally hits """
         num_hits = (self.amt_services_wrapper.tally_hits()).data['hit_tally']
-        if self.sandbox:
+        if self.mode == 'sandbox':
             self.sandbox_hits = num_hits
         else:
             self.live_hits = num_hits
@@ -762,11 +682,10 @@ class PsiturkNetworkShell(Cmd, object):
                mode <which>
         """
         if arg['<which>'] is None:
-            if self.sandbox:
-                mode = 'live'
-            else:
-                mode = 'sandbox'
+            # then toggle the `mode`
+            mode = 'live' if self.mode == 'sandbox' else 'sandbox'
         else:
+            # then accept what's given
             mode = arg['<which>']
         self.set_mode(mode)
 
@@ -781,7 +700,7 @@ class PsiturkNetworkShell(Cmd, object):
             self.poutput('mode {} is not recognized.'.format(mode))
             return
 
-        current_mode = 'sandbox' if self.sandbox else 'live'
+        current_mode = self.mode
         if mode == current_mode:
             self.poutput('mode is already {}'.format(mode))
             return
@@ -796,29 +715,13 @@ class PsiturkNetworkShell(Cmd, object):
                     else:
                         restart_server = True
 
-            changed_mode = False
-            if mode == 'sandbox':
-                self.sandbox = True
-                self.amt_services_wrapper.set_sandbox(True)
-                changed_mode = True
+            self.mode = mode
+            self.amt_services_wrapper.set_mode(mode)
 
-            elif mode == 'live':
-                self.sandbox = False
-                self.amt_services_wrapper.set_sandbox(False)
-                changed_mode = True
-
-            if changed_mode:
-                self.update_hit_tally()
-                self.poutput('Entered %s mode' % colorize(mode, 'bold'))
-                if restart_server:
-                    self.server_restart()
-
-    def set_sandbox(self, is_sandbox):
-        self.sandbox = is_sandbox
-        self.amt_services_wrapper.set_sandbox(is_sandbox)
-        mode = 'sandbox' if self.sandbox else 'live'
-        self.pfeedback('Entered %s mode' % colorize(mode, 'bold'))
-        # self.prompt = self.color_prompt()
+            self.update_hit_tally()
+            self.poutput('Entered %s mode' % colorize(mode, 'bold'))
+            if restart_server:
+                self.server_restart()
 
     @docopt_cmd
     def do_hit(self, arg):
@@ -958,11 +861,11 @@ class PsiturkNetworkShell(Cmd, object):
             if isinstance(reason, list):
                 reason = ' '.join(reason)
             if not reason:
-                if self.config.has_option('Shell Parameters', 'bonus_message'):
+                if self.config.get('Shell Parameters', 'bonus_message'):
                     reason = self.config.get(
-                        'Shell Parameters', 'bonus_message')
+                        'shell', 'bonus_message')
                     self.poutput(
-                        'Using bonus `reason` from config file: "{}"'.format(reason))
+                        f'Using bonus `reason` from config file: "{reason}"')
                 while not reason:
                     user_input = input("Type the reason for the bonus. Workers "
                                        "will see this message: ")
@@ -1021,42 +924,26 @@ class PsiturkNetworkShell(Cmd, object):
         -p, --print-only        just provides the URL, doesn't attempt to
                                 launch browser
         """
-        revproxy_url = False
-        if self.config.has_option('Server Parameters', 'adserver_revproxy_host'):
-            if self.config.has_option('Server Parameters', 'adserver_revproxy_port'):
-                port = self.config.get(
-                    'Server Parameters', 'adserver_revproxy_port')
-            else:
-                port = 80
-            revproxy_url = "http://{}:{}/ad".format(self.config.get('Server Parameters',
-                                                                    'adserver_revproxy_host'),
-                                                    port)
-
-        if revproxy_url:
-            base_url = revproxy_url
+        base_url = config.get_ad_url()
+        if base_url:
+            self.pfeedback('generating debug url using `ad_url` config var')
         else:
-            if arg['--print-only']:
-                my_ip = get_my_ip()
-                base_url = "http://" + my_ip + ":" + \
-                    self.config.get('Server Parameters', 'port') + "/ad"
-            else:
-                base_url = "http://" + self.config.get('Server Parameters',
-                                                       'host') + \
-                    ":" + self.config.get('Server Parameters', 'port') + "/ad"
+            self.pfeedback('`ad_url_*` config vars not set; using Server Parameters host and port vars.')
+            host = self.config.get('Server Parameters', 'host')
+            port = self.config.get('Server Parameters', 'port')
+            base_url = f"http://{host}:{port}/ad"
 
         launch_url = base_url + "?assignmentId=debug" + \
             str(self.random_id_generator()) \
             + "&hitId=debug" + str(self.random_id_generator()) \
             + "&workerId=debug" + str(self.random_id_generator()
-                                      + "&mode=debug")
+            + "&mode=debug")
 
         if arg['--print-only']:
-            self.poutput("Here's your randomized debug link, feel free to request "
-                         "another:\n\t" + launch_url)
-
+            self.poutput(launch_url)
         else:
             self.poutput("Launching browser pointed at your randomized debug link, "
-                         "feel free to request another.\n\t" + launch_url)
+                         "\n\t" + launch_url)
             webbrowser.open(launch_url, new=1, autoraise=True)
 
     def random_id_generator(self, size=6, chars=string.ascii_uppercase +
@@ -1113,29 +1000,18 @@ class PsiturkNetworkShell(Cmd, object):
 
 
 def run(script=None, execute=None, testfile=None, quiet=False):
-    using_libedit = 'libedit' in readline.__doc__
-    if using_libedit:
-        # TODO Resolve temporary fix of unresolved references. See comment.
-        # Replacing the call to self.poutput with a print
-        # because `self` is undefined in this function and
-        # Cmd is not instantiated here as an object, and poutput is not a static method,
-        # of Cmd.
-        print('\n'.join([
-            'libedit version of readline detected.',
-            'readline will not be well behaved, which may cause all sorts',
-            'of problems for the psiTurk shell. We highly recommend installing',
-            'the gnu version of readline by running "sudo pip install gnureadline".',
-            'Note: "pip install readline" will NOT work because of how the OSX',
-            'pythonpath is structured.']))
-
-        # self.poutput(colorize('\n'.join([
-        #     'libedit version of readline detected.',
-        #     'readline will not be well behaved, which may cause all sorts',
-        #     'of problems for the psiTurk shell. We highly recommend installing',
-        #     'the gnu version of readline by running "sudo pip install gnureadline".',
-        #     'Note: "pip install readline" will NOT work because of how the OSX',
-        #     'pythonpath is structured.'
-        # ]), 'red', False))
+    try:
+        using_libedit = 'libedit' in readline.__doc__
+        if using_libedit:
+            print('\n'.join([
+                'libedit version of readline detected.',
+                'readline will not be well behaved, which may cause all sorts',
+                'of problems for the psiTurk shell. We highly recommend installing',
+                'the gnu version of readline by running "sudo pip install gnureadline".',
+                'Note: "pip install readline" will NOT work because of how the OSX',
+                'pythonpath is structured.']))
+    except TypeError:
+        pass # pyreadline doesn't have anything for __doc__
     # Drop arguments which were already processed in command_line.py
     sys.argv = [sys.argv[0]]
     config = PsiturkConfig()
@@ -1143,11 +1019,11 @@ def run(script=None, execute=None, testfile=None, quiet=False):
     server = control.ExperimentServerController(config)
     shell = PsiturkNetworkShell(
         config, server,
-        config.getboolean('Shell Parameters', 'launch_in_sandbox_mode'),
+        mode=config.get('Shell Parameters', 'launch_in_mode'),
         quiet=quiet)
 
     if script:
-        shell.runcmds_plus_hooks(['load {}'.format(script)])
+        shell.runcmds_plus_hooks([f'load {script}'])
     elif execute:
         shell.runcmds_plus_hooks([execute])
     else:

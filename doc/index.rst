@@ -1,18 +1,30 @@
-.. image:: images/psiturk_logo_small_trans.png
-	:align: right
-
+=====================
 psiTurk Documentation
 =====================
 
-Welcome to **psiTurk**'s documentation. To learn more about the project
-please visit `https://psiturk.org <https://psiturk.org>`__.
+.. image:: images/psiturk_logo_small_trans.png
 
-To actually use **psiTurk** you'll first need to install it on your local
-computer or server. Instructions can be found on the `Getting psiTurk installed on your computer <install.html>`__ page.
-Afterwards, head over to our `quickstart guide <https://www.psiturk.org/quick_start>`__ ,
-or for a more detailed tutorial demonstrating how to setup a simple experiment
-with **psiTurk**, visit `Getting up and running with the basic Stroop task <stroop.html>`__.
+:Website: https://psiturk.org
+:Source code: https://github.com/NYUCCL/psiturk
+:Issue tracker: https://github.com/NYUCCL/psiturk/issues
+:Usage questions: https://groups.google.com/forum/#!forum/psiturk
+:Twitter: https://twitter.com/psiturk
 
+Welcome to psiTurk's documentation. To learn more about the project,
+please visit https://psiturk.org.
+
+To actually use psiTurk, you'll first need to install it on your local
+computer or server. Instructions can be found on the :ref:`install` page.
+Afterwards, head over to our :ref:`quickstart`.
+
+For a more detailed tutorial demonstrating how to setup a simple experiment
+with psiTurk, visit :ref:`example-project-stroop`. Also, check out the :ref:`experiment-exchange`
+for examples to learn from, including demonstrations of integration with
+`jspsych <https://www.jspsych.org/>`_.
+
+.. contents:: Contents
+  :depth: 1
+  :local:
 
 User's Guide
 ------------
@@ -21,31 +33,27 @@ User's Guide
    :maxdepth: 2
 
    forward
+   quickstart
    install
    amt_setup
-   psiturk_org_setup
-   secure_ad_server
-   experiment_exchange
-   quickstart
-   configuration
+   configuration-overview
+   settings
    command_line_overview
-   configure_databases
-   step_by_step
+   command_line
+   databases_overview
+   tutorials
    anatomy_of_project
    recording
    retrieving
    customizing
-   external_surveys
-   heroku
-   amazon_ec2
-   openshift
-   error
+   dashboard
+   experiment-exchange
    faq
    getting_help
    disclaimer
 
 
-Contributing to **psiTurk**
+Contributing to psiTurk
 ---------------------------
 .. toctree::
    :maxdepth: 2
@@ -61,4 +69,16 @@ API Reference
    :maxdepth: 2
 
    api
-   psiturk_org_api
+
+
+Citing
+------
+
+See `the github repo README <https://github.com/NYUCCL/psiTurk#citing>`__
+for how to cite usage of psiTurk.
+
+
+License
+-------
+
+See `the LICENSEFILE on github <https://github.com/NYUCCL/psiTurk/blob/master/LICENSE>`__.

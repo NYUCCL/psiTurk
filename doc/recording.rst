@@ -1,15 +1,21 @@
-Recording data
+.. _recording-data-overview:
+
+==============
+Recording Data
 ==============
 
-To record data in your task you make calls to the `psiturk.js Javascript API <api.html>`__.
-There are three kinds of data that **psiTurk** will help you produce:
+Types of Data
+-------------
 
-1. `Trial-by-trial log file <recording.html#recording-trial-data>`__
+To record data in your task, you make calls to the `psiturk.js Javascript API <api.html>`__.
+There are three kinds of data that psiTurk will help you produce:
 
-2. `Unstructured (field, value) pairs <recording.html#recording-unstructured-data>`__
+1. :ref:`Trial-by-trial log file <recording-trial-data>`
+2. :ref:`Unstructured (field, value) pairs <recording-unstructured-data>`
+3. :ref:`Browser events <browser-event-data>`
 
-3. `Browser events <recording.html#browser-event-data>`__
 
+.. _recording-trial-data:
 
 Recording trial data
 ~~~~~~~~~~~~~~~~~~~~
@@ -26,8 +32,8 @@ The list of values that you supply to ``recordTrialData`` will then be
 appended to the log. It is up to you how to structure those lists; you
 will have to parse them as part of your analysis. Each time you call ``psiturk.recordTrialData``, it will also record the time it was called (with a UTC timezone).
 
-.. _recording-unstructured-data-label:
 
+.. _recording-unstructured-data:
 
 Recording unstructured data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -46,20 +52,8 @@ to use this function. For some kinds of experiments (like simple
 surveys), this might be the only function you need.
 
 
-Saving the data
-~~~~~~~~~~~~~~~
 
-It's important to remember that ``psiturk.recordTrialData`` and
-``psiturk.recordUnstructuredData`` only modify the ``psiturk`` object on
-the client side. If you want to save the data that has been accumulated
-to the server, you must call ``psiturk.saveData()``.
-
-It's up to you how often ``psiturk.saveData()`` syncs the task data to
-the server (e.g., after every block, or once at the end of the
-experiment). Using ``saveData`` frequently will limit the loss of data
-if the participant runs into an error, but keep in mind that it involves
-a new request to the server each time it is called.
-
+.. _browser-event-data:
 
 Browser event data
 ~~~~~~~~~~~~~~~~~~
@@ -79,3 +73,19 @@ worker is interacting with the page. Currently, this includes:
 .. note::
    Information about how to retrieve recorded data sets can be found
    `here <./retrieving.html>`__.
+
+   .. _saving-data:
+
+Saving the data
+---------------
+
+It's important to remember that ``psiturk.recordTrialData`` and
+``psiturk.recordUnstructuredData`` only modify the ``psiturk`` object on
+the client side. If you want to save the data that has been accumulated
+to the server, you must call ``psiturk.saveData()``.
+
+It's up to you how often ``psiturk.saveData()`` syncs the task data to
+the server (e.g., after every block, or once at the end of the
+experiment). Using ``saveData`` frequently will limit the loss of data
+if the participant runs into an error, but keep in mind that it involves
+a new request to the server each time it is called.

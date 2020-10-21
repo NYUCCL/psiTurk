@@ -41,16 +41,23 @@ def edit_config_file():
 
 @pytest.fixture(scope='function', autouse=True)
 def experiment_dir(tmpdir, bork_aws_environ, edit_config_file):
-    # pytest.set_trace()
     os.chdir(tmpdir)
     import psiturk.setup_example as se
     se.setup_example()
-    edit_config_file('use_psiturk_ad_server = true', 'use_psiturk_ad_server = false')
-    # os.chdir('psiturk-example') # the setup script already chdirs into here, although I don't like that it does that
+    file_util.move_file(os.path.join(os.getcwd(), 'config.txt.sample'),
+                        os.path.join(os.getcwd(), 'config.txt'))
+    file_util.move_file(os.path.join(os.getcwd(), 'custom.py.sample'),
+                        os.path.join(os.getcwd(), 'custom.py'))
+    os.environ['PSITURK_AD_URL_DOMAIN'] = 'example.com'
+
+    # the setup script already chdirs into here,
+    # although I don't like that it does that
+    # os.chdir('psiturk-example')
     yield
 
     os.chdir('..')
     shutil.rmtree('psiturk-example')
+
 
 @pytest.fixture(autouse=True)
 def db_setup(mocker, experiment_dir, tmpdir, request):
@@ -67,7 +74,6 @@ def db_setup(mocker, experiment_dir, tmpdir, request):
     yield
 
 
-
 #############
 # amt-related fixtures
 ##############
@@ -76,12 +82,14 @@ def client():
     client = boto3.client('mturk')
     return client
 
+
 @pytest.fixture(scope='function')
 def stubber(client):
     stubber = Stubber(client)
     stubber.activate()
     yield stubber
     stubber.deactivate()
+
 
 @pytest.fixture()
 def amt_services_wrapper(patch_aws_services):
@@ -104,8 +112,7 @@ def patch_aws_services(client, mocker):
     mocker.patch.object(psiturk.amt_services.MTurkServices,
                         'setup_mturk_connection', setup_mturk_connection)
 
-    my_amt_services = psiturk.amt_services.MTurkServices(
-        '', '', is_sandbox=True)
+    my_amt_services = psiturk.amt_services.MTurkServices(mode='sandbox')
     mocker.patch.object(
         psiturk.amt_services_wrapper.MTurkServicesWrapper, 'amt_services', my_amt_services)
 
@@ -139,6 +146,8 @@ def create_dummy_hit(stubber_prepare_create_hit, amt_services_wrapper):
     def do_it(with_hit_id=None, **kwargs):
         stubber_prepare_create_hit(with_hit_id)
         result = amt_services_wrapper.create_hit(1, 0.01, 1, **kwargs)
+        if not result.success:
+            raise result.exception
 
     return do_it
 
@@ -147,7 +156,9 @@ def create_dummy_assignment(faker):
     from psiturk.db import db_session, init_db
     from psiturk.models import Participant
 
-    def do_it(participant_attributes={}):
+    def do_it(participant_attributes=None):
+        if not participant_attributes:
+            participant_attributes = {}
 
         participant_attribute_defaults = {
             'workerid': faker.md5(raw_output=False),

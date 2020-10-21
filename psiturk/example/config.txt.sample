@@ -1,0 +1,206 @@
+####################### Psiturk Configuration Defaults #########################
+#
+# Example config file. Uncomment lines (remove the `;`)
+# in order to override defaults.
+#
+
+############################ HIT Configuration #################################
+[HIT Configuration]
+# Title that will be used for the HIT when posted to mturk
+# e.g.,
+#     title = Stroop task
+;title =
+
+# Description that will be used for the HIT when posted to mturk
+# e.g.,
+#     description = Judge the color of a series of words.
+;description =
+
+# Keywords for the HIT on mturk
+# e.g.,
+#     keywords = Perception, Psychology
+;keywords =
+
+# How many hours a given HIT will last on mturk before becoming unavailable
+# for new assignments
+;lifetime = 24
+
+# Whether the HIT will be restricted to US-located mturkers
+;us_only = true
+
+# Minimum approval percentage a worker must have to accept the HIT.
+# Note! Mturk defaults a worker's approval percentage to 100% until
+# they have completed at least 100 hits.
+;approve_requirement = 95
+
+# Minimum number of HITs a worker must have had approved in order to take
+# this HIT. See notes for `approve_requirement` -- set this to 100 if an actual
+# `approve_requirement` percentage is wanted.
+;number_hits_approved = 0
+
+# Whether a worker must have the master worker qualification to take this hit.
+# Note that there is a commission surcharge for using this qualification
+;require_master_workers = false
+
+# qualification_ids, commma-delimited a worker is required to have in order to
+# take this HIT
+;require_quals =
+
+# qualification_ids, commma-delimited, that will disqualify a worker from
+# accepting this HIT
+;block_quals =
+
+## Hit Configuration - Ad Url ##################################################
+# Config settings for constructing the task's "landing page"
+#
+# Server domain name for publicly-accessible route to psiturk server.
+# If running on heroku, set this to your heroku app url --
+# e.g., "ad_url_domain = example-app.herokuapp.com"
+;ad_url_domain =
+
+# Server port for publicly-accessible route to psiturk server
+;ad_url_port = 80
+
+# HTTPS protocol is required by mturk. Only change this if you have a good reason
+# to do so.
+;ad_url_protocol = https
+
+# Flask route that points to the ad. "pub" and "ad" both point to the same place,
+# but "pub" is safer because of potential issues with ad blockers with a route
+# named "ad"
+;ad_url_route = pub
+
+# Alternatively, instead of using `ad_url_* config vars above,
+# you may uncomment and use `ad_url`. You may want to use this if your
+# experiment is served from a subdirectory off of the domain name. Otherwise,
+# leave this as-is.
+;;ad_url = %(ad_url_protocol)s://%(ad_url_host)s:%(ad_url_port)s/%(ad_url_route)s
+
+############################## Database Parameters #############################
+[Database Parameters]
+# Participant data will be stored in this database.
+;database_url = sqlite:///participants.db
+
+# Name of the database table where participant data will be stored
+;table_name = assignments
+
+############################# Server Parameters ################################
+[Server Parameters]
+# Host on which the psiturk gunicorn server will listen when `psiturk server on`
+# is run.
+# Leave as default `localhost` if using a reverse proxy / hosting on the cloud
+;host = localhost
+
+# Port on which the psiturk gunicorn server will listen when `psiturk server on`
+# is run.
+;port = 22362
+
+# Filename for psiturk server logging.
+;logfile = server.log
+
+# Log level for the psiturk gunicorn server
+;loglevel = 2
+
+# Login username for the dashboard
+;login_username =
+
+# Login password for the dashboard
+;login_pw =
+
+# Number of threads for the psiturk gunicorn server to use. Leave to 1 if using
+# the task runner! Otherwise, dynamically dependent on the number of cpus.
+;threads = auto
+
+# The secret key used by flask for any secure functions it uses. Not necessary
+# to set unless using a secure function.
+# e.g.,
+#     secret_key = 'this is my secret key which is hard to guess, i should change this'
+;secret_key =
+
+# The psiturk (gunicorn) server can optionally serve traffic over https. This is
+# normally not necessary if the psiturk server is set up behind a reverse proxy
+# server, as is the default case with cloud hosting providers such as heroku.
+#
+# In reverse-proxy situations,
+# the reverse proxy communicates with web browsers and other clients over https,
+# while communicating on the backend with the gunicorn server over http. The
+# psiturk server would only be listening on localhost and would not serve
+# traffic directly.
+#
+# To have gunicorn use https, set both the `certfile` and `keyfile` below to point
+# to a project-relative path to the public and private keys respectively.
+
+# Project-relative path to public keyfile for ssl for gunicorn
+#     certfile = <path_to.crt>
+;certfile =
+
+# Project-relative path to private keyfile for ssl for gunicron
+#     keyfile = <path_to.key>
+;keyfile =
+
+# How long in seconds a gunicorn worker should wait for any synchronous calls
+# to complete. This would only be relevant if one of your routes makes a
+# potentially long-polling api or database call before returning.
+;server_timeout = 30
+
+################################## Task Parameters #############################
+# Settings used by various task Flask routes
+[Task Parameters]
+# The code_version for the task. Logged as a field in the database for each
+# participant, useful for data analysis. The random balanced assignment depends
+# on this setting -- it will do balanced random assignment within a given codeversion.
+# Can be any string value -- recommended to use semantic versioning for analysis
+# sanity.
+;experiment_code_version = 0.0.1
+
+# The number of possible treatments. Used for random balanced assignment.
+;num_conds = 1
+
+# The number of possible counterbalance conditions. Used for random balanced assignment.
+# If you don't know what this is, it is safe to leave it at a default of 1 and
+# to only modify `num_conds` above.
+;num_counters = 1
+
+;contact_email_on_error = youremail@gmail.com
+
+# A list of web browsers, delineated by commas, that mturkers may _not_ use to
+# perform the hit.
+#
+# The following possible values are checked by using properties on the `user_agents` python library.
+#     possible values : mobile, tablet, touchcapable, pc, bot, safari
+#
+# Example of excluding Microsoft Internet Explorer:
+#     browser_exclude_rule = MSIE
+# otherwise, the string is checked against the user_agent_string. Example, to exclude
+# internet explorer:
+#      browser_exclude_rule : MSIE
+#
+# By default, MISE, mobile, and tablet are all excluded
+;browser_exclude_rule = MSIE, mobile, tablet
+
+# Whether workers can perform the hit multiple times. Enforced by the psiturk
+# server; not by mturk.
+;allow_repeats = false
+
+# Maximum expected time for a participant to complete the task.
+# Exclusively used in determining random assignment -- basically, how long should
+# a participant be given to complete the task after starting? How long should the
+# task last? This is different than the `duration` specified when running
+# `hit create`, because a participant may not start the task immediately after
+# accepting it, while the hit `duration` starts ticking as soon as the hit is
+# accepted (some workers queue their accepted hits before starting it).
+;cutoff_time = 30
+
+################################## Shell Parameters ############################
+[Shell Parameters]
+# the default `mode` into which the psiturk shell will be launched.
+# possible values : sandbox, live
+;launch_in_mode = sandbox
+
+# A file location for where to store a history of psiturk shell commands
+;persistent_history_file = .psiturk_history
+
+# A default "reason" for the shell to use when granting bonuses.
+# e.g.,
+#     bonus_message = "Thanks for participating!"
+;bonus_message =

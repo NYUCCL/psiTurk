@@ -1,18 +1,19 @@
+.. _contributing-to-psiTurk:
+
 Contributing to psiTurk
 =======================
 
-Note: This guide is copied more or less from the `contributors guidelines <https://github.com/gureckis/gunicorn/blob/master/CONTRIBUTING.md>`_
+Note: This guide is copied more or less from the `contributors guidelines <https://github.com/benoitc/gunicorn/blob/master/CONTRIBUTING.md>`_
 of the `gunicorn <https://github.com/benoitc/gunicorn>`_ project. Alternations
-were made for the nature of this particular project.  An up to date copy of this guide
-always resides `here <https://github.com/NYUCCL/psiTurk/blob/master/CONTRIBUTING.md>`_.
+were made for the nature of this particular project. An up to date copy of this guide
+always resides `here <https://github.com/NYUCCL/psiTurk/blob/master/CONTRIBUTING.md>`__.
 
-Want to contributed to **psiTurk**? Awesome! Here are instructions to get you
+Want to contributed to psiTurk? Awesome! Here are instructions to get you
 started. We want to improve these as we go, so please provide feedback.
 
 
 Contribution guidelines
 ~~~~~~~~~~~~~~~~~~~~~~~
-
 
 Pull requests are always welcome
 --------------------------------
@@ -25,10 +26,10 @@ If your pull request is not accepted on the first try, don't be
 discouraged! If there's a problem with the implementation, hopefully you
 received feedback on what to improve.
 
-We're trying very hard to keep **psiTurk** lean, focused, and useable. We don't want it
+We're trying very hard to keep psiTurk lean, focused, and useable. We don't want it
 to do everything for everybody. This means that we might decide against
 incorporating a new feature. However, there might be a way to implement
-that feature *on top of* **psiTurk**.
+that feature *on top of* psiTurk.
 
 
 Discuss your design on the mailing list
@@ -36,7 +37,7 @@ Discuss your design on the mailing list
 
 We recommend discussing your plans in our `Google group <https://groups.google.com/d/forum/psiturk>`__
 before starting to code -
-especially for more ambitious contributions.  This gives other
+especially for more ambitious contributions. This gives other
 contributors a chance to point you in the right direction, give feedback
 on your design, and maybe point out if someone else is working on the
 same thing.
@@ -112,7 +113,7 @@ will show you the available subcommands.
 
 All documentation files are in the docs folder and are formatted as
 reStructured Text. A good, detailed manual for the reStructured Text
-syntax can be found `here <http://docutils.sourceforge.net/docs/user/rst/quickstart.html>`_.
+syntax can be found `here <http://docutils.sourceforge.net/docs/user/rst/quickstart.html>`__.
 
 Some essentials:
 
@@ -121,7 +122,7 @@ docs. It is also how readthedocs generates the sidebar that contains all
 the names of individual pages in the documentary so it is important that
 this is formatted correctly.
 
-The main important feature is the `toctree <http://sphinx-doc.org/markup/toctree.html>`_.
+The main important feature is the `toctree <http://sphinx-doc.org/markup/toctree.html>`__.
 
 The toctree just looks like this:
 
@@ -186,7 +187,7 @@ Decision process
 How are decisions made?
 -----------------------
 
-In general, all decisions affecting **psiTurk**, big and small, follow the same 3 steps:
+In general, all decisions affecting psiTurk, big and small, follow the same 3 steps:
 
 * Step 1: Open a pull request. Anyone can do this.
 
@@ -201,11 +202,11 @@ Who decides what?
 psiTurk, like gunicorn, follows the timeless, highly efficient and totally unfair system
 known as `Benevolent dictator for life <http://en.wikipedia.org/wiki/Benevolent_Dictator_for_Life>`_.
 In the case of psiTurk, there are multiple little dictators which are the core members of the
-`gureckislab <http://gureckislab.org>`__ research group and alumni.  The dictators
+`gureckislab <http://gureckislab.org>`__ research group and alumni. The dictators
 can be emailed at `authors@psiturk.org <mailto:authors@psiturk.org>`_.
 
 For new features from outside contributors, the hope is that friendly
-consensus can be reached in the discussion on a pull request.  In cases where it
+consensus can be reached in the discussion on a pull request. In cases where it
 isn't the original project creators `John McDonnell <https://github.com/johnmcdonnell>`_
 and/or `Todd Gureckis <https://github.com/gureckis>`_ will intervene to decide.
 

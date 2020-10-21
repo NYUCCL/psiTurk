@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Drop support for python2
 - upgrade cmd2 to 0.9 (python3 only)
+- moved `contact_email_on_error` and `cutoff_time` under the `Task Parameters` section.
 
 ### Added
 - add ability to customize participant condition assignment. (see 309a623)

@@ -1,2 +1,0 @@
-Decomposing the Stroop task
-===========================
