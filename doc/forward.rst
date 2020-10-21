@@ -61,8 +61,8 @@ requester. Requesters can also make bonus payments to specific workers.
 Amazon collects a 10% fee for each payment.
 
 
-What is psiTurk?
-~~~~~~~~~~~~~~~~
+Why psiTurk?
+~~~~~~~~~~~~
 
 AMT provides some very basic templates that you can use to design HITs
 (particularly questionnaires), but these will most likely not serve your
@@ -95,7 +95,7 @@ experiment, you need to have basic web programming skills with HTML, CSS, and
 JavaScript.
 
 To get you started, psiTurk provides a fully functioning example
-experiment in the :ref:`stroop` section that
+experiment in the :ref:`example-project-stroop` section that
 you can use as a template for your own study. psiTurk also includes
 a library of basic Javascript functions (see :ref:`api-overview`) that you can
 insert into your code to handle page transitions, load images, and

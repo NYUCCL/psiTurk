@@ -1,12 +1,13 @@
-.. _stroop:
+.. _example-project-stroop:
 
-Getting up and running with the basic Stroop task
-=================================================
+Example project walkthrough
+===========================
 
 Perhaps the best way to learn about psiTurk is to go through
 the steps of configuring and running an experiment. This tutorial
-will take you through the steps required to run the basic Stroop
-experiment that ships default with psiTurk. This project can be a
+will take you through the steps required to run the example
+experiment -- a Stroop task -- that ships bundled with a psiTurk
+installation. This project can be a
 great starting place for developing your own experiment.
 
 .. warning::

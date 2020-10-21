@@ -6,6 +6,6 @@ Tutorials
 .. toctree::
     :maxdepth: 1
 
-    tutorials/stroop
+    tutorials/example-project-stroop
     tutorials/heroku
     tutorials/external_surveys

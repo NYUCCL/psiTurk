@@ -18,7 +18,7 @@ computer or server. Instructions can be found on the :ref:`install` page.
 Afterwards, head over to our :ref:`quickstart`.
 
 For a more detailed tutorial demonstrating how to setup a simple experiment
-with psiTurk, visit :ref:`stroop`. Also, check out the :ref:`experiment-exchange`
+with psiTurk, visit :ref:`example-project-stroop`. Also, check out the :ref:`experiment-exchange`
 for examples to learn from, including demonstrations of integration with
 `jspsych <https://www.jspsych.org/>`_.
 

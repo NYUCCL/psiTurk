@@ -111,7 +111,7 @@ browser type ``debug -p`` (print only) which will print the debugging URL but
 not launch the browser.
 
 Altering the experiment code is beyond the scope of the quick start, but see
-:ref:`this guide <stroop>` for details on how to modify and extend the stroop example.
+:ref:`this guide <example-project-stroop>` for details on how to modify and extend the stroop example.
 
 ::
 
@@ -130,7 +130,7 @@ In order to make the experiment available to workers on Amazon Mechanical Turk y
 1. Run your psiturk server on a machine that is publicly-accessible.
 2. Post a HIT on AMT, which will point MTurkers to your psiturk server address.
 
-The example below use the Amazon Mechanical Turk "sandbox," which is a place
+The example below uses the Amazon Mechanical Turk "sandbox," which is a place
 for testing your task without actually offering it live to real paid workers.
 
 Your HIT should be visible on http://workersandbox.mturk.com if you search for
