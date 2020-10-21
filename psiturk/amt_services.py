@@ -1,14 +1,9 @@
 # -*- coding: utf-8 -*-
-"""This module is a facade for AMT (Boto) services."""
-from __future__ import print_function
-
 from functools import wraps
-
 from builtins import str
 from builtins import object
 import boto3
 import datetime
-
 from flask import jsonify
 from psiturk.psiturk_config import PsiturkConfig
 from .psiturk_exceptions import *
@@ -26,13 +21,13 @@ class AmtServicesResponse(object):
     """class AmtServicesResponse."""
 
     def __init__(self, status=None, success=None, operation='', message='',
-                 data={}, **kwargs):
+                 data: dict = None, **kwargs):
         """Init."""
         self.success = success
         self.status = status
         self.operation = operation,
         self.message = message,
-        self.data = data
+        self.data = data if data is not None else {}
         for k, v in kwargs.items():
             setattr(self, k, v)
 
@@ -57,6 +52,7 @@ class AmtServicesErrorResponse(AmtServicesResponse):
             **kwargs)
 
 
+
 class NoHitDataError(AmtServicesException):
     """class NoHitDataError."""
 
@@ -70,6 +66,7 @@ def check_mturk_connection(func):
         if not self.connect_to_turk():
             raise NoMturkConnectionError()
         return func(self, *args, **kwargs)
+
     return wrapper
 
 
@@ -84,6 +81,7 @@ def amt_service_response(func):
         except Exception as e:
             # print(e)
             return AmtServicesErrorResponse(operation=func.__name__, exception=e)
+
     return wrapper
 
 
@@ -256,7 +254,6 @@ class MTurkServices(object):
             endpoint_url = 'https://mturk-requester-sandbox.us-east-1.amazonaws.com'
         else:
             endpoint_url = 'https://mturk-requester.us-east-1.amazonaws.com'
-
         kwargs = {
             'region_name': 'us-east-1',
             'endpoint_url': endpoint_url
@@ -416,11 +413,10 @@ class MTurkServices(object):
             self.mtc.create_additional_assignments_for_hit(
                 HITId=hitid,
                 NumberOfAdditionalAssignments=int(assignments_increment))
-
         if expiration_increment:
             hit = self.get_hit(hitid).data
-            expiration = hit.options['expiration'] + \
-                datetime.timedelta(minutes=int(expiration_increment))
+            expiration = hit.options['expiration'] + datetime.timedelta(
+                minutes=int(expiration_increment))
             self.mtc.update_expiration_for_hit(
                 HITId=hitid, ExpireAt=expiration)
 

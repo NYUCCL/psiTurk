@@ -152,6 +152,7 @@ class ExperimentError(Exception):
             contact_address=contact_on_error,
             **request.args)
 
+
 class ExperimentApiError(Exception):
     
     def __init__(self, message, status_code=500, payload=None):
@@ -165,9 +166,10 @@ class ExperimentApiError(Exception):
         rv['message'] = self.message
         return rv
 
+
 class InvalidUsageError(ExperimentApiError):
     
     def __init__(self, *args, **kwargs):
         if 'status_code' not in kwargs:
             kwargs['status_code'] = 400
-        super(InvalidUsage, self).__init__(*args, **kwargs)
+        super(InvalidUsageError, self).__init__(*args, **kwargs)

@@ -11,7 +11,6 @@ def experiment_server_controller(mocker):
         psiturk.experiment_server_controller.ExperimentServerController,
         'is_port_available', lambda *args, **kwargs: True)
 
-
 @pytest.fixture()
 def psiturk_shell(mocker):
     """psiturk_shell."""
@@ -26,10 +25,10 @@ def test_awskeys_invalid_shell(capfd, experiment_server_controller,
     import psiturk.experiment_server_controller
     from psiturk.psiturk_config import PsiturkConfig
     from psiturk.psiturk_shell import PsiturkNetworkShell
-
     config = PsiturkConfig()
     config.load_config()
     config.set('Shell Parameters', 'persistent_history_file', '')
+
     server = psiturk.experiment_server_controller.ExperimentServerController(
         config)
 
@@ -44,7 +43,7 @@ def test_awskeys_invalid_shell(capfd, experiment_server_controller,
 
     out, err = capfd.readouterr()
     assert NoMturkConnectionError().message in err
-
+    
 
 def test_nonaws_still_can_do(capfd, edit_config_file,
                              experiment_server_controller, psiturk_shell):

@@ -1,7 +1,8 @@
 import logging
 logger = logging.getLogger('apscheduler')
 
-class TaskUtils():
+
+class TaskUtils:
     _scheduler_aws_services_wrapper = None
 
     @property
@@ -11,7 +12,9 @@ class TaskUtils():
             self._scheduler_aws_services_wrapper = MTurkServicesWrapper()
         return self._scheduler_aws_services_wrapper
 
+
 task_utils = TaskUtils()
+
 
 def do_campaign_round(campaign, **kwargs):
     from .models import Participant
@@ -47,7 +50,7 @@ def do_campaign_round(campaign, **kwargs):
     remaining = min(campaign_remaining, round_remaining)
     logger.info(f'Posting total of {remaining} assignments this round.')
     while remaining:
-        this_hit = min(remaining, 9) # max 9 to avoid steep 40% commission
+        this_hit = min(remaining, 9)  # max 9 to avoid steep 40% commission
         result = task_utils.aws_services_wrapper.create_hit(
             num_workers=this_hit, reward=campaign.hit_reward, duration=campaign.hit_duration_hours)
         logger.info(result)

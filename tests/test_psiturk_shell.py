@@ -1,32 +1,24 @@
-from __future__ import print_function
-
 import os
-import shutil
-import glob
-import sys
 import pytest
-from unittest import mock
-
 from cmd2.history import History
-
 from distutils import file_util
-
 from psiturk import psiturk_statuses
+
 
 @pytest.fixture(scope='function')
 def get_shell(amt_services_wrapper, patch_aws_services, stubber, mocker):
-
     def do_it():
         from psiturk.psiturk_shell import PsiturkNetworkShell
         import psiturk.experiment_server_controller as control
         from psiturk.psiturk_config import PsiturkConfig
 
         import psiturk.experiment_server_controller
-        mocker.patch.object(psiturk.experiment_server_controller.ExperimentServerController, 'is_port_available', lambda *args, **kwargs: True)
+        mocker.patch.object(psiturk.experiment_server_controller.ExperimentServerController,
+                            'is_port_available', lambda *args, **kwargs: True)
 
-        mocker.patch.object(PsiturkNetworkShell,'get_intro_prompt', lambda *args, **kwargs: '')
-        mocker.patch.object(PsiturkNetworkShell,'update_hit_tally', lambda *args, **kwargs: None)
-        mocker.patch.object(PsiturkNetworkShell,'_confirm_dialog', lambda *args, **kwargs: True)
+        mocker.patch.object(PsiturkNetworkShell, 'get_intro_prompt', lambda *args, **kwargs: '')
+        mocker.patch.object(PsiturkNetworkShell, 'update_hit_tally', lambda *args, **kwargs: None)
+        mocker.patch.object(PsiturkNetworkShell, '_confirm_dialog', lambda *args, **kwargs: True)
 
         config = PsiturkConfig()
         config.load_config()
@@ -45,10 +37,12 @@ def get_shell(amt_services_wrapper, patch_aws_services, stubber, mocker):
 
     return do_it
 
+
 def test_do_worker_bonus_reason(amt_services_wrapper, get_shell, mocker):
     # don't remember why rn, but need to import `amt_services_wrapper` to reload
     # something-or-other so that other uses of it in the same test run
     # don't break
+
     from psiturk.psiturk_shell import MTurkServicesWrapper
     patched = mocker.patch.object(MTurkServicesWrapper, 'bonus_all_local_assignments')
     shell = get_shell()
@@ -57,10 +51,12 @@ def test_do_worker_bonus_reason(amt_services_wrapper, get_shell, mocker):
 
     patched.assert_called_with(float('1.00'), "thanks for everything", False)
 
+
 def test_bonus_amount_on_shell(amt_services_wrapper, get_shell, create_dummy_assignment, mocker):
     # don't remember why rn, but need to import `amt_services_wrapper` to reload
     # something-or-other so that other uses of it in the same test run
     # don't break
+
     from psiturk.psiturk_shell import MTurkServicesWrapper
     patched = mocker.patch.object(MTurkServicesWrapper, 'bonus_nonlocal_assignment')
     shell = get_shell()
@@ -77,26 +73,26 @@ def test_bonus_amount_on_shell(amt_services_wrapper, get_shell, create_dummy_ass
         })
 
     shell.runcmds_plus_hooks([f'worker bonus --amount 1.00 --all --reason "{reason}"'])
-
     patched.assert_called_with(assignment_id, float('1.00'), reason, worker_id=worker_id)
-
 
 
 @pytest.fixture()
 def populate_db_for_shell_cmds(create_dummy_hit, create_dummy_assignment):
-    assignmentids = ['123','456']
+    assignmentids = ['123', '456']
     create_dummy_hit(with_hit_id='ABC')
     for assignmentid in assignmentids:
-        create_dummy_assignment({'assignmentid': assignmentid, 'hitid':'ABC'})
+        create_dummy_assignment({'assignmentid': assignmentid, 'hitid': 'ABC'})
 
-commands=[
-    (['amt_balance'],'amt_balance'),
-    (['mode'],'mode_switch_unspecified'),
-    (['mode sandbox'],'mode_sandbox_alreadyonmode'),
+
+commands = [
+    (['amt_balance'], 'amt_balance'),
+    (['mode'], 'mode_switch_unspecified'),
+    (['mode sandbox'], 'mode_sandbox_alreadyonmode'),
     (['mode live'], 'mode_live'),
-    (['mode live', 'mode sandbox'],'mode_live_then_sandbox'),
+    (['mode live', 'mode sandbox'], 'mode_live_then_sandbox'),
     (['hit create 1 0.01 1'], 'hit_create'),
-    (['hit create 1 0.01 1 --whitelist-qualification-id abc123 --whitelist-qualification-id abc456'], 'hit_create_with_qualification'),
+    (['hit create 1 0.01 1 --whitelist-qualification-id abc123 --whitelist-qualification-id abc456'],
+        'hit_create_with_qualification'),
     (['hit extend ABC --assignments 1 --expiration 1'], 'hit_extend'),
     (['hit expire ABC'], 'hit_expire_hitid'),
     (['hit expire --all'], 'hit_expire_all'),
@@ -104,39 +100,43 @@ commands=[
     (['hit delete ABC'], 'hit_delete_hitid'),
     (['hit list'], 'hit_list'),
     (['hit list --active'], 'hit_list_active'),
-    (['hit list --active --all-studies'],'hit_list_active_allstudies'),
-    (['hit list --reviewable'],'hit_list_reviewable'),
+    (['hit list --active --all-studies'], 'hit_list_active_allstudies'),
+    (['hit list --reviewable'], 'hit_list_reviewable'),
     (['hit help'], 'hit_help'),
-    (['worker approve --all'],'worker_approve_all'),
-    (['worker approve --hit ABC'],'worker_approve_hitid'),
-    (['worker approve 123'],'worker_approve_assignmentid'),
+    (['worker approve --all'], 'worker_approve_all'),
+    (['worker approve --hit ABC'], 'worker_approve_hitid'),
+    (['worker approve 123'], 'worker_approve_assignmentid'),
     (['worker approve --all --all-studies'], 'worker_approve_all_allstudies'),
-    (['worker reject --hit ABC'],'worker_reject_hitid'),
-    (['worker reject 123 456'],'worker_reject_assignmentids'),
+    (['worker reject --hit ABC'], 'worker_reject_hitid'),
+    (['worker reject 123 456'], 'worker_reject_assignmentids'),
     (['worker reject --hit ABC --all-studies'], 'worker_reject_hitid_allstudies'),
-    (['worker unreject --hit ABC'],'worker_unreject_hitid'),
-    (['worker unreject 123 456'],'worker_unreject_assignmentids'),
-    (['worker unreject --hit ABC --all-studies'],'worker_unreject_hitid_allstudies'),
+    (['worker unreject --hit ABC'], 'worker_unreject_hitid'),
+    (['worker unreject 123 456'], 'worker_unreject_assignmentids'),
+    (['worker unreject --hit ABC --all-studies'], 'worker_unreject_hitid_allstudies'),
     (['worker bonus --amount 1.00 --reason "Yee!" --all'], 'worker_bonus_amount_reason_all'),
-    (['worker bonus --amount 1.00 --reason "Yee!" --hit ABC --override-bonused-status'],'worker_bonus_amount_reason_hitid_override'),
+    (['worker bonus --amount 1.00 --reason "Yee!" --hit ABC --override-bonused-status'],
+     'worker_bonus_amount_reason_hitid_override'),
     (['worker bonus --auto --reason "Yee!" --all'], 'worker_bonus_auto_reason_all'),
-    (['worker bonus --amount 1.00 --reason "Yee!" --hit ABC'],'worker_bonus_amount_reason_hitid'),
-    (['worker bonus --amount 1.00 --reason "Yee!" 123 456'],'worker_bonus_amount_reason_assignmentids'),
-    (['worker bonus --amount 1.00 --reason "Yee!" --all --all-studies'],'worker_bonus_amount_reason_all_allstudies'),
+    (['worker bonus --amount 1.00 --reason "Yee!" --hit ABC'], 'worker_bonus_amount_reason_hitid'),
+    (['worker bonus --amount 1.00 --reason "Yee!" 123 456'],
+     'worker_bonus_amount_reason_assignmentids'),
+    (['worker bonus --amount 1.00 --reason "Yee!" --all --all-studies'],
+     'worker_bonus_amount_reason_all_allstudies'),
     (['worker list'], 'worker_list'),
-    (['worker list --submitted'],'worker_list_submitted'),
-    (['worker list --approved'],'worker_list_approved'),
-    (['worker list --rejected'],'worker_list_rejected'),
-    (['worker list --hit ABC'],'worker_list_hitid'),
+    (['worker list --submitted'], 'worker_list_submitted'),
+    (['worker list --approved'], 'worker_list_approved'),
+    (['worker list --rejected'], 'worker_list_rejected'),
+    (['worker list --hit ABC'], 'worker_list_hitid'),
     (['worker list --approved --hit ABC'], 'worker_list_approved_hitid'),
-    (['worker list --submitted --all-studies'],'worker_list_submitted_allstudies'),
+    (['worker list --submitted --all-studies'], 'worker_list_submitted_allstudies'),
 ]
 
 generate_transcripts = False
 
+
 @pytest.mark.parametrize('cmds,name', commands)
 def test_do_commands(get_shell, pytestconfig, cmds, name, stubber, capsys):
-# def test_do_commands(get_shell, pytestconfig, cmds, name, stubber):
+    # def test_do_commands(get_shell, pytestconfig, cmds, name, stubber):
 
     transcript_name = '{}.transcript'.format(name)
     cmds = ['mode sandbox'] + cmds
@@ -153,13 +153,15 @@ def test_do_commands(get_shell, pytestconfig, cmds, name, stubber, capsys):
         shell.runcmds_plus_hooks(['history -t {}'.format(transcript_name)])
         with open(transcript_name, 'r') as infile:
             print(infile.read())
-        file_util.copy_file(transcript_name, os.path.join(pytestconfig.rootdir, 'tests','shell_transcripts', transcript_name))
+        file_util.copy_file(transcript_name,
+                            os.path.join(pytestconfig.rootdir, 'tests', 'shell_transcripts',
+                                         transcript_name))
     else:
         # if name == 'worker_approve_all':
-            # pytest.set_trace()
+        # pytest.set_trace()
         response = shell.runcmds_plus_hooks(cmds)
         captured = capsys.readouterr()
-        #with capsys.disabled():
+        # with capsys.disabled():
         #    print(captured.out)
         #    print(captured.err)
         assert not captured.err

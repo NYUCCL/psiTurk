@@ -2,9 +2,6 @@
 """ PsiturkShell is a commandline interface for psiTurk, which provides
 functionality for maintaining the experiment server and interacting with
 Mechanical Turk."""
-from __future__ import print_function
-from __future__ import absolute_import
-
 try:
     from urllib.parse import quote_plus
 except ImportError:

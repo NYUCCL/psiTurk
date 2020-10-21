@@ -16,6 +16,7 @@ from distutils import dir_util, file_util
 from faker import Faker
 from importlib import reload
 
+
 @pytest.fixture(autouse=True)
 def bork_aws_environ():
     os.environ['AWS_ACCESS_KEY_ID'] = 'foo'
@@ -36,7 +37,6 @@ def edit_config_file():
         with open('config.txt', 'w') as file:
             file.write(config_file)
     yield do_it
-
 
 
 @pytest.fixture(scope='function', autouse=True)
@@ -98,6 +98,7 @@ def amt_services_wrapper(patch_aws_services):
     amt_services_wrapper = psiturk.amt_services_wrapper.MTurkServicesWrapper()
     return amt_services_wrapper
 
+
 @pytest.fixture(scope='function')
 def patch_aws_services(client, mocker):
     import psiturk.amt_services_wrapper
@@ -116,10 +117,12 @@ def patch_aws_services(client, mocker):
     mocker.patch.object(
         psiturk.amt_services_wrapper.MTurkServicesWrapper, 'amt_services', my_amt_services)
 
+
 @pytest.fixture(scope='session')
 def faker():
     faker = Faker()
     return faker
+
 
 @pytest.fixture()
 def stubber_prepare_create_hit(stubber, helpers, faker):
@@ -140,6 +143,7 @@ def stubber_prepare_create_hit(stubber, helpers, faker):
                              boto_return_create_hit_with_hit_type)
     return do_it
 
+
 @pytest.fixture()
 def create_dummy_hit(stubber_prepare_create_hit, amt_services_wrapper):
 
@@ -151,6 +155,7 @@ def create_dummy_hit(stubber_prepare_create_hit, amt_services_wrapper):
 
     return do_it
 
+
 @pytest.fixture()
 def create_dummy_assignment(faker):
     from psiturk.db import db_session, init_db
@@ -159,15 +164,16 @@ def create_dummy_assignment(faker):
     def do_it(participant_attributes=None):
         if not participant_attributes:
             participant_attributes = {}
-
         participant_attribute_defaults = {
             'workerid': faker.md5(raw_output=False),
             'hitid': faker.md5(raw_output=False),
             'assignmentid': faker.md5(raw_output=False),
         }
 
-        participant_attributes = dict(list(
-            participant_attribute_defaults.items()) + list(participant_attributes.items()))
+        participant_attributes = dict(
+            list(participant_attribute_defaults.items()) +
+            list(participant_attributes.items())
+        )
         init_db()
 
         participant = Participant(**participant_attributes)
@@ -178,13 +184,14 @@ def create_dummy_assignment(faker):
 
     return do_it
 
+
 @pytest.fixture()
 def list_hits(stubber, helpers, amt_services_wrapper):
-    '''
+    """
     Returns two hit_ids:
         3BFNCI9LYKQ2ENUY4MLKKW0NSU437W
         3XJOUITW8URHJMX7F00H20LGRIAQTX
-    '''
+    """
     def do_it(hits_json=None, all_studies=False, active=False):
         if not hits_json:
             hits_json = helpers.get_boto3_return('list_hits.json')
@@ -200,6 +207,7 @@ def list_hits(stubber, helpers, amt_services_wrapper):
 
     return do_it
 
+
 @pytest.fixture()
 def expire_a_hit():
     def do_it(hits_json, index_of_hit_to_expire=0):
@@ -207,6 +215,7 @@ def expire_a_hit():
         hits_json['HITs'][index_of_hit_to_expire]['Expiration'] = expired_time
         return hits_json
     return do_it
+
 
 @pytest.fixture()
 def activate_a_hit():

@@ -2,7 +2,8 @@ from psiturk.amt_services_wrapper import MTurkServicesWrapper
 
 SESSION_SERVICES_MANAGER_MODE_KEY = 'services_manager_mode'
 
-class PsiturkServicesManager():
+
+class PsiturkServicesManager:
     _cached_amt_services_wrapper = None
 
     @property
@@ -32,5 +33,6 @@ class PsiturkServicesManager():
     @property
     def amt_balance(self):
         return self.amt_services_wrapper.amt_balance().data
+
 
 psiturk_services_manager = PsiturkServicesManager()

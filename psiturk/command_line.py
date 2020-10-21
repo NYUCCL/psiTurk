@@ -1,6 +1,4 @@
-''' This module supports commandline functionality '''
-from __future__ import print_function
-
+""" This module supports commandline functionality """
 import argparse
 import sys
 import os

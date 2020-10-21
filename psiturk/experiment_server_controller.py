@@ -1,4 +1,3 @@
-from __future__ import print_function
 import urllib.parse
 import urllib.error
 import urllib.request
@@ -24,10 +23,10 @@ logger = logging.getLogger(__name__)
 logger.addHandler(stream_handler)
 logger.setLevel(logging.DEBUG)
 
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # Supporting functions
 #   general purpose helper functions used by the dashboard server and controller
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 def is_port_available(ip, port):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.settimeout(1)
@@ -45,9 +44,9 @@ def is_port_available(ip, port):
 
 def wait_until_online(function, ip, port):
     """
-    Uses Wait_For_State to wait for the server to come online, then runs the given function.
+    Uses WaitForState to wait for the server to come online, then runs the given function.
     """
-    awaiting_service = Wait_For_State(
+    awaiting_service = WaitForState(
         lambda: not is_port_available(ip, port), function)
     awaiting_service.start()
     return awaiting_service
@@ -67,14 +66,14 @@ def launch_browser_when_online(ip, port, route):
 # handles waiting for processes which we don't control (e.g.,
 # browser requests)
 # ----------------------------------------------------------------
-class Wait_For_State(Thread):
+class WaitForState(Thread):
     """
     Waits for a state-checking function to return True, then runs a given
     function. For example, this is used to launch the browser once the server is
     started up.
 
     Example:
-    t = Wait_For_State(lambda: server.check_port_state(), lambda: print "Server has started!")
+    t = WaitForState(lambda: server.check_port_state(), lambda: print "Server has started!")
     t.start()
     t.cancel() # Cancels thread
     """

@@ -1,9 +1,5 @@
-try:
-    from urllib.request import urlopen
-except ImportError:
-    from urllib2 import urlopen
+from urllib.request import urlopen
 import json
-import os
 from future import standard_library
 standard_library.install_aliases()
 
@@ -21,10 +17,10 @@ def get_my_ip():
 
 
 def colorize(target, color, use_escape=True):
-    ''' Colorize target string. Set use_escape to false when text will not be
-    interpreted by readline, such as in intro message.'''
+    """ Colorize target string. Set use_escape to false when text will not be
+    interpreted by readline, such as in intro message."""
     def escape(code):
-        ''' Escape character '''
+        """ Escape character """
         return '\001%s\002' % code
     if color == 'purple':
         color_code = '\033[95m'

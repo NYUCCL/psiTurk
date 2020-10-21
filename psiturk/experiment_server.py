@@ -1,6 +1,3 @@
-from __future__ import print_function
-from __future__ import absolute_import
-# myapp.mycustomapplication
 from builtins import str
 from gunicorn.app.base import Application
 from gunicorn import util
@@ -16,27 +13,29 @@ config.load_config()
 
 
 class ExperimentServer(Application):
-    '''
+    """
     Custom Gunicorn Server Application that serves up the Experiment application
-    '''
+    """
 
     def __init__(self):
-        '''__init__ method
+        """__init__ method
         Load the base config and assign some core attributes.
-        '''
+        """
+        self.loglevels = ["debug", "info", "warning", "error", "critical"]
         self.load_user_config()
         self.usage = None
         self.callable = None
         self.options = self.user_options
         self.prog = None
         self.do_load_config()
+        self.user_options = {}
         print("Now serving on", "http://" + self.options["bind"])
 
     def init(self, *args):
-        '''init method
+        """init method
         Takes our custom options from self.options and creates a config
         dict which specifies custom settings.
-        '''
+        """
         cfg = {}
         for k, v in list(self.options.items()):
             if k.lower() in self.cfg.settings and v is not None:
@@ -44,9 +43,9 @@ class ExperimentServer(Application):
         return cfg
 
     def load(self):
-        '''load method
+        """load method
         Imports our application and returns it to be run.
-        '''
+        """
         return util.import_app("psiturk.experiment:app")
 
     def load_user_config(self):

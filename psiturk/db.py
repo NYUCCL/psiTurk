@@ -2,10 +2,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
-from sqlalchemy.ext.declarative import declarative_base
 from .psiturk_config import PsiturkConfig
-import re
-import os
 import sys
 
 config = PsiturkConfig()
@@ -30,10 +27,12 @@ db_session = scoped_session(sessionmaker(autocommit=False,
                                          autoflush=False,
                                          bind=engine))
 
+
 def init_db():
     from .models import Base
-    #print "Initalizing db if necessary."
+    # print "Initalizing db if necessary."
     Base.metadata.create_all(bind=engine)
+
 
 def truncate_tables():
     from .models import Base

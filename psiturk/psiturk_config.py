@@ -1,12 +1,9 @@
 """Module psiturk_config."""
-from __future__ import print_function
-from future import standard_library
 from distutils import file_util
 import os
 from configparser import ConfigParser
 from dotenv import load_dotenv, find_dotenv
 from .psiturk_exceptions import EphemeralContainerDBError, PsiturkException
-standard_library.install_aliases()
 
 
 class PsiturkConfig(ConfigParser):
@@ -17,14 +14,14 @@ class PsiturkConfig(ConfigParser):
         """Init."""
         load_dotenv(find_dotenv(usecwd=True))
         if 'PSITURK_GLOBAL_CONFIG_LOCATION' in os.environ:
-            globalConfig = os.path.join(
-                os.environ['PSITURK_GLOBAL_CONFIG_LOCATION'], globalConfigName)
+            global_config = os.path.join(
+                os.environ['PSITURK_GLOBAL_CONFIG_LOCATION'], global_config_name)
         else:  # if nothing is set default to user's home directory
-            globalConfig = "~/" + globalConfigName
+            global_config = "~/" + global_config_name
         self.parent = ConfigParser
-        self.parent.__init__(self, **kwargs)
-        self.localFile = localConfig
-        self.globalFile = os.path.expanduser(globalConfig)
+        super().__init__(**kwargs)
+        self.local_file = local_config
+        self.global_file = os.path.expanduser(global_config)
 
     def load_config(self):
         """Load config."""
@@ -87,3 +84,4 @@ class PsiturkConfig(ConfigParser):
             ad_url_port = self.get('HIT Configuration', 'ad_url_port')
             ad_url_route = self.get('HIT Configuration', 'ad_url_route')
             return f"{ad_url_protocol}://{ad_url_domain}:{ad_url_port}:{ad_url_route}"
+
