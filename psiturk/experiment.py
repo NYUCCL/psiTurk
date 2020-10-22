@@ -25,6 +25,7 @@ from .db import db_session, init_db
 from .models import Participant
 from sqlalchemy import or_, exc
 
+from .psiturk_statuses import *
 from .psiturk_config import PsiturkConfig
 from .experiment_errors import ExperimentError, ExperimentApiError
 from .user_utils import nocache
