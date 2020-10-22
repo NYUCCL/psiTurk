@@ -1,3 +1,5 @@
+from __future__ import generator_stop
+from __future__ import annotations
 import os
 import subprocess
 import shutil
@@ -35,25 +37,27 @@ def _set_heroku_config_vars():
     CONFIG.load_config()
 
     subprocess.call(['heroku', 'config:set', 'ON_CLOUD=true'])
-    
+
     print()
     print('psiturk has finished setting heroku config vars.')
+
 
 def _add_postgresql_db():
     subprocess.call(['heroku', 'addons:create', 'heroku-postgresql:hobby-dev'])
     print()
-    print("\n".join([   "Your psiturk heroku app will use the just-added postgresql database instead of whatever is set in your config.txt.",
-                        "If you don't want this, then change or unset the heroku config var 'DATABASE_URL'",
-                        "and/or remove the heroku postgresql addon."]))
+    print("\n".join([
+        "Your psiturk heroku app will use the just-added postgresql database instead of whatever is set in your config.txt.",
+        "If you don't want this, then change or unset the heroku config var 'DATABASE_URL'",
+        "and/or remove the heroku postgresql addon."]))
 
 
 HEROKU_FILES_DIR = os.path.join(os.path.dirname(__file__), "heroku_files")
 
 
 def _copy_heroku_files():
-    '''
+    """
     Heroku needs a Procfile, a requirements.txt, and a file that stores the
-    '''
+    """
     _TARGET = os.curdir
     from distutils import dir_util
     print("Copying {} to {}".format(HEROKU_FILES_DIR, _TARGET))

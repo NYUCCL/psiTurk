@@ -11,6 +11,7 @@ def experiment_server_controller(mocker):
         psiturk.experiment_server_controller.ExperimentServerController,
         'is_port_available', lambda *args, **kwargs: True)
 
+
 @pytest.fixture()
 def psiturk_shell(mocker):
     """psiturk_shell."""

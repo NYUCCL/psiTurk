@@ -1,4 +1,5 @@
-from builtins import str
+from __future__ import generator_stop
+from __future__ import annotations
 from gunicorn.app.base import Application
 from gunicorn import util
 import multiprocessing
@@ -55,7 +56,7 @@ class ExperimentServer(Application):
             workers = str(multiprocessing.cpu_count() * 2 + 1)
 
         if int(workers) > 1 and config.getboolean('Server Parameters',
-                                           'do_scheduler'):
+                                                  'do_scheduler'):
             raise Exception((
                 'Scheduler is not thread-safe, '
                 'but {} gunicorn workers requested! Refusing to start!'

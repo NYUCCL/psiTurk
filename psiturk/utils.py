@@ -1,7 +1,7 @@
+from __future__ import generator_stop
+from __future__ import annotations
 from urllib.request import urlopen
 import json
-from future import standard_library
-standard_library.install_aliases()
 
 
 def get_my_ip():

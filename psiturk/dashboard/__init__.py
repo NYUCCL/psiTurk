@@ -1,6 +1,8 @@
-from flask import Blueprint, render_template, request, jsonify, Response, abort, current_app as app, \
-    flash, session, g, redirect, url_for, make_response
-from flask_login import UserMixin, login_user, logout_user, current_user
+from __future__ import generator_stop
+from __future__ import annotations
+from flask import Blueprint, render_template, request, current_app as app, \
+    flash, session, g, redirect, url_for
+from flask_login import login_user, logout_user, current_user
 from functools import wraps
 from psiturk.psiturk_config import PsiturkConfig
 from psiturk.user_utils import PsiTurkAuthorization, nocache
@@ -16,6 +18,7 @@ from psiturk.models import Participant
 # load the configuration options
 config = PsiturkConfig()
 config.load_config()
+
 # if you want to add a password protect route use this
 myauth = PsiTurkAuthorization(config)
 
@@ -99,8 +102,8 @@ def mode():
                 services_manager.mode = mode
                 session[SESSION_SERVICES_MANAGER_MODE_KEY] = mode
                 flash('mode successfully updated to {}'.format(mode), 'success')
-            except:
-                flash(str(result.exception), 'danger')
+            except Exception as e:
+                flash(str(e), 'danger')
     mode = services_manager.mode
     return render_template('dashboard/mode.html', mode=mode)
 

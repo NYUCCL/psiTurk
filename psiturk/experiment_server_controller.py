@@ -1,6 +1,5 @@
-import urllib.parse
-import urllib.error
-import urllib.request
+from __future__ import generator_stop
+from __future__ import annotations
 import hashlib
 import time
 import psutil
@@ -11,9 +10,6 @@ import subprocess
 import sys
 import os
 import logging
-from builtins import object
-from future import standard_library
-standard_library.install_aliases()
 
 stream_handler = logging.StreamHandler(sys.stdout)
 stream_handler.setLevel(logging.INFO)  # TODO: let this be configurable

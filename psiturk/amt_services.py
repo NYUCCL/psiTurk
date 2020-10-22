@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from __future__ import generator_stop
+from __future__ import annotations
 from functools import wraps
 from builtins import str
 from builtins import object
@@ -52,10 +54,8 @@ class AmtServicesErrorResponse(AmtServicesResponse):
             **kwargs)
 
 
-
 class NoHitDataError(AmtServicesException):
     """class NoHitDataError."""
-
     pass
 
 
@@ -121,7 +121,9 @@ class MTurkServices(object):
             config = PsiturkConfig()
             config.load_config()
             self.config = config
-
+        self.mode = None
+        self.mtc = None
+        self.param_dict = None
         self.set_mode(mode)
         self.valid_login = self.verify_aws_login()
 

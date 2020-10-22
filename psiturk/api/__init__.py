@@ -1,6 +1,8 @@
+from __future__ import generator_stop
+from __future__ import annotations
 from flask import Blueprint, jsonify, make_response, request, current_app as app
 from flask.json import JSONEncoder
-from flask_restful import Api, Resource, abort
+from flask_restful import Api, Resource
 from psiturk.dashboard import login_required
 from psiturk.services_manager import psiturk_services_manager as services_manager
 from psiturk.models import Participant, Campaign
@@ -10,7 +12,6 @@ from psiturk.amt_services_wrapper import WrapperResponse
 from psiturk.amt_services import MTurkHIT
 from psiturk.db import db_session
 from psiturk.models import Base as DBModel
-from functools import wraps
 from apscheduler.job import Job
 from apscheduler.triggers.base import BaseTrigger
 import datetime
@@ -23,8 +24,8 @@ api = Api()
 
 @api_blueprint.errorhandler(Exception)
 def handle_exception(exception):
-    message = exception.message if (hasattr(exception, 'message') and exception.message) else str(
-        exception)
+    message = exception.message if (hasattr(exception, 'message') and
+                                    exception.message) else str(exception)
     # raise exception
     return jsonify({
         'exception': type(exception).__name__,

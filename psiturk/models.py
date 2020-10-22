@@ -1,3 +1,5 @@
+from __future__ import generator_stop
+from __future__ import annotations
 import datetime
 import io
 import csv
@@ -225,8 +227,8 @@ class Campaign(Base):
     created = Column(DateTime, default=datetime.datetime.utcnow)
     ended = Column(DateTime, default=None)
 
-    @validates('goal', 'minutes_between_rounds','assignments_per_round',
-        'hit_duration_hours')
+    @validates('goal', 'minutes_between_rounds', 'assignments_per_round',
+               'hit_duration_hours')
     def validate_greater_than_zero(self, key, value):
         if key == 'goal':
             self._validate_greater_than_already_completed(value)
@@ -257,7 +259,6 @@ class Campaign(Base):
             assert not self.active_campaign_exists(), 'No no, there can be only one active campaign.'
         return is_active
 
-    
     def __init__(self, **kwargs):
         self.codeversion = CODE_VERSION
         for key in kwargs:

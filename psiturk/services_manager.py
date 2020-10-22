@@ -1,3 +1,5 @@
+from __future__ import generator_stop
+from __future__ import annotations
 from psiturk.amt_services_wrapper import MTurkServicesWrapper
 
 SESSION_SERVICES_MANAGER_MODE_KEY = 'services_manager_mode'

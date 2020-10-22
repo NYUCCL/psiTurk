@@ -3,6 +3,7 @@ import pytest
 CODEVERSION = '0.0.1'
 NEW_CODEVERSION = '0.0.2'
 
+
 @pytest.fixture()
 def campaign():
     from psiturk.models import Campaign
@@ -33,7 +34,7 @@ def test_campaign_round_codeversion_change_cancel(patch_aws_services, campaign, 
 
     from psiturk.experiment import app
     mocker.patch.object(app.apscheduler,
-        'remove_job', lambda *args, **kwargs: True)
+                        'remove_job', lambda *args, **kwargs: True)
 
     from psiturk.amt_services_wrapper import MTurkServicesWrapper
     aws_services_wrapper = MTurkServicesWrapper()
@@ -58,7 +59,7 @@ def test_campaign_goal_met_cancel(patch_aws_services, campaign, mocker, caplog, 
 
     from psiturk.experiment import app
     mocker.patch.object(app.apscheduler,
-        'remove_job', lambda *args, **kwargs: True)
+                        'remove_job', lambda *args, **kwargs: True)
 
     import psiturk.tasks
     mocker.patch.object(psiturk.models.Participant, 'count_completed', lambda *args, **kwargs: campaign.goal)
@@ -100,7 +101,6 @@ def test_task_approve_all(patch_aws_services, stubber, mocker, caplog):
     import psiturk.tasks
     mocker.patch.object(psiturk.tasks.TaskUtils, 'aws_services_wrapper', aws_services_wrapper)
     mocked_approve_all = mocker.patch.object(aws_services_wrapper, 'approve_all_assignments')
-
 
     from psiturk.tasks import do_approve_all
     do_approve_all('sandbox')

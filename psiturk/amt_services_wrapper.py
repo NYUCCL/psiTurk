@@ -3,42 +3,22 @@
 The initial motivation for this wrapper is to abstract away
 the mturk functionality from the shell
 """
-from __future__ import print_function
-from __future__ import absolute_import
-
+from __future__ import generator_stop
+from __future__ import annotations
 from functools import wraps
-
-import urllib.error
-import urllib.parse
-import urllib.request
-from .utils import *
 from .models import Participant, Hit
 from .db import db_session, init_db
 from .psiturk_exceptions import *
 from .psiturk_statuses import *
 from .psiturk_config import PsiturkConfig
 from .amt_services import MTurkServices
-from sqlalchemy import or_, and_
-from sqlalchemy.sql.operators import eq
 import sqlalchemy as sa
-import webbrowser
-from fuzzywuzzy import process
-import signal
 import datetime
 import random
 import string
-import os
-import json
-import time
-import re
-import subprocess
-import sys
 from builtins import object
 from builtins import range
 from builtins import str
-from future import standard_library
-
-standard_library.install_aliases()
 
 try:
     import gnureadline as readline
@@ -47,7 +27,8 @@ except ImportError:
 
 
 class WrapperResponse(object):
-    def __init__(self, status=None, message='', data: dict = None, operation='', **kwargs):
+    def __init__(self, status=None, message='', data: dict = None,
+                 operation='', **kwargs):
         self.dict_keys = ['status', 'success', 'message', 'data', 'operation']
         self.status = status
         self.message = message
@@ -116,13 +97,13 @@ def amt_services_wrapper_response(func):
 
     return wrapper
 
+
 class MTurkServicesWrapper(object):
     """class MTurkServicesWrapper."""
     
     _cached_dbs_services = None
     _cached_amt_services = None
     mode = None
-    sandbox = None
 
     @property
     def amt_services(self):
@@ -172,7 +153,7 @@ class MTurkServicesWrapper(object):
 
     def random_id_generator(self, size=6, chars=string.ascii_uppercase +
                             string.digits):
-        ''' Generate random id numbers '''
+        """ Generate random id numbers """
         return ''.join(random.choice(chars) for x in range(size))
 
     @amt_services_wrapper_response
@@ -398,7 +379,7 @@ class MTurkServicesWrapper(object):
             db_session.commit()
             return {'assignment_id': assignment_id}
         except Exception as e:
-            return {'exception': e, 'assignment_id': assignment_id}
+            return {'exception': e, 'assignment': assignment}
 
     @amt_services_wrapper_response
     def approve_mturk_assignment(self, assignment, ignore_local_not_found=False):
@@ -749,7 +730,7 @@ class MTurkServicesWrapper(object):
         if not response.success:
             return {'exception': response.exception, 'hit_id': hit_id}
         else:
-            success_message = f"deleted {mode} HIT {hit_id}"
+            success_message = f"deleted {self.mode} HIT {hit_id}"
             return {'hit_id': hit_id, 'success': True, 'message': success_message}
 
     @amt_services_wrapper_response

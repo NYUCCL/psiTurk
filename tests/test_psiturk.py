@@ -103,11 +103,12 @@ def test_custom_get_condition_can_import(mocker, psiturk_test_client):
     sys.path.append(os.getcwd())
     import custom
     reload(custom)
-    mocker.patch.object(custom,'custom_get_condition', lambda mode: (9,9), create=True)
+    mocker.patch.object(custom, 'custom_get_condition', lambda mode: (9, 9), create=True)
     app = psiturk_test_client()
 
     from psiturk.experiment import get_condition
-    assert get_condition('') == (9,9)
+    assert get_condition('') == (9, 9)
+
 
 def test_custom_get_condition_not_necessary(tmpdir, mocker, psiturk_test_client):
     import sys
@@ -491,7 +492,7 @@ class PsiTurkStandardTests(PsiturkUnitTest):
         assert ': 1010' in rv.get_data(as_text=True)
 
     def test_repeat_experiment_success(self):
-        '''Test that a participant can repeat the experiment.'''
+        """Test that a participant can repeat the experiment."""
         self.set_config(u'Task Parameters', u'allow_repeats', u'true')
         request = "&".join([
             "assignmentId=%s" % self.assignment_id,

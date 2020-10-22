@@ -2,7 +2,8 @@
 # ExperimentError Exception, for db errors, etc.
 # ----------------------------------------------
 # Possible ExperimentError values.
-
+from __future__ import generator_stop
+from __future__ import annotations
 from flask import render_template
 
 

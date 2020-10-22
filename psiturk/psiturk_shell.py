@@ -2,6 +2,8 @@
 """ PsiturkShell is a commandline interface for psiTurk, which provides
 functionality for maintaining the experiment server and interacting with
 Mechanical Turk."""
+from __future__ import generator_stop
+from __future__ import annotations
 try:
     from urllib.parse import quote_plus
 except ImportError:
@@ -27,13 +29,8 @@ import time
 import re
 import subprocess
 import sys
-from builtins import range
-from builtins import str
-from builtins import input
-from future import standard_library
 from functools import wraps
 import shlex
-standard_library.install_aliases()
 urllib3.contrib.pyopenssl.inject_into_urllib3()
 http = urllib3.PoolManager(
     cert_reqs='CERT_REQUIRED',
@@ -475,7 +472,7 @@ class PsiturkNetworkShell(Cmd, object):
             mturk_url = ''
             if self.mode == 'sandbox':
                 mturk_url_base = 'https://workersandbox.mturk.com'
-            else: # self.mode == 'live':
+            else:  # self.mode == 'live':
                 mturk_url_base = 'https://worker.mturk.com'
             title = quote_plus(
                 str(self.config.get('HIT Configuration', 'title', raw=True)))
@@ -921,7 +918,7 @@ class PsiturkNetworkShell(Cmd, object):
         -p, --print-only        just provides the URL, doesn't attempt to
                                 launch browser
         """
-        base_url = config.get_ad_url()
+        base_url = self.config.get_ad_url()
         if base_url:
             self.pfeedback('generating debug url using `ad_url` config var')
         else:
@@ -931,10 +928,9 @@ class PsiturkNetworkShell(Cmd, object):
             base_url = f"http://{host}:{port}/ad"
 
         launch_url = base_url + "?assignmentId=debug" + \
-            str(self.random_id_generator()) \
-            + "&hitId=debug" + str(self.random_id_generator()) \
-            + "&workerId=debug" + str(self.random_id_generator()
-            + "&mode=debug")
+            str(self.random_id_generator()) + "&hitId=debug" + str(self.random_id_generator()) \
+                     + "&workerId=debug" + str(self.random_id_generator()
+                     + "&mode=debug")
 
         if arg['--print-only']:
             self.poutput(launch_url)
@@ -1008,7 +1004,7 @@ def run(script=None, execute=None, testfile=None, quiet=False):
                 'Note: "pip install readline" will NOT work because of how the OSX',
                 'pythonpath is structured.']))
     except TypeError:
-        pass # pyreadline doesn't have anything for __doc__
+        pass  # pyreadline doesn't have anything for __doc__
     # Drop arguments which were already processed in command_line.py
     sys.argv = [sys.argv[0]]
     config = PsiturkConfig()

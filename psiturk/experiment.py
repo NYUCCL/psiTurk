@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 """ This module provides the backend Flask server used by psiTurk. """
+from __future__ import generator_stop
+from __future__ import annotations
 import os
 import sys
 import datetime
@@ -9,8 +11,6 @@ import user_agents
 import requests
 import re
 import json
-from builtins import str
-from builtins import range
 from jinja2 import TemplateNotFound
 from collections import Counter
 import signal
@@ -78,13 +78,14 @@ def check_templates_exist():
     try_these = ['thanks-mturksubmit.html', 'closepopup.html']
     try:
         try_these = ['thanks-mturksubmit.html', 'closepopup.html']
-        [ app.jinja_env.get_template(try_this) for try_this in try_these ]
+        [app.jinja_env.get_template(try_this) for try_this in try_these]
     except TemplateNotFound as e:
         raise RuntimeError((
             f"Missing one of the following templates: {', '.join(try_these)}."
             f"Copy these over from a freshly-created psiturk example experiment."
             f"{type(e).__name__, str(e)}"
         ))
+
 
 check_templates_exist()
 
@@ -138,7 +139,7 @@ if CONFIG.get('Server Parameters', 'do_scheduler'):
 # Dashboard
 #
 if CONFIG.get('Server Parameters', 'enable_dashboard'):
-    from .dashboard import dashboard, init_app as dashboard_init_app # management dashboard
+    from .dashboard import dashboard, init_app as dashboard_init_app  # management dashboard
     app.register_blueprint(dashboard)
     dashboard_init_app(app)
 
