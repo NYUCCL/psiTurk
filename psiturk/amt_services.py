@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from __future__ import generator_stop
-from __future__ import annotations
 from functools import wraps
 from builtins import str
 from builtins import object

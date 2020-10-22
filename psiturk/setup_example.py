@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """ This module sets up a demo experiment to use with psiTurk.  """
 from __future__ import generator_stop
-from __future__ import annotations
 import os
 from distutils import dir_util, file_util
 

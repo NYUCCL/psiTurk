@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """ This module provides the backend Flask server used by psiTurk. """
 from __future__ import generator_stop
-from __future__ import annotations
 import os
 import sys
 import datetime

@@ -4,7 +4,6 @@ The initial motivation for this wrapper is to abstract away
 the mturk functionality from the shell
 """
 from __future__ import generator_stop
-from __future__ import annotations
 from functools import wraps
 from .models import Participant, Hit
 from .db import db_session, init_db

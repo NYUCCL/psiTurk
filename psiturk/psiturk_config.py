@@ -1,6 +1,5 @@
 """Module psiturk_config."""
 from __future__ import generator_stop
-from __future__ import annotations
 import os
 from configparser import ConfigParser
 from dotenv import load_dotenv, find_dotenv

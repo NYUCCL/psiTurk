@@ -1,5 +1,4 @@
 from __future__ import generator_stop
-from __future__ import annotations
 from flask import Blueprint, jsonify, make_response, request, current_app as app
 from flask.json import JSONEncoder
 from flask_restful import Api, Resource

@@ -1,5 +1,4 @@
 from __future__ import generator_stop
-from __future__ import annotations
 from flask import Blueprint, render_template, request, current_app as app, \
     flash, session, g, redirect, url_for
 from flask_login import login_user, logout_user, current_user

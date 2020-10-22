@@ -1,5 +1,4 @@
 from __future__ import generator_stop
-from __future__ import annotations
 
 class PsiturkException(Exception):
     def __init__(self, *args, **kwargs):

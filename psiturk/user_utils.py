@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """ This module provides additional tools for psiTurk users. """
 from __future__ import generator_stop
-from __future__ import annotations
 from functools import wraps, update_wrapper
 from flask import request, Response, make_response, current_app
 

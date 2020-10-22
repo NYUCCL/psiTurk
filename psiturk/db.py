@@ -1,5 +1,4 @@
 from __future__ import generator_stop
-from __future__ import annotations
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 from .psiturk_config import PsiturkConfig

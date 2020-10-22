@@ -1,5 +1,4 @@
 from __future__ import generator_stop
-from __future__ import annotations
 from gunicorn.app.base import Application
 from gunicorn import util
 import multiprocessing

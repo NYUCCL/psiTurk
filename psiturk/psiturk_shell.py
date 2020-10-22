@@ -3,7 +3,6 @@
 functionality for maintaining the experiment server and interacting with
 Mechanical Turk."""
 from __future__ import generator_stop
-from __future__ import annotations
 try:
     from urllib.parse import quote_plus
 except ImportError:
