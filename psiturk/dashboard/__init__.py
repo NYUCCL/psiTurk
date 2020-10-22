@@ -65,8 +65,7 @@ def try_amt_services_wrapper(view):
     @wraps(view)
     def wrapped_view(**kwargs):
         try:
-            _ = services_manager.amt_services_wrapper  # may throw error
-            # if aws keys not set
+            _ = services_manager.amt_services_wrapper  # may throw error if aws keys not set
             if SESSION_SERVICES_MANAGER_MODE_KEY not in session:
                 app.logger.debug('setting session mode to {}'.format(services_manager.mode))
                 session[SESSION_SERVICES_MANAGER_MODE_KEY] = services_manager.mode

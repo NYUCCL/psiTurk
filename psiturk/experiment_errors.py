@@ -157,7 +157,7 @@ class ExperimentError(Exception):
 class ExperimentApiError(Exception):
     
     def __init__(self, message, status_code=500, payload=None):
-        super(ExperimentApiError, self).__init__()
+        super().__init__()
         self.message = message
         self.status_code = status_code
         self.payload = payload
