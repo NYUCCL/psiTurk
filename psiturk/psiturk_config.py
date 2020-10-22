@@ -9,8 +9,8 @@ from .psiturk_exceptions import EphemeralContainerDBError, PsiturkException
 class PsiturkConfig(ConfigParser):
     """PsiturkConfig class."""
 
-    def __init__(self, localConfig="config.txt",
-                 globalConfigName=".psiturkconfig", **kwargs):
+    def __init__(self, local_config="config.txt",
+                 global_config_name=".psiturkconfig", **kwargs):
         """Init."""
         load_dotenv(find_dotenv(usecwd=True))
         if 'PSITURK_GLOBAL_CONFIG_LOCATION' in os.environ:
@@ -41,7 +41,7 @@ class PsiturkConfig(ConfigParser):
         # * user's local's file
         # * env vars
         self.read([global_defaults_file, local_defaults_file,
-                   self.globalFile, self.localFile])
+                   self.global_file, self.local_file])
         # prefer environment
         these_as_they_are = ['PORT', 'DATABASE_URL']  # heroku sets these
         for section in self.sections():
