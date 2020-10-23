@@ -917,10 +917,10 @@ class PsiturkNetworkShell(Cmd, object):
         -p, --print-only        just provides the URL, doesn't attempt to
                                 launch browser
         """
-        base_url = self.config.get_ad_url()
-        if base_url:
+        try:
+            base_url = self.config.get_ad_url()
             self.pfeedback('generating debug url using `ad_url` config var')
-        else:
+        except PsiturkException:
             self.pfeedback('`ad_url_*` config vars not set; using Server Parameters host and port vars.')
             host = self.config.get('Server Parameters', 'host')
             port = self.config.get('Server Parameters', 'port')
