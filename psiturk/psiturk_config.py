@@ -83,5 +83,5 @@ class PsiturkConfig(ConfigParser):
             ad_url_protocol = self.get('HIT Configuration', 'ad_url_protocol')
             ad_url_port = self.get('HIT Configuration', 'ad_url_port')
             ad_url_route = self.get('HIT Configuration', 'ad_url_route')
-            return f"{ad_url_protocol}://{ad_url_domain}:{ad_url_port}:{ad_url_route}"
+            return f"{ad_url_protocol}://{ad_url_domain}:{ad_url_port}/{ad_url_route}"
 
