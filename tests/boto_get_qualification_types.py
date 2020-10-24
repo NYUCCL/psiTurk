@@ -1,4 +1,4 @@
-'''
+"""
 set aws config vars in ~/.aws/config under `[default]` section, including
 default region as REGION
 
@@ -6,7 +6,7 @@ default region as REGION
     AWS_ACCESS_KEY_ID=
     AWS_SECRET_ACCESS_KEY=
     REGION=us-east-1
-'''
+"""
 import boto3
 client = boto3.client('mturk')
 paginator = client.get_paginator('list_qualification_types')

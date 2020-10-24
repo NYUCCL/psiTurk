@@ -1,21 +1,12 @@
 # -*- coding: utf-8 -*-
 """ This module provides the backend Flask server used by psiTurk. """
-from __future__ import print_function
-from __future__ import absolute_import
-
-from dotenv import load_dotenv, find_dotenv
-load_dotenv(find_dotenv(usecwd=True))
-
-from .psiturk_statuses import *
-from builtins import str
-from builtins import range
+from __future__ import generator_stop
 import os
 import sys
 import datetime
 import logging
 from random import choice
 import user_agents
-import string
 import requests
 import re
 import json
@@ -33,8 +24,9 @@ from .db import db_session, init_db
 from .models import Participant
 from sqlalchemy import or_, exc
 
+from .psiturk_statuses import *
 from .psiturk_config import PsiturkConfig
-from .experiment_errors import ExperimentError, ExperimentApiError, InvalidUsageError
+from .experiment_errors import ExperimentError, ExperimentApiError
 from .user_utils import nocache
 
 # Setup config
@@ -71,7 +63,7 @@ signal.signal(signal.SIGINT, sigint_handler)
 app = Flask("Experiment_Server")
 
 # experiment server logging
-if 'gunicorn' in os.environ.get('SERVER_SOFTWARE',''):
+if 'gunicorn' in os.environ.get('SERVER_SOFTWARE', ''):
     gunicorn_error_logger = logging.getLogger('gunicorn.error')
     app.logger.handlers.extend(gunicorn_error_logger.handlers)
 
@@ -79,18 +71,20 @@ if 'gunicorn' in os.environ.get('SERVER_SOFTWARE',''):
 app.config.update(SEND_FILE_MAX_AGE_DEFAULT=10)
 app.secret_key = CONFIG.get('Server Parameters', 'secret_key')
 
-# this checks for templates that are required if you are hosting your own ad.
+
 def check_templates_exist():
+    # this checks for templates that are required if you are hosting your own ad.
+    try_these = ['thanks-mturksubmit.html', 'closepopup.html']
     try:
         try_these = ['thanks-mturksubmit.html', 'closepopup.html']
-        [ app.jinja_env.get_template(try_this) for try_this in try_these ]
+        [app.jinja_env.get_template(try_this) for try_this in try_these]
     except TemplateNotFound as e:
-
         raise RuntimeError((
             f"Missing one of the following templates: {', '.join(try_these)}."
             f"Copy these over from a freshly-created psiturk example experiment."
             f"{type(e).__name__, str(e)}"
         ))
+
 
 check_templates_exist()
 
@@ -111,10 +105,12 @@ except ImportError as e:
 else:
     app.register_blueprint(custom_code)
     try:
+        # noinspection PyUnresolvedReferences
         from custom import init_app as custom_init_app
-        custom_init_app(app)
     except ImportError as e:
         pass
+    else:
+        custom_init_app()
 
 # scheduler
 
@@ -125,7 +121,7 @@ from .db import engine
 jobstores = {
     'default': SQLAlchemyJobStore(engine=engine)
 }
-if 'gunicorn' in os.environ.get('SERVER_SOFTWARE',''):
+if 'gunicorn' in os.environ.get('SERVER_SOFTWARE', ''):
     from apscheduler.schedulers.gevent import GeventScheduler as Scheduler
 else:
     from apscheduler.schedulers.background import BackgroundScheduler as Scheduler
@@ -142,7 +138,7 @@ if CONFIG.get('Server Parameters', 'do_scheduler'):
 # Dashboard
 #
 if CONFIG.get('Server Parameters', 'enable_dashboard'):
-    from .dashboard import dashboard, init_app as dashboard_init_app # management dashboard
+    from .dashboard import dashboard, init_app as dashboard_init_app  # management dashboard
     app.register_blueprint(dashboard)
     dashboard_init_app(app)
 
@@ -150,10 +146,6 @@ if CONFIG.get('Server Parameters', 'enable_dashboard'):
     app.register_blueprint(api_blueprint)
 
 init_db()
-
-
-
-
 
 # Read psiturk.js file into memory
 PSITURK_JS_FILE = os.path.join(os.path.dirname(__file__),
@@ -174,9 +166,10 @@ def handle_exp_error(exception):
     return exception.error_page(request, CONFIG.get('Task Parameters',
                                                     'contact_email_on_error'))
 
-# for use with API errors
+
 @app.errorhandler(ExperimentApiError)
 def handle_experiment_api_error(error):
+    # for use with API errors
     response = jsonify(error.to_dict())
     response.status_code = error.status_code
     app.logger.error(error.message)
@@ -185,7 +178,7 @@ def handle_experiment_api_error(error):
 
 @app.teardown_request
 def shutdown_session(_=None):
-    ''' Shut down session route '''
+    """ Shut down session route """
     db_session.remove()
 
 
@@ -213,7 +206,7 @@ def get_random_condcount(mode):
             open(os.path.join(app.root_path, 'conditions.json')))
         numconds = len(list(conditions.keys()))
         numcounts = 1
-    except IOError as e:
+    except IOError:
         numconds = CONFIG.getint('Task Parameters', 'num_conds')
         numcounts = CONFIG.getint('Task Parameters', 'num_counters')
 
@@ -237,11 +230,10 @@ def get_random_condcount(mode):
     mincount = min(counts.values())
     minima = [hsh for hsh, count in counts.items() if count == mincount]
     chosen = choice(minima)
-    #conds += [ 0 for _ in range(1000) ]
-    #conds += [ 1 for _ in range(1000) ]
     app.logger.info("given %(a)s chose %(b)s" % {'a': counts, 'b': chosen})
 
     return chosen
+
 
 try:
     from custom import custom_get_condition as get_condition
@@ -251,28 +243,29 @@ except (ModuleNotFoundError, ImportError):
 # Routes
 # ======
 
+
 @app.route('/')
 @nocache
 def index():
-    ''' Index route '''
+    """ Index route """
     return render_template('default.html')
 
 
 @app.route('/favicon.ico')
 def favicon():
-    ''' Serve favicon '''
+    """ Serve favicon """
     return app.send_static_file('favicon.ico')
 
 
 @app.route('/static/js/psiturk.js')
 def psiturk_js():
-    ''' psiTurk js route '''
+    """ psiTurk js route """
     return render_template_string(PSITURK_JS_CODE)
 
 
 @app.route('/check_worker_status', methods=['GET'])
 def check_worker_status():
-    ''' Check worker status route '''
+    """ Check worker status route """
     if 'workerId' not in request.args:
         resp = {"status": "bad request"}
         return jsonify(**resp)
@@ -331,7 +324,7 @@ def advertisement():
                (myrule == "pc" and user_agent_obj.is_pc) or\
                (myrule == "bot" and user_agent_obj.is_bot):
                 browser_ok = False
-        elif (myrule == "Safari" or myrule == "safari"):
+        elif myrule == "Safari" or myrule == "safari":
             if "Chrome" in user_agent_string and "Safari" in user_agent_string:
                 pass
             elif "Safari" in user_agent_string:
@@ -558,7 +551,7 @@ def enterexp():
     referesh to start over).
     """
     app.logger.info("Accessing /inexp")
-    if not 'uniqueId' in request.form:
+    if 'uniqueId' not in request.form:
         raise ExperimentError('improper_inputs')
     unique_id = request.form['uniqueId']
 
@@ -592,20 +585,19 @@ def load(uid=None):
             one()
     except exc.SQLAlchemyError:
         app.logger.error("DB error: Unique user not found.")
-
-    try:
-        resp = json.loads(user.datastring)
-    except:
-        resp = {
-            "condition": user.cond,
-            "counterbalance": user.counterbalance,
-            "assignmentId": user.assignmentid,
-            "workerId": user.workerid,
-            "hitId": user.hitid,
-            "bonus": user.bonus
-        }
-
-    return jsonify(**resp)
+    else:
+        try:
+            resp = json.loads(user.datastring)
+        except json.JSONDecodeError:
+            resp = {
+                "condition": user.cond,
+                "counterbalance": user.counterbalance,
+                "assignmentId": user.assignmentid,
+                "workerId": user.workerid,
+                "hitId": user.hitid,
+                "bonus": user.bonus
+            }
+        return jsonify(**resp)
 
 
 @app.route('/sync/<uid>', methods=['PUT'])
@@ -673,8 +665,8 @@ def quitter():
 @app.route('/complete', methods=['GET'])
 @nocache
 def debug_complete():
-    ''' Debugging route for complete. '''
-    if not 'uniqueId' in request.args:
+    """ Debugging route for complete. """
+    if 'uniqueId' not in request.args:
         raise ExperimentError('improper_inputs')
     else:
         unique_id = request.args['uniqueId']
@@ -686,22 +678,23 @@ def debug_complete():
             user.endhit = datetime.datetime.now(datetime.timezone.utc)
             db_session.add(user)
             db_session.commit()
-        except:
+        except exc.SQLAlchemyError:
             raise ExperimentError('error_setting_worker_complete')
         else:
             # send them back to mturk.
-            if (mode == 'sandbox' or mode == 'live'):
+            if mode == 'sandbox' or mode == 'live':
                 return render_template('closepopup.html')
             else:
                 allow_repeats = CONFIG.getboolean('Task Parameters', 'allow_repeats')
                 return render_template('complete.html',
-                    allow_repeats=allow_repeats, worker_id=user.workerid)
+                                       allow_repeats=allow_repeats,
+                                       worker_id=user.workerid)
 
 
 @app.route('/worker_complete', methods=['GET'])
 def worker_complete():
-    ''' Complete worker. '''
-    if not 'uniqueId' in request.args:
+    """ Complete worker. """
+    if 'uniqueId' not in request.args:
         resp = {"status": "bad request"}
         return jsonify(**resp)
     else:
@@ -723,8 +716,8 @@ def worker_complete():
 
 @app.route('/worker_submitted', methods=['GET'])
 def worker_submitted():
-    ''' Submit worker '''
-    if not 'uniqueId' in request.args:
+    """ Submit worker """
+    if 'uniqueId' not in request.args:
         resp = {"status": "bad request"}
         return jsonify(**resp)
     else:
@@ -745,7 +738,7 @@ def worker_submitted():
 # Is this a security risk?
 @app.route("/ppid")
 def ppid():
-    ''' Get ppid '''
+    """ Get ppid """
     proc_id = os.getppid()
     return str(proc_id)
 
@@ -754,7 +747,7 @@ def ppid():
 
 
 def insert_mode(page_html, mode):
-    ''' Insert mode '''
+    """ Insert mode """
     page_html = page_html
     match_found = False
     matches = re.finditer('workerId={{ workerid }}', page_html)
@@ -779,8 +772,9 @@ def regularpage(path):
     """
     return send_from_directory('templates', path)
 
+
 def run_webserver():
-    ''' Run web server '''
+    """ Run web server """
     host = CONFIG.get('Server Parameters', 'host')
     port = CONFIG.getint('Server Parameters', 'port')
     print(f"Serving on http://{host}:{port}")
