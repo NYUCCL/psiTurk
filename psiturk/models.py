@@ -1,39 +1,40 @@
-from __future__ import print_function
-from __future__ import absolute_import
-
+from __future__ import generator_stop
 import datetime
 import io
 import csv
 import json
 from sqlalchemy import Column, Integer, String, DateTime, Float, Text, Boolean, func, inspect
 from sqlalchemy.orm import validates
-from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.declarative import declarative_base
-import psiturk.db
 from psiturk.db import db_session
 from .psiturk_config import PsiturkConfig
-
+from typing import List
 from itertools import groupby
+from .tasks import do_campaign_round
+from apscheduler.jobstores.base import JobLookupError
 
 config = PsiturkConfig()
 config.load_config()
 
+
 TABLENAME = config.get('Database Parameters', 'table_name')
 CODE_VERSION = config.get('Task Parameters', 'experiment_code_version')
-
-from .tasks import do_campaign_round
-from apscheduler.jobstores.base import JobLookupError
 
 # Base class
 
 Base = declarative_base()
 Base.query = db_session.query_property()
 
-def object_as_dict(self, filter_these=[]):
-    return {c.key: getattr(self, c.key)
-        for c in inspect(self).mapper.column_attrs if c.key not in filter_these}
+
+def object_as_dict(self, filter_these: list = None):
+    if filter_these is None:
+        filter_these = []
+    return {c.key: getattr(self, c.key) for c in
+            inspect(self).mapper.column_attrs if c.key not in filter_these}
+
 
 Base.object_as_dict = object_as_dict
+
 
 class Participant(Base):
     """
@@ -84,23 +85,24 @@ class Participant(Base):
         except (TypeError, ValueError):
             # There was no data to return.
             print(("No trial data found in record:", self))
-            return("")
+            return ""
 
         try:
-            ret = []
             with io.StringIO() as outstring:
                 csvwriter = csv.writer(outstring)
                 for trial in trialdata:
-                    csvwriter.writerow((
-                        self.uniqueid,
-                        trial["current_trial"],
-                        trial["dateTime"],
-                        json.dumps(trial["trialdata"])))
-                ret = outstring.getvalue()
-            return ret
+                    csvwriter.writerow(
+                        (
+                            self.uniqueid,
+                            trial["current_trial"],
+                            trial["dateTime"],
+                            json.dumps(trial["trialdata"])
+                         )
+                    )
+                return outstring.getvalue()
         except:
             print(("Error reading record:", self))
-            return("")
+            return ""
 
     def get_event_data(self):
         try:
@@ -108,20 +110,26 @@ class Participant(Base):
         except (ValueError, TypeError):
             # There was no data to return.
             print(("No event data found in record:", self))
-            return("")
+            return ""
 
         try:
-            ret = []
             with io.StringIO() as outstring:
                 csvwriter = csv.writer(outstring)
                 for event in eventdata:
                     csvwriter.writerow(
-                        (self.uniqueid, event["eventtype"], event["interval"], event["value"], event["timestamp"]))
-                ret = outstring.getvalue()
-            return ret
+                        (
+                            self.uniqueid,
+                            event["eventtype"],
+                            event["interval"],
+                            event["value"],
+                            event["timestamp"]
+                         )
+                    )
+
+            return outstring.getvalue()
         except:
             print(("Error reading record:", self))
-            return("")
+            return ""
 
     def get_question_data(self):
         try:
@@ -129,32 +137,38 @@ class Participant(Base):
         except (TypeError, ValueError):
             # There was no data to return.
             print(("No question data found in record:", self))
-            return("")
+            return ""
 
         try:
-            ret = []
             with io.StringIO() as outstring:
                 csvwriter = csv.writer(outstring)
                 for question in questiondata:
                     csvwriter.writerow(
-                        (self.uniqueid, question, questiondata[question]))
-                ret = outstring.getvalue()
-            return ret
+                        (
+                            self.uniqueid,
+                            question,
+                            questiondata[question]
+                         )
+                    )
+            return outstring.getvalue()
         except:
             print(("Error reading record:", self))
-            return("")
 
+            return ""
+            
     @classmethod
     def count_completed(cls, codeversion, mode):
-        completed_statuses = [3,4,5,7]
+        completed_statuses = [3, 4, 5, 7]
         return cls.query.with_entities(func.count()).filter(
                 cls.status.in_(completed_statuses),
-                cls.codeversion==codeversion,
-                cls.mode==mode
+                cls.codeversion == codeversion,
+                cls.mode == mode
             ).scalar()
 
     @classmethod
-    def count_workers_grouped(cls, query=None, group_bys=['codeversion','mode','status']):
+    def count_workers_grouped(cls, query=None, group_bys: List[str] = None):
+        if group_bys is None:
+            group_bys = ['codeversion', 'mode', 'status']
         group_by_labels = group_bys + ['count']
         group_bys = [getattr(cls, group_by) for group_by in group_bys]
         if not query:
@@ -168,14 +182,15 @@ class Participant(Base):
 
         def list_to_grouped_dicts(results):
             parsed_results = {}
-            for k, group in groupby(results, lambda row: row[0]): # k will be codeversion
+            for k, group in groupby(results, lambda row: row[0]):  # k will be codeversion
                 group = list(group)
                 if len(group[0]) > 2:
                     parsed_results[k] = list_to_grouped_dicts([row[1:] for row in group])
                 else:
-                    parsed_results.update({k:v for k,v in group})
+                    parsed_results.update({k: v for k, v in group})
             return parsed_results
 
+        # TODO: Is this call actually doing anything? Looks like it is ignored.
         parsed_results = list_to_grouped_dicts(results)
 
         zipped_results = [dict(zip(group_by_labels, row)) for row in results]
@@ -189,14 +204,15 @@ class Participant(Base):
 
 
 class Hit(Base):
-    '''
-    '''
+    """
+    """
     __tablename__ = 'amt_hit'
     hitid = Column(String(128), primary_key=True)
 
+
 class Campaign(Base):
-    '''
-    '''
+    """
+    """
     __tablename__ = 'campaign'
     id = Column(Integer, primary_key=True)
     codeversion = Column(String(128), nullable=False)
@@ -210,8 +226,8 @@ class Campaign(Base):
     created = Column(DateTime, default=datetime.datetime.utcnow)
     ended = Column(DateTime, default=None)
 
-    @validates('goal', 'minutes_between_rounds','assignments_per_round',
-        'hit_duration_hours')
+    @validates('goal', 'minutes_between_rounds', 'assignments_per_round',
+               'hit_duration_hours')
     def validate_greater_than_zero(self, key, value):
         if key == 'goal':
             self._validate_greater_than_already_completed(value)
@@ -220,16 +236,20 @@ class Campaign(Base):
 
     @validates('hit_reward')
     def validate_hit_reward(self, key, hit_reward):
-        assert hit_reward >= 0, 'Hit reward must be greater than or equal to zero, got {}'.hit_reward
+        assert hit_reward >= 0, \
+            f'Hit reward must be greater than or equal to zero, got {hit_reward}'
         return hit_reward
 
     def _validate_greater_than_already_completed(self, goal):
-        count_completed = Participant.count_completed(codeversion=self.codeversion, mode=self.mode)
-        assert goal > count_completed, 'Goal ({}) must be greater than the count of already-completed ({}).'.format(goal, count_completed)
-
+        count_completed = Participant.count_completed(
+            codeversion=self.codeversion, mode=self.mode)
+        assert goal > count_completed, \
+            f'Goal ({goal}) must be greater than the count of '\
+            f'already-completed {count_completed}).'
+    
     @validates('mode')
     def validate_mode(self, key, mode):
-        assert mode in ['sandbox','live'], 'Mode {} not recognized.'.format(mode)
+        assert mode in ['sandbox', 'live'], 'Mode {} not recognized.'.format(mode)
         return mode
 
     @validates('is_active')
@@ -237,7 +257,6 @@ class Campaign(Base):
         if is_active:
             assert not self.active_campaign_exists(), 'No no, there can be only one active campaign.'
         return is_active
-
 
     def __init__(self, **kwargs):
         self.codeversion = CODE_VERSION

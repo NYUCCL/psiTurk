@@ -2,7 +2,7 @@
 # ExperimentError Exception, for db errors, etc.
 # ----------------------------------------------
 # Possible ExperimentError values.
-
+from __future__ import generator_stop
 from flask import render_template
 
 
@@ -152,10 +152,11 @@ class ExperimentError(Exception):
             contact_address=contact_on_error,
             **request.args)
 
+
 class ExperimentApiError(Exception):
     
     def __init__(self, message, status_code=500, payload=None):
-        super(ExperimentApiError, self).__init__()
+        super().__init__()
         self.message = message
         self.status_code = status_code
         self.payload = payload
@@ -165,9 +166,10 @@ class ExperimentApiError(Exception):
         rv['message'] = self.message
         return rv
 
+
 class InvalidUsageError(ExperimentApiError):
     
     def __init__(self, *args, **kwargs):
         if 'status_code' not in kwargs:
             kwargs['status_code'] = 400
-        super(InvalidUsage, self).__init__(*args, **kwargs)
+        super(InvalidUsageError, self).__init__(*args, **kwargs)

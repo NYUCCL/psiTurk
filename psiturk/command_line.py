@@ -1,6 +1,5 @@
-''' This module supports commandline functionality '''
-from __future__ import print_function
-
+""" This module supports commandline functionality """
+from __future__ import generator_stop
 import argparse
 import sys
 import os
@@ -22,6 +21,7 @@ def process():
     elif invoked_as == "psiturk-heroku-config":
         from psiturk.do_heroku_setup import do_heroku_setup
         do_heroku_setup()
+
 
 def setup_example():
     """Add commands for testing, etc."""

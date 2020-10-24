@@ -1,30 +1,27 @@
 """Module psiturk_config."""
-from __future__ import print_function
-from future import standard_library
-from distutils import file_util
+from __future__ import generator_stop
 import os
 from configparser import ConfigParser
 from dotenv import load_dotenv, find_dotenv
 from .psiturk_exceptions import EphemeralContainerDBError, PsiturkException
-standard_library.install_aliases()
 
 
 class PsiturkConfig(ConfigParser):
     """PsiturkConfig class."""
 
-    def __init__(self, localConfig="config.txt",
-                 globalConfigName=".psiturkconfig", **kwargs):
+    def __init__(self, local_config="config.txt",
+                 global_config_name=".psiturkconfig", **kwargs):
         """Init."""
         load_dotenv(find_dotenv(usecwd=True))
         if 'PSITURK_GLOBAL_CONFIG_LOCATION' in os.environ:
-            globalConfig = os.path.join(
-                os.environ['PSITURK_GLOBAL_CONFIG_LOCATION'], globalConfigName)
+            global_config = os.path.join(
+                os.environ['PSITURK_GLOBAL_CONFIG_LOCATION'], global_config_name)
         else:  # if nothing is set default to user's home directory
-            globalConfig = "~/" + globalConfigName
+            global_config = "~/" + global_config_name
         self.parent = ConfigParser
-        self.parent.__init__(self, **kwargs)
-        self.localFile = localConfig
-        self.globalFile = os.path.expanduser(globalConfig)
+        super().__init__(**kwargs)
+        self.local_file = local_config
+        self.global_file = os.path.expanduser(global_config)
 
     def load_config(self):
         """Load config."""
@@ -44,7 +41,7 @@ class PsiturkConfig(ConfigParser):
         # * user's local's file
         # * env vars
         self.read([global_defaults_file, local_defaults_file,
-                   self.globalFile, self.localFile])
+                   self.global_file, self.local_file])
         # prefer environment
         these_as_they_are = ['PORT', 'DATABASE_URL']  # heroku sets these
         for section in self.sections():
@@ -86,4 +83,4 @@ class PsiturkConfig(ConfigParser):
             ad_url_protocol = self.get('HIT Configuration', 'ad_url_protocol')
             ad_url_port = self.get('HIT Configuration', 'ad_url_port')
             ad_url_route = self.get('HIT Configuration', 'ad_url_route')
-            return f"{ad_url_protocol}://{ad_url_domain}:{ad_url_port}:{ad_url_route}"
+            return f"{ad_url_protocol}://{ad_url_domain}:{ad_url_port}/{ad_url_route}"

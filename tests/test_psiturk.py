@@ -5,24 +5,18 @@ from builtins import str
 from builtins import object
 import os
 import unittest
-import tempfile
 import psiturk
 import json
 from faker import Faker
 import pytest
+from importlib import reload  # Python 3.4+
 
 fake = Faker()  # Fake data generator
 
-try:
-    reload  # Python 2.7
-except NameError:
-    try:
-        from importlib import reload  # Python 3.4+
-    except ImportError:
-        from imp import reload  # Python 3.0 - 3.3
 
 class FlaskTestClientProxy(object):
-    '''Spoof user agent (Chrome)'''
+    """Spoof user agent (Chrome)"""
+
     def __init__(self, app):
         self.app = app
 
@@ -33,8 +27,10 @@ class FlaskTestClientProxy(object):
             Safari/537.36'
         return self.app(environ, start_response)
 
+
 class BadFlaskTestClientProxy(object):
-    '''Spoof user agent (iPad)'''
+    """Spoof user agent (iPad)"""
+
     def __init__(self, app):
         self.app = app
 
@@ -49,7 +45,7 @@ class BadFlaskTestClientProxy(object):
 class PsiturkUnitTest(unittest.TestCase):
 
     def setUp(self, case=None):
-        '''Build up fixtures'''
+        """Build up fixtures"""
         import psiturk.experiment
         reload(psiturk.experiment)
 
@@ -64,24 +60,29 @@ class PsiturkUnitTest(unittest.TestCase):
         self.assignment_id = fake.md5(raw_output=False)
 
     def tearDown(self):
-        '''Tear down fixtures'''
+        """Tear down fixtures"""
         self.app = None
 
     def set_config(self, section, field, value):
         self.config.parent.set(self.config, section, field, str(value))
+
 
 @pytest.fixture()
 def remove_file(tmpdir):
     def do_it(filename):
         import shutil
         shutil.move(filename, './{}.xyz'.format(filename))
+
     return do_it
+
 
 @pytest.fixture()
 def remove_template(remove_file):
     def do_it(template_name):
         remove_file('templates/{}'.format(template_name))
+
     return do_it
+
 
 @pytest.fixture()
 def psiturk_test_client():
@@ -91,7 +92,9 @@ def psiturk_test_client():
         psiturk.experiment.app.wsgi_app = FlaskTestClientProxy(
             psiturk.experiment.app.wsgi_app)
         return psiturk.experiment.app
+
     yield do_it
+
 
 def test_custom_get_condition_can_import(mocker, psiturk_test_client):
     # pytest.set_trace()
@@ -100,13 +103,12 @@ def test_custom_get_condition_can_import(mocker, psiturk_test_client):
     sys.path.append(os.getcwd())
     import custom
     reload(custom)
-
-    mocker.patch.object(custom,'custom_get_condition', lambda mode: (9,9), create=True)
-
+    mocker.patch.object(custom, 'custom_get_condition', lambda mode: (9, 9), create=True)
     app = psiturk_test_client()
 
     from psiturk.experiment import get_condition
-    assert get_condition('') == (9,9)
+    assert get_condition('') == (9, 9)
+
 
 def test_custom_get_condition_not_necessary(tmpdir, mocker, psiturk_test_client):
     import sys
@@ -116,19 +118,23 @@ def test_custom_get_condition_not_necessary(tmpdir, mocker, psiturk_test_client)
     app = psiturk_test_client()
 
     from psiturk.experiment import get_condition
-    assert get_condition('') == (0,0)
+    assert get_condition('') == (0, 0)
+
 
 def test_missing_template_exception(edit_config_file, remove_template, psiturk_test_client):
     remove_template('closepopup.html')
     with pytest.raises(RuntimeError):
         app = psiturk_test_client()
 
+
 def test_notmissing_template(edit_config_file, remove_template, psiturk_test_client):
     psiturk_test_client()
+
 
 def test_does_not_die_if_no_custompy(remove_file, psiturk_test_client):
     remove_file('custom.py')
     psiturk_test_client()
+
 
 def test_insert_mode(psiturk_test_client):
     with open('templates/ad.html', 'r') as temp_file:
@@ -137,32 +143,33 @@ def test_insert_mode(psiturk_test_client):
     from psiturk.experiment import insert_mode
     insert_mode(ad_string, 'debug')
 
+
 class PsiTurkStandardTests(PsiturkUnitTest):
 
     # Test experiment.py
     # ==================
 
     def test_default_page(self):
-        '''Test that root page works.'''
+        """Test that root page works."""
         rv = self.app.get('/')
         response = rv.get_data(as_text=True)
         # print(os.getcwd())
         # with open('server.log','r') as infile:
-            # print(file.read())
+        # print(file.read())
         assert ('Welcome to psiTurk!' in response)
 
     def test_exp_debug_no_url_vars(self):
-        '''Test that exp page throws Error #1003 with no url vars.'''
+        """Test that exp page throws Error #1003 with no url vars."""
         rv = self.app.get('/exp')
         assert u'<b>Error</b>: 1003' in rv.get_data(as_text=True)
 
     def test_ad_no_url_vars(self):
-        '''Test that ad page throws Error #1001 with no url vars.'''
+        """Test that ad page throws Error #1001 with no url vars."""
         rv = self.app.get('/ad')
         assert u'<b>Error</b>: 1001' in rv.get_data(as_text=True)
 
     def test_ad_with_all_urls(self):
-        '''Test that ad page throws Error #1003 with no url vars.'''
+        """Test that ad page throws Error #1003 with no url vars."""
         args = '&'.join([
             'assignmentId=debug%s' % self.assignment_id,
             'workerId=debug%s' % self.worker_id,
@@ -173,7 +180,7 @@ class PsiTurkStandardTests(PsiturkUnitTest):
 
     @pytest.mark.skip('psiturk api server is slow for this test')
     def test_exp_with_all_url_vars_not_registered_on_ad_server(self):
-        '''Test that exp page throws Error #1018 with all url vars but not registered.'''
+        """Test that exp page throws Error #1018 with all url vars but not registered."""
         self.set_config('Shell Parameters', 'use_psiturk_ad_server', 'true')
         args = '&'.join([
             'assignmentId=debug%s' % self.assignment_id,
@@ -185,18 +192,63 @@ class PsiTurkStandardTests(PsiturkUnitTest):
 
     def test_sync_put(self):
         request = "&".join([
-           "assignmentId=debug%s" % self.assignment_id,
-           "workerId=debug%s" % self.worker_id,
-           "hitId=debug%s" % self.hit_id,
-           "mode=debug"])
+            "assignmentId=debug%s" % self.assignment_id,
+            "workerId=debug%s" % self.worker_id,
+            "hitId=debug%s" % self.hit_id,
+            "mode=debug"])
 
         # put the user in the database
         rv = self.app.get("/exp?%s" % request)
 
-
         # try putting the sync, simulating a Backbone PUT payload
         uniqueid = "debug%s:debug%s" % (self.worker_id, self.assignment_id)
-        payload = {"condition":5,"counterbalance":0,"assignmentId":self.assignment_id,"workerId":self.worker_id,"hitId":self.hit_id,"currenttrial":2,"bonus":0,"data":[{"uniqueid":uniqueid,"current_trial":0,"dateTime":1564425799481,"trialdata":{"phase":"postquestionnaire","status":"begin"}},{"uniqueid":uniqueid,"current_trial":1,"dateTime":1564425802158,"trialdata":{"phase":"postquestionnaire","status":"submit"}}],"questiondata":{"engagement":"5","difficulty":"5"},"eventdata":[{"eventtype":"initialized","value":'',"timestamp":1564425799139,"interval":0},{"eventtype":"window_resize","value":[933,708],"timestamp":1564425799139,"interval":0}],"useragent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36","mode":"debug"}
+        payload = {
+            "condition": 5,
+            "counterbalance": 0,
+            "assignmentId": self.assignment_id,
+            "workerId": self.worker_id,
+            "hitId": self.hit_id,
+            "currenttrial": 2,
+            "bonus": 0,
+            "data": [
+                {
+                    "uniqueid": uniqueid,
+                    "current_trial": 0,
+                    "dateTime": 1564425799481,
+                    "trialdata": {
+                        "phase": "postquestionnaire",
+                        "status": "begin"
+                    }
+                }, {
+                    "uniqueid": uniqueid,
+                    "current_trial": 1,
+                    "dateTime": 1564425802158,
+                    "trialdata": {
+                        "phase": "postquestionnaire",
+                        "status": "submit"
+                    }
+                }
+            ],
+            "questiondata": {
+                "engagement": "5",
+                "difficulty": "5"
+            },
+            "eventdata": [
+                {
+                    "eventtype": "initialized",
+                    "value": '',
+                    "timestamp": 1564425799139,
+                    "interval": 0
+                }, {
+                    "eventtype": "window_resize",
+                    "value": [933, 708],
+                    "timestamp": 1564425799139,
+                    "interval": 0
+                }
+            ],
+            "useragent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36",
+            "mode": "debug"
+        }
         rv = self.app.put('/sync/%s' % uniqueid, json=payload)
         status = json.loads(rv.get_data(as_text=True)).get("status", "")
         assert status == "user data saved"
@@ -207,10 +259,10 @@ class PsiTurkStandardTests(PsiturkUnitTest):
         self.hit_id = "debug%s" % self.hit_id
 
         request = "&".join([
-           "assignmentId=%s" % self.assignment_id,
-           "workerId=%s" % self.worker_id,
-           "hitId=%s" % self.hit_id,
-           "mode="])
+            "assignmentId=%s" % self.assignment_id,
+            "workerId=%s" % self.worker_id,
+            "hitId=%s" % self.hit_id,
+            "mode="])
 
         # put the user in the database
         rv = self.app.get("/exp?%s" % request)
@@ -220,7 +272,55 @@ class PsiTurkStandardTests(PsiturkUnitTest):
         condition = 0
         counterbalance = 0
         bonus = 0.0
-        payload = {"condition":condition,"counterbalance":counterbalance,"assignmentId":self.assignment_id,"workerId":self.worker_id,"hitId":self.hit_id,"currenttrial":2,"bonus":bonus,"data":[{"uniqueid":uniqueid,"current_trial":0,"dateTime":1564425799481,"trialdata":{"phase":"postquestionnaire","status":"begin"}},{"uniqueid":uniqueid,"current_trial":1,"dateTime":1564425802158,"trialdata":{"phase":"postquestionnaire","status":"submit"}}],"questiondata":{"engagement":"5","difficulty":"5"},"eventdata":[{"eventtype":"initialized","value":'',"timestamp":1564425799139,"interval":0},{"eventtype":"window_resize","value":[933,708],"timestamp":1564425799139,"interval":0}],"useragent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36","mode":"debug"}
+        payload = {
+            "condition": condition,
+            "counterbalance": counterbalance,
+            "assignmentId": self.assignment_id,
+            "workerId": self.worker_id,
+            "hitId": self.hit_id,
+            "currenttrial": 2,
+            "bonus": bonus,
+            "data": [
+                {
+                    "uniqueid": uniqueid,
+                    "current_trial": 0,
+                    "dateTime": 1564425799481,
+                    "trialdata": {
+                        "phase": "postquestionnaire",
+                        "status": "begin"
+                    }
+                },
+                {
+                    "uniqueid": uniqueid,
+                    "current_trial": 1,
+                    "dateTime": 1564425802158,
+                    "trialdata": {
+                        "phase": "postquestionnaire",
+                        "status": "submit"
+                    }
+                }
+            ],
+            "questiondata": {
+                "engagement": "5",
+                "difficulty": "5"
+            },
+            "eventdata": [
+                {
+                    "eventtype": "initialized",
+                    "value": '',
+                    "timestamp": 1564425799139,
+                    "interval": 0
+                },
+                {
+                    "eventtype": "window_resize",
+                    "value": [933, 708],
+                    "timestamp": 1564425799139,
+                    "interval": 0
+                }
+            ],
+            "useragent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36",
+            "mode": "debug"
+        }
         rv = self.app.put('/sync/%s' % uniqueid, json=payload)
 
         # get data with sync GET
@@ -236,12 +336,12 @@ class PsiTurkStandardTests(PsiturkUnitTest):
         assert response.get("bonus", None) == bonus
 
     def test_favicon(self):
-        '''Test that favicon loads.'''
+        """Test that favicon loads."""
         rv = self.app.get('/favicon.ico')
         assert rv.status_code == 200
 
     def test_complete_experiment(self):
-        '''Test that a participant can start and finish the experiment.'''
+        """Test that a participant can start and finish the experiment."""
         request = "&".join([
             "assignmentId=debug%s" % self.assignment_id,
             "workerId=debug%s" % self.worker_id,
@@ -259,7 +359,7 @@ class PsiTurkStandardTests(PsiturkUnitTest):
         assert rv.status_code == 200
 
     def test_repeat_experiment_fail(self):
-        '''Test that a participant cannot repeat the experiment.'''
+        """Test that a participant cannot repeat the experiment."""
         request = "&".join([
             "assignmentId=%s" % self.assignment_id,
             "workerId=%s" % self.worker_id,
@@ -272,8 +372,101 @@ class PsiTurkStandardTests(PsiturkUnitTest):
 
         # save data with sync PUT
         uniqueid = "%s:%s" % (self.worker_id, self.assignment_id)
-        payload = payload = {"condition":5,"counterbalance":0,"assignmentId":self.assignment_id,"workerId":self.worker_id,"hitId":self.hit_id,"currenttrial":2,"bonus":0,"data":[{"uniqueid":uniqueid,"current_trial":0,"dateTime":1564425799481,"trialdata":{"phase":"postquestionnaire","status":"begin"}},{"uniqueid":uniqueid,"current_trial":1,"dateTime":1564425802158,"trialdata":{"phase":"postquestionnaire","status":"submit"}}],"questiondata":{"engagement":"5","difficulty":"5"},"eventdata":[{"eventtype":"initialized","value":'',"timestamp":1564425799139,"interval":0},{"eventtype":"window_resize","value":[933,708],"timestamp":1564425799139,"interval":0}],"useragent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36","mode":"debug"}
-        rv = self.app.put('/sync/%s' % uniqueid, json={"condition":5,"counterbalance":0,"assignmentId":self.assignment_id,"workerId":self.worker_id,"hitId":self.hit_id,"currenttrial":2,"bonus":0,"data":[{"uniqueid":uniqueid,"current_trial":0,"dateTime":1564425799481,"trialdata":{"phase":"postquestionnaire","status":"begin"}},{"uniqueid":uniqueid,"current_trial":1,"dateTime":1564425802158,"trialdata":{"phase":"postquestionnaire","status":"submit"}}],"questiondata":{"engagement":"5","difficulty":"5"},"eventdata":[{"eventtype":"initialized","value":'',"timestamp":1564425799139,"interval":0},{"eventtype":"window_resize","value":[933,708],"timestamp":1564425799139,"interval":0}],"useragent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36","mode":"debug"})
+        payload = {
+            "condition": 5, "counterbalance": 0,
+            "assignmentId": self.assignment_id,
+            "workerId": self.worker_id,
+            "hitId": self.hit_id,
+            "currenttrial": 2,
+            "bonus": 0,
+            "data": [
+                {
+                    "uniqueid": uniqueid,
+                    "current_trial": 0,
+                    "dateTime": 1564425799481,
+                    "trialdata": {
+                        "phase": "postquestionnaire",
+                        "status": "begin"
+                    }
+                },
+                {
+                    "uniqueid": uniqueid,
+                    "current_trial": 1,
+                    "dateTime": 1564425802158,
+                    "trialdata": {
+                        "phase": "postquestionnaire",
+                        "status": "submit"
+                    }
+                }
+            ],
+            "questiondata": {
+                "engagement": "5",
+                "difficulty": "5"
+            },
+            "eventdata": [
+                {
+                    "eventtype": "initialized",
+                    "value": '',
+                    "timestamp": 1564425799139,
+                    "interval": 0
+                },
+                {
+                    "eventtype": "window_resize",
+                    "value": [933, 708],
+                    "timestamp": 1564425799139,
+                    "interval": 0
+                }
+            ],
+            "useragent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36",
+            "mode": "debug"
+        }
+        rv = self.app.put('/sync/%s' % uniqueid, json={
+            "condition": 5,
+            "counterbalance": 0,
+            "assignmentId": self.assignment_id,
+            "workerId": self.worker_id,
+            "hitId": self.hit_id,
+            "currenttrial": 2,
+            "bonus": 0, "data": [
+                {
+                    "uniqueid": uniqueid,
+                    "current_trial": 0,
+                    "dateTime": 1564425799481,
+                    "trialdata": {
+                        "phase": "postquestionnaire",
+                        "status": "begin"
+                    }
+                },
+                {
+                    "uniqueid": uniqueid,
+                    "current_trial": 1,
+                    "dateTime": 1564425802158,
+                    "trialdata": {
+                        "phase": "postquestionnaire",
+                        "status": "submit"
+                    }
+                }
+            ],
+            "questiondata": {
+                "engagement": "5",
+                "difficulty": "5"
+            },
+            "eventdata": [
+                {
+                    "eventtype": "initialized", "value": '',
+                    "timestamp": 1564425799139,
+                    "interval": 0
+                },
+                {
+                    "eventtype": "window_resize",
+                    "value": [933, 708],
+                    "timestamp": 1564425799139,
+                    "interval": 0
+                }
+            ],
+            "useragent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36",
+            "mode": "debug"
+        })
         assert rv.status_code == 200
 
         # complete experiment
@@ -299,7 +492,7 @@ class PsiTurkStandardTests(PsiturkUnitTest):
         assert ': 1010' in rv.get_data(as_text=True)
 
     def test_repeat_experiment_success(self):
-        '''Test that a participant can repeat the experiment.'''
+        """Test that a participant can repeat the experiment."""
         self.set_config(u'Task Parameters', u'allow_repeats', u'true')
         request = "&".join([
             "assignmentId=%s" % self.assignment_id,
@@ -313,7 +506,21 @@ class PsiTurkStandardTests(PsiturkUnitTest):
 
         # save data with sync PUT
         uniqueid = "%s:%s" % (self.worker_id, self.assignment_id)
-        payload = payload = {"condition":5,"counterbalance":0,"assignmentId":self.assignment_id,"workerId":self.worker_id,"hitId":self.hit_id,"currenttrial":2,"bonus":0,"data":[{"uniqueid":uniqueid,"current_trial":0,"dateTime":1564425799481,"trialdata":{"phase":"postquestionnaire","status":"begin"}},{"uniqueid":uniqueid,"current_trial":1,"dateTime":1564425802158,"trialdata":{"phase":"postquestionnaire","status":"submit"}}],"questiondata":{"engagement":"5","difficulty":"5"},"eventdata":[{"eventtype":"initialized","value":'',"timestamp":1564425799139,"interval":0},{"eventtype":"window_resize","value":[933,708],"timestamp":1564425799139,"interval":0}],"useragent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36","mode":"debug"}
+        payload = {
+            "condition": 5, "counterbalance": 0,
+            "assignmentId": self.assignment_id, "workerId": self.worker_id,
+            "hitId": self.hit_id, "currenttrial": 2, "bonus": 0, "data": [
+                {"uniqueid": uniqueid, "current_trial": 0, "dateTime": 1564425799481,
+                 "trialdata": {"phase": "postquestionnaire", "status": "begin"}},
+                {"uniqueid": uniqueid, "current_trial": 1, "dateTime": 1564425802158,
+                 "trialdata": {"phase": "postquestionnaire", "status": "submit"}}],
+            "questiondata": {"engagement": "5", "difficulty": "5"}, "eventdata": [
+                {"eventtype": "initialized", "value": '', "timestamp": 1564425799139,
+                 "interval": 0},
+                {"eventtype": "window_resize", "value": [933, 708], "timestamp": 1564425799139,
+                 "interval": 0}],
+            "useragent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36",
+            "mode": "debug"}
         rv = self.app.put('/sync/%s' % uniqueid, json=payload)
         assert rv.status_code == 200
 
@@ -343,7 +550,21 @@ class PsiTurkStandardTests(PsiturkUnitTest):
 
         # save data with sync PUT
         uniqueid = "%s:%s" % (self.worker_id, self.assignment_id)
-        payload = payload = {"condition":5,"counterbalance":0,"assignmentId":self.assignment_id,"workerId":self.worker_id,"hitId":self.hit_id,"currenttrial":2,"bonus":0,"data":[{"uniqueid":uniqueid,"current_trial":0,"dateTime":1564425799481,"trialdata":{"phase":"postquestionnaire","status":"begin"}},{"uniqueid":uniqueid,"current_trial":1,"dateTime":1564425802158,"trialdata":{"phase":"postquestionnaire","status":"submit"}}],"questiondata":{"engagement":"5","difficulty":"5"},"eventdata":[{"eventtype":"initialized","value":'',"timestamp":1564425799139,"interval":0},{"eventtype":"window_resize","value":[933,708],"timestamp":1564425799139,"interval":0}],"useragent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36","mode":"debug"}
+        payload = payload = {
+            "condition": 5, "counterbalance": 0,
+            "assignmentId": self.assignment_id, "workerId": self.worker_id,
+            "hitId": self.hit_id, "currenttrial": 2, "bonus": 0, "data": [
+                {"uniqueid": uniqueid, "current_trial": 0, "dateTime": 1564425799481,
+                 "trialdata": {"phase": "postquestionnaire", "status": "begin"}},
+                {"uniqueid": uniqueid, "current_trial": 1, "dateTime": 1564425802158,
+                 "trialdata": {"phase": "postquestionnaire", "status": "submit"}}],
+            "questiondata": {"engagement": "5", "difficulty": "5"}, "eventdata": [
+                {"eventtype": "initialized", "value": '', "timestamp": 1564425799139,
+                 "interval": 0},
+                {"eventtype": "window_resize", "value": [933, 708], "timestamp": 1564425799139,
+                 "interval": 0}],
+            "useragent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36",
+            "mode": "debug"}
         rv = self.app.put('/sync/%s' % uniqueid, json=payload)
         assert rv.status_code == 200
 
@@ -353,7 +574,7 @@ class PsiTurkStandardTests(PsiturkUnitTest):
         assert rv.status_code == 200
 
     def test_repeat_experiment_quit(self):
-        '''Test that a participant cannot restart the experiment.'''
+        """Test that a participant cannot restart the experiment."""
         request = "&".join([
             "assignmentId=%s" % self.assignment_id,
             "workerId=%s" % self.worker_id,
@@ -394,7 +615,7 @@ class PsiTurkStandardTests(PsiturkUnitTest):
         assert ': 1008' in rv.get_data(as_text=True)
 
     def test_repeat_experiment_quit_allow_repeats(self):
-        '''Test that a participant cannot restart the experiment, even when repeats are allowed.'''
+        """Test that a participant cannot restart the experiment, even when repeats are allowed."""
         self.set_config(u'Task Parameters', u'allow_repeats', u'true')
         request = "&".join([
             "assignmentId=%s" % self.assignment_id,
@@ -437,10 +658,10 @@ class PsiTurkStandardTests(PsiturkUnitTest):
 
 
 class BadUserAgent(PsiturkUnitTest):
-    '''Setup test blocked user agent (iPad/tablets)'''
+    """Setup test blocked user agent (iPad/tablets)"""
 
     def setUp(self):
-        '''Build up fixtures'''
+        """Build up fixtures"""
         import psiturk.experiment
         reload(psiturk.experiment)
 
@@ -454,18 +675,19 @@ class BadUserAgent(PsiturkUnitTest):
         self.assignment_id = fake.md5(raw_output=False)
 
     def test_ad_with_bad_user_agent(self):
-        '''Test that ad page throws Error when user agent is blocked.'''
+        """Test that ad page throws Error when user agent is blocked."""
         rv = self.app.get(
             '/ad' + '?assignmentId=debug' + self.assignment_id + '&workerId=debug' +
             self.worker_id + '&hitId=debug' + self.hit_id + '&mode=sandbox'
         )
         assert '<b>Error</b>: 1014' in rv.get_data(as_text=True)
 
+
 class PsiTurkTestPsiturkJS(PsiturkUnitTest):
-    ''' Setup test for missing psiturk.js file. '''
+    """ Setup test for missing psiturk.js file. """
 
     def setUp(self):
-        '''Build up fixtures'''
+        """Build up fixtures"""
         self.PSITURK_JS_FILE = '../psiturk/psiturk_js/psiturk.js'
         os.rename(self.PSITURK_JS_FILE, self.PSITURK_JS_FILE + '.bup')
         import psiturk.experiment
@@ -477,12 +699,12 @@ class PsiTurkTestPsiturkJS(PsiturkUnitTest):
 
     @pytest.mark.skip('soemthing about the testing env is making this not work well')
     def test_psiturk_js_is_missing(self):
-        ''' Test for missing psiturk.js '''
+        """ Test for missing psiturk.js """
         rv = self.app.get('static/js/psiturk.js')
         assert 'file not found' in rv.get_data(as_text=True)
 
     def tearDown(self):
-        '''Tear down fixtures'''
+        """Tear down fixtures"""
         super(PsiTurkTestPsiturkJS, self).tearDown()
         os.rename(self.PSITURK_JS_FILE + '.bup', self.PSITURK_JS_FILE)
 
