@@ -130,6 +130,7 @@ commands=[
     (['worker list --hit ABC'],'worker_list_hitid'),
     (['worker list --approved --hit ABC'], 'worker_list_approved_hitid'),
     (['worker list --submitted --all-studies'],'worker_list_submitted_allstudies'),
+    (['debug -p'], 'debug_print')
 ]
 
 generate_transcripts = False
