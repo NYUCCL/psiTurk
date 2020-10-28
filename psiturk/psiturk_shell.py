@@ -94,7 +94,7 @@ class PsiturkNetworkShell(Cmd, object):
                     '- `psiturk server off`',
                     '- `psiturk debug -p`'])
                 message = '{}{}'.format(e.message, still_can_do)
-                self.pfeedback(message)
+                self.perror(message)
             except PsiturkException as e:
                 self.poutput(e)
 
@@ -144,6 +144,7 @@ class PsiturkNetworkShell(Cmd, object):
 
         Cmd.__init__(self, persistent_history_file=persistent_history_file)
         self.quiet = quiet
+        self.feedback_to_output = True
 
         if not self.amt_services_wrapper and not self.quiet:
             sys.exit()
@@ -919,12 +920,10 @@ class PsiturkNetworkShell(Cmd, object):
         """
         try:
             base_url = self.config.get_ad_url()
-            if not arg['--print-only']:
-                self.pfeedback('generating debug url using `ad_url` config var')
+            self.pfeedback('generating debug url using `ad_url` config var')
         except PsiturkException:
-            if not arg['--print-only']:
-                self.pfeedback('`ad_url_*` config vars not set; using Server '
-                               'Parameters host and port vars.')
+            self.pfeedback('`ad_url_*` config vars not set; using Server '
+                           'Parameters host and port vars.')
             host = self.config.get('Server Parameters', 'host')
             port = self.config.get('Server Parameters', 'port')
             base_url = f"http://{host}:{port}/ad"
