@@ -919,9 +919,12 @@ class PsiturkNetworkShell(Cmd, object):
         """
         try:
             base_url = self.config.get_ad_url()
-            self.pfeedback('generating debug url using `ad_url` config var')
+            if not arg['--print-only']:
+                self.pfeedback('generating debug url using `ad_url` config var')
         except PsiturkException:
-            self.pfeedback('`ad_url_*` config vars not set; using Server Parameters host and port vars.')
+            if not arg['--print-only']:
+                self.pfeedback('`ad_url_*` config vars not set; using Server '
+                               'Parameters host and port vars.')
             host = self.config.get('Server Parameters', 'host')
             port = self.config.get('Server Parameters', 'port')
             base_url = f"http://{host}:{port}/ad"
