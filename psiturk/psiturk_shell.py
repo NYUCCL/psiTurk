@@ -926,10 +926,11 @@ class PsiturkNetworkShell(Cmd, object):
             port = self.config.get('Server Parameters', 'port')
             base_url = f"http://{host}:{port}/ad"
 
-        launch_url = base_url + "?assignmentId=debug" + \
-            str(self.random_id_generator()) + "&hitId=debug" + str(self.random_id_generator()) \
-                     + "&workerId=debug" + str(self.random_id_generator()
-                     + "&mode=debug")
+        launch_url = (f'{base_url}?'
+                      f'assignmentId=debug{self.random_id_generator()}'
+                      f'&hitId=debug{self.random_id_generator()}'
+                      f'&workerId=debug{self.random_id_generator()}'
+                      f'&mode=debug')
 
         if arg['--print-only']:
             self.poutput(launch_url)
