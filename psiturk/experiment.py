@@ -583,12 +583,13 @@ def load(uid=None):
         user = Participant.query.\
             filter(Participant.uniqueid == uid).\
             one()
+        app.logger.error(user)
     except exc.SQLAlchemyError:
         app.logger.error("DB error: Unique user not found.")
     else:
         try:
             resp = json.loads(user.datastring)
-        except json.JSONDecodeError:
+        except (ValueError, TypeError, json.JSONDecodeError):
             resp = {
                 "condition": user.cond,
                 "counterbalance": user.counterbalance,
