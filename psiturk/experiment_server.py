@@ -4,12 +4,27 @@ from gunicorn import util
 import multiprocessing
 from psiturk.psiturk_config import PsiturkConfig
 import os
+import sys
 import hashlib
+import signal
 from gevent import monkey
 monkey.patch_all()
 
 config = PsiturkConfig()
 config.load_config()
+
+
+def sigint_handler(signal, frame):
+    """
+    Give feedback when ^C is submitted by user.
+
+    Unfortunately, this does not tell psiturk interactive to update server status
+    """
+    print('^C: shutting down server processes.')
+    sys.exit(0)
+
+
+signal.signal(signal.SIGINT, sigint_handler)
 
 
 class ExperimentServer(Application):
