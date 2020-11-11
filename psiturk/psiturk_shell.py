@@ -94,7 +94,7 @@ class PsiturkNetworkShell(Cmd, object):
                     '- `psiturk server off`',
                     '- `psiturk debug -p`'])
                 message = '{}{}'.format(e.message, still_can_do)
-                self.pfeedback(message)
+                self.perror(message)
             except PsiturkException as e:
                 self.poutput(e)
 
@@ -144,6 +144,7 @@ class PsiturkNetworkShell(Cmd, object):
 
         Cmd.__init__(self, persistent_history_file=persistent_history_file)
         self.quiet = quiet
+        self.feedback_to_output = True
 
         if not self.amt_services_wrapper and not self.quiet:
             sys.exit()
@@ -921,15 +922,17 @@ class PsiturkNetworkShell(Cmd, object):
             base_url = self.config.get_ad_url()
             self.pfeedback('generating debug url using `ad_url` config var')
         except PsiturkException:
-            self.pfeedback('`ad_url_*` config vars not set; using Server Parameters host and port vars.')
+            self.pfeedback('`ad_url_*` config vars not set; using Server '
+                           'Parameters host and port vars.')
             host = self.config.get('Server Parameters', 'host')
             port = self.config.get('Server Parameters', 'port')
             base_url = f"http://{host}:{port}/ad"
 
-        launch_url = base_url + "?assignmentId=debug" + \
-            str(self.random_id_generator()) + "&hitId=debug" + str(self.random_id_generator()) \
-                     + "&workerId=debug" + str(self.random_id_generator()
-                     + "&mode=debug")
+        launch_url = (f'{base_url}?'
+                      f'assignmentId=debug{self.random_id_generator()}'
+                      f'&hitId=debug{self.random_id_generator()}'
+                      f'&workerId=debug{self.random_id_generator()}'
+                      f'&mode=debug')
 
         if arg['--print-only']:
             self.poutput(launch_url)
