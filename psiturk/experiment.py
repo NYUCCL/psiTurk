@@ -110,7 +110,7 @@ else:
     except ImportError as e:
         pass
     else:
-        custom_init_app()
+        custom_init_app(app)
 
 # scheduler
 
