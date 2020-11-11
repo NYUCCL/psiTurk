@@ -12,7 +12,7 @@ import re
 import json
 from jinja2 import TemplateNotFound
 from collections import Counter
-import signal
+
 
 # Setup flask
 from flask import Flask, render_template, render_template_string, request, \
@@ -580,7 +580,7 @@ def load(uid=None):
     else:
         try:
             resp = json.loads(user.datastring)
-        except (json.JSONDecodeError, TypeError):
+        except (ValueError, TypeError, json.JSONDecodeError):
             resp = {
                 "condition": user.cond,
                 "counterbalance": user.counterbalance,
