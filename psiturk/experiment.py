@@ -588,7 +588,7 @@ def load(uid=None):
     else:
         try:
             resp = json.loads(user.datastring)
-        except json.JSONDecodeError:
+        except (json.JSONDecodeError, TypeError):
             resp = {
                 "condition": user.cond,
                 "counterbalance": user.counterbalance,
