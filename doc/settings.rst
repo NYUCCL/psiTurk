@@ -60,7 +60,7 @@ keywords
 
 A list of keywords to be associated with your study on AMT.
 
-:Type: comma-delimited string
+:Type: comma-delimited ``string``
 
 Workers often use fields like this one to search for tasks.
 Thus making them descriptive and
@@ -214,7 +214,7 @@ whitelist_qualification_ids
 A list of custom qualifications that participants must possess to
 perform your task.
 
-:Type: comma-delimited string
+:Type: comma-delimited ``string``
 
 You may often need to ensure that workers have some requisite skill or pass 
 some previous screening factors, such as language proficiency or having already 
@@ -237,7 +237,7 @@ blacklist_qualification_ids
 A list of custom qualifications that participants must not possess to
 perform your task.
 
-:Type: comma-delimited string
+:Type: comma-delimited ``string``
 
 Adding a custom qualification to `blacklist_qualification_ids` will cause 
 your add not to be shown to potential participants who have that qualification 
