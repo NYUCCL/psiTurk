@@ -206,6 +206,45 @@ Note that this option does not affect the behavior when a participant starts
 the experiment but the quits or refreshes the page. In those cases, they will
 still be locked out, regardless of the setting of 0allow_repeats`.
 
+.. _whitelist_qualification_ids:
+
+whitelist_qualification_ids
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A list of custom qualifications that participants must possess to
+perform your task.
+
+:Type: comma-delimited string
+
+You may often need to ensure that workers have some requisite skill or pass 
+some previous screening factors, such as language proficiency or having already 
+completed one of your tasks.  AMT uses custom qualification types to perform 
+this filtering. Adding a custom qualification to 
+`whitelist_qualification_ids` will cause AMT to only show your add to potential 
+participants who already have that qualification set. 
+
+See `Managing worker cohorts with qualifications 
+<https://blog.mturk.com/tutorial-managing-worker-cohorts-with-qualifications-e928cd30b173>`_
+and `Best practices for managing workers in follow-up surveys <https://blog.mturk.com/tutorial-best-practices-for-managing-workers-in-follow-up-surveys-or-longitudinal-studies-4d0732a7319b>`_ 
+for additional details on custom qualifications.
+
+
+.. _blacklist_qualification_ids:
+
+blacklist_qualification_ids
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A list of custom qualifications that participants must not possess to
+perform your task.
+
+:Type: comma-delimited string
+
+Adding a custom qualification to `blacklist_qualification_ids` will cause 
+your add not to be shown to potential participants who have that qualification 
+set.  This is the recommended way of excluding participants who have performed 
+other HITs for you from accessing your ad. 
+
+
 
 Database Parameters
 -------------------
