@@ -204,7 +204,7 @@ then participants will be able to complete the experiment any number of times.
 
 Note that this option does not affect the behavior when a participant starts
 the experiment but the quits or refreshes the page. In those cases, they will
-still be locked out, regardless of the setting of 0allow_repeats`.
+still be locked out, regardless of the setting of `allow_repeats`.
 
 
 Database Parameters
