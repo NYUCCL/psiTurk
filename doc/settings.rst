@@ -216,12 +216,13 @@ perform your task.
 
 :Type: comma-delimited ``string``
 
-You may often need to ensure that workers have some requisite skill or pass 
-some previous screening factors, such as language proficiency or having already 
+You may need to ensure that workers have some requisite skill or pass some 
+previous screening factors, such as language proficiency or having already 
 completed one of your tasks.  AMT uses custom qualification types to perform 
-this filtering. Adding a custom qualification to 
-`whitelist_qualification_ids` will cause AMT to only show your add to potential 
-participants who already have that qualification set. 
+this filtering. When you add a custom qualification to 
+`whitelist_qualification_ids`, AMT will only show your ad to potential 
+participants who already have that qualification set.  Other MTurk workers will 
+neither see your ad nor be able to accept the HIT.
 
 See `Managing worker cohorts with qualifications 
 <https://blog.mturk.com/tutorial-managing-worker-cohorts-with-qualifications-e928cd30b173>`_
@@ -239,10 +240,10 @@ perform your task.
 
 :Type: comma-delimited ``string``
 
-Adding a custom qualification to `blacklist_qualification_ids` will cause 
-your add not to be shown to potential participants who have that qualification 
-set.  This is the recommended way of excluding participants who have performed 
-other HITs for you from accessing your ad. 
+When you add a custom qualification to `blacklist_qualification_ids`, MTurk 
+workers with that qualification already set will neither see your ad nor be able
+to accept your HIT. This is the recommended way of excluding participants who 
+have performed other HITs for you from participating in your new HIT. 
 
 
 
