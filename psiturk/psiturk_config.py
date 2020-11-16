@@ -63,7 +63,7 @@ class PsiturkConfig(ConfigParser):
         # heroku files are ephemeral.
         # Error if we're trying to use a file as the db
         if 'ON_CLOUD' in os.environ:
-            database_url = self.get('Database Parameters Parameters',
+            database_url = self.get('Database Parameters',
                                     'database_url')
             if ('localhost' in database_url) or ('sqlite' in database_url):
                 raise EphemeralContainerDBError(database_url)
