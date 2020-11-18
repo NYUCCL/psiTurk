@@ -60,7 +60,7 @@ keywords
 
 A list of keywords to be associated with your study on AMT.
 
-:Type: comma-delimited string
+:Type: comma-delimited ``string``
 
 Workers often use fields like this one to search for tasks.
 Thus making them descriptive and
@@ -205,6 +205,46 @@ then participants will be able to complete the experiment any number of times.
 Note that this option does not affect the behavior when a participant starts
 the experiment but the quits or refreshes the page. In those cases, they will
 still be locked out, regardless of the setting of `allow_repeats`.
+
+.. _whitelist_qualification_ids:
+
+whitelist_qualification_ids
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A list of custom qualifications that participants must possess to
+perform your task.
+
+:Type: comma-delimited ``string``
+
+You may need to ensure that workers have some requisite skill or pass some 
+previous screening factors, such as language proficiency or having already 
+completed one of your tasks.  AMT uses custom qualification types to perform 
+this filtering. When you add a custom qualification to 
+`whitelist_qualification_ids`, AMT will only show your ad to potential 
+participants who already have that qualification set.  Other MTurk workers will 
+neither see your ad nor be able to accept the HIT.
+
+See `Managing worker cohorts with qualifications 
+<https://blog.mturk.com/tutorial-managing-worker-cohorts-with-qualifications-e928cd30b173>`_
+and `Best practices for managing workers in follow-up surveys <https://blog.mturk.com/tutorial-best-practices-for-managing-workers-in-follow-up-surveys-or-longitudinal-studies-4d0732a7319b>`_ 
+for additional details on custom qualifications.
+
+
+.. _blacklist_qualification_ids:
+
+blacklist_qualification_ids
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A list of custom qualifications that participants must not possess to
+perform your task.
+
+:Type: comma-delimited ``string``
+
+When you add a custom qualification to `blacklist_qualification_ids`, MTurk 
+workers with that qualification already set will neither see your ad nor be able
+to accept your HIT. This is the recommended way of excluding participants who 
+have performed other HITs for you from participating in your new HIT. 
+
 
 
 Database Parameters
