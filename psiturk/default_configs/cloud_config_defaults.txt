@@ -1,0 +1,6 @@
+# These are defaults if ON_CLOUD is in the env vars
+[Server Parameters]
+host = 0.0.0.0
+errorlog = -
+accesslog = -
+threads = 1

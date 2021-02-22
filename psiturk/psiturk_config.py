@@ -5,7 +5,6 @@ from configparser import ConfigParser
 from dotenv import load_dotenv, find_dotenv
 from .psiturk_exceptions import EphemeralContainerDBError, PsiturkException
 
-
 class PsiturkConfig(ConfigParser):
     """PsiturkConfig class."""
 
@@ -31,17 +30,46 @@ class PsiturkConfig(ConfigParser):
             defaults_folder, "local_config_defaults.txt")
         global_defaults_file = os.path.join(
             defaults_folder, "global_config_defaults.txt")
+        cloud_defaults_file = os.path.join(
+            defaults_folder, "cloud_config_defaults.txt")
 
         # Read files in this order, with later settings overriding
         # earlier ones:
         #
         # * global default
         # * local default
+        # * if ON_CLOUD, cloud defaults
         # * user's global file
         # * user's local's file
         # * env vars
-        self.read([global_defaults_file, local_defaults_file,
-                   self.global_file, self.local_file])
+        self.read_file(open(global_defaults_file))
+        self.read_file(open(local_defaults_file))
+
+        # Backwards compatibility
+        if 'ON_HEROKU' in os.environ:
+            os.environ['ON_CLOUD'] = 1
+
+        # read in default cloud config
+        if 'ON_CLOUD' in os.environ:
+            self.read_file(open(cloud_defaults_file))
+
+        self.read([self.global_file, self.local_file])
+
+        # backwards compatibility
+        backwards_compatibilities = [
+            {
+                'in_section': 'Server Parameters',
+                'prefer_this': 'errorlog',
+                'over_this': 'logfile'
+            }
+        ]
+        for bc in backwards_compatibilities:
+            if (not self.has_option(bc['in_section'], bc['prefer_this'])) and self.has_option(bc['in_section'], bc['over_this']):
+                self.set(bc['in_section'], bc['prefer_this'], self.get(bc['in_section'], bc['over_this']))
+            env_key = f'PSITURK_{bc["over_this"].upper()}'
+            if env_key in os.environ:
+                self.set(bc['in_section'], bc['prefer_this'], os.environ.get(env_key))
+
         # prefer environment
         these_as_they_are = ['PORT', 'DATABASE_URL']  # heroku sets these
         for section in self.sections():
@@ -52,13 +80,17 @@ class PsiturkConfig(ConfigParser):
                 if config_var_upper in these_as_they_are:
                     config_val_env_override = os.environ.get(config_var_upper)
 
-                # prefer any `PSITURK_` key over `these_as_they_are` variants
+                # prefer any `PSITURK_` key even over `these_as_they_are` variants
                 psiturk_key = f'PSITURK_{config_var_upper}'
                 if psiturk_key in os.environ:
                     config_val_env_override = os.environ.get(psiturk_key)
 
                 if config_val_env_override:
                     self.set(section, config_var, config_val_env_override)
+
+        # Also set bc's in reverse direction, for code compatibility
+        for bc in backwards_compatibilities:
+            self.set(bc['in_section'], bc['over_this'], self.get(bc['in_section'], bc['prefer_this']))
 
         # heroku files are ephemeral.
         # Error if we're trying to use a file as the db

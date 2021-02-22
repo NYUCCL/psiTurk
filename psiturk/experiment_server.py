@@ -87,8 +87,8 @@ class ExperimentServer(Application):
             'worker_class': 'gevent',
             'loglevels': self.loglevels,
             'loglevel': self.loglevels[config.getint("Server Parameters", "loglevel")],
-            # 'accesslog': config.get('Server Parameters', "logfile"),
-            'errorlog': config.get('Server Parameters', "logfile"),
+            'accesslog': config.get('Server Parameters', "accesslog"),
+            'errorlog': config.get('Server Parameters', "errorlog"),
             'proc_name': 'psiturk_experiment_server_' + project_hash,
             'limit_request_line': '0',
         }
@@ -104,12 +104,6 @@ class ExperimentServer(Application):
         if config.has_option("Server Parameters", "server_timeout"):
             self.user_options.update(
                 {'timeout': config.get('Server Parameters', "server_timeout")})
-
-        if 'ON_CLOUD' in os.environ:
-            self.user_options.update({
-                'accesslog': '-',
-                'errorlog': '-'
-            })
 
 
 def launch():

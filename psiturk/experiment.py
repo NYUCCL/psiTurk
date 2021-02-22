@@ -122,15 +122,15 @@ scheduler = Scheduler(jobstores=jobstores, timezone=utc)
 app.apscheduler = scheduler
 scheduler.app = app
 
-if CONFIG.get('Server Parameters', 'do_scheduler'):
+if CONFIG.getboolean('Server Parameters', 'do_scheduler'):
     scheduler.start()
 
 
 #
 # Dashboard
 #
-if CONFIG.get('Server Parameters', 'enable_dashboard'):
-    from .dashboard import dashboard, init_app as dashboard_init_app  # management dashboard
+if CONFIG.getboolean('Server Parameters', 'enable_dashboard'):
+    from .dashboard import dashboard, init_app as dashboard_init_app # management dashboard
     app.register_blueprint(dashboard)
     dashboard_init_app(app)
 

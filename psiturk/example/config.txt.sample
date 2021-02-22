@@ -79,6 +79,7 @@
 ############################## Database Parameters #############################
 [Database Parameters]
 # Participant data will be stored in this database.
+# If ON_CLOUD=1, then this defaults to env var $DATABASE_URL, if set.
 ;database_url = sqlite:///participants.db
 
 # Name of the database table where participant data will be stored
@@ -88,18 +89,38 @@
 [Server Parameters]
 # Host on which the psiturk gunicorn server will listen when `psiturk server on`
 # is run.
-# Leave as default `localhost` if using a reverse proxy / hosting on the cloud
+#
+# If env var ON_CLOUD=1, then this defaults to 0.0.0.0
 ;host = localhost
 
 # Port on which the psiturk gunicorn server will listen when `psiturk server on`
 # is run.
+#
+# If env var ON_CLOUD=1, then this defaults to $PORT env var, if set
 ;port = 22362
 
 # Filename for psiturk server logging.
-;logfile = server.log
+#
+# If ON_CLOUD env var is set, then these both default to stdout (-)
+#
+;accesslog = /dev/null
+;errorlog = server.log
+# For backwards compatibility, `logfile` is synonymous with `errorlog`. If
+# both are set, `errorlog` will be preferred over `logfile`.
+;;logfile = server.log
 
 # Log level for the psiturk gunicorn server
 ;loglevel = 2
+
+# Controls whether the dashboard is enabled
+;enable_dashboard = false
+
+# Controls whether the scheduler will run. If true, then num_threads must be 1
+# Be very careful to only have one scheduler run for a given study in any
+# given place! Consider running a separate psiturk server somewhere else, that
+# has the same database_url and table_name settings, which you only use
+# for its dashboard and task runner.
+;do_scheduler = false
 
 # Login username for the dashboard
 ;login_username =
@@ -109,6 +130,7 @@
 
 # Number of threads for the psiturk gunicorn server to use. Leave to 1 if using
 # the task runner! Otherwise, dynamically dependent on the number of cpus.
+# If ON_CLOUD=1, then threads defaults to 1.
 ;threads = auto
 
 # The secret key used by flask for any secure functions it uses. Not necessary
