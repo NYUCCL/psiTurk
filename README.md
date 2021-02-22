@@ -1,4 +1,4 @@
-<img src="https://psiturk.org/static/images/psiturk_logo_README.png">
+<img src="https://raw.githubusercontent.com/NYUCCL/psiTurk/gh-pages/static/images/psiturk_logo_README.png">
 
 [![Build Status](https://travis-ci.org/NYUCCL/psiTurk.png?branch=master)](https://travis-ci.org/NYUCCL/psiTurk)
 [![Latest Version](https://img.shields.io/pypi/v/psiturk.svg?style=flat-square&label=latest%20stable%20version)](https://pypi.python.org/pypi/psiturk/)
