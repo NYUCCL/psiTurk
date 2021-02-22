@@ -1,5 +1,12 @@
+.. _faq:
+
 Frequently Asked Questions
 ==========================
+
+.. contents::
+   :local:
+   :depth: 1
+
 
 .. _how-host-mturk-experiment:
 
@@ -11,7 +18,6 @@ internet. Consider hosting your server on a cloud provider such as Heroku,
 AWS, DigitalOcean, etc.
 
 .. seealso:: :ref:`heroku-guide`
-
 
 
 I'm trying to run psiTurk at home using a cable modem or other connection. Will it work?
@@ -174,3 +180,10 @@ Immediately after I post my HIT on the "live" mode of AMT, I cannot find it via 
 Many MTurkers use tools that automatically accept HITs for them
 and put them in a queue. If all of your HITs get gobbled up before the MTurk GUI
 refreshes, then your HIT will *never* appear via a search on the MTurk GUI.
+
+.. _why-crashing:
+
+Why does my server keep crashing when I try to start it via `psiturk server on`?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Check your :ref:`settings-logfile` -- it should have the python error that caused the crash.
