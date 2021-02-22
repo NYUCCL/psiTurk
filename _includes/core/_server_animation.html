@@ -1,6 +1,6 @@
 <!-- it works the same with all jquery version from 1.3.1 to 2.0.3 -->
-<script src="/static/js/jquery-1.9.1.min.js"></script>
-<script src="/static/js/jssor.sliders.mini.js"></script>
+<script src="{{'/static/js/jquery-1.9.1.min.js' | relative_url }}"></script>
+<script src="{{'/static/js/jssor.sliders.mini.js' | relative_url}}"></script>
 <script>
     jQuery(document).ready(function ($) {
         var options = {
@@ -32,13 +32,13 @@
             <div id="slider1_container" style="position: relative; top: 0px; left: 0px; width: 700px; height: 480px;">
                                     <!-- Slides Container -->
                 <div u="slides" style="cursor: move; position: absolute; overflow: hidden; left: 0px; top: 0px; width: 750px; height: 480px;">
-                    <div><img u="image" src="/static/images/server_animation/server_animation_frame1.png" /></div>
-                    <div><img u="image" src="/static/images/server_animation/server_animation_frame2.png" /></div>
-                    <div><img u="image" src="/static/images/server_animation/server_animation_frame3.png" /></div>
-                    <div><img u="image" src="/static/images/server_animation/server_animation_frame4.png" /></div>
-                    <div><img u="image" src="/static/images/server_animation/server_animation_frame5.png" /></div>
-                    <div><img u="image" src="/static/images/server_animation/server_animation_frame6.png" /></div>
-                    <div><img u="image" src="/static/images/server_animation/server_animation_frame7.png" /></div>
+                    <div><img u="image" src="{{'/static/images/server_animation/server_animation_frame1.png' | relative_url }}" /></div>
+                    <div><img u="image" src="{{'/static/images/server_animation/server_animation_frame2.png' | relative_url }}" /></div>
+                    <div><img u="image" src="{{'/static/images/server_animation/server_animation_frame3.png' | relative_url }}" /></div>
+                    <div><img u="image" src="{{'/static/images/server_animation/server_animation_frame4.png' | relative_url }}" /></div>
+                    <div><img u="image" src="{{'/static/images/server_animation/server_animation_frame5.png' | relative_url }}" /></div>
+                    <div><img u="image" src="{{'/static/images/server_animation/server_animation_frame6.png' | relative_url }}" /></div>
+                    <div><img u="image" src="{{'/static/images/server_animation/server_animation_frame7.png' | relative_url }}" /></div>
 
                 </div>
 
@@ -54,7 +54,7 @@
                     */
                     .jssorb17 div, .jssorb17 div:hover, .jssorb17 .av
                     {
-                        background: url(/static/images/dots.png) no-repeat;
+                        background: url({{'/static/images/dots.png' | relative_url}}) no-repeat;
                         overflow:hidden;
                         cursor: pointer;
                     }
@@ -72,9 +72,3 @@
             </div>
           </div>
         </div>
-
-                   
-
-
-
-		
