@@ -7,19 +7,10 @@
 
 <nav class="menu-navigation">
       <ul class="menu-navigation-list">
-        {% if page_name %}
-        <li class="menu-navigation-list-item"><a href="{{'/' | relative_url }}"><span class="glyphicon glyphicon-home"></span></a></li>
-        {% else %}
-        <li class="menu-navigation-list-item"><span class="glyphicon glyphicon-home"></span></li>
-        {% endif %}
-        {% for item in pages_list %}
-          {% if selected.name == item.name %}
-            <li class="menu-navigation-list-item">{{ item.name }}</li>
-          {% else %}
-            <li class="menu-navigation-list-item"><a href="{{ item.url | relative_url }}">{{ item.name }}</a></li>
-          {% endif %}
-        {% endfor %}
-
+        <li class="menu-navigation-list-item"><a href='https://psiturk.readthedocs.io/en/latest/experiment-exchange.html'>Experiment Exchange</a></li>
+        <li class="menu-navigation-list-item"><a href="https://psiturk.readthedocs.io/en/latest/quickstart.html">Quick Start</a></li>
+        <li class="menu-navigation-list-item"><a href="https://psiturk.readthedocs.io/en/python2/">Docs</a></li>
+        <li class="menu-navigation-list-item"><a href="http://psiturk.readthedocs.org/en/latest/contribute.html">Contribute</a></li
       </ul>
     </nav>
 
