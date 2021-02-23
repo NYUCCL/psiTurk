@@ -34,6 +34,7 @@ User's Guide
 
    forward
    quickstart
+   migrating
    install
    amt_setup
    configuration-overview
