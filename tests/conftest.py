@@ -44,10 +44,6 @@ def experiment_dir(tmpdir, bork_aws_environ, edit_config_file):
     os.chdir(tmpdir)
     import psiturk.setup_example as se
     se.setup_example()
-    file_util.move_file(os.path.join(os.getcwd(), 'config.txt.sample'),
-                        os.path.join(os.getcwd(), 'config.txt'))
-    file_util.move_file(os.path.join(os.getcwd(), 'custom.py.sample'),
-                        os.path.join(os.getcwd(), 'custom.py'))
     os.environ['PSITURK_AD_URL_DOMAIN'] = 'example.com'
 
     # the setup script already chdirs into here,

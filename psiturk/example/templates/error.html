@@ -1,12 +1,5 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="utf-8" />
-        <title>Psychology Experiment - Error</title>
-        <link rel="stylesheet" href="/static/css/bootstrap.min.css" type="text/css" />
-        <link rel="stylesheet" href="/static/css/style.css" type="text/css" />
-    </head>
-    <body>
+{% extends 'layouts/layout.html' %}
+{% block body %}
         <div id="container-error">
 
             <div id="error">
@@ -15,7 +8,7 @@
 
                 <div class="alert alert-danger">
                 {% if errornum == 1008 %}
-                    
+
                         <p>Sorry, our records indicate that you have attempted to complete this HIT, but quit before finishing.</p>
                         <p>Because this is a Psychology experiment, you can only complete this HIT once.</p>
                         <p>Please return the HIT so someone else can perform the experiment.</p>
@@ -52,5 +45,4 @@
                 <h3>Our sincere apologies!</h3>
             </div>
         </div>
-    </body>
-</html>
+{% endblock %}

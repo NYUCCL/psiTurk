@@ -33,6 +33,10 @@ def setup_example():
         print("Copying", EXAMPLE_DIR, "to", EXAMPLE_TARGET)
         dir_util.copy_tree(EXAMPLE_DIR, EXAMPLE_TARGET)
 
+        file_util.move_file(os.path.join(EXAMPLE_TARGET, 'config.txt.sample'), os.path.join(EXAMPLE_TARGET, 'config.txt'))
+        file_util.move_file(os.path.join(EXAMPLE_TARGET, 'custom.py.sample'), os.path.join(EXAMPLE_TARGET, 'custom.py'))
+
+
         # change to target directory
         os.chdir(EXAMPLE_TARGET)
 
