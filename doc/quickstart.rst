@@ -130,10 +130,19 @@ In order to make the experiment available to workers on Amazon Mechanical Turk y
 1. Run your psiturk server on a machine that is publicly-accessible.
 2. Post a HIT on AMT, which will point MTurkers to your psiturk server address.
 
+Use the :ref:`ad_url <hit_configuration_ad_url>` settings to point to the location of your publicy-accessible experiment.
+
+See the :ref:`deploy-on-heroku` guide for an example of running your experiment on the
+webserver of a  platform-as-a-service cloud provider.
+
 The example below uses the Amazon Mechanical Turk "sandbox," which is a place
 for testing your task without actually offering it live to real paid workers.
 
-Your HIT should be visible on http://workersandbox.mturk.com if you search for
+Run the following to post a HIT, and answer all prompts::
+
+  $ [psiTurk server:on mode:sdbx #HITs:0]$ hit create
+
+Your HIT should now be visible on http://workersandbox.mturk.com if you search for
 your requester account name or the HIT title word "Stroop" (set in config.txt).
 
 .. warning::

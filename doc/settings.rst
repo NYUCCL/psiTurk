@@ -256,6 +256,9 @@ Hit Configuration -- Ad Url
 
 Config settings for constructing the task's "landing page" when posting hits on MTurk.
 
+The simplest way to set the ad url is to set only the :ref:`hit_configuration_ad_url_ad_url_domain` and leave the
+rest at their defaults.
+
 
 
 .. _hit_configuration_ad_url_ad_url_domain:
