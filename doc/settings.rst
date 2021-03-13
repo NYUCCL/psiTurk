@@ -245,6 +245,68 @@ workers with that qualification already set will neither see your ad nor be able
 to accept your HIT. This is the recommended way of excluding participants who
 have performed other HITs for you from participating in your new HIT.
 
+Hit Configuration -- Ad Url
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Config settings for constructing the task's "landing page" when posting hits on MTurk.
+
+
+ad_url_domain
+^^^^^^^^^^^^^
+
+:Type: ``string``
+:Default: ``null``
+
+Server domain name for publicly-accessible route to psiturk server.
+If running on heroku, set this to your heroku app url --
+for example, if your heroku app name were "example-app," you would set the following::
+
+  ad_url_domain = example-app.herokuapp.com
+
+
+ad_url_port
+^^^^^^^^^^^
+
+:Type: ``int``
+:Default: 80
+
+Server port for publicly-accessible route to psiturk server
+
+
+ad_url_protocol
+^^^^^^^^^^^^^^^
+
+:Type: ``string``
+:Default: 'https'
+
+HTTPS protocol is required by mturk. Only change this if you have a good reason
+to do so.
+
+
+ad_url_route
+^^^^^^^^^^^^
+
+:Type: ``string``
+:Default: 'pub'
+
+Flask route that points to the ad. "pub" and "ad" both point to the same place,
+but "pub" is safer because of potential issues with ad blockers with a route
+named "ad"
+
+
+ad_url
+^^^^^^
+
+
+Alternatively, instead of using ``ad_url_*`` config vars above,
+you may use ``ad_url``. You may want to use this if your
+experiment is served from a subdirectory off of the domain name. Otherwise,
+leave this as-is. By default, it is dynamically built using the other variables in this section,
+using ConfigParser templating as follows::
+
+  %(ad_url_protocol)s://%(ad_url_host)s:%(ad_url_port)s/%(ad_url_route)s
+
+
 
 
 Database Parameters
