@@ -5,7 +5,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [Unreleased 3.0.0]
+## 3.0.0
 ### Changed
 - Drop support for all psiturk.org-related services, including the psiturk Secure Ad Server, psiturk.org api keys, and the experiment-exchange
 - moved the experiment exchange [into the docs](https://psiturk.readthedocs.io/en/latest/experiment-exchange.html). See [here](https://psiturk.readthedocs.io/en/latest/experiment-exchange.html#contributing-to-the-exchange) for how to contribute a project to the new exchange.
