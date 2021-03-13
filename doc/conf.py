@@ -15,6 +15,7 @@
 import sys
 import os
 
+sys.path.insert(0, os.path.abspath("."))
 from psiturk.version import version_number
 
 # If extensions (or modules to document with autodoc) are in another directory,
