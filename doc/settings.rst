@@ -13,6 +13,9 @@ instance, to set the number of server threads (:ref:`settings-threads`, section
 
 .. seealso:: :ref:`configuration-overview`
 
+See the comments in the `sample config.txt <https://github.com/NYUCCL/psiTurk/blob/master/psiturk/example/config.txt.sample>`_
+file for more information on each config setting.
+
 .. contents::
    :local:
    :depth: 1
@@ -245,11 +248,17 @@ workers with that qualification already set will neither see your ad nor be able
 to accept your HIT. This is the recommended way of excluding participants who
 have performed other HITs for you from participating in your new HIT.
 
+
+.. _hit_configuration_ad_url:
+
 Hit Configuration -- Ad Url
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Config settings for constructing the task's "landing page" when posting hits on MTurk.
 
+
+
+.. _hit_configuration_ad_url_ad_url_domain:
 
 ad_url_domain
 ^^^^^^^^^^^^^

@@ -22,6 +22,8 @@ with psiTurk, visit :ref:`example-project-stroop`. Also, check out the :ref:`exp
 for examples to learn from, including demonstrations of integration with
 `jspsych <https://www.jspsych.org/>`_.
 
+Migrating from psiturk 2 to psiturk 3? See the :ref:`migrating` guide.
+
 .. contents:: Contents
   :depth: 1
   :local:

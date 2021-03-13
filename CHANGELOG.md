@@ -7,15 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased 3.0.0]
 ### Changed
-- Drop support for python2
-- upgrade cmd2 to 0.9 (python3 only)
+- Drop support for all psiturk.org-related services, including the psiturk Secure Ad Server, psiturk.org api keys, and the experiment-exchange
+- moved the experiment exchange [into the docs](https://psiturk.readthedocs.io/en/latest/experiment-exchange.html). See [here](https://psiturk.readthedocs.io/en/latest/experiment-exchange.html#contributing-to-the-exchange) for how to contribute a project to the new exchange.
+- Drop support for python2 -- only python > 3.6 is supported.
+- upgrade boto to boto3, as boto dropped support for python2.
+- upgrade cmd2 to 0.9 (only supports python3)
+- a jinja "layout" is used for many of the bundled experiment pages, making general changes to standard pages easier
+- `def regularpage` in experiment.py no longer calls flask's `render_template` -- instead, it sends the
+  file as-is. If you need a custom template to be rendered, then create a route for your template in `custom.py`, and
+  call `render_template()` on it yourself.
+
+#### Configuration files
+- the configuration file created by running `psiturk-setup-example`
+  now comments out default settings by prepending `;` -- this makes it
+  so that environment variables can override defaults not specified
+  in config.txt. See [the configuration overview page in the documentation](https://psiturk.readthedocs.io/en/latest/configuration-overview.html) for more information.
+- changed the default tablename to be `assignments` instead of `turkdemo`
 - moved `contact_email_on_error` and `cutoff_time` under the `Task Parameters` section.
 
 ### Added
 - add ability to customize participant condition assignment. (see 309a623)
-- add a sweet dashboard for doing amazing things, and the beginnings of a sort-of REST API that the dashboard uses.
-  See `/dashboard` route.
 - if a commonly-forgotten required template is missing when not using the psiturk ad server, raise an exception
+
+#### Dashboard
+- add a dashboard and the beginnings of a sort-of REST API that the dashboard uses.
+  See the [dashboard configuration overview in the documentation](https://psiturk.readthedocs.io/en/latest/dashboard.html). The dashboard currently includes features such as the following:
+  - view all participants by condition and status
+  - launch "campaigns," which registers a scheduled event to keep posting rounds of HITs with 9
+    assignments each until a campaign goal is met
+  - enable a "auto approve all participants" scheduled event
+  - tasks only run if `do_scheduler` is `True`, see [the tasks setting](https://psiturk.readthedocs.io/en/latest/dashboard.html#tasks)
+
+#### Scheduler
+- added a task-runner setting, which wh
 
 ## [2.3.11]
 ### Fixed

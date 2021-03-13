@@ -15,7 +15,7 @@ The benefits of `Heroku` include the following:
 - It's somewhat easier to manage than `Amazon Web Services EC2 <amazon_ec2.html>`_
   for the tech-wary (no need for security groups, no need to ssh in).
 - You can set up a free PostgreSQL server
-  (which is `highly recommended <databases_overview.html>`_ to use over the
+  (which is :ref:`highly recommended <databases-overview>` to use over the
   default SQLite database that `psiTurk` uses). A database server is required on
   heroku as files, including `participants.db`, are ephemeral. Data would be
   lost every time the app spins down.
@@ -45,10 +45,12 @@ database for collecting data:
       psiturk-setup-example
 
     .. important::
-      If you're starting from a preexisting psiturk app, you need to grab three
+      If you're starting from a preexisting psiturk app, you need to grab several
       files from `/psiturk/example`: `requirements.txt`, `herokuapp.py`,
       `runtime.txt`, and `Procfile`. Place them in your project root, next to
       your `config.txt`.
+
+      See the :ref:`migrating` guide for more information on migrating preexisting psiturk experiments.
 
 #.  Navigate into your newly created psiTurk example folder::
 
@@ -62,63 +64,92 @@ database for collecting data:
 
       git init
 
-#.  Log in to `Heroku` (and put in your credentials when promted for them): ::
+#.  Log in to `Heroku`, entering your heroku credentials when promted for them::
 
       heroku login
 
-#.  Create a new app on `Heroku`. Running this command will add a `remote` to
-    your `.git/config` file, which will make it easier to run `heroku` commands
-    from your project folder that are automatically associated with your
-    newly-created Heroku app.: ::
+#.  Create a new app on `Heroku`::
 
       heroku create
 
-#.  Create a Postgres database on the newly created `Heroku` app: ::
+    .. note::
+      Running this command will add a ``git remote`` to
+      your ``.git/config`` file, which will make it so that any `heroku` commands
+      run from your project folder will be run against your newly-created heroku app.
+
+#.  Set a database that your heroku app will use.
+
+    **Recommended:** create a Postgres database on the newly created `Heroku` app::
 
       heroku addons:create heroku-postgresql
 
-#.  Get the URL of the Postgres database that you just created: ::
+    This will provision a psiturk-compatible postgresql database, and set an
+    environment variable on your app called ``DATABASE_URL`` that points to your database.
+    To see the ``DATABASE_URL`` given to you by heroku for this newly-provisioned postgresql database,
+    you can run the following::
 
-      heroku config:get DATABASE_URL
+      heroku config
 
-#.  Get the URL of your app: ::
+    .. important::
+      This URL includes your username and password. Anyone who has access to the ``database_url`` can
+      connect to your database and has access to the data stored in it!
 
-      heroku domains
+    .. important::
+      psiTurk prefers environment variables over all other config file settings.
+      Most environment settings need to prepend ``PSITURK_`` to the corresponding
+      config setting name, with the exception of two environment variables::
 
-#.  In your psiTurk example, open the `config.txt` file. Here, find and make
-    the following settings for the these rows, and then save the file.
+      1. ``DATABASE_URL``
+      2. ``PORT``
+
+      These two, if present in the environment, are respected even if not prepended by ``PSITURK_``.
+
+      This means that if ``DATABASE_URL`` is set in your heroku environment, it will override
+      any setting you have in ``config.txt``.
 
     .. note::
-      Heroku assigns a random port to every dyno. `psiTurk` handles this.
-      The `port` setting in `config.txt` is ignored.
+      If you already have a publicly-accessible database hosted elsewhere, then you can
+      do one of the following:
 
-    ::
+      1.  list its url as your ``database_url`` in your config.txt and be sure that ``DATABASE_URL`` is not set in your
+          heroku environment (check ``heroku config``), or
+      2.  set its url in your heroku environment (``heroku config:set DATABASE_URL=your-url``)
 
-      database_url = <Your Postgres database URL that you retrieved above>
-      host = 0.0.0.0
-      threads = 1
-      ad_location = https://<Your app URL that you retrieved above>/pub
-      use_psiturk_ad_server = false
+#.   Set an environment variable on your heorku app which will set `some sensible
+     defaults <sensible-cloud-defaults_>`_ for several config settings::
 
-#.  Run the following commands, replacing ``<XYZ>`` with your access and secret
-    keys for `Amazon Web Services <amt_setup.html#obtaining-aws-credentials>`_
-    and `psiTurk Secure Ad Server <psiturk_org_setup.html#obtaining-psiturk-org-api-credentials>`_
-    (you can also use `this Python script <https://github.com/NYUCCL/psiTurk/blob/908ce7bcfc8fb6b38d94dbae480449324c5d9d51/psiturk/example/set-heroku-settings.py>`_
-    to automatically run these commmands, provided that you've filled out your
-    credentials in your `.psiturkconfig` file. Running this script is the
-    recommended approach!): ::
+        heroku config:set ON_CLOUD=1
 
-      heroku config:set ON_CLOUD=true
-      heroku config:set psiturk_access_key_id=<XYZ>
-      heroku config:set psiturk_secret_access_id=<XYZ>
+     Specifically, it sets defaults for ``host``, ``threads``, ``errorlog``, and ``accesslog``.
+
+     .. _sensible-cloud-defaults: https://github.com/NYUCCL/psiTurk/blob/master/psiturk/default_configs/cloud_config_defaults.txt
+
+
+     .. warning::
+
+       **Heads up!** The `sample config.txt file <sample-config-txt_>`_ shows defaults in your config.txt commented out
+       (prepended with a ``;``). Cloud defaults will override any defaults that are commented-out in your config.txt.
+
+       .. _sample-config-txt: https://github.com/NYUCCL/psiTurk/blob/master/psiturk/example/config.txt.sample
+
+       But if the cloud defaults are set in your config.txt then
+       the cloud defaults will be overridden. To remedy this, you will need to either:
+
+       1.  change them in your config.txt or re-comment them out, or
+       2.  set environment variables on heroku for the corresponding cloud defaults that take precedence over your ``config.txt`` values.
+
+          For the latter, any of the config settings can be overridden in the heroku environment
+          by setting ``PSITURK_{uppercase_config_name}`` via ``heroku config:set``. For example, to override a config.txt ``threads``
+          on heroku, one could run the following::
+
+            heroku config:set PSITURK_THREADS=1
+
+#.  **Optional**: if you want to use the :ref:`psiturk dashboard <dashboard-overview>` from your heroku
+    instance, then set your AWS credentials as environment variables within your heroku app, replacing ``<XYZ>`` with your access and secret
+    keys for `Amazon Web Services <amt_setup.html#obtaining-aws-credentials>`_::
+
       heroku config:set aws_access_key_id=<XYZ>
       heroku config:set aws_secret_access_key=<XYZ>
-
-   You don't need all of these settings if you run psiTurk standalone,
-   independent of Amazon Mechanical Turk. However, you still need specify
-   ``ON_CLOUD=true`` or psiTurk will not bind to the port specified by Heroku.
-   In that case the app log on Heroku will say ``Error R10 (Boot timeout) ->
-   Web process failed to bind to $PORT within 60 seconds of launch``.
 
 #. Stage all the files in your psiTurk example to your Git repository: ::
 
@@ -130,58 +161,69 @@ database for collecting data:
 
 #. Push the code to your `Heroku` git remote, which will trigger a build process
    on Heroku, which, in turn, runs the command specified in `Procfile`, which
-   autolaunches your `psiTurk` server on the Heroku platform. Watch it run: ::
+   autolaunches your `psiTurk` server on the Heroku platform::
 
     git push heroku master
 
-#. Get the URL of the Postgres database that you just created: ::
+   .. note::
+    Any time you want to push changes to your heroku-hosted psiturk experiment,
+    you will need to repeat the above flow of ``git add``, ``git commit``, ``git push``.
 
-    heroku config:get DATABASE_URL
+#. You can run through your heroku-hosted experiment by visiting your heroku app's url.
 
-#. Get the URL of your app: ::
-
-    heroku domains
-
-#. In your psiTurk example, open the `config.txt` file. Here, find and make the
-   following settings for the these rows, and then save the file: ::
-
-    database_url = <Your Postgres database URL that you retrieved above>
-    host = 0.0.0.0
-    threads = 1
-    ad_location = https://<Your app URL that you retrieved above>/pub
-    use_psiturk_ad_server = false
-
-   Your local psiTurk instance needs these settings to communicate with the
-   database on Heroku. You do not need to push these settings to Heroku to make
-   them work. Specifically, be careful who has access to this file and do not
-   push this information to any public git repositories:
-
-   .. important::
-     **Anyone who has access to the database_url can connect to your database and has access to the data stored in it!**
-
-#. Run `psiTurk` locally on your machine: ::
-
-    psiturk
-
-#. To verify that your app is running, visit your `heroku` domain url in your
-   browser. Obtain your `heroku` app url by running::
-
-    heroku domains
-
-   From that url, you can conveniently obtain a debugging url by clicking
+   To get it, run ``heroku domains`` from the root of your local psiturk app,
+   and visit your app's reported domain url in a browser. From that url, you can conveniently obtain a debugging url by clicking
    "Begin by viewing the `ad`."
 
-#. Run through your experiment hosted by heroku. You should now have some data
-   in the database. To extract it into `csv` files, run locally: ::
+#. To download data from your heroku app using a locally-run psiturk, set
+   your local psiTurk app to use the same database that your experiment uses when
+   it runs on heroku.
+
+   To do so, get the ``DATABASE_URL``
+   of your heroku psiturk instance by running ``heroku config``, and set the database url in any of the
+   following local places:
+
+   1. your ``config.txt`` file, or
+   2. your own local environment.
+
+   Once your local psiturk app uses the same database as your heroku app, then you can run the
+   following to download your experiment data, regardless of whether you have run through
+   your experiment hosted locally *or* on Heroku::
 
      psiturk download_datafiles
 
    This should generate three datafiles for you in your local directory:
-   `trialdata.csv`, `questiondata.csv`, and `eventdata.csv`.
+   ``trialdata.csv``, ``questiondata.csv``, and ``eventdata.csv``.
 
-Congratulations, you've now gathered data from an experiment running on `Heroku`!
+   Congratulations, you've now gathered data from an experiment running on `Heroku`!
 
-From your local `psiTurk` session, you can now
+   .. warning::
+
+     If you opt to set your database url in your ``config.txt`` file, then be cautious
+     about sharing your experiment code -- the url contains your database username and password!
+
+   .. note::
+     psiTurk will look for a file called ``.env`` in the root of your psiturk app and read in any
+     KEY=VALUE settings in there as environment variables for your psiturk app. Therefore, one could put the
+     following content in a file called ``.env`` to set the database_url::
+
+       DATABASE_URL=url-for-your-publicy-accessible-database
+
+
+#.  To post a hit to MTurk that uses your heroku app, set your local psiTurk config.txt's :ref:`ad_url <hit_configuration_ad_url>` settings to point to
+    your heroku app. The easiest way to do this is to set :ref:`ad_url_domain <hit_configuration_ad_url_ad_url_domain>` in your config.txt's ``[HIT Configuration]`` section
+    to equal your heroku domain name.
+
+    For example, if running ``heroku domains`` reported that your heroku domain was ``example-app.herokuap.com``, then you would simply set
+    ``ad_url_domain = example-app.herokuapp.com`` in your config.txt's ``[HIT Configuration]`` setting. With that, HITs posted to mturk should correctly point to your heroku app.
+
+
+    .. seealso::
+      See the :ref:`hit_configuration_ad_url` for more information.
+
+
+
+From your *local* ``psiTurk`` session, you can now
 `create and modify HITs <command_line/hit.html>`_. When these are accessed by
 Amazon Mechanical Turk workers, the workers will be directed to the `psiTurk`
 session running on your `Heroku` app. This means that it is never necessary to
@@ -199,8 +241,8 @@ url. (Of course, if you want to debug locally, you can still run a local server.
 
 .. note::
 
-  If you desire to run commands against your `postgresql` db, you can run
+  If you want to run commands against your `postgresql` db, you can run
   `heroku pg:psql` to connect, from where you can issue postgres commands. You
   can also connect directly to your heroku postgres db by installing and running
-  `postgresql` on your local machine, and passing the `DATABASE_URL` that you set
-  in `config.txt` as a command-line option.
+  `postgresql` on your local machine, and passing the `DATABASE_URL` that your heroku app uses
+  as a command-line option.
