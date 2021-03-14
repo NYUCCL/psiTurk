@@ -97,7 +97,7 @@ database for collecting data:
     .. important::
       psiTurk prefers environment variables over all other config file settings.
       Most environment settings need to prepend ``PSITURK_`` to the corresponding
-      config setting name, with the exception of two environment variables::
+      config setting name, with the exception of two environment variables:
 
       1. ``DATABASE_URL``
       2. ``PORT``

@@ -1,10 +1,15 @@
 .. _migrating:
 
+Migrating from psiTurk 2.0 to 3.0
+=================================
 
 Announcing psiTurk 3.0
 ~~~~~~~~~~~~~~~~~~~~~~
 
 psiTurk 2.0 launched on April 28, 2014 and there has been (according to github) 786 
+*A message from project founder Todd Gureckis.*
+
+psiTurk 2.0 launched on April 28, 2014 and there has been (according to github) 786
 commits since then to the project from a wide variety of contributors.  The evolution and
 longevity of the project really has exceeded anything the original authors thought
 would be possible.  In the seven years since 2.0 was first tagged so many things have changed
@@ -27,10 +32,10 @@ means psiTurk acts more like a traditional Flask "web application" rather than a
 command line tool, although the command line interface remains for interacting with Amazon and 
 for development.
 
-In addition to the hard work (lead really by Dave Eargle), version 3.0 offers several new features
-including a "campaign mode" which allows you to run a certain number of subject (say 100) by repeatedly 
-posting lower cost 9 assignment HITs, a dashboard for managing hits,.  In addition, a major change 
-since 2.0 is support for Python 3.0 and the changes that entailed to work with more recent 
+In addition to the hard decoupling work (led really by Dave Eargle), version 3.0 offers several new features
+including a "campaign mode" which allows you to run a certain number of subject (say 100) by repeatedly
+posting lower cost 9 assignment HITs, and a dashboard for managing hits.  In addition, a major change 
+since 2.0 is support for Python 3.0 and the changes that entailed to work with more recent
 versions of boto Mturk python api.
 
 There may be some growing pains as people adjust to the new workflow so a goal is to update the
@@ -38,9 +43,10 @@ documentation to reflect the new changes as soon as possible.  As always, assita
 community to make this documentation is always appreciated!
 
 
+Migration technical considerations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Migrating from psiturk 2 to 3
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Below are some notable technical differences between psiTurk 2 and psiTurk 3.
 
 No More Secure Ad Server
 ------------------------
