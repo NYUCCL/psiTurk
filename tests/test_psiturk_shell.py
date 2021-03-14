@@ -91,7 +91,7 @@ commands = [
     (['mode live'], 'mode_live'),
     (['mode live', 'mode sandbox'], 'mode_live_then_sandbox'),
     (['hit create 1 0.01 1'], 'hit_create'),
-    (['hit create 1 0.01 1 --whitelist-qualification-id abc123 --whitelist-qualification-id abc456'],
+    (['hit create 1 0.01 1 --require-qualification-id abc123 --require-qualification-id abc456'],
         'hit_create_with_qualification'),
     (['hit extend ABC --assignments 1 --expiration 1'], 'hit_extend'),
     (['hit expire ABC'], 'hit_expire_hitid'),

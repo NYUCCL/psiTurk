@@ -318,11 +318,11 @@ class MTurkServices(object):
                 LocaleValues=[{'Country': 'US'}]
             ))
 
-        for qual_id in hit_config['whitelist_qualification_ids']:
+        for qual_id in hit_config['require_qualification_ids']:
             quals.append(dict(QualificationTypeId=qual_id,
                               Comparator='Exists'))
 
-        for qual_id in hit_config['blacklist_qualification_ids']:
+        for qual_id in hit_config['block_qualification_ids']:
             quals.append(dict(QualificationTypeId=qual_id,
                               Comparator='DoesNotExist'))
 

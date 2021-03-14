@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 3.0.1
+### Fixed & Changed
+- fixed an inconsistency between shell usage of "allowlist-qualification-ids" and
+  and config file calling the same "require_quals", same for "blocklist" and "block_quals". Also, documentation incorrectly described the config file accepting "allowlist_qualification_ids", while it only actually accepted "require_quals." Standardized on "require" and "block" throughout. Maintained backwards compatibility except in shell usage since docopt
+  doesn't seem to allow it in the way it parses the usage string, but no way
+  am I going to bump to 4.0.0 just because of that!
 
 ## 3.0.0
 ### Changed
