@@ -45,8 +45,8 @@ Step 3: Enter credentials
 -------------------------
 
 In order to get access to the Amazon Mechanical Turk features of psiTurk, you
-need obtain and enter credentials for accessing Amazon Web Services. Both of
-these can be added to ``~/.psiturkconfig``. You can leave the ``aws_region`` at
+need obtain and enter credentials for accessing Amazon Web Services. These 
+can be added to ``~/.psiturkconfig``. You can leave the ``aws_region`` at
 the default value.
 
 
