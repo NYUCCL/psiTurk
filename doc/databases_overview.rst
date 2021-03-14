@@ -130,31 +130,3 @@ MySQL is (fairly) easy to install and free. However, a variety of web hosting
 services offer managed MySQL databases. Some are even
 `free <https://www.google.com/search?q=free+mysql+hosting>`__.
 
-
-Running a MySQL database on Amazon's Web Services Cloud
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-While not terribly difficult, installing and managing a MySQL database can be
-an extra hassle. Interestingly, when you sign up with Amazon Mechanical Turk
-as a requester, you also are signing up for Amazon's Web Services a very powerful
-cloud-based computing platform that is used by many large web companies. One of
-the services Amazon provides is a fully hosted
-`relational database server (RDS) <http://aws.amazon.com/rds/>`__.
-
-According to Amazon, "Amazon Relational Database Service (Amazon RDS) is a web
-service that makes it easy to set up, operate, and scale a relational database in
-the cloud. It provides cost-efficient and resizable capacity while managing
-time-consuming database administration tasks, freeing you up to focus on your
-applications and business."
-
-.. danger::
-
-	If you use Amazon's RDS to host your MySQL database you may incur additional
-	charges. At the present time a small RDS instance is free if you have
-	recently signed up for Amazon Web Services. However, older account have to
-	pay according to the `current rates <http://aws.amazon.com/rds/pricing/>`__.
-	This does **NOT** use the pre-paid mechanism that is used on Amazon
-	Mechanical Turk. Thus launching a database server on the cloud and leaving
-	it running run up monthly charges. You are responsible for launching
-	and shutting down your own database instances if you use this approach.
-	**PROCEED WITH CAUTION.**
