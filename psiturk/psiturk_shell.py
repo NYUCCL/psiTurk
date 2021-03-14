@@ -368,12 +368,18 @@ class PsiturkNetworkShell(Cmd, object):
                 response = input("Please respond 'y' or 'n': ").strip().lower()
 
     def hit_create(self, num_workers, reward, duration,
-                   whitelist_qualification_ids=None, blacklist_qualification_ids=None):
+                   require_qualification_ids=None, block_qualification_ids=None, **kwargs):
 
-        if whitelist_qualification_ids is None:
-            whitelist_qualification_ids = []
-        if blacklist_qualification_ids is None:
-            blacklist_qualification_ids = []
+        # backwards compatibility
+        if 'whitelist_qualification_ids' in kwargs and not require_qualification_ids:
+            require_qualification_ids = kwargs['whitelist_qualification_ids']
+        if 'blacklist_qualification_ids' in kwargs and not block_qualification_ids:
+            block_qualification_ids = kwargs['blacklist_qualification_ids']
+
+        if require_qualification_ids is None:
+            require_qualification_ids = []
+        if block_qualification_ids is None:
+            block_qualification_ids = []
 
         # Argument retrieval and validation
         if num_workers is None:
@@ -430,8 +436,8 @@ class PsiturkNetworkShell(Cmd, object):
         try:
             create_hit_response = self.amt_services_wrapper.create_hit(num_workers=num_workers, reward=reward,
                                                                        duration=duration,
-                                                                       whitelist_qualification_ids=whitelist_qualification_ids,
-                                                                       blacklist_qualification_ids=blacklist_qualification_ids)
+                                                                       require_qualification_ids=require_qualification_ids,
+                                                                       block_qualification_ids=block_qualification_ids)
 
             if create_hit_response.status != 'success':
                 self.poutput('Error during hit creation.')
@@ -721,7 +727,7 @@ class PsiturkNetworkShell(Cmd, object):
     def do_hit(self, arg):
         """
         Usage:
-          hit create [<num_workers> <reward> <duration>] [--whitelist-qualification-id <whitelist_qualification_id>]... [--blacklist-qualification-id <blacklist_qualification_id>]...
+          hit create [<num_workers> <reward> <duration>] [--require-qualification-id <require_qualification_id>]... [--block-qualification-id <block_qualification_id>]...
           hit extend <HITid> [(--assignments <number>)] [(--expiration <minutes>)]
           hit expire (--all | <HITid> ...)
           hit delete (--all | <HITid> ...) [--all-studies]
@@ -733,8 +739,8 @@ class PsiturkNetworkShell(Cmd, object):
 
         if arg['create']:
             self.hit_create(arg['<num_workers>'], arg['<reward>'], arg['<duration>'],
-                            whitelist_qualification_ids=arg['<whitelist_qualification_id>'],
-                            blacklist_qualification_ids=arg['<blacklist_qualification_id>'])
+                            require_qualification_ids=arg['<require_qualification_id>'],
+                            block_qualification_ids=arg['<block_qualification_id>'])
         elif arg['extend']:
             result = self.amt_services_wrapper.extend_hit(
                 arg['<HITid>'][0], assignments=arg['<number>'], minutes=arg['<minutes>'])

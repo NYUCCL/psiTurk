@@ -46,16 +46,16 @@ class TestAmtServices(object):
         # confirm that it's in the local db...
         assert Hit.query.get('ABCDUITW8URHJMX7F00H20LGRIAQTX') is not None
 
-    def test_wrapper_hit_create_with_whitelist_qualification(self, stubber, amt_services_wrapper):
+    def test_wrapper_hit_create_with_require_qualification(self, stubber, amt_services_wrapper):
         """
-        makes sure that whitelist_qualid finds its way into the qual list as EXISTS
+        makes sure that require_qualid finds its way into the qual list as EXISTS
         """
 
-        WHITELIST_QUAL_ID = 'WHITELISTQUAL_123'
+        REQUIRE_QUAL_ID = 'REQUIREQUAL_123'
         quals = psiturk_standard_quals + [
             {
                 'Comparator': 'Exists',
-                'QualificationTypeId': WHITELIST_QUAL_ID
+                'QualificationTypeId': REQUIRE_QUAL_ID
             }]
 
         stubber.add_response('create_hit_type', {'HITTypeId': 'HITTypeId_123'}, {
@@ -73,22 +73,22 @@ class TestAmtServices(object):
         })
         # import pytest; pytest.set_trace()
         response = amt_services_wrapper.create_hit(1, 0.01, 1,
-                                                   whitelist_qualification_ids=[WHITELIST_QUAL_ID])
+                                                   require_qualification_ids=[REQUIRE_QUAL_ID])
         if not response.success:
             raise response.exception
 
-    def test_wrapper_hit_create_with_multiple_whitelist_qualifications(self, stubber,
+    def test_wrapper_hit_create_with_multiple_require_qualifications(self, stubber,
                                                                        amt_services_wrapper):
         """
-        makes sure that whitelist_qualid finds its way into the qual list as EXISTS
+        makes sure that require_qualid finds its way into the qual list as EXISTS
         """
 
-        WHITELIST_QUAL_IDS = 'WHITELISTQUAL_123, WHITELISTQUAL_123'
+        REQUIRE_QUAL_IDS = 'REQUIREQUAL_123, REQUIREQUAL_123'
         quals = psiturk_standard_quals + [
             {
                 'Comparator': 'Exists',
                 'QualificationTypeId': qual_id
-            } for qual_id in WHITELIST_QUAL_IDS]
+            } for qual_id in REQUIRE_QUAL_IDS]
 
         stubber.add_response('create_hit_type', {'HITTypeId': 'HITTypeId_123'}, {
             'Title': ANY,
@@ -105,7 +105,7 @@ class TestAmtServices(object):
         })
         # import pytest; pytest.set_trace()
         response = amt_services_wrapper.create_hit(1, 0.01, 1,
-                                                   whitelist_qualification_ids=WHITELIST_QUAL_IDS)
+                                                   require_qualification_ids=REQUIRE_QUAL_IDS)
         if not response.success:
             raise response.exception
 
@@ -114,21 +114,21 @@ class TestAmtServices(object):
                                                                                stubber,
                                                                                amt_services_wrapper):
         """
-        makes sure that whitelist_qualid finds its way into the qual list as EXISTS
+        makes sure that require_qualid finds its way into the qual list as EXISTS
         """
 
-        whitelist_config_file_qual_ids = ['whitelist_config_123', 'whitelist_config_456']
-        blacklist_config_file_qual_ids = ['blacklist_config_123', 'blacklist_config_456']
+        require_config_file_qual_ids = ['require_config_123', 'require_config_456']
+        block_config_file_qual_ids = ['block_config_123', 'block_config_456']
 
         edit_config_file(';require_quals =',
                          'require_quals = {}'.format(
-                             ','.join(whitelist_config_file_qual_ids)))
+                             ','.join(require_config_file_qual_ids)))
         edit_config_file(';block_quals =',
                          'block_quals = {}'.format(
-                             ','.join(blacklist_config_file_qual_ids)))
+                             ','.join(block_config_file_qual_ids)))
 
-        whitelist_qualification_ids_passed = ['white_passed_123', 'white_passed_456']
-        blacklist_qualification_ids_passed = ['black_passed_123', 'black_passed_456']
+        require_qualification_ids_passed = ['white_passed_123', 'white_passed_456']
+        block_qualification_ids_passed = ['black_passed_123', 'black_passed_456']
 
         # need to reset the amt_services_wrapper config after editing config file above.
         from psiturk.psiturk_config import PsiturkConfig
@@ -138,28 +138,28 @@ class TestAmtServices(object):
 
         hit_config = amt_services_wrapper._generate_hit_config(
             'loc_123', 1, '1.00', 1,
-            whitelist_qualification_ids=whitelist_qualification_ids_passed,
-            blacklist_qualification_ids=blacklist_qualification_ids_passed)
+            require_qualification_ids=require_qualification_ids_passed,
+            block_qualification_ids=block_qualification_ids_passed)
 
-        whitelist_qual_ids = whitelist_config_file_qual_ids + whitelist_qualification_ids_passed
-        blacklist_qual_ids = blacklist_config_file_qual_ids + blacklist_qualification_ids_passed
+        require_qual_ids = require_config_file_qual_ids + require_qualification_ids_passed
+        block_qual_ids = block_config_file_qual_ids + block_qualification_ids_passed
 
-        for qual in whitelist_qual_ids:
-            assert qual in hit_config['whitelist_qualification_ids']
+        for qual in require_qual_ids:
+            assert qual in hit_config['require_qualification_ids']
 
-        for qual in blacklist_qual_ids:
-            assert qual in hit_config['blacklist_qualification_ids']
+        for qual in block_qual_ids:
+            assert qual in hit_config['block_qualification_ids']
 
-    def test_wrapper_hit_create_with_blacklist_qualification(self, stubber, amt_services_wrapper):
+    def test_wrapper_hit_create_with_block_qualification(self, stubber, amt_services_wrapper):
         """
-        makes sure that whitelist_qualid finds its way into the qual list as EXISTS
+        makes sure that require_qualid finds its way into the qual list as EXISTS
         """
 
-        BLACKLIST_QUAL_ID = 'QUAL_123'
+        BLOCK_QUAL_ID = 'QUAL_123'
         quals = psiturk_standard_quals + [
             {
                 'Comparator': 'DoesNotExist',
-                'QualificationTypeId': BLACKLIST_QUAL_ID
+                'QualificationTypeId': BLOCK_QUAL_ID
             }]
 
         stubber.add_response('create_hit_type', {'HITTypeId': 'HITTypeId_123'}, {
@@ -177,26 +177,26 @@ class TestAmtServices(object):
         })
         # import pytest; pytest.set_trace()
         response = amt_services_wrapper.create_hit(1, 0.01, 1,
-                                                   blacklist_qualification_ids=[BLACKLIST_QUAL_ID])
+                                                   block_qualification_ids=[BLOCK_QUAL_ID])
         if not response.success:
             raise response.exception
 
-    def test_wrapper_hit_create_with_whitelist_and_blacklist_qualifications(self, stubber,
+    def test_wrapper_hit_create_with_require_and_block_qualifications(self, stubber,
                                                                             amt_services_wrapper):
         """
-        makes sure that whitelist_qualid finds its way into the qual list as EXISTS
+        makes sure that require_qualid finds its way into the qual list as EXISTS
         """
 
-        WHITELIST_QUAL_ID = 'WHITELISTQUAL_123'
-        BLACKLIST_QUAL_ID = 'BLACKLISTQUAL_123'
+        REQUIRE_QUAL_ID = 'REQUIREQUAL_123'
+        BLOCK_QUAL_ID = 'BLOCKQUAL_123'
         quals = psiturk_standard_quals + [
             {
                 'Comparator': 'Exists',
-                'QualificationTypeId': WHITELIST_QUAL_ID
+                'QualificationTypeId': REQUIRE_QUAL_ID
             },
             {
                 'Comparator': 'DoesNotExist',
-                'QualificationTypeId': BLACKLIST_QUAL_ID
+                'QualificationTypeId': BLOCK_QUAL_ID
             }]
 
         stubber.add_response('create_hit_type', {'HITTypeId': 'HITTypeId_123'}, {
@@ -214,8 +214,8 @@ class TestAmtServices(object):
         })
         # import pytest; pytest.set_trace()
         response = amt_services_wrapper.create_hit(1, 0.01, 1,
-                                                   whitelist_qualification_ids=[WHITELIST_QUAL_ID],
-                                                   blacklist_qualification_ids=[BLACKLIST_QUAL_ID])
+                                                   require_qualification_ids=[REQUIRE_QUAL_ID],
+                                                   block_qualification_ids=[BLOCK_QUAL_ID])
         if not response.success:
             raise response.exception
 

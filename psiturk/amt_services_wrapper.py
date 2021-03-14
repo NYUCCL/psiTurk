@@ -99,7 +99,7 @@ def amt_services_wrapper_response(func):
 
 class MTurkServicesWrapper(object):
     """class MTurkServicesWrapper."""
-    
+
     _cached_dbs_services = None
     _cached_amt_services = None
     mode = None
@@ -751,18 +751,24 @@ class MTurkServicesWrapper(object):
         return {'results': results}
 
     @amt_services_wrapper_response
-    def create_hit(self, num_workers, reward, duration, whitelist_qualification_ids=None,
-                   blacklist_qualification_ids=None):
+    def create_hit(self, num_workers, reward, duration, require_qualification_ids=None,
+                   block_qualification_ids=None, **kwargs):
         """
         Create a HIT
 
-        `whitelist_qualification_ids` and `blacklist_qualification_ids` get extended
+        `require_qualification_ids` and `block_qualification_ids` get extended
         with any values set in the config
         """
-        if whitelist_qualification_ids is None:
-            whitelist_qualification_ids = []
-        if blacklist_qualification_ids is None:
-            blacklist_qualification_ids = []
+        # backwards compatibility
+        if 'whitelist_qualification_ids' in kwargs and not require_qualification_ids:
+            require_qualification_ids = kwargs['whitelist_qualification_ids']
+        if 'blacklist_qualification_ids' in kwargs and not block_qualification_ids:
+            block_qualification_ids = kwargs['blacklist_qualification_ids']
+
+        if require_qualification_ids is None:
+            require_qualification_ids = []
+        if block_qualification_ids is None:
+            block_qualification_ids = []
 
         server_loc = str(self.config.get('Server Parameters', 'host'))
 
@@ -772,7 +778,7 @@ class MTurkServicesWrapper(object):
         ad_url = self.config.get_ad_url()
         ad_url = f"{ad_url}?mode={self.mode}"
         hit_config = self._generate_hit_config(
-            ad_url, num_workers, reward, duration, whitelist_qualification_ids, blacklist_qualification_ids)
+            ad_url, num_workers, reward, duration, require_qualification_ids, block_qualification_ids)
         response = self.amt_services.create_hit(hit_config)
         if not response.success:
             raise response.exception
@@ -808,20 +814,20 @@ class MTurkServicesWrapper(object):
             qualification_types = response.data
             return {'qualification_types': qualification_types}
 
-    def _generate_hit_config(self, ad_url, num_workers, reward, duration, whitelist_qualification_ids=None, blacklist_qualification_ids=None):
-        if whitelist_qualification_ids is None:
-            whitelist_qualification_ids = []
+    def _generate_hit_config(self, ad_url, num_workers, reward, duration, require_qualification_ids=None, block_qualification_ids=None):
+        if require_qualification_ids is None:
+            require_qualification_ids = []
 
-        if blacklist_qualification_ids is None:
-            blacklist_qualification_ids = []
+        if block_qualification_ids is None:
+            block_qualification_ids = []
 
         require_quals = self.config.get('HIT Configuration', 'require_quals', fallback=None)
         if require_quals:
-            whitelist_qualification_ids.extend(require_quals.split(','))
+            require_qualification_ids.extend(require_quals.split(','))
 
         block_quals = self.config.get('HIT Configuration', 'block_quals', fallback=None)
         if block_quals:
-            blacklist_qualification_ids.extend(block_quals.split(','))
+            block_qualification_ids.extend(block_quals.split(','))
 
         hit_config = {
             "ad_location": ad_url,
@@ -838,7 +844,7 @@ class MTurkServicesWrapper(object):
             "number_hits_approved": self.config.getint('HIT Configuration', 'number_hits_approved'),
             "require_master_workers": self.config.getboolean('HIT Configuration',
                                                              'require_master_workers'),
-            "whitelist_qualification_ids": whitelist_qualification_ids,
-            "blacklist_qualification_ids": blacklist_qualification_ids
+            "require_qualification_ids": require_qualification_ids,
+            "block_qualification_ids": block_qualification_ids
         }
         return hit_config
