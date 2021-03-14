@@ -46,7 +46,7 @@ community to make this documentation is always appreciated!
 Migration technical considerations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Below are notable differences between psiTurk 2 and psiTurk 3.
+Below are some notable technical differences between psiTurk 2 and psiTurk 3.
 
 No More Secure Ad Server
 ------------------------
