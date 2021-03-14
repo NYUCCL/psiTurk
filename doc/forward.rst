@@ -26,7 +26,7 @@ multi-function "player." It can (figuratively speaking) run, pause,
 eject, and configure a given experiment.
 
 To make it useful though psiTurk needs something to play. You can download
-from our `experiment exchange <http://psiturk.org/ee>`__ library an archive
+from our :ref:`experiment-exchange` library an archive
 which contains all the files specific to a given experiment. You basically
 “play” the downloaded experiment using the ``psiturk`` command. You can easily
 switch experiments by downloading another experiment archive and “playing” it.
@@ -38,7 +38,7 @@ your time on the important part of your research… the experiment (i.e.,
 mix tape)!
 
 Oh, and in case you missed it, "playing" someone else's experiment
-posted to the `experiment exchange <http://psiturk.org/ee>`__ basically
+posted to the :ref:`experiment-exchange` basically
 means independently replicating it!
 
 
@@ -84,7 +84,8 @@ Basic Requirement: A publicly-accessible server
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Be aware that you will need to host your experiment on a server to which
-your participants have access.
+your participants have access.  Currently the easiest way to do this is through the
+free-tier on Heroku.  See the main docs for more information about this.
 
 
 Do I have to learn how to code?
@@ -100,3 +101,6 @@ you can use as a template for your own study. psiTurk also includes
 a library of basic Javascript functions (see :ref:`api-overview`) that you can
 insert into your code to handle page transitions, load images, and
 record data.
+
+However, for actually programming the interface of your task people often use other 
+javascript tools like the outstanding [jsPsych](https://www.jspsych.org).
