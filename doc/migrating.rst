@@ -43,9 +43,10 @@ documentation to reflect the new changes as soon as possible.  As always, assita
 community to make this documentation is always appreciated!
 
 
+Migration technical considerations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Migrating from psiturk 2 to 3
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Below are notable differences between psiTurk 2 and psiTurk 3.
 
 No More Secure Ad Server
 ------------------------
