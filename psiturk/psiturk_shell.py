@@ -447,7 +447,6 @@ class PsiturkNetworkShell(Cmd, object):
                 self.maybe_update_hit_tally()
 
             hit_id = create_hit_response.data['hit_id']
-            ad_id = create_hit_response.data['ad_id']
 
             # TODO: "with qualification type ids..."
             self.poutput('\n'.join(['*****************************',
