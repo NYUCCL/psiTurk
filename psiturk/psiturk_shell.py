@@ -462,8 +462,8 @@ class PsiturkNetworkShell(Cmd, object):
 
             # Print the Ad Url
             base = self.config.get_ad_url()
-            assignmentid = str(self.random_id_generator()),
-            hitid = str(self.random_id_generator()),
+            assignmentid = str(self.random_id_generator())
+            hitid = str(self.random_id_generator())
             workerid = str(self.random_id_generator())
 
             ad_url = f'{base}?mode={self.mode}&assignmentId=debug{assignmentid}&hitId=debug{hitid}&workerId=debug{workerid}'
