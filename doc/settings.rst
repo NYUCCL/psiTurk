@@ -280,9 +280,10 @@ ad_url_port
 ^^^^^^^^^^^
 
 :Type: ``int``
-:Default: 80
+:Default: 443
 
-Server port for publicly-accessible route to psiturk server
+Server port for publicly-accessible route to psiturk server. Default is
+443, which is the browser-default for https.
 
 
 ad_url_protocol

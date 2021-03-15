@@ -59,7 +59,7 @@
 ;ad_url_domain =
 
 # Server port for publicly-accessible route to psiturk server
-;ad_url_port = 80
+;ad_url_port = 443
 
 # HTTPS protocol is required by mturk. Only change this if you have a good reason
 # to do so.
