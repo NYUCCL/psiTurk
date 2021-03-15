@@ -6,7 +6,6 @@ Migrating from psiTurk 2.0 to 3.0
 Announcing psiTurk 3.0
 ~~~~~~~~~~~~~~~~~~~~~~
 
-psiTurk 2.0 launched on April 28, 2014 and there has been (according to github) 786 
 *A message from project founder Todd Gureckis.*
 
 psiTurk 2.0 launched on April 28, 2014 and there has been (according to github) 786
