@@ -1,1 +1,8 @@
 _site
+.tox
+.eggs
+tests
+psiturk
+psiturk-example
+doc
+PsiTurk.egg-info
