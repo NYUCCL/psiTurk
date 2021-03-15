@@ -71,7 +71,7 @@ def do_heroku_setup():
     _check_heroku_app_set()
     _set_heroku_config_vars()
     _copy_heroku_files()
-    _add_postgresql_db()
+    # _add_postgresql_db()
 
     print()
     print("Heroku config done.")

@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 3.0.2
+### Changed
+The currently-undocumented `psiturk-heroku-config` command no longer attaches a postgresql addon by default.
+I'm calling this just a bugfix because (1) the docs assume that it _doesn't_ attach the psql database, and
+(2) that command isn't even documented anyway. Will version-feature-bump when this feature is better
+thought through.
+
 ## 3.0.1
 ### Fixed & Changed
 - fixed an inconsistency between shell usage of "allowlist-qualification-ids" and
