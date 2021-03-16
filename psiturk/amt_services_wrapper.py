@@ -727,10 +727,10 @@ class MTurkServicesWrapper(object):
                 else:
                     hit_id = response.data['HITId']
                     if not self.web_services.set_ad_hitid(ad_id, hit_id, int(self.sandbox)):
-                        raise AdPsiturkOrgError("Unable to update Ad on http://ad.psiturk.org to point at HIT.")
+                        raise AdPsiturkOrgError(message="Unable to update Ad on http://ad.psiturk.org to point at HIT.")
             else:
                 create_failed = True
-                raise AdPsiturkOrgError("Unable to create Ad on http://ad.psiturk.org.")
+                raise AdPsiturkOrgError(message="Unable to create Ad on http://ad.psiturk.org.")
 
         else:  # not using psiturk ad server
             ad_location = "{}?mode={}".format(self.config.get(
@@ -805,7 +805,7 @@ class MTurkServicesWrapper(object):
         }
         ad_id = self.web_services.create_ad(ad_content)
         if not ad_id:
-            raise AdPsiturkOrgError('Error creating the ad.')
+            raise AdPsiturkOrgError(message='Error creating the ad.')
         return {'ad_id': ad_id}
 
     def _generate_hit_config(self, ad_location, num_workers, reward, duration):
