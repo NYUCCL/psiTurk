@@ -447,7 +447,6 @@ class PsiturkNetworkShell(Cmd, object):
                 self.maybe_update_hit_tally()
 
             hit_id = create_hit_response.data['hit_id']
-            ad_id = create_hit_response.data['ad_id']
 
             # TODO: "with qualification type ids..."
             self.poutput('\n'.join(['*****************************',
@@ -463,8 +462,8 @@ class PsiturkNetworkShell(Cmd, object):
 
             # Print the Ad Url
             base = self.config.get_ad_url()
-            assignmentid = str(self.random_id_generator()),
-            hitid = str(self.random_id_generator()),
+            assignmentid = str(self.random_id_generator())
+            hitid = str(self.random_id_generator())
             workerid = str(self.random_id_generator())
 
             ad_url = f'{base}?mode={self.mode}&assignmentId=debug{assignmentid}&hitId=debug{hitid}&workerId=debug{workerid}'
