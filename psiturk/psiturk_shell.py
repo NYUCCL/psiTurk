@@ -93,8 +93,11 @@ class PsiturkNetworkShell(Cmd, object):
                     '- `psiturk server on`',
                     '- `psiturk server off`',
                     '- `psiturk debug -p`'])
-                message = '{}{}'.format(e.message, still_can_do)
+                message = e.message
+                if not self.quiet:
+                    message = '{}{}'.format(message, still_can_do)
                 self.perror(message)
+                sys.exit()
             except PsiturkException as e:
                 self.poutput(e)
 
@@ -146,7 +149,7 @@ class PsiturkNetworkShell(Cmd, object):
         self.quiet = quiet
         self.feedback_to_output = True
 
-        if not self.amt_services_wrapper and not self.quiet:
+        if not self.quiet and not self.amt_services_wrapper:
             sys.exit()
 
         if not self.quiet:
