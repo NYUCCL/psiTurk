@@ -1,5 +1,5 @@
 class PsiturkException(Exception):
-    def __init__(self, **kwargs):
+    def __init__(self, *args, **kwargs):
         super(PsiturkException, self).__init__()
         self.message=kwargs['message'] if 'message' in kwargs else ''
         

@@ -91,7 +91,7 @@ class PsiturkOrgServices(object):
         ''' Create record '''
         #headers = {'key': username, 'secret': password}
         req = requests.post(self.api_server + '/api/' + name,
-                            data=json.dumps(content), auth=(username, password))
+                            json=content, auth=(username, password))
         return req
 
     def update_record(self, name, recordid, content, username, password):
