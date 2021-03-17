@@ -63,6 +63,11 @@ thought through.
 #### Scheduler
 - added a task-runner setting, which wh
 
+## [2.3.12]
+- avoid owasp ad post block
+  - set content-type application/json on post
+  - remove all comments from example ad.html
+
 ## [2.3.11]
 ### Fixed
 - fix unable to do non-aws things on without aws credentials (#427)
