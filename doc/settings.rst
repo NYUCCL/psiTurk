@@ -276,6 +276,8 @@ for example, if your heroku app name were "example-app," you would set the follo
   ad_url_domain = example-app.herokuapp.com
 
 
+.. _hit_configuration_ad_url_ad_url_port:
+
 ad_url_port
 ^^^^^^^^^^^
 
@@ -285,6 +287,7 @@ ad_url_port
 Server port for publicly-accessible route to psiturk server. Default is
 443, which is the browser-default for https.
 
+.. _hit_configuration_ad_url_ad_url_protocol:
 
 ad_url_protocol
 ^^^^^^^^^^^^^^^
@@ -295,6 +298,7 @@ ad_url_protocol
 HTTPS protocol is required by mturk. Only change this if you have a good reason
 to do so.
 
+.. _hit_configuration_ad_url_ad_url_route:
 
 ad_url_route
 ^^^^^^^^^^^^

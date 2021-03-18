@@ -12,7 +12,7 @@ code for you.
 
 The benefits of `Heroku` include the following:
 
-- It's somewhat easier to manage than `Amazon Web Services EC2 <amazon_ec2.html>`_
+- It's somewhat easier to manage than `Amazon Web Services EC2 <https://aws.amazon.com/ec2/>`_
   for the tech-wary (no need for security groups, no need to ssh in).
 - You can set up a free PostgreSQL server
   (which is :ref:`highly recommended <databases-overview>` to use over the
@@ -154,7 +154,7 @@ All commands listed in this tutorial are meant to be typed into your terminal ap
 
     * Set your AWS credentials as environment variables within your
       heroku app, replacing ``<XYZ>`` with your access and secret
-      keys for `Amazon Web Services <amt_setup.html#obtaining-aws-credentials>`_::
+      keys for :ref:`Amazon Web Services <amt-setup>`::
 
         heroku config:set aws_access_key_id=<XYZ>
         heroku config:set aws_secret_access_key=<XYZ>
