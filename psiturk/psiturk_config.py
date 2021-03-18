@@ -47,7 +47,7 @@ class PsiturkConfig(ConfigParser):
 
         # Backwards compatibility
         if 'ON_HEROKU' in os.environ:
-            os.environ['ON_CLOUD'] = 1
+            os.environ['ON_CLOUD'] = '1'
 
         # read in default cloud config
         if 'ON_CLOUD' in os.environ:
