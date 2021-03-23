@@ -42,6 +42,8 @@ thought through.
 - `def regularpage` in experiment.py no longer calls flask's `render_template` -- instead, it sends the
   file as-is. If you need a custom template to be rendered, then create a route for your template in `custom.py`, and
   call `render_template()` on it yourself.
+- psiturk.js `preloadPages()` now returns a `Promise`. See the [migration guide](https://psiturk.readthedocs.io/en/latest/migrating.html) for links to
+  examples of using the new approach.
 
 #### Configuration files
 - the configuration file created by running `psiturk-setup-example`
