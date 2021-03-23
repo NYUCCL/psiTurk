@@ -52,6 +52,8 @@ thought through.
   call `render_template()` on it yourself.
 - psiturk.js `preloadPages()` now returns a `Promise`. See the [migration guide](https://psiturk.readthedocs.io/en/latest/migrating.html) for links to
   examples of using the new approach.
+- psiturk exception `InvalidUsage` changed to `InvalidUsageError`. Breaks
+  `custom.py` files generated under psiturk v2.
 
 #### Configuration files
 - the configuration file created by running `psiturk-setup-example`
