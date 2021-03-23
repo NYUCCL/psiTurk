@@ -183,8 +183,8 @@ class MTurkServicesWrapper(object):
         the experiment.
         """
         if codeversion == 'latest':
-            codeversion = [self.config.get(
-                'task', 'experiment_code_version')]
+            codeversion = self.config.get(
+                'Task Parameters', 'experiment_code_version')
 
         if status == 'completed':
             status = [3, 4, 5, 7]

@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   This was previously throwing an exception in versions 3.0.0 – 3.0.5
 ### Fixed
 - fix bonus_message config.get section reference (3219016)
+- fix another reference to a config section name that doesn't exist, apparently
+  the unit tests are horrible
 
 ## 3.0.5
 ### Fixed
