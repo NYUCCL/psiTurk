@@ -865,7 +865,7 @@ class PsiturkNetworkShell(Cmd, object):
             if not reason:
                 if self.config.get('Shell Parameters', 'bonus_message'):
                     reason = self.config.get(
-                        'shell', 'bonus_message')
+                        'Shell Parameters', 'bonus_message')
                     self.poutput(
                         f'Using bonus `reason` from config file: "{reason}"')
                 while not reason:
