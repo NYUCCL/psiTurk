@@ -1,6 +1,6 @@
 .. _migrating:
 
-Migrating from psiTurk 2.0 to 3.0
+Migrating from psiTurk 2 to 3
 =================================
 
 Announcing psiTurk 3.0
@@ -12,11 +12,11 @@ psiTurk 2.0 launched on April 28, 2014 and there has been (according to github) 
 commits since then to the project from a wide variety of contributors.  The evolution and
 longevity of the project really has exceeded anything the original authors thought
 would be possible.  In the seven years since 2.0 was first tagged so many things have changed
-about web experimentation, web application development, the Amazon turk API, and even the 
+about web experimentation, web application development, the Amazon turk API, and even the
 Python ecosystem.
 
-One part of psiTurk that has always been both a blessing and a curse is the reliance on 
-several services provided by xxx.psiturk.org.  This includes the "Ad server" and several other 
+One part of psiTurk that has always been both a blessing and a curse is the reliance on
+several services provided by xxx.psiturk.org.  This includes the "Ad server" and several other
 api elements that were envisioned to distribute timely information to users of the system.
 Generally this seemed like a good engineering solution to a problem, but centralization is generally
 bad because if something happened to psiturk.org (annual SSL certs renew on time) then the system
@@ -24,16 +24,16 @@ goes down for everyone.  Every year during conference deadlines the original pro
 would lose sleep.
 
 As a result, a major change in psiTurk 3.0 is to make the system decoupled from the services on
-psiturk.org.  It is possible now to easily get a SSL signed connection to a cloud-based server (e.g., 
+psiturk.org.  It is possible now to easily get a SSL signed connection to a cloud-based server (e.g.,
 heroku) and to run the server in a "headless" mode. This gets around the need for the psiturk.org
-"Ad server" which was written in 2014 and has basically never been updated since.  In a way this 
+"Ad server" which was written in 2014 and has basically never been updated since.  In a way this
 means psiTurk acts more like a traditional Flask "web application" rather than an interactive
-command line tool, although the command line interface remains for interacting with Amazon and 
+command line tool, although the command line interface remains for interacting with Amazon and
 for development.
 
 In addition to the hard decoupling work (led really by Dave Eargle), version 3.0 offers several new features
 including a "campaign mode" which allows you to run a certain number of subject (say 100) by repeatedly
-posting lower cost 9 assignment HITs, and a dashboard for managing hits.  In addition, a major change 
+posting lower cost 9 assignment HITs, and a dashboard for managing hits.  In addition, a major change
 since 2.0 is support for Python 3.0 and the changes that entailed to work with more recent
 versions of boto Mturk python api.
 
@@ -86,6 +86,21 @@ No More Python 2
 
 psiTurk 3 drops support for python 2, for various reasons. See the changelog_ for
 more details.
+
+
+Optimized psiturk.js preloadPages()
+-----------------------------------
+
+``psiturk.js``'s ``preloadPages()`` now returns a javascript `Promise`__.
+It does this so that it can simultaneously start to load *all* of
+the pages, rather than one at a time. The function will ``resolve``
+when *all* pages have finished preloading. Look in the `example's task.js`__ for
+more detailed comments on how you need to refactor your ``task.js`` to use the
+new ``preloadPages()``. Also see :ref:`the api page for preloadPages <api-preload-pages>`
+for other examples.
+
+__ https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise
+__ https://github.com/NYUCCL/psiTurk/blob/master/psiturk/example/static/js/task.js
 
 Detailed changelog
 ------------------

@@ -67,6 +67,8 @@ useful for debugging. For example:
     psiturk.taskdata.get('condition');
 
 
+.. _api-preload-pages:
+
 ``psiturk.preloadPages(pagelist)``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -74,22 +76,33 @@ For each path in ``pagelist``, this will request the html and store in
 the ``psiturk`` object. A given page can then be loaded later using
 ``psiturk.getPage(pagename)``.
 
+Returns a `Promise`__. See the `example task.js`_ for a full usage example.
+
+__ https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise
+
+.. _example task.js: https://github.com/NYUCCL/psiTurk/blob/master/psiturk/example/static/js/task.js
+
 Example:
 
 .. code-block:: javascript
 
     // Preload a set of HTML files
-    psiturk.preLoadPages(['instructions.html', 'block1.html', 'block2.html']);
+    async function example() {
+      await psiturk.preloadPages(['instructions.html', 'block1.html', 'block2.html']);
 
-    // Set the content of the body tag to one of the pages
-    $('body').html(psiturk.getPage('block1.html'));
+      // Set the content of the body tag to one of the pages
+      $('body').html(psiturk.getPage('block1.html'));
+    }
+
+    example()
+
 
 
 ``psiturk.getPage(pagename)``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Retrieve a stored HTML object that has been preloaded using
-``psiturk.preLoadPages``.
+``psiturk.preloadPages``.
 
 
 ``psiturk.showPage(pagename)``
@@ -102,8 +115,11 @@ Example:
 
 .. code-block:: javascript
 
-    psiturk.preloadPages(['instructions.html', 'block1.html', 'block2.html');
-    psiturk.showPage('instructions.html');
+    async function example() {
+      psiturk.preloadPages(['instructions.html', 'block1.html', 'block2.html');
+      psiturk.showPage('instructions.html');
+    }
+    example()
 
 
 ``psiturk.preloadImages(imagelist)``
@@ -223,18 +239,23 @@ Example
 
 .. code-block:: javascript
 
-    psiturk = new PsiTurk(uniqueId, adServerLoc);
-    var pages = [
-        "instructions/instruct-1.html",
-        "instructions/instruct-2.html",
-        "instructions/instruct-3.html"];
-    psiTurk.preloadPages(pages); // preload the pages
-    var instructionPages = [ // any file here should be preloaded first
-        "instructions/instruct-1.html",
-        "instructions/instruct-2.html",
-        "instructions/instruct-3.html"]; // however, you can have as many as you like
-    psiturk.doInstructions(instructionPages,
-                            function() { currentview = new StroopExperiment(); });
+    async function start_experiment(){
+      psiturk = new PsiTurk(uniqueId, adServerLoc);
+
+      var pages = [
+          "instructions/instruct-1.html",
+          "instructions/instruct-2.html",
+          "instructions/instruct-3.html"];
+      await psiTurk.preloadPages(pages); // preload the pages
+
+      var instructionPages = [ // any file here should be preloaded first
+          "instructions/instruct-1.html",
+          "instructions/instruct-2.html",
+          "instructions/instruct-3.html"]; // however, you can have as many as you like
+      psiturk.doInstructions(instructionPages,
+                              function() { currentview = new StroopExperiment(); });
+    }
+    start_experiment()
 
 The last line in this example uses an anonymous function
 to launch the `Stroop Experiment <stroop.html>`__.
