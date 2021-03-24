@@ -35,15 +35,15 @@ CONFIG.load_config()
 
 # Setup logging
 if 'ON_CLOUD' in os.environ:
-    LOG_FILE_PATH = None
+    handler = logging.StreamHandler(sys.stderr)
 else:
-    LOG_FILE_PATH = os.path.join(os.getcwd(), CONFIG.get("Server Parameters",
-                                                         "logfile"))
+    file_path = os.path.join(os.getcwd(), CONFIG.get("Server Parameters", "logfile"))
+    handler = logging.FileHandler(filename=file_path)
 
 LOG_LEVELS = [logging.DEBUG, logging.INFO, logging.WARNING, logging.ERROR,
               logging.CRITICAL]
 LOG_LEVEL = LOG_LEVELS[CONFIG.getint('Server Parameters', 'loglevel')]
-logging.basicConfig(filename=LOG_FILE_PATH, format='%(asctime)s %(message)s',
+logging.basicConfig(handler=handler, format='%(asctime)s %(message)s',
                     level=LOG_LEVEL)
 
 
