@@ -37,7 +37,7 @@ CONFIG.load_config()
 # taken from: https://stackoverflow.com/a/44760039/2714651
 handlers = []
 if 'ON_CLOUD' in os.environ:
-    handler = logging.StreamHandler(sys.stderr)
+    stream_handler = logging.StreamHandler(sys.stderr)
     handlers += [stream_handler]
 else:
     file_path = os.path.join(os.getcwd(), CONFIG.get("Server Parameters", "logfile"))
