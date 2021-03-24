@@ -34,16 +34,20 @@ CONFIG = PsiturkConfig()
 CONFIG.load_config()
 
 # Setup logging
+# taken from: https://stackoverflow.com/a/44760039/2714651
+handlers = []
 if 'ON_CLOUD' in os.environ:
     handler = logging.StreamHandler(sys.stderr)
+    handlers += [stream_handler]
 else:
     file_path = os.path.join(os.getcwd(), CONFIG.get("Server Parameters", "logfile"))
-    handler = logging.FileHandler(filename=file_path)
+    file_handler = logging.FileHandler(filename=file_path)
+    handlers += [file_handler]
 
 LOG_LEVELS = [logging.DEBUG, logging.INFO, logging.WARNING, logging.ERROR,
               logging.CRITICAL]
 LOG_LEVEL = LOG_LEVELS[CONFIG.getint('Server Parameters', 'loglevel')]
-logging.basicConfig(handler=handler, format='%(asctime)s %(message)s',
+logging.basicConfig(handlers=handlers, format='%(asctime)s %(message)s',
                     level=LOG_LEVEL)
 
 
