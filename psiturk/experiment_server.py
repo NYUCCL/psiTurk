@@ -32,10 +32,11 @@ class ExperimentServer(Application):
     Custom Gunicorn Server Application that serves up the Experiment application
     """
 
-    def __init__(self):
+    def __init__(self, app_dir=None):
         """__init__ method
         Load the base config and assign some core attributes.
         """
+
         self.loglevels = ["debug", "info", "warning", "error", "critical"]
         self.load_user_config()
         self.usage = None
@@ -43,6 +44,9 @@ class ExperimentServer(Application):
         self.options = self.user_options
         self.prog = None
         self.do_load_config()
+        if app_dir:
+            self.cfg.set('chdir', app_dir) # get directory
+            self.chdir() # change to it
         self.user_options = {}
         print("Now serving on", "http://" + self.options["bind"])
 
@@ -106,8 +110,8 @@ class ExperimentServer(Application):
                 {'timeout': config.get('Server Parameters', "server_timeout")})
 
 
-def launch():
-    ExperimentServer().run()
+def launch(app_dir=None):
+    ExperimentServer(app_dir).run()
 
 
 if __name__ == "__main__":
