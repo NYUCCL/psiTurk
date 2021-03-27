@@ -41,6 +41,7 @@ app = Flask("Experiment_Server")
 # experiment server logging
 if 'gunicorn' in os.environ.get('SERVER_SOFTWARE', ''):
     gunicorn_logger = logging.getLogger('gunicorn.error')
+    app.logger.handlers.clear()
     app.logger.handlers = gunicorn_logger.handlers
     app.logger.setLevel(gunicorn_logger.level)
 else:
