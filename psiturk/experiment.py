@@ -33,22 +33,6 @@ from .user_utils import nocache
 CONFIG = PsiturkConfig()
 CONFIG.load_config()
 
-# Setup logging
-if 'ON_CLOUD' in os.environ:
-    LOG_FILE_PATH = None
-else:
-    LOG_FILE_PATH = os.path.join(os.getcwd(), CONFIG.get("Server Parameters",
-                                                         "logfile"))
-
-LOG_LEVELS = [logging.DEBUG, logging.INFO, logging.WARNING, logging.ERROR,
-              logging.CRITICAL]
-LOG_LEVEL = LOG_LEVELS[CONFIG.getint('Server Parameters', 'loglevel')]
-logging.basicConfig(filename=LOG_FILE_PATH, format='%(asctime)s %(message)s',
-                    level=LOG_LEVEL)
-
-
-# Status codes
-
 # Let's start
 # ===========
 
@@ -56,8 +40,23 @@ app = Flask("Experiment_Server")
 
 # experiment server logging
 if 'gunicorn' in os.environ.get('SERVER_SOFTWARE', ''):
-    gunicorn_error_logger = logging.getLogger('gunicorn.error')
-    app.logger.handlers.extend(gunicorn_error_logger.handlers)
+    gunicorn_logger = logging.getLogger('gunicorn.error')
+    app.logger.handlers = gunicorn_logger.handlers
+    app.logger.setLevel(gunicorn_logger.level)
+else:
+    errorlog = CONFIG.get("Server Parameters", "errorlog")
+    if errorlog == '-':
+        handler = logging.StreamHandler(sys.stderr)
+    else:
+        file_path = os.path.join(os.getcwd(), errorlog)
+        handler = logging.FileHandler(filename=file_path)
+
+    LOG_LEVELS = [logging.DEBUG, logging.INFO, logging.WARNING, logging.ERROR,
+                  logging.CRITICAL]
+    LOG_LEVEL = LOG_LEVELS[CONFIG.getint('Server Parameters', 'loglevel')]
+
+    logging.basicConfig(handlers=[handler], format='%(asctime)s %(message)s',
+                        level=LOG_LEVEL)
 
 # Set cache timeout to 10 seconds for static files
 app.config.update(SEND_FILE_MAX_AGE_DEFAULT=10)
