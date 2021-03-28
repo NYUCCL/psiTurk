@@ -11,37 +11,6 @@ psiTurk does and does not solve to help you gauge whether it will be
 useful to you.
 
 
-Understanding the psiTurk design philosophy: An analogy
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Back before music was entirely digital people got their music on
-cassette tapes. To play the cassette you needed a player device (e.g.,
-walkman or boombox). People would trade tapes, make copies of tapes,
-make mixtapes of their favorite songs. It was awesome.
-
-psiTurk is like a player but instead of playing music, it plays
-(i.e., runs) experiments. You download and install the psiTurk application
-to your computer. This installs a command line tool ``psiturk`` which serves as a
-multi-function "player." It can (figuratively speaking) run, pause,
-eject, and configure a given experiment.
-
-To make it useful though psiTurk needs something to play. You can download
-from our :ref:`experiment-exchange` library an archive
-which contains all the files specific to a given experiment. You basically
-“play” the downloaded experiment using the ``psiturk`` command. You can easily
-switch experiments by downloading another experiment archive and “playing” it.
-Even better, you can make your own experiments by remixing others (borrowing
-code from projects in the experiment exchange) or building your own from scratch.
-
-The goal of psiturk was to build the “player” so you can spend more of
-your time on the important part of your research… the experiment (i.e.,
-mix tape)!
-
-Oh, and in case you missed it, "playing" someone else's experiment
-posted to the :ref:`experiment-exchange` basically
-means independently replicating it!
-
-
 What is Mechanical Turk?
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
