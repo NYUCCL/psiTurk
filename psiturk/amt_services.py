@@ -325,6 +325,9 @@ class MTurkServices(object):
         for qual_id in hit_config['block_qualification_ids']:
             quals.append(dict(QualificationTypeId=qual_id,
                               Comparator='DoesNotExist'))
+        
+        for advanced_qual in hit_config['advanced_qualifications']:
+            quals.append(dict(advanced_qual))
 
         # Create a HIT type for this HIT.
         hit_type = self.mtc.create_hit_type(

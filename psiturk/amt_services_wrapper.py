@@ -15,6 +15,7 @@ import sqlalchemy as sa
 import datetime
 import random
 import string
+import json
 from builtins import object
 from builtins import range
 from builtins import str
@@ -828,6 +829,12 @@ class MTurkServicesWrapper(object):
         block_quals = self.config.get('HIT Configuration', 'block_quals', fallback=None)
         if block_quals:
             block_qualification_ids.extend(block_quals.split(','))
+        
+        advanced_quals_path = self.config.get('HIT Configuration', 'advanced_quals_path', fallback=None)
+        advanced_qualifications = []
+        if advanced_quals_path:
+            with open(advanced_quals_path) as f:
+                advanced_qualifications = json.load(f)
 
         hit_config = {
             "ad_location": ad_url,
@@ -845,6 +852,7 @@ class MTurkServicesWrapper(object):
             "require_master_workers": self.config.getboolean('HIT Configuration',
                                                              'require_master_workers'),
             "require_qualification_ids": require_qualification_ids,
-            "block_qualification_ids": block_qualification_ids
+            "block_qualification_ids": block_qualification_ids,
+            "advanced_qualifications": advanced_qualifications
         }
         return hit_config
