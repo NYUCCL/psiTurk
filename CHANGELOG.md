@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+### Added
+- ability to launch the experiment server from a subdirectory instead of just
+  the default directory (d781d4f0420004aa19462e59a653bddfcb12fa26)
+
+### Fixed
+- Flask's StreamLogger is now used by default when ON_CLOUD=1, assuming no errorlog
+  is set in the config file.
+
 ## 3.0.6
 ### Added
 - added backwards compatibility for class `InvalidUsage` exception in
