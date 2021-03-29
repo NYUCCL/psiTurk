@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Flask's StreamLogger is now used by default when ON_CLOUD=1, assuming no errorlog
   is set in the config file.
+- fix download_datafiles scoping error (#487)
 
 ## 3.0.6
 ### Added
