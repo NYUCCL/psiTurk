@@ -45,7 +45,7 @@ except ImportError:
 project = "psiturk"
 copyright = "2021, the psiturk development community"
 author = "psiturk development community"
-display_version = False  # RTD shows this at the bottom anyway!
+display_version = True  # RTD shows this at the bottom anyway!
 
 
 
@@ -79,9 +79,13 @@ extensions = [
     "sphinx.ext.githubpages",
     "sphinx.ext.napoleon",
     "recommonmark",
+    "edit_on_github",
     "sphinx_markdown_tables",
     "sphinx_rtd_theme",
 ]
+
+edit_on_github_project = 'nyuccl/psiturk'
+edit_on_github_branch = 'master/doc'
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -126,7 +130,6 @@ html_theme = "sphinx_rtd_theme"
 html_theme_options = {
     "logo_only": True,
     "display_version": True,
-    "display_github": True,
     "style_nav_header_background": "#ffffff",
 }
 
@@ -161,7 +164,7 @@ html_show_sourcelink = False
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = "Streamlitdoc"
+htmlhelp_basename = "psiturk"
 
 
 # -- Options for LaTeX output ------------------------------------------------
@@ -194,7 +197,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [(master_doc, "streamlit", "Streamlit Documentation", [author], 1)]
+man_pages = [(master_doc, "psiturk", "psiturk Documentation", [author], 1)]
 
 
 # -- Options for Texinfo output ----------------------------------------------
@@ -205,10 +208,10 @@ man_pages = [(master_doc, "streamlit", "Streamlit Documentation", [author], 1)]
 texinfo_documents = [
     (
         master_doc,
-        "Streamlit",
-        "Streamlit Documentation",
+        "psiturk",
+        "psiturk Documentation",
         author,
-        "Streamlit",
+        "psiturk",
         "One line description of project.",
         "Miscellaneous",
     )
