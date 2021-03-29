@@ -140,7 +140,7 @@
     --main-bg-color: #ffffff;
   
     --warning-color: #fffae8; /* pale orange */
-    --warning-title: #ffa421; /* vivid blue */
+    --warning-title: #ffa421; /* vivid orange */
   
     --note-color: #e4f5ff; /* pale blue */
     --note-title: #1c83e1; /* vivid blue */
@@ -150,7 +150,13 @@
   
     --important-color: #fff6d0; /* pale orange */
     --important-title: #ff8700; /* vivid orage */
-  
+
+    --danger-color: #f8d7da; /* pale red */
+    --danger-title: #721c24; /* vivid red */
+
+    --seealso-color: #dffde9; /* pale red */
+    --seealso-title: #21c354; /* vivid red */
+
     --st-gray-70: #808495;
     --st-gray-60: #a3a8b8;
     --st-gray-50: #bfc5d3;
@@ -431,6 +437,25 @@
   .rst-content .important .admonition-title {
     color: #ff8700;
   }
+
+  /* style see also */
+  .rst-content .seealso,
+  .rst-content .seealso .admonition-title {
+    background: #dffde9;
+  }
+  .rst-content .seealso .admonition-title {
+    color: #21c354;
+  }
+
+    /* style danger boxes */
+    .rst-content .danger,
+    .rst-content .danger .admonition-title {
+      background: #f8d7da;
+    }
+    .rst-content .danger .admonition-title {
+      color: #721c24;
+    }
+    
   
   /* Breadcrumbs */
   
