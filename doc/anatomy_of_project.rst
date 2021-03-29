@@ -1,6 +1,6 @@
 .. _anatomy-of-project:
 
-Anatomy of a basic psiTurk project
+Anatomy of a project
 ==================================
 
 Every psiTurk compatible project should include a few basic files.

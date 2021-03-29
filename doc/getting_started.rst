@@ -1,6 +1,6 @@
 .. _quickstart:
 
-Quickstart
+Getting started
 ==========
 
 Interested in psiTurk? Try out this quick start guide to running a simple

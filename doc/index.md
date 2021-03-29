@@ -4,8 +4,8 @@
    :maxdepth: 2
    :hidden:
 
-   forward
-   quickstart
+   key_concepts
+   getting_started
    anatomy_of_project
    command_line_overview
    dashboard

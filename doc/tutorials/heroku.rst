@@ -2,7 +2,7 @@
 .. _heroku-guide:
 
 =========================
-Running psiTurk on Heroku
+Deploy to Heroku
 =========================
 
 `Heroku <https://www.heroku.com>`_ is a cloud service that lets you run

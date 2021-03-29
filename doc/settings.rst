@@ -1,7 +1,7 @@
 .. _settings:
 
 ========
-Settings
+Configuration options
 ========
 
 This page is organized by each of the sections of a ``config.txt`` file.

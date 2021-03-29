@@ -1,6 +1,6 @@
 .. _customizing-psiturk:
 
-Customizing psiTurk
+Server-side computations
 ===================
 
 Sometimes you might like to add additional urls or "routes" to your project.

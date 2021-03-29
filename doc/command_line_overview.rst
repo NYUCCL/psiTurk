@@ -1,6 +1,6 @@
 .. _command-line-overview:
 
-Command-line Interface Overview
+Command-line Overview
 ===============================
 
 The **psiTurk shell** is a command line interface which
