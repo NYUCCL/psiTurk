@@ -51,7 +51,8 @@
 
   disclaimer
   getting_help
-  Discussion forum <https://discuss.streamlit.io/>
+  code_of_conduct
+  Discussion forum <https://groups.google.com/forum/#!forum/psiturk>
   roadmap
   contribute
   Source code & issue tracker <https://github.com/nyuccl/psiturk/>
@@ -61,16 +62,20 @@
 
 [**psiturk**](https://psiturk.org/) is an open-source Python library that makes it easy to create high-quality behavioral experiments that are delivered over the Internet using a web browser.  
 
-psiturk is not, _by itself_, used for creating surveys or interfaces in the browser (for that we recommend tools like [jspych](https://www.jspsych.org) or [d3.js](https://d3js.org)).  Instead, psiturk solves all the _other_ myriad of problems that come up in web experimentation including:
+psiturk is not, _by itself_, used for creating surveys or interfaces in the browser (for that we recommend tools like [jspych](https://www.jspsych.org) or [d3.js](https://d3js.org)).  Instead, psiturk solves the _other_ myriad of problems that come up in web experimentation including:
 - reliably and securely serving webpages to participants over the internet
 - blocking repeat participation (when desired)
 - counterbalancing conditions
 - incrementally saving data to databases
 - simplifying the process of soliciting and approving work on crowdworking sites
 
-In addition to making it easy to run simple, standard experiments it enables much more complex designs including adaptive tasks where for instance a computational model might run on the server (in e.g., Python) and process the participants' data in real time to change the stimuli presented later in a task.
+In addition to providing a simple, standardized workflow for online experiment development, it also enables much more complex designs where a computational model might run on the server (in e.g., Python) to determine which stimuli to display.
 
-psiturk provides a flexible but standardized workflow for online experiment development.  We do all this in an open and free development environment that draws from the community to share best practices.  We don't want your money but we accept bug reports, feature requests, and -- even better -- pull requests**🎈**!
+**psiturk** is used in research from cognitive science, psychology, neuroscience, bioinformatics, marketing, computer security, user interface testing, computer science, and machine learning in both academic and industry.
+
+Odds are pretty good that if you are thinking "should I start from scratch with Flask or node.js to implement my Mechanical Turk experiment" the answer is no, use **psiturk** and save yourself a lot of time.
+
+We do all this in an open and free development environment that draws from the community to share best practices.  We happily accept bug reports, feature requests, and -- even better -- pull requests**🎈**!
 
 ## Video introduction
 
@@ -98,11 +103,9 @@ The docs are broken up into several sections:
 
 ## Open source, community-built, widely used
 
-psiturk accomplishes these goals within a community-oriented development approach. The software is released under the [MIT License](https://github.com/NYUCCL/psiTurk/blob/master/LICENSE). Version 1.0 was launched in November 2013 and since then **psiturk** has maintained a diverse, supportive, and engaged open-source development community that includes over 40 contributors on github and over 1800 commits.  We have an active and supportive mailing list and try to promptly give feedback and incorporate pull requests from contributors from all over the world with many different skill levels.
+psiturk is released under the [MIT License](https://github.com/NYUCCL/psiTurk/blob/master/LICENSE). Version 1.0 was launched in November 2013 and since then psiturk has maintained a diverse and supportive,community that includes over 40 contributors providing 1800 commits.  We have an active mailing list and try to promptly give feedback to people from all over the world with many different skill levels.
 
-**psiturk** is used in research from cognitive science, psychology, neuroscience, bioinformatics, marketing, computer security, user interface testing, computer science, machine learning in both academic and industry.  We don't want to brag but it is used at some fancy places.  
 
-Odds are pretty good that if you are thinking "should I start from scratch with Flask or node.js to implement my Mechanical Turk experiment" the answer is no, use **psiturk** and save yourself a lot of time.
 
 
 
