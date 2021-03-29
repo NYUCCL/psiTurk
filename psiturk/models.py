@@ -125,8 +125,7 @@ class Participant(Base):
                             event["timestamp"]
                          )
                     )
-
-            return outstring.getvalue()
+                return outstring.getvalue()
         except:
             print(("Error reading record:", self))
             return ""
@@ -150,7 +149,7 @@ class Participant(Base):
                             questiondata[question]
                          )
                     )
-            return outstring.getvalue()
+                return outstring.getvalue()
         except:
             print(("Error reading record:", self))
 
