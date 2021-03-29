@@ -4,7 +4,7 @@
    :maxdepth: 2
    :hidden:
 
-   key_concepts
+   what_is_psiturk
    getting_started
    anatomy_of_project
    command_line_overview
@@ -60,22 +60,21 @@
 
 # Welcome to psiturk
 
-[**psiturk**](https://psiturk.org/) is an open-source Python library that makes it easy to create high-quality behavioral experiments that are delivered over the Internet using a web browser.  
+[`psiturk`](https://psiturk.org/) is an open-source Python library that makes it easy to create high-quality behavioral experiments that are delivered over the Internet using a web browser.  
 
-psiturk is not, _by itself_, used for creating surveys or interfaces in the browser (for that we recommend tools like [jspych](https://www.jspsych.org) or [d3.js](https://d3js.org)).  Instead, psiturk solves the _other_ myriad of problems that come up in web experimentation including:
-- reliably and securely serving webpages to participants over the internet
-- blocking repeat participation (when desired)
-- counterbalancing conditions
-- incrementally saving data to databases
-- simplifying the process of soliciting and approving work on crowdworking sites
+`psiturk` is not, _by itself_, used for creating surveys or interfaces in the browser (for that we recommend tools like [jspych](https://www.jspsych.org) or [d3.js](https://d3js.org)).  Instead, `psiturk` solves the _other_ myriad of problems that come up in web experimentation including:
+- Reliably and securely serving webpages to participants over the internet
+- Blocking repeat participation (when desired)
+- Counterbalancing conditions
+- Incrementally saving data to databases
+- Simplifying the process of soliciting and approving work on crowdworking sites
+- Designing experiments in Python code so that very light-weight Javascript can just display them
 
-In addition to providing a simple, standardized workflow for online experiment development, it also enables much more complex designs where a computational model might run on the server (in e.g., Python) to determine which stimuli to display.
+`psiturk` is used in research fields ranging from cognitive science, psychology, neuroscience, bioinformatics, marketing, computer security, user interface testing, computer science, and machine learning in both academia and industry.
 
-**psiturk** is used in research from cognitive science, psychology, neuroscience, bioinformatics, marketing, computer security, user interface testing, computer science, and machine learning in both academic and industry.
+Odds are pretty good that if you are thinking "should I start from scratch with Flask or node.js to implement my Mechanical Turk experiment"  the answer is no, use `psiturk` and save yourself a lot of time.
 
-Odds are pretty good that if you are thinking "should I start from scratch with Flask or node.js to implement my Mechanical Turk experiment" the answer is no, use **psiturk** and save yourself a lot of time.
-
-We do all this in an open and free development environment that draws from the community to share best practices.  We happily accept bug reports, feature requests, and -- even better -- pull requests**🎈**!
+`psiturk` is built using an open source model that draws from the community to share best online experiment practices.  We happily accept bug reports, feature requests, and -- even better -- pull requests**🎈**!
 
 ## Video introduction
 
@@ -87,11 +86,11 @@ Still unsure if psiturk is for you?  Try this quick five minute video introducti
 
 The docs are broken up into several sections:
 
-- **First Steps**: include our [Key Concepts](key_concepts.md) and [Get Started](getting_started.md) guide give a general overview to getting started with **psiturk**.
+- **First Steps**: include our [Key Concepts](key_concepts.md) and [Get Started](getting_started.md) guide give a general overview to getting started with `psiturk`.
 
-- **Topic guides**: give you background on specific aspects of **psiturk**. Make sure to check out the sections on [Example project walk-through](main_concepts.md) and [Deploying an app](deploy_streamlit_app.md), and [Customizing psiturk](develop_streamlit_components.md).
+- **Topic guides**: give you background on specific aspects of `psiturk`. Make sure to check out the sections on [Example project walk-through](main_concepts.md) and [Deploying an app](deploy_streamlit_app.md), and [Customizing psiturk](develop_streamlit_components.md).
 
-- **Tutorials**: provides high level overview of common project cases.  Make sure to check out the sections on the sample project walk-through and using jsPsych+psiturk.
+- **Tutorials**: provides high level overview of common project cases.  Make sure to check out the sections on the sample project walk-through and using jsPsych+`psiturk`.
 
 - **Cookbook**: provides short code snippets and tips that might find useful.
 
@@ -103,7 +102,7 @@ The docs are broken up into several sections:
 
 ## Open source, community-built, widely used
 
-psiturk is released under the [MIT License](https://github.com/NYUCCL/psiTurk/blob/master/LICENSE). Version 1.0 was launched in November 2013 and since then psiturk has maintained a diverse and supportive,community that includes over 40 contributors providing 1800 commits.  We have an active mailing list and try to promptly give feedback to people from all over the world with many different skill levels.
+`psiturk` is released under the [MIT License](https://github.com/NYUCCL/psiTurk/blob/master/LICENSE). Version 1.0 was launched in November 2013 and since then psiturk has maintained a diverse and supportive,community that includes over 40 contributors providing 1800 commits.  We have an active mailing list and try to promptly give feedback to people from all over the world with many different skill levels.
 
 
 
@@ -119,7 +118,7 @@ Please come join us on the [community forum](https://groups.google.com/forum/#!
 
       **Citing this project in your papers**:
 
-      To credit **psiturk** in your work, please cite both the original journal paper and a version of the Zenodo archive.  The former provides a high level description of the package, and the latter points to a permanent record of all psiturk versions (we encourage you to cite the specific version you used). Example citations (for psiTurk 3.0.6):
+      To credit `psiturk` in your work, please cite both the original journal paper and a version of the Zenodo archive.  The former provides a high level description of the package, and the latter points to a permanent record of all `psiturk` versions (we encourage you to cite the specific version you used). Example citations (for `psiturk` 3.0.6):
 
       **Zenodo Archive**:  
 
