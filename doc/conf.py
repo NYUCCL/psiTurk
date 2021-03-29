@@ -47,6 +47,8 @@ copyright = "2021, the psiturk development community"
 author = "psiturk development community"
 display_version = False  # RTD shows this at the bottom anyway!
 
+
+
 # The full version, including alpha/beta/rc tags
 from psiturk.version import version_number
 
@@ -123,6 +125,8 @@ html_theme = "sphinx_rtd_theme"
 
 html_theme_options = {
     "logo_only": True,
+    "display_version": True,
+    "display_github": True,
     "style_nav_header_background": "#ffffff",
 }
 
@@ -232,7 +236,7 @@ epub_exclude_files = ["search.html"]
 autodoc_default_flags = ["members"]
 autosummary_generate = True
 html_copy_source = False
-github_doc_root = "https://github.com/streamlit/streamlit/tree/master/docs"
+github_doc_root = "https://github.com/nyuccl/psiturk/tree/master/docs"
 
 # At the bottom of conf.py
 def setup(app):
