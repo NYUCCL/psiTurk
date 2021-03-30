@@ -1,7 +1,7 @@
 .. _install:
 
 ============
-Installation
+Installation guide
 ============
 
 psiTurk is supported for python >= v3.6 on any `Unix-Like`_ operating system
