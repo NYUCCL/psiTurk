@@ -44,7 +44,7 @@ around the extra fee Amazon charges for certain "large" HITs.
 
 ## Do I need to how to code to use psiturk?
 
-Yes. `psiturk` experiments are run in web browsers. To develop a web browser
+Well, yes. `psiturk` experiments are run in web browsers. To develop a web browser
 experiment, you need to have basic web programming skills with HTML, CSS, and
 JavaScript.  You sometimes might also use Python to customize your experiment.
 
@@ -58,7 +58,10 @@ record data.
 However, for actually programming the interface of your task people often use other 
 javascript tools like the outstanding [jsPsych](https://www.jspsych.org).
 
-The good news is that many people have developed experiments using `psiturk` and you can use these examples to bootstrap your own efforts.
+The good news is that many people have developed experiments using `psiturk` and 
+you can use these examples to bootstrap your own efforts.
+
+If you are looking for ways to run experiments online without coding consider [Pavlovia](https://pavlovia.org).
 
 
 ## Do I need to setup and manage a webserver?
@@ -67,7 +70,7 @@ No, because `psiturk` does this for you.
 
 If you run an experiment on the web you need a way to send the content to the user.  This usually requires some type of http/https web server.  While you can do that from your personal computer (with some setup/configuration), currently the easiest way to do this is to deploy (i.e., run on a remote cloud server) your completed experiment to the web via the free-tier on Heroku.  When you are developing locally/testing your code `psiturk` provides you a small, simplified web server running on your computer that mimics the environment that is run when your experiment is officially "deployed."
 
-**TL;DR**: Yes you need a websever.  `psiturk` provide a lightweight mini-webserver that you can use to develop your task locally on your desktop.  When you are ready to begin data collection you deploy to the cloud.  We have a smooth workflow for doing this for free on Heroku. 
+**TL;DR**: `psiturk` provides a lightweight mini-webserver that you can use to develop your task locally on your desktop.  When you are ready to begin data collection you deploy to the cloud.  We have a smooth workflow for doing this for free on Heroku, although other options are possible.
 
 ## Do I need to setup and manage a database?
 
@@ -81,11 +84,11 @@ There are [non-database solutions for some systems](https://www.jspsych.org/over
 
 If you do have your own database though `psiturk` is happy to use it.
 
-**TL;DR**: Yes you need a database, but there is no database software required for you to personally install or maintain.  `psiturk` will create free, managed databases for you.  
+**TL;DR**: Yes you need a database, but there is no database software required for you to personally install or maintain.  `psiturk` will create free, managed databases for you if you don't have one or bring you own!  
 
-## My IRB is concerned about privacy.  Does psiturk store or view my subjects data?
+## My IRB is concerned about privacy, will psiturk work for me?
 
-No, all communication is directly between you and your participant.  There is no centralized data collection or monitoring.  `psiturk` data saving routines anonymize your databases so that no subject identity is associated with a datafile except with a special secret key that only you (the `psiturk` developer) know.  Everything is protected with passwords.
+When you use `psiturk` communication is directly between you and your participant.  There is no centralized data collection or monitoring.  `psiturk` data saving routines anonymize your databases so that no potentially identifiable information is associated with a datafile except with a special secret key that only you (as the `psiturk` developer) know.  If you set up your own database it is up to you to secure it, but if you use the Heroku version it is password protected and even can be deleted after data collection (and your data is downloaded to a file for safe keeping and analysis of course!).
 
 ## Is psiturk only for use with Amazon Mechanical Turk?
 
