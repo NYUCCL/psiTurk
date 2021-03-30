@@ -1,70 +1,90 @@
 .. _quickstart:
 
-Getting started
+Getting started developing
 ==========
 
-Interested in psiTurk? Try out this quick start guide to running a simple
-experiment online! It steps you from installing to paying participants and
-should work for most people using updated versions of Linux or Mac OS X.
+Generally there is a distinction between using `psiturk` locally to help 
+you **develop** your experiment code versus **deploying** it in a way that 
+enables data collection.  This guide shows how easy it is to get up and running the
+developing your experiment code using `psiturk`.
 
-This guide uses a simple example experiment provided in the defaul psiTurk
-installation, but can be used to run any psiTurk experiment.
+Generally one develops an experiment entirely on a local personal computer. 
+`psiturk` creates a local copy of the web environment that will later run 
+on the cloud when deployed. 
 
-.. contents:: Contents
+For this reason, this section of the guide steps you through the process of
+installing psiturk on your personal machine and stepping through common 
+debugging steps.
+
+
+.. contents:: Overview
   :local:
 
 
-Step 1: Install psiTurk
+Step 1: Install psiturk
 -----------------------
 
-psiTurk can be installed easily on any system that has the python package
-manager ``pip``.
+psiturk can be installed easily on any system that has a Python (>=3.6) installation 
+and has the python package manager ``pip``.  At the terminal (➜):
 
 ::
 
-  $ pip install psiturk
+  ➜ pip install psiturk
 
 .. seealso:: :ref:`install`
 
+After you install it can be helpful to double check that you have the correct version installed:
+
+::
+
+  ➜ psiturk version
+  psiTurk version 3.0.6
+
+If you are following this guide you want this to be version 3.0.6 or higher.
 
 Step 2: Create a default project structure
 ------------------------------------------
 
-psiTurk includes a simple example project which you can use to get started.
+psiturk includes a simple example project which you can use to get started.
 
 ::
 
-  $ psiturk-setup-example
+  ➜ psiturk-setup-example
 
   Creating new folder `psiturk-example` in the current working directory
   ...
   Creating default configuration file (config.txt)
 
-
-Step 3: Enter credentials
--------------------------
-
-In order to get access to the Amazon Mechanical Turk features of psiTurk, you
-need obtain and enter credentials for accessing Amazon Web Services. These 
-can be added to ``~/.psiturkconfig``. You can leave the ``aws_region`` at
-the default value.
-
+psiturk should be locally run in the top level folder of your project.  
+Enter this shell command to enter the newly created folder:
 
 ::
 
-  $ cat ~/.psiturkconfig
+  ➜ cd psiturk-example
 
-  [AWS Access]
-  AWS_ACCESS_KEY_ID = YourAccessKeyId
-  AWS_SECRET_ACCESS_KEY = YourSecretAccessKey
-  aws_region = us-east-1
+The default project include several default files you will later modify.  To list them:
 
-.. seealso:: :ref:`amt-setup`
+::
 
-Step 4: Launch psiTurk in the new project directory
+  ➜ ls -la
+  ➜ ls -la
+  total 40
+  ➜ ls -la
+  total 47
+  drwxr-xr-x    7 user  staff   224 Mar 29 21:40 .
+  drwx------@ 147 user  staff  4704 Mar 29 12:53 ..
+  -rw-r--r--    1 user  staff  8649 Mar 29 21:40 config.txt
+  -rw-r--r--    1 user  staff  3461 Mar 29 21:40 custom.py
+  drwxr-xr-x    8 user  staff   256 Mar 29 21:40 static
+  drwxr-xr-x   18 user  staff   576 Mar 29 21:40 templates
+
+.. seealso:: :ref:`anatomy-of-project`
+
+
+Step 3: Launch psiturk in the new project directory
 ---------------------------------------------------
 
-psiTurk should be run in the top level folder of your project. You should be
+psiturk should be run in the top level folder of your project. You should be
 greeted with a welcome screen and command prompt.
 
 There is also an extensive help system in the command line. Type ``help`` to see a
@@ -73,8 +93,8 @@ particular command (e.g., ``help server``).
 
 ::
 
-  $ cd psiturk-example
-  $ psiturk
+  ➜ cd psiturk-example
+  ➜ psiturk
 
   welcome...
   psiTurk version 2.1.1
@@ -84,22 +104,22 @@ particular command (e.g., ``help server``).
 .. seealso:: :ref:`command-line-overview`
 
 
-Step 5: Start the server
+Step 4: Start the server
 ------------------------
 
-The psiTurk server is the web server which responds to external requests. To
+The psiturk server is the web server which responds to external requests. To
 start or stop the server type ``server on``, ``server off``, or ``server restart``.
 
 ::
 
-  $ [psiTurk server:off mode:sdbx #HITs:0]$ server on
+  ➜ [psiTurk server:off mode:sdbx #HITs:0]$ server on
 
   Experiment server launching...
   Now serving on http://localhost:22362
   [psiTurk server:on mode:sdbx #HITs:0]$
 
 
-Step 6: Debug/view your experiment
+Step 5: Debug/view your experiment
 ----------------------------------
 
 To debug or test the experiment, simply type debug. This will launch the default
@@ -113,46 +133,25 @@ not launch the browser.
 Altering the experiment code is beyond the scope of the quick start, but see
 :ref:`this guide <example-project-stroop>` for details on how to modify and extend the stroop example.
 
+A short summary is that you make changes to the files in the `static/` and `templates/`
+folder to reflect your experiment design.  You do not need to restart the server as you
+change these files locally.  The changes will be reflected the next time you load the
+experiment url.
+
 ::
 
-  $ [psiTurk server:on mode:sdbx #HITs:0]$ debug
+  ➜ [psiTurk server:on mode:sdbx #HITs:0]$ debug
 
   Launching browser pointed at your randomized debug link, feel free to request another.
     http://localhost:22362/ad?assignmentId=debugX12JJ8&hitId=debugA7NP2T&workerId=debugS9K039
   [psiTurk server:on mode:sdbx #HITs:0]$
 
 
-Step 7: Create a sandboxed HIT/Ad
----------------------------------
+Notice that the debug link assigns random values to the `assignmentId`, `hitId`, and `workerId`.  
+These are values typically provided by the Mechanical Turk system but which are set randomly during
+debugging so you can isolate this data in your analysis later.
 
-In order to make the experiment available to workers on Amazon Mechanical Turk you need to:
-
-1. Run your psiturk server on a machine that is publicly-accessible.
-2. Post a HIT on AMT, which will point MTurkers to your psiturk server address.
-
-Use the :ref:`ad_url <hit_configuration_ad_url>` settings to point to the location of your publicy-accessible experiment.
-
-See the :ref:`deploy-on-heroku` guide for an example of running your experiment on the
-webserver of a  platform-as-a-service cloud provider.
-
-The example below uses the Amazon Mechanical Turk "sandbox," which is a place
-for testing your task without actually offering it live to real paid workers.
-
-Run the following to post a HIT, and answer all prompts::
-
-  $ [psiTurk server:on mode:sdbx #HITs:0]$ hit create
-
-Your HIT should now be visible on http://workersandbox.mturk.com if you search for
-your requester account name or the HIT title word "Stroop" (set in config.txt).
-
-.. warning::
-
-    **Important!** Test to make sure that your Ad URL can be accessed from a
-    place external to the network from which you created the HIT. If it cannot
-    be accessed, then MTurkers won't be able to access your HIT!
-
-
-Step 8: Check your data
+Step 6: Check your data
 -----------------------
 
 By default psiTurk saves your data to a SQLite database participants.db in your
@@ -162,51 +161,5 @@ opening that file in a SQLite tool like Base.
 .. seealso:: :ref:`databases-overview`
 
 
-Step 9: Monitor progress
-------------------------
-
-One simple way to monitor how many people have actually accepted your HIT is with
-the ``hit list --active`` or ``hit list --reviewable`` commands.
-
-This shows the HITid for each task, how many have completed, and how many are pending.
-
-.. seealso::
-  See these FAQs:
-
-  * :ref:`interpret-hit-status`
-  * :ref:`why-no-hits-available`
-
-
-Step 10: Approve workers
-------------------------
-psiTurk provides many tools for approving workers, assigning bonuses, etc.
-Try ``help hit`` and ``help worker``.
-
-One simple approach is to approve all the workers associated with a particular
-HIT (once all the assignments are complete). To do this, use the
-``worker approve --hit <HITID>`` command.
-
-::
-
-  $ [psiTurk server:on mode:sdbx #HITs:0]$ worker approve --hit 28K4SME3ZZ2MZI004SETTTXTTAG44LT
-
-  Approving....
-
-Step 11: Switch to "live" mode
-------------------------------
-
-In order to create public hits on the "live" AMT site, you need to switch modes
-in the command shell using the mode command. To get back to the sandbox, just
-type mode again.
-
-To avoid mistakes, psiTurk defaults to sandbox mode (this behavior can be
-changed in config.txt)
-
-From here, everything is exactly the same as described for sandbox hits above.
-
-::
-
-  $ [psiTurk server:on mode:sdbx #HITs:1]$ mode
-
-  Entered live mode
-  [psiTurk server:on mode:live #HITs:0]$
+At this point you develop your experiment until you are confident it is ready to run.  Then you
+move on to our guide to :ref:`collecting-data`.
