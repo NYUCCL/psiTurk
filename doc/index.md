@@ -15,11 +15,11 @@
   :maxdepth: 2
   :hidden:
 
-  install
+  topic_guides/install
   topic_guides/recording
   topic_guides/retrieving
-  amt_setup
-  customizing
+  topic_guides/amt_setup
+  topic_guides/customizing
   topic_guides/command_line_overview
   topic_guides/alternative_recruitment_channels
 
@@ -41,22 +41,22 @@
   :maxdepth: 2
   :hidden:
 
-  api
-  settings
-  command_line
-  migrating
+  reference/api
+  reference/settings
+  reference/command_line
+  reference/migrating
 
 .. toctree::
   :caption: Support
   :maxdepth: 2
   :hidden:
 
-  disclaimer
-  getting_help
-  code_of_conduct
+  support/disclaimer
+  support/getting_help
+  support/code_of_conduct
   Discussion forum <https://groups.google.com/forum/#!forum/psiturk>
-  roadmap
-  contribute
+  support/roadmap
+  support/contribute
   Source code & issue tracker <https://github.com/nyuccl/psiturk/>
 ```
 
@@ -71,11 +71,8 @@
 - Incrementally saving data to databases
 - Simplifying the process of soliciting and approving work on crowdworking sites
 
-`psiturk` is used in research fields ranging from cognitive science, psychology, neuroscience, bioinformatics, marketing, computer security, user interface testing, computer science, and machine learning in both academia and industry.
+`psiturk` is used in [many research fields](https://scholar.google.com/scholar?oi=bibs&hl=en&cites=4685239787075608864) ranging from cognitive science, psychology, neuroscience, bioinformatics, marketing, computer security, user interface testing, computer science, and machine learning in both academia and industry.
 
-Odds are pretty good that if you are thinking "should I start from scratch with Flask or node.js to implement my Mechanical Turk experiment"  the answer is no, use `psiturk` and save yourself a lot of time.
-
-`psiturk` is built using an open source model that draws from the community to share best online experiment practices.  We happily accept bug reports, feature requests, and -- even better -- pull requests**🎈**!
 
 ## Video introduction
 
@@ -87,26 +84,21 @@ Still unsure if psiturk is for you?  Try this quick five minute video introducti
 
 The docs are broken up into several sections:
 
-- **First Steps**: include our [Key Concepts](key_concepts.md) and [Get Started](getting_started.md) guide give a general overview to getting started with `psiturk`.
+- **First Steps**: include [What is psiturk?](what_is_psiturk) as an overview.  Then there is a quick-start guide in two main parts: [Getting started developing](getting_started) and [Collecting data](collecting_data).
 
-- **Topic guides**: give you background on specific aspects of `psiturk`. Make sure to check out the sections on [Example project walk-through](main_concepts.md) and [Deploying an app](deploy_streamlit_app.md), and [Customizing psiturk](develop_streamlit_components.md).
+- **Topic guides**: give you background on specific aspects of `psiturk` including how to [install](topic_guides/install), how to [record](topic_guides/recording) and [retrieve](topic_guides/retrieving) data, how to [set up a Mechanical Turk account](topic_guides/amt_setup), and how to use psiturk with other recruitment systems such as [in the lab](topic_guides/alternative_recruitment_channels).
 
-- **Tutorials**: provides high level overview of common project cases.  Make sure to check out the sections on the sample project walk-through and using jsPsych+`psiturk`.
+- **Tutorials**: provides high level overview of specific tasks such as [using psiturk with jsPsych](tutorials/using-jspsych) or [automatically computing performance-based bonus payment amounts](auto-bonus).  Make sure to check out the sections on the [sample project walk-through](example-project-stroop).
 
-- **Cookbook**: provides short code snippets and tips that might find useful.
+- **Reference guides**: are the bread and butter of how our [APIs](reference/api) and [configuration files](reference/configuration-overview) work and will give you short, actionable explanations of specific functions and features.
 
-- **Reference guides**: are the bread and butter of how our [APIs](api.md) and [configuration files](streamlit_configuration.md) work and will give you short, actionable explanations of specific functions and features.
-
-- **Support**: gives you more options for when you're stuck or want to talk about an idea. Check out our discussion forum as well as a number of [troubleshooting guides](/troubleshooting/index.md).
+- **Support**: gives you more options for when you're [stuck](support/getting_help) or want to talk about an idea with other people.
 
 ---
 
-## Open source, community-built, widely used
+## **Open source, community-built**
 
-`psiturk` is released under the [MIT License](https://github.com/NYUCCL/psiTurk/blob/master/LICENSE). Version 1.0 was launched in November 2013 and since then psiturk has maintained a diverse and supportive,community that includes over 40 contributors providing 1800 commits.  We have an active mailing list and try to promptly give feedback to people from all over the world with many different skill levels.
-
-
-
+`psiturk` is built using an open source ([MIT License](https://github.com/NYUCCL/psiTurk/blob/master/LICENSE)) model that draws from the community to share best online experiment practices.  Version 1.0 was launched in November 2013 and since then psiturk has maintained a diverse and supportive community that includes over 40 contributors providing 1800 commits. We happily accept bug reports, feature requests, and -- even better -- pull requests**🎈**! 
 
 
 ## **Join the community**

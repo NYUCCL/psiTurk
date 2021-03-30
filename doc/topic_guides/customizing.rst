@@ -1,5 +1,15 @@
 .. _customizing-psiturk:
 
+
+
+So I still don't get it, do I program my experiment in psiturk or what?
+
+Well, the short answer is no.  You write the **interface** parts of your experiment using HTML/CSS/Javascript typically (although Flash or Unity are in theory possible as well).
+
+That said, in some cases it can be easier to design the logic, flow, and randomization of your experiment in Python and then just use Javascript as a light weight "dumb" display interface.  For instance, perhaps your experiment is based on complex video game written in [Open AI Gym](https://gym.openai.com).  To allow humans to interface with this you don't want to have to re-write the entire game logic in Javascript.  `psiturk` makes this easy by allowing you to pass data back and forth between a python sever and a "dumb" javascript client running in the browser.  In this case all the brains would be running inside `psiturk` and then the Javascript just makes the pictures and buttons in the broswer appear (sometimes known as a Model-View-Controller development model).
+
+
+
 Server-side computations
 ===================
 
