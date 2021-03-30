@@ -6,11 +6,9 @@
 
    what_is_psiturk
    getting_started
-   anatomy_of_project
-   command_line_overview
+   collecting_data
+   anatomy_of_project   
    dashboard
-   recording
-   retrieving
 
 .. toctree::
   :caption: Topic Guides
@@ -18,20 +16,24 @@
   :hidden:
 
   install
+  topic_guides/recording
+  topic_guides/retrieving
   amt_setup
-  tutorials/heroku
   customizing
-  topic_guides/alternative_channels
+  topic_guides/command_line_overview
+  topic_guides/alternative_recruitment_channels
 
 .. toctree::
   :caption: Tutorials
   :maxdepth: 2
   :hidden:
 
+  tutorials/heroku
   tutorials/example-project-stroop
-  tutorials/using_jspsych
-  tutorials/static_ip_ssl
+  tutorials/using-jspsych
+  tutorials/static-ip-ssl
   tutorials/external_surveys
+  tutorials/auto-bonus
   tutorials/cookbook
 
 .. toctree::
@@ -68,7 +70,6 @@
 - Counterbalancing conditions
 - Incrementally saving data to databases
 - Simplifying the process of soliciting and approving work on crowdworking sites
-- Designing experiments in Python code so that very light-weight Javascript can just display them
 
 `psiturk` is used in research fields ranging from cognitive science, psychology, neuroscience, bioinformatics, marketing, computer security, user interface testing, computer science, and machine learning in both academia and industry.
 
