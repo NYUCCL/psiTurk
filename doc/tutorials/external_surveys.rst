@@ -1,4 +1,4 @@
-Using external survey tools with psiTurk
+Using commercial survey tools
 =============================================
 
 With the magic of ``iframes`` and javascript window messaging, you can integrate
