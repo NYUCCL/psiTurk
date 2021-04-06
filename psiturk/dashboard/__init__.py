@@ -91,7 +91,7 @@ def before_request():
     pass
 
 
-@dashboard.route('/mode', methods=('GET', 'POST'))
+@dashboard.route('/mode', methods=['GET', 'POST'])
 def mode():
     if request.method == 'POST':
         mode = request.form['mode']
@@ -154,7 +154,7 @@ def tasks_list():
     return render_template('dashboard/tasks/list.html')
 
 
-@dashboard.route('/login', methods=('GET', 'POST'))
+@dashboard.route('/login', methods=['GET', 'POST']))
 def login():
     if request.method == 'POST':
         username = request.form['username']
