@@ -52,7 +52,7 @@ def login_required(view):
             return view(*args, **kwargs)
         is_logged_in = current_user.get_id() is not None
         is_static_resource_call = str(request.endpoint) == 'dashboard.static'
-        is_login_route = str(request.url_rule) == '/dashboard/login'
+        is_login_route = request.path == url_for('.login')
         if not (is_static_resource_call or is_login_route or is_logged_in):
             return login_manager.unauthorized()
         return view(*args, **kwargs)
