@@ -46,6 +46,7 @@ def load_user(username):
 
 
 def login_required(view):
+
     @wraps(view)
     def wrapped_view(*args, **kwargs):
         if app.login_manager._login_disabled:  # for unit testing
@@ -53,6 +54,7 @@ def login_required(view):
         is_logged_in = current_user.get_id() is not None
         is_static_resource_call = str(request.endpoint) == 'dashboard.static'
         is_login_route = request.path == url_for('.login')
+        app.logger.debug(f'{current_user.get_id()} {request.endpoint} {request.path}')
         if not (is_static_resource_call or is_login_route or is_logged_in):
             return login_manager.unauthorized()
         return view(*args, **kwargs)
