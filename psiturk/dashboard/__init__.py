@@ -154,8 +154,9 @@ def tasks_list():
     return render_template('dashboard/tasks/list.html')
 
 
-@dashboard.route('/login', methods=['GET', 'POST']))
+@dashboard.route('/login', methods=['GET', 'POST'])
 def login():
+    app.logger.debug('i am the login route')
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -171,6 +172,7 @@ def login():
             login_user(user)
             flash("Logged in successfully.")
             next = request.args.get('next')
+            app.logger.debug('i am redirecting!')
             return redirect(next or url_for('.index'))
         except Exception as e:
             flash(str(e), 'danger')
