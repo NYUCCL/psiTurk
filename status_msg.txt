@@ -11,8 +11,16 @@ https://psiturk.org
 
 --------------------------------------------------------------------
 
-Due to a recent Amazon API deprecation, you need to install psiturk version 2.3.0 or later.
+psiTurk v3 has been released! See the migration guide at
+https://psiturk.readthedocs.io/en/latest/migrating.html
 
-v2.3.0 is python2 only, while versions of v2.3.x >= v2.3.1 support both python2 and python3.
+psiTurk v3 does not support the psiturk ad server. If you still need
+the psiTurk ad server, use psiTurk v2.3.12, and remove all HTML comments
+from your `ad.html` file. Versions less than v2.3.12 will not be able to post
+HITs due to a change implemented by the psiturk ad server's hosting provider.
 
-Check https://github.com/NYUCCL/psiTurk or https://psiturk.org for more info.
+Check the following for more info:
+* source code repository: https://github.com/NYUCCL/psiTurk
+* website: https://psiturk.org
+* documentation: https://psiturk.readthedocs.io/en/latest/index.html
+* Google group: https://groups.google.com/g/psiturk
