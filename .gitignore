@@ -70,3 +70,5 @@ tests/shell_transcripts/*
 .python-version
 
 _site
+
+.venv

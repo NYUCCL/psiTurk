@@ -4,10 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [3.1.0]
 ### Added
 - ability to launch the experiment server from a subdirectory instead of just
-  the default directory (d781d4f0420004aa19462e59a653bddfcb12fa26)
+  the default directory by passing `app_dir` keyword argument to `experiment_server.launch()` (d781d4f0420004aa19462e59a653bddfcb12fa26)
 
 ### Fixed
 - Flask's StreamLogger is now used by default when ON_CLOUD=1, assuming no errorlog
