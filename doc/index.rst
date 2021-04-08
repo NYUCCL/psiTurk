@@ -10,6 +10,10 @@ psiTurk Documentation
 :Usage questions: https://groups.google.com/forum/#!forum/psiturk
 :Twitter: https://twitter.com/psiturk
 
+.. note::
+  This is documentation for psiturk v3. Documentation for psiturk v2 can
+  be found `here <https://psiturk.readthedocs.io/en/python2/>`_.
+
 Welcome to psiTurk's documentation. To learn more about the project,
 please visit https://psiturk.org.
 
