@@ -45,6 +45,8 @@ def experiment_dir(tmpdir, bork_aws_environ, edit_config_file):
     import psiturk.setup_example as se
     se.setup_example()
     os.environ['PSITURK_AD_URL_DOMAIN'] = 'example.com'
+    os.environ['PSITURK_LOGIN_USERNAME'] = 'foo'
+    os.environ['PSITURK_LOGIN_PW'] = 'bar'
 
     # the setup script already chdirs into here,
     # although I don't like that it does that
