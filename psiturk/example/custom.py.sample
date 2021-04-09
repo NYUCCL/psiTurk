@@ -45,25 +45,25 @@ def my_custom_view():
 # ----------------------------------------------
 # example using HTTP authentication
 # ----------------------------------------------
-@custom_code.route('/my_password_protected_route')
-@myauth.requires_auth
-def my_password_protected_route():
-    try:
-        return render_template('custom.html')
-    except TemplateNotFound:
-        abort(404)
+#@custom_code.route('/my_password_protected_route')
+#@myauth.requires_auth
+#def my_password_protected_route():
+#    try:
+#        return render_template('custom.html')
+#    except TemplateNotFound:
+#        abort(404)
 
 # ----------------------------------------------
 # example accessing data
 # ----------------------------------------------
-@custom_code.route('/view_data')
-@myauth.requires_auth
-def list_my_data():
-    users = Participant.query.all()
-    try:
-        return render_template('list.html', participants=users)
-    except TemplateNotFound:
-        abort(404)
+#@custom_code.route('/view_data')
+#@myauth.requires_auth
+#def list_my_data():
+#    users = Participant.query.all()
+#    try:
+#        return render_template('list.html', participants=users)
+#    except TemplateNotFound:
+#        abort(404)
 
 # ----------------------------------------------
 # example computing bonus

@@ -36,7 +36,7 @@ class PsiTurkAuthorization(object):
         username = config.get('Server Parameters', 'login_username')
         password = config.get('Server Parameters', 'login_pw')
         if not username or not password:
-            raise PsiturkException(message='login_username or login_pw not set! Set them in config.txt')
+            raise PsiturkException(message='Secure route specified, but login_username or login_pw not set! Set them in config.txt')
         self.queryname = username
         self.querypw = password
 
