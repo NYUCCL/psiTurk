@@ -3,6 +3,7 @@
 from __future__ import generator_stop
 from functools import wraps, update_wrapper
 from flask import request, Response, make_response, current_app
+from .psiturk_exceptions import PsiturkException
 
 # provides easy way to print to log in custom.py
 # =========================================
@@ -32,8 +33,12 @@ class PsiTurkAuthorization(object):
     """ Authorize route """
 
     def __init__(self, config):
-        self.queryname = config.get('Server Parameters', 'login_username')
-        self.querypw = config.get('Server Parameters', 'login_pw')
+        username = config.get('Server Parameters', 'login_username')
+        password = config.get('Server Parameters', 'login_pw')
+        if not username or not password:
+            raise PsiturkException(message='login_username or login_pw not set! Set them in config.txt')
+        self.queryname = username
+        self.querypw = password
 
     @classmethod
     def wrapper(cls, func, args):
