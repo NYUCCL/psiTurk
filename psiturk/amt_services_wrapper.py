@@ -835,6 +835,12 @@ class MTurkServicesWrapper(object):
         if advanced_quals_path:
             with open(advanced_quals_path) as f:
                 advanced_qualifications = json.load(f)
+                if not isinstance(advanced_qualifications, list):
+                    raise PsiturkException(message=f'JSON file "{advanced_quals_path}" must be a list of dicts')
+                else:
+                    for el in advanced_qualifications:
+                        if not isinstance(el, dict):
+                            raise PsiturkException(message=f'JSON file "{advanced_quals_path}" must be a list of dicts')
 
         hit_config = {
             "ad_location": ad_url,
