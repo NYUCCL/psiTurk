@@ -50,6 +50,10 @@
 # accepting this HIT
 ;block_quals =
 
+# A path to a custom JSON qualifications file, where you can define your own
+# MTurk qualification requirements, as seen in advanced_quals.json.sample
+;advanced_quals_path = ./advanced_quals.json
+
 ## Hit Configuration - Ad Url ##################################################
 # Config settings for constructing the task's "landing page"
 #
