@@ -13,7 +13,7 @@ for line in lines:
             f'# Example config file. Uncomment lines (remove the `;`)\n'
             f'# in order to override defaults.\n'
         )
-    if len(line) > 1 and line[0] not in ['#', '[']:  # every line will have at least an \n char
+    if len(line) > 1 and line[0] not in ['#', '[', ';']:  # every line will have at least an \n char
         line = f';{line}'
     new_lines.append(line)
     line_num += 1

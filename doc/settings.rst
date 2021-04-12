@@ -248,6 +248,22 @@ workers with that qualification already set will neither see your ad nor be able
 to accept your HIT. This is the recommended way of excluding participants who
 have performed other HITs for you from participating in your new HIT.
 
+.. _advanced_quals:
+
+advanced_quals_path
+~~~~~~~~~~~~~~~~~~~
+
+A path to a custom JSON qualifications file, where you can define your own
+MTurk qualification requirements, as seen in `advanced_quals.json.sample`__
+
+__ https://raw.githubusercontent.com/NYUCCL/psiTurk/master/psiturk/example/advanced_quals.json.sample
+
+:type: ``path``
+
+Example::
+
+    advanced_quals_path = ./advanced_quals.json
+
 
 .. _hit_configuration_ad_url:
 
