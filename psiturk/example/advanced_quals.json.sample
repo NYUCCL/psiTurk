@@ -1,0 +1,11 @@
+[
+    {
+        "QualificationTypeId": "<SOME QUALIFICATION TYPE ID>",
+        "Comparator": "GreaterThan",
+        "IntegerValues": [65]
+    },
+    {
+        "QualificationTypeId": "<SOME QUALIFICATION TYPE ID>",
+        "Comparator": "Exists"
+    }
+]

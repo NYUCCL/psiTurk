@@ -50,6 +50,12 @@
 # accepting this HIT
 ;block_quals =
 
+# A path to a custom JSON qualifications file, where you can define your own
+# MTurk qualification requirements, as seen in advanced_quals.json.sample
+# Example:
+#    ;advanced_quals_path = ./advanced_quals.json
+;advanced_quals_path = 
+
 ## Hit Configuration - Ad Url ##################################################
 # Config settings for constructing the task's "landing page"
 #
@@ -74,7 +80,7 @@
 # you may uncomment and use `ad_url`. You may want to use this if your
 # experiment is served from a subdirectory off of the domain name. Otherwise,
 # leave this as-is.
-;;ad_url = %(ad_url_protocol)s://%(ad_url_host)s:%(ad_url_port)s/%(ad_url_route)s
+;ad_url = %(ad_url_protocol)s://%(ad_url_host)s:%(ad_url_port)s/%(ad_url_route)s
 
 ############################## Database Parameters #############################
 [Database Parameters]
@@ -107,7 +113,7 @@
 ;errorlog = server.log
 # For backwards compatibility, `logfile` is synonymous with `errorlog`. If
 # both are set, `errorlog` will be preferred over `logfile`.
-;;logfile = server.log
+;logfile = server.log
 
 # Log level for the psiturk gunicorn server
 ;loglevel = 2
