@@ -23,7 +23,7 @@ CODE_VERSION = config.get('Task Parameters', 'experiment_code_version')
 
 if TABLE_PREFIX:
     AMT_HIT_TABLENAME = TABLENAME+'_amt_hit'
-    CAMPAIGN_TABLENAME = TABLNAME+'_campaign'
+    CAMPAIGN_TABLENAME = TABLENAME+'_campaign'
 else:
     AMT_HIT_TABLENAME = 'amt_hit'
     CAMPAIGN_TABLENAME = 'campaign'
@@ -213,7 +213,7 @@ class Participant(Base):
 class Hit(Base):
     """
     """
-    __tablename__ = 'amt_hit'
+    __tablename__ = AMT_HIT_TABLENAME
     hitid = Column(String(128), primary_key=True)
 
 
@@ -221,7 +221,7 @@ class Campaign(Base):
     """
     """
 
-    __tablename__ = 'campaign'
+    __tablename__ = CAMPAIGN_TABLENAME
     id = Column(Integer, primary_key=True)
     codeversion = Column(String(128), nullable=False)
     mode = Column(String(128), nullable=False)
