@@ -18,7 +18,15 @@ config.load_config()
 
 
 TABLENAME = config.get('Database Parameters', 'table_name')
+TABLE_PREFIX = config.getboolean('Database Parameters', 'table_prefix')
 CODE_VERSION = config.get('Task Parameters', 'experiment_code_version')
+
+if TABLE_PREFIX:
+    AMT_HIT_TABLENAME = TABLENAME+'_amt_hit'
+    CAMPAIGN_TABLENAME = TABLNAME+'_campaign'
+else:
+    AMT_HIT_TABLENAME = 'amt_hit'
+    CAMPAIGN_TABLENAME = 'campaign'
 
 # Base class
 
@@ -212,6 +220,7 @@ class Hit(Base):
 class Campaign(Base):
     """
     """
+
     __tablename__ = 'campaign'
     id = Column(Integer, primary_key=True)
     codeversion = Column(String(128), nullable=False)

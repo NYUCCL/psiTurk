@@ -153,6 +153,12 @@
 # Name of the database table where participant data will be stored
 ;table_name = assignments
 
+# psiturk creates two additional tables named `amt_hit` and `campaign` for 
+# managing other aspects.  if you use one database with multiple psiturk
+# users/experiments then set this value to true so that these tables
+# will be prefixed with `table_name` set above
+table_prefix = true
+
 ############################# Server Parameters ################################
 [Server Parameters]
 # Host on which the psiturk gunicorn server will listen when `psiturk server on`

@@ -503,8 +503,22 @@ design where it not longer matters that someone has done a
 previous version of the task, you can change the `table_name`
 value and begin sorting the data into a new table.
 
+table_prefix
+~~~~~~~~~~
 
+Specifies if the extra tables created by psiturk should have 
+the value of `table_name` set as as a prefix.
 
+:Type: ``bool``
+:Default: ``false``
+
+The psiTurk dashboard creates to additional tables called `amt_hit`
+and `campaign` to manage aspects of the dashboard interface.
+If the database is shared across users or psiturk tasks then these
+tables can conflict.  Setting `table_prefix` to `true` will prefix
+these values with the unique table name profied in `table_name`.
+For instance is `table_name` is `exp1` then `amt_hit` becomes
+`exp1_amt_hit` and `campaign` becomes `exp1_campaign`.
 
 Server Parameters
 -----------------

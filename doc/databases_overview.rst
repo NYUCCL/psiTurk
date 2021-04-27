@@ -80,7 +80,7 @@ See :ref:`deploy-on-heroku`.
 Using a SQL database server
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-A more robust solution is to set up a `MySQL <http://www.mysql.com/>`__ database.
+Similar to postgresql on Heroku, another robust solution is to set up a `MySQL <http://www.mysql.com/>`__ database.
 psiTurk's reliance on `SQLAlchemy`_ for interfacing
 with database which means it is easy to switch between MySQL, PostgreSQL, or SQLite.
 
@@ -125,7 +125,14 @@ The table specified in config.txt::
 
    table_name = turkdemo
 
-...will be created automatically when running the psiturk shell.
+...will be created automatically when running the psiturk shell.  In addition two other tables are 
+automatically created (`amt_hit` and `campaign` which are used to schedule repeating tasks
+and hits).  If `table_prefix` is set to `true` in the config files these table names are
+made to match the main data table (e.g., `amt_hit` becomes `turkdemo_amt_hit` and `campaign` 
+becomes `turkdemo_campaign`).  This is useful if the database is used my multiple people.
+
+   table_prefix = true
+
 MySQL is (fairly) easy to install and free. However, a variety of web hosting
 services offer managed MySQL databases. Some are even
 `free <https://www.google.com/search?q=free+mysql+hosting>`__.
