@@ -33,10 +33,11 @@ class PsiTurkAuthorization(object):
     """ Authorize route """
 
     def __init__(self, config):
-        username = config.get('Server Parameters', 'login_username')
-        password = config.get('Server Parameters', 'login_pw')
-        if not username or not password:
-            raise PsiturkException(message='Secure route specified, but login_username or login_pw not set! Set them in config.txt')
+        username   = config.get('Server Parameters', 'login_username')
+        password   = config.get('Server Parameters', 'login_pw')
+        secret_key = config.get('Server Parameters', 'secret_key')
+        if not username or not password or not secret_key:
+            raise PsiturkException(message='Secure route specified, but at least one of `login_username`, `login_pw`, and `secret_key` not set in config! Set them and try again.')
         self.queryname = username
         self.querypw = password
 
