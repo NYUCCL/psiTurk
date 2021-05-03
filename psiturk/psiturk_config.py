@@ -71,7 +71,12 @@ class PsiturkConfig(ConfigParser):
                 self.set(bc['in_section'], bc['prefer_this'], os.environ.get(env_key))
 
         # prefer environment
-        these_as_they_are = ['PORT', 'DATABASE_URL']  # heroku sets these
+        these_as_they_are = [
+            'PORT',
+            'DATABASE_URL',
+            'AWS_ACCESS_KEY_ID',
+            'AWS_SECRET_ACCESS_KEY'
+            ]  
         for section in self.sections():
             for config_var in self[section]:
                 config_var_upper = config_var.upper()

@@ -268,6 +268,12 @@ class MTurkServices(object):
             kwargs['aws_secret_access_key'] = aws_secret_access_key
 
         self.mtc = boto3.client('mturk', **kwargs)
+
+        # aws access key might have been set via env var -- fetch it and
+        # set it to the psiturk config for dashboard use
+        self.config.set('AWS Access', 'aws_access_key_id',
+                        boto3.DEFAULT_SESSION.get_credentials().access_key)
+
         return True
 
     def verify_aws_login(self):
@@ -325,7 +331,7 @@ class MTurkServices(object):
         for qual_id in hit_config['block_qualification_ids']:
             quals.append(dict(QualificationTypeId=qual_id,
                               Comparator='DoesNotExist'))
-        
+
         for advanced_qual in hit_config['advanced_qualifications']:
             quals.append(dict(advanced_qual))
 
