@@ -21,17 +21,6 @@ config.load_config()
 # if you want to add a password protect route use this
 myauth = PsiTurkAuthorization(config)
 
-# this dashboard requires a valid mturk connection -- try for one here
-try:
-    _ = services_manager.amt_services_wrapper  # may throw error if aws keys not set
-except NoMturkConnectionError:
-    raise Exception((
-        'Dashboard requested, but no valid mturk credentials found. '
-        'Either disable the dashboard in config, or set valid mturk credentials -- '
-        'see https://psiturk.readthedocs.io/en/latest/amt_setup.html#aws-credentials . '
-        '\nRefusing to start.'
-        ))
-
 # import the Blueprint
 dashboard = Blueprint('dashboard', __name__,
                       template_folder='templates',
@@ -43,6 +32,17 @@ login_manager.login_view = 'dashboard.login'
 
 
 def init_app(app):
+    if not app.config.get('LOGIN_DISABLED'):
+        # this dashboard requires a valid mturk connection -- try for one here
+        try:
+            _ = services_manager.amt_services_wrapper  # may throw error if aws keys not set
+        except NoMturkConnectionError:
+            raise Exception((
+                'Dashboard requested, but no valid mturk credentials found. '
+                'Either disable the dashboard in config, or set valid mturk credentials -- '
+                'see https://psiturk.readthedocs.io/en/latest/amt_setup.html#aws-credentials . '
+                '\nRefusing to start.'
+                ))
     login_manager.init_app(app)
 
 
@@ -66,7 +66,7 @@ def login_required(view):
     def wrapped_view(*args, **kwargs):
         if current_user.is_authenticated:
             pass
-        elif app.login_manager._login_disabled:  # for unit testing
+        elif app.config.get('LOGIN_DISABLED'):  # for unit testing
             pass
         elif is_static_resource_call() or is_login_route():
             pass
