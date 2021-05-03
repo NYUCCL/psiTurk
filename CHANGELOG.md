@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - user_utils.PsiTurkAuthorization should not allow empty username or password! (#492)
 
+### Added
+- Add custom MTurk qualification support (#493)
+
 ## [3.1.0]
 ### Added
 - ability to launch the experiment server from a subdirectory instead of just
