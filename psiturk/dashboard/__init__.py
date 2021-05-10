@@ -1,36 +1,105 @@
-from __future__ import generator_stop
+# Flask imports
+from psiturk.dashboard import is_static_resource_call
 from flask import Blueprint, render_template, request, current_app as app, \
-    flash, session, g, redirect, url_for
-from flask_login import login_user, logout_user, current_user
-from functools import wraps
-from psiturk.psiturk_config import PsiturkConfig
-from psiturk.user_utils import PsiTurkAuthorization, nocache
-from psiturk.psiturk_exceptions import *
+    flash, session, redirect, url_for
+from flask_login import login_user, logout_user, current_user, LoginManager, UserMixin
 
+# PsiTurk imports
+from psiturk.psiturk_config import PsiturkConfig
+from psiturk.user_utils import PsiTurkAuthorization
 from psiturk.services_manager import SESSION_SERVICES_MANAGER_MODE_KEY, \
     psiturk_services_manager as services_manager
-from flask_login import LoginManager, UserMixin
+from psiturk.psiturk_exceptions import *
 
-# # Database setup
-from psiturk.models import Participant
+# Misc. imports
+from functools import wraps
 
-# load the configuration options
+## Database setup
+
+# Load configuration options
 config = PsiturkConfig()
 config.load_config()
 
-# if you want to add a password protect route use this
+# For password protected routes
 myauth = PsiTurkAuthorization(config)
 
-# import the Blueprint
-dashboard = Blueprint('dashboard', __name__,
-                      template_folder='templates',
-                      static_folder='static', url_prefix='/dashboard')
+# Import the blueprint
+dashboard = Blueprint('dashboard', __name__, template_folder='templates',
+    static_folder='static', url_prefix='/dashboard')
 
+# ---------------------------------------------------------------------------- #
+#                                   CONSTANTS                                  #
+# ---------------------------------------------------------------------------- #
 
+# Get the advanced qualifications for info dumping
+advanced_quals_path = config.get('HIT Configuration', 'advanced_quals_path', fallback=None)
+advanced_qualifications = []
+if advanced_quals_path:
+    with open(advanced_quals_path) as f:
+        advanced_qualifications = json.load(f)
+        if not isinstance(advanced_qualifications, list):
+            raise PsiturkException(message=f'JSON file "{advanced_quals_path}" must be a list of dicts')
+        else:
+            for el in advanced_qualifications:
+                if not isinstance(el, dict):
+                    raise PsiturkException(message=f'JSON file "{advanced_quals_path}" must be a list of dicts')
+
+# Load the local HIT data from the config
+HIT_INFO = {
+    "title": config.get('HIT Configuration', 'title'),
+    "description": config.get('HIT Configuration', 'description'),
+    "lifetime": config.get('HIT Configuration', 'lifetime'),
+    "approve_requirement": config.get('HIT Configuration', 'approve_requirement'),
+    "number_hits_approved": config.get('HIT Configuration', 'number_hits_approved'),
+    "require_master_workers": config.get('HIT Configuration', 'require_master_workers'),
+    "advanced_qualifications": advanced_qualifications
+}
+
+# ---------------------------------------------------------------------------- #
+#                                  FLASK LOGIN                                 #
+# ---------------------------------------------------------------------------- #
+
+# Login page for the dashboard
 login_manager = LoginManager()
 login_manager.login_view = 'dashboard.login'
 
+# Flask custom user class must import UserMixin
+class DashboardUser(UserMixin):
+    def __init__(self, username=''):
+        self.id = username
 
+@login_manager.user_loader
+def load_user(username):
+    return DashboardUser(username=username)
+
+# Ignore case 1 for login-required endpoints
+def is_static_resource_call():
+    return str(request.endpoint) == 'dashboard.static'
+
+# Ignore case 2 for login-required endpoints
+def is_login_route():
+    return str(request.url_rule) == '/dashboard/login'
+
+# Login-required user wrapper, ignores static / login routes
+def login_required(view):
+    @wraps(view)
+    def wrapped_view(*args, **kwargs):
+        if current_user.is_authenticated:
+            pass
+        elif app.config.get('LOGIN_DISABLED'):
+            pass
+        elif is_static_resource_call() or is_login_route():
+            pass
+        else:
+            return login_manager.unauthorized()
+        return view(*args, **kwargs)
+    return wrapped_view
+
+# ---------------------------------------------------------------------------- #
+#                          AMT SERVICES INITIALIZATION                         #
+# ---------------------------------------------------------------------------- #
+
+# Initializes app with dashboard and amt services
 def init_app(app):
     if not app.config.get('LOGIN_DISABLED'):
         # this dashboard requires a valid mturk connection -- try for one here
@@ -45,38 +114,7 @@ def init_app(app):
                 ))
     login_manager.init_app(app)
 
-
-class DashboardUser(UserMixin):
-    def __init__(self, username=''):
-        self.id = username
-
-
-@login_manager.user_loader
-def load_user(username):
-    return DashboardUser(username=username)
-
-def is_static_resource_call():
-    return str(request.endpoint) == 'dashboard.static'
-
-def is_login_route():
-    return str(request.url_rule) == '/dashboard/login'
-
-def login_required(view):
-    @wraps(view)
-    def wrapped_view(*args, **kwargs):
-        if current_user.is_authenticated:
-            pass
-        elif app.config.get('LOGIN_DISABLED'):  # for unit testing
-            pass
-        elif is_static_resource_call() or is_login_route():
-            pass
-        else:
-            return login_manager.unauthorized()
-        return view(*args, **kwargs)
-
-    return wrapped_view
-
-
+# Ensures AMT services exist for a view
 def try_amt_services_wrapper(view):
     @wraps(view)
     def wrapped_view(**kwargs):
@@ -95,19 +133,74 @@ def try_amt_services_wrapper(view):
             if not is_login_route() and not is_static_resource_call():
                 message = e.message if hasattr(e, 'message') else str(e)
                 flash(message, 'danger')
-
                 return redirect(url_for('.login'))
-
     return wrapped_view
 
+# ---------------------------------------------------------------------------- #
+#                              SEMI-STATIC-ROUTES                              #
+# ---------------------------------------------------------------------------- #
+# Routes which have minimal logic behind them in the dashboard
 
+# All dashboard requests must be logged in and have an AMT Services object
 @dashboard.before_request
 @login_required
 @try_amt_services_wrapper
 def before_request():
     pass
 
+# Main page, also serves the experiment code version
+@dashboard.route('/index')
+@dashboard.route('/')
+def index():
+    current_codeversion = config['Task Parameters']['experiment_code_version']
+    return render_template('dashboard/index.html',
+                           current_codeversion=current_codeversion)
 
+# Database of local HITs with management controls
+@dashboard.route('/hits')
+@dashboard.route('/hits/')
+@dashboard.route('/hits/<hit_id>')
+@dashboard.route('/hits/<hit_id>/')
+def hits_list(hit_id=None):
+    return render_template('hits.html', hit_id=hit_id, hit_info=HIT_INFO)
+
+# Database of assignments for a given HIT
+@dashboard.route('/hits/<hit_id>/assignments')
+@dashboard.route('/hits/<hit_id>/assignments/')
+def assignments_list(hit_id):
+    return render_template('assignments.html', hit_id=hit_id)
+
+# ---------------------------------------------------------------------------- #
+#                                DYNAMIC ROUTES                                #
+# ---------------------------------------------------------------------------- #
+# Routes which can also return data
+
+# Login page for logging in a user
+@dashboard.route('/login', methods=('GET', 'POST'))
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        try:
+            if not myauth.check_auth(username, password):
+                raise Exception('Incorrect username or password')
+            user = DashboardUser(username=username)
+            login_user(user)
+            flash("Logged in successfully.")
+            next = request.args.get('next')
+            return redirect(next or url_for('.index'))
+        except Exception as e:
+            flash(str(e), 'danger')
+    return render_template('dashboard/login.html')
+
+# Logout endpoint logs out a user and sends back to login
+@dashboard.route('/logout')
+def logout():
+    logout_user()
+    flash('Logged out successfully.')
+    return redirect(url_for('.login'))
+
+# Get/set mode of the current AMT Services Wrapper 
 @dashboard.route('/mode', methods=('GET', 'POST'))
 def mode():
     if request.method == 'POST':
@@ -124,76 +217,3 @@ def mode():
     mode = services_manager.mode
     return render_template('dashboard/mode.html', mode=mode)
 
-
-@dashboard.route('/index')
-@dashboard.route('/')
-def index():
-    current_codeversion = config['Task Parameters']['experiment_code_version']
-    return render_template('dashboard/index.html',
-                           current_codeversion=current_codeversion)
-
-
-@dashboard.route('/hits')
-@dashboard.route('/hits/')
-def hits_list():
-    return render_template('dashboard/hits/list.html')
-
-
-@dashboard.route('/assignments')
-@dashboard.route('/assignments/')
-def assignments_list():
-    return render_template('dashboard/assignments/list.html')
-
-
-@dashboard.route('/campaigns')
-@dashboard.route('/campaigns/')
-def campaigns_list():
-    completed_count = Participant.count_completed(
-        codeversion=services_manager.codeversion,
-        mode=services_manager.mode)
-
-    all_hits = services_manager.amt_services_wrapper.get_all_hits().data
-    available_count = services_manager.amt_services_wrapper.count_available(hits=all_hits).data
-    pending_count = services_manager.amt_services_wrapper.count_pending(hits=all_hits).data
-    maybe_will_complete_count = services_manager.amt_services_wrapper.count_maybe_will_complete(
-        hits=all_hits).data
-
-    return render_template('dashboard/campaigns/list.html',
-                           completed_count=completed_count,
-                           pending_count=pending_count,
-                           maybe_will_complete_count=maybe_will_complete_count,
-                           available_count=available_count)
-
-
-@dashboard.route('/tasks')
-@dashboard.route('/tasks/')
-def tasks_list():
-    return render_template('dashboard/tasks/list.html')
-
-
-@dashboard.route('/login', methods=('GET', 'POST'))
-def login():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-
-        try:
-            if not myauth.check_auth(username, password):
-                raise Exception('Incorrect username or password')
-
-            user = DashboardUser(username=username)
-            login_user(user)
-            flash("Logged in successfully.")
-            next = request.args.get('next')
-            return redirect(next or url_for('.index'))
-        except Exception as e:
-            flash(str(e), 'danger')
-
-    return render_template('dashboard/login.html')
-
-
-@dashboard.route('/logout')
-def logout():
-    logout_user()
-    flash('Logged out successfully.')
-    return redirect(url_for('.login'))
