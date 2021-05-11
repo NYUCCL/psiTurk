@@ -1,3 +1,2 @@
 recursive-include psiturk *
-include requirements.txt
 include LICENSE
