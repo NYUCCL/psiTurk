@@ -4,6 +4,7 @@ from functools import wraps
 from builtins import str
 from builtins import object
 import boto3
+import boto3.session
 import datetime
 from flask import jsonify
 from psiturk.psiturk_config import PsiturkConfig
@@ -122,6 +123,7 @@ class MTurkServices(object):
             self.config = config
         self.mode = None
         self.mtc = None
+        self.session = None
         self.param_dict = None
         self.set_mode(mode)
         self.valid_login = self.verify_aws_login()
@@ -267,12 +269,16 @@ class MTurkServices(object):
             kwargs['aws_access_key_id'] = aws_access_key_id
             kwargs['aws_secret_access_key'] = aws_secret_access_key
 
-        self.mtc = boto3.client('mturk', **kwargs)
+        self.session = boto3.session.Session()
+        self.mtc = self.session.client('mturk', **kwargs)
+
 
         # aws access key might have been set via env var -- fetch it and
         # set it to the psiturk config for dashboard use
-        self.config.set('AWS Access', 'aws_access_key_id',
-                        boto3.DEFAULT_SESSION.get_credentials().access_key)
+        credentials = self.session.get_credentials()
+        if credentials:
+            self.config.set('AWS Access', 'aws_access_key_id',
+                            credentials.access_key)
 
         return True
 
