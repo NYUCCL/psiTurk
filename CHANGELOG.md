@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Add custom MTurk qualification support (#493)
 
+### Changed
+- Migrate from Travis CI to Github Actions (#500)
+
 ## [3.1.0]
 ### Added
 - ability to launch the experiment server from a subdirectory instead of just
