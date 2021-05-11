@@ -4,6 +4,8 @@
 # Also, see https://packaging.python.org/guides/publishing-package-distribution-releases-using-github-actions-ci-cd-workflows/
 name: Upload Python Package
 
+on: push
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
