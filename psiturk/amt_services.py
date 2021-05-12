@@ -257,20 +257,24 @@ class MTurkServices(object):
             endpoint_url = 'https://mturk-requester-sandbox.us-east-1.amazonaws.com'
         else:
             endpoint_url = 'https://mturk-requester.us-east-1.amazonaws.com'
-        kwargs = {
-            'region_name': 'us-east-1',
+
+        client_kwargs = {
             'endpoint_url': endpoint_url
+        }
+
+        session_kwargs = {
+            'region_name': 'us-east-1',
         }
         aws_access_key_id = self.config.get('AWS Access', 'aws_access_key_id')
         aws_secret_access_key = self.config.get('AWS Access',
                                                 'aws_secret_access_key')
 
         if aws_access_key_id and aws_secret_access_key:
-            kwargs['aws_access_key_id'] = aws_access_key_id
-            kwargs['aws_secret_access_key'] = aws_secret_access_key
+            session_kwargs['aws_access_key_id'] = aws_access_key_id
+            session_kwargs['aws_secret_access_key'] = aws_secret_access_key
 
-        self.session = boto3.session.Session()
-        self.mtc = self.session.client('mturk', **kwargs)
+        self.session = boto3.session.Session(**session_kwargs)
+        self.mtc = self.session.client('mturk', **client_kwargs)
 
 
         # aws access key might have been set via env var -- fetch it and
@@ -279,6 +283,8 @@ class MTurkServices(object):
         if credentials:
             self.config.set('AWS Access', 'aws_access_key_id',
                             credentials.access_key)
+            self.config.set('AWS Access', 'aws_secret_access_key',
+                            credentials.secret_key)
 
         return True
 
