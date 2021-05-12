@@ -274,6 +274,22 @@ class Campaign(Base):
             app.apscheduler.remove_job(self.campaign_job_id)
         except JobLookupError:
             pass
+
+        db_session.add(self)
+        db_session.commit()
+        return self
+
+    def set_new_goal(self, goal):
+        self.goal = goal
+        db_session.add(self)
+        db_session.commit()
+
+        from .experiment import app
+        job = app.apscheduler.get_job(self.campaign_job_id)
+        kwargs = job.kwargs
+        kwargs['campaign'] = self
+        job.modify(kwargs=kwargs)
+
         return self
 
     @classmethod
