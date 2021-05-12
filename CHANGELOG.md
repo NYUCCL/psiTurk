@@ -8,14 +8,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - user_utils.PsiTurkAuthorization should not allow empty username or password! (#492)
 - aws env vars AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are now preferred over anything
-  set in a config file somewhere (#496)
+  set in a config file somewhere (#496, #500)
 - Dashboard will refuse to start if `secret_key` is missing or if no valid mturk credentials (#497)
+- Scheduler is started "paused" if `do_scheduler` is `False`, so that tasks can still be
+  created, modified, and destroyed (#502)
+- Campaigns' "update goal" functionality fixed -- the associated task is updated with
+  the new goal (#502)
 
 ### Added
 - Add custom MTurk qualification support (#493)
+- /dashboard/campaigns and /dashboard/tasks now warn if `do_scheduler` is `False` (#502)
 
 ### Changed
 - Migrate from Travis CI to Github Actions (#500)
+- API now uses a custom error handler to pass sometimes-gory exception messages back to the api user (#502)
 
 ## [3.1.0]
 ### Added

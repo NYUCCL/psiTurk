@@ -18,7 +18,21 @@ import pytz
 from pytz.tzinfo import BaseTzInfo
 
 api_blueprint = Blueprint('api', __name__, url_prefix='/api')
-api = Api()
+
+class CustomApi(Api):
+    """
+    For custom error handling
+    """
+    def handle_error(self, exception):
+
+        message = exception.message if (hasattr(exception, 'message') and
+                                        exception.message) else str(exception)
+        return jsonify({
+            'exception': type(exception).__name__,
+            'message': message
+        }), 400
+
+api = CustomApi()
 
 
 @api_blueprint.errorhandler(Exception)
@@ -196,7 +210,6 @@ class Campaigns(Resource):
         did_something = False
         if 'is_active' in data and campaign.is_active and not data['is_active']:
             campaign.end()
-            did_something = True
         elif 'goal' in data:
             goal = data['goal']
 
@@ -207,12 +220,7 @@ class Campaigns(Resource):
             assert goal > completed_count, 'Goal {} must be greater than current completed {}.'.format(
                 goal, completed_count)
 
-            campaign.goal = goal
-            did_something = True
-
-        if did_something:
-            db_session.add(campaign)
-            db_session.commit()
+            campaign.set_new_goal(goal)
 
         return campaign
 
@@ -233,6 +241,7 @@ class CampaignList(Resource):
         mode = services_manager.mode
         campaign = Campaign.launch_new_campaign(codeversion=codeversion, mode=mode, **data)
         return campaign, 201
+
 
 
 class Tasks(Resource):
