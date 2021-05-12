@@ -100,6 +100,21 @@ def try_amt_services_wrapper(view):
 
     return wrapped_view
 
+def warn_if_scheduler_not_running(view):
+    @wraps(view)
+    def wrapped_view(**kwargs):
+        app.logger.debug('checking if scheduler is running...')
+        do_scheduler = config.getboolean('Server Parameters', 'do_scheduler')
+        app.logger.debug(f'do_scheduler was {do_scheduler}')
+        if not do_scheduler:
+            flash((
+                'Warning: `do_scheduler` is set to False. '
+                'Tasks (such as campaigns) can be created, modified, or deleted, '
+                'but they will not be run by this psiturk instance.'
+            ), 'warning')
+        return view(**kwargs)
+
+    return wrapped_view
 
 @dashboard.before_request
 @login_required
@@ -144,9 +159,9 @@ def hits_list():
 def assignments_list():
     return render_template('dashboard/assignments/list.html')
 
-
 @dashboard.route('/campaigns')
 @dashboard.route('/campaigns/')
+@warn_if_scheduler_not_running
 def campaigns_list():
     completed_count = Participant.count_completed(
         codeversion=services_manager.codeversion,
@@ -167,6 +182,7 @@ def campaigns_list():
 
 @dashboard.route('/tasks')
 @dashboard.route('/tasks/')
+@warn_if_scheduler_not_running
 def tasks_list():
     return render_template('dashboard/tasks/list.html')
 
