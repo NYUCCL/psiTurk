@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Add custom MTurk qualification support (#493)
-- /dashboard/campaigns and /dashboard/tasks now warns if `do_scheduler` is `False` (#502)
+- /dashboard/campaigns and /dashboard/tasks now warn if `do_scheduler` is `False` (#502)
 
 ### Changed
 - Migrate from Travis CI to Github Actions (#500)
