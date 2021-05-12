@@ -94,7 +94,7 @@ thought through.
   in config.txt. See [the configuration overview page in the documentation](https://psiturk.readthedocs.io/en/latest/configuration-overview.html) for more information.
 - changed the default tablename to be `assignments` instead of `turkdemo`
 - changed the `amt_keywords` key to be just `keywords`
-- moved `contact_email_on_error`, `browser_exclude_rule`, and `cutoff_time` under the `Task Parameters` section.
+- moved `contact_email_on_error`, `browser_exclude_rule`, `cutoff_time`, and `allow_repeats` under the `Task Parameters` section.
 - Renamed `launch_in_sandbox` (True, False) to be `launch_in_mode` (Sandbox, Live)
 
 ### Added
