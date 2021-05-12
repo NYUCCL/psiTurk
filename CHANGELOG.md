@@ -5,6 +5,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
+### Added
+- Add custom MTurk qualification support (#493)
+- /dashboard/campaigns and /dashboard/tasks now warn if `do_scheduler` is `False` (#502)
+- amt_services_wrapper's _get_local_hitids no longer queries the Participants table for hitids.
+  Instead, it wholly relies on the Hit table (`amt_hits` by default). (#498) -- Thanks @evankirkles!
+
+  Experiments that are migrating from psiturk v2 should run the new `psiturk migrate db` command
+  when migrating to this release.
+
 ### Fixed
 - user_utils.PsiTurkAuthorization should not allow empty username or password! (#492)
 - aws env vars AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are now preferred over anything
@@ -15,9 +24,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Campaigns' "update goal" functionality fixed -- the associated task is updated with
   the new goal (#502)
 
-### Added
-- Add custom MTurk qualification support (#493)
-- /dashboard/campaigns and /dashboard/tasks now warn if `do_scheduler` is `False` (#502)
 
 ### Changed
 - Migrate from Travis CI to Github Actions (#500)
