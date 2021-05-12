@@ -56,7 +56,6 @@ app.secret_key = CONFIG.get('Server Parameters', 'secret_key')
 
 def check_templates_exist():
     # this checks for templates that are required if you are hosting your own ad.
-    try_these = ['thanks-mturksubmit.html', 'closepopup.html']
     try:
         try_these = ['thanks-mturksubmit.html', 'closepopup.html']
         [app.jinja_env.get_template(try_this) for try_this in try_these]
@@ -113,7 +112,11 @@ app.apscheduler = scheduler
 scheduler.app = app
 
 if CONFIG.getboolean('Server Parameters', 'do_scheduler'):
+    app.logger.info("Scheduler starting!")
     scheduler.start()
+else:
+    app.logger.info("Starting scheduler in 'paused' mode -- it will not run any tasks, but it can be used to create, modify, or delete tasks.")
+    scheduler.start(paused=True)
 
 
 #
