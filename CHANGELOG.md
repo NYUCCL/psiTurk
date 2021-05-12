@@ -23,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   created, modified, and destroyed (#502)
 - Campaigns' "update goal" functionality fixed -- the associated task is updated with
   the new goal (#502)
+- example template for thanks-mturksubmit was missing a call to `{{ super() }}`, leading to
+  no styles being loaded by default (#503)
 
 
 ### Changed
