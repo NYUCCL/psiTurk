@@ -4,7 +4,7 @@ import io
 import csv
 import json
 from sqlalchemy import Column, Integer, String, DateTime, Float, Text, Boolean, func, inspect
-from sqlalchemy.orm import validates
+from sqlalchemy.orm import validates, deferred
 from sqlalchemy.ext.declarative import declarative_base
 from psiturk.db import db_session
 from .psiturk_config import PsiturkConfig
@@ -60,9 +60,9 @@ class Participant(Base):
     status = Column(Integer, default=1)
     mode = Column(String(128))
     if 'postgres://' in config.get('Database Parameters', 'database_url').lower():
-        datastring = Column(Text)
+        datastring = deferred(Column(Text))
     else:
-        datastring = Column(Text(4294967295))
+        datastring = deferred(Column(Text(4294967295)))
 
     def __init__(self, **kwargs):
         self.uniqueid = "{workerid}:{assignmentid}".format(**kwargs)
