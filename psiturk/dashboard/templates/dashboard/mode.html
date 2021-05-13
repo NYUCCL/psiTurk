@@ -1,0 +1,19 @@
+{% extends 'dashboard/layouts/layout.html' %}
+
+{% block content %}
+
+<p><h1>Current Mode: <strong>{{mode}}</strong></h1></p>
+
+<form method='post'>
+    <h3>Change mode</h3>
+    <div class='form-check'>
+        <input class='form-check-input' type='radio' name='mode' id='mode-sandbox' value='sandbox' checked>
+        <label class='form-check-label' for='mode-sandbox'>Sandbox mode</label>
+    </div>
+    <div class='form-check'>
+        <input class='form-check-input' type='radio' name='mode' id='mode-live' value='live'>
+        <label class='form-check-label' for='mode-live'>Live mode</label>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+{% endblock %}

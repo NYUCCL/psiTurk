@@ -1,0 +1,130 @@
+{% extends 'dashboard/layouts/layout.html' %}
+
+{% block styles %}
+{{ super() }}
+<link rel='stylesheet' href="{{url_for('.static', filename='styles/dbview.css')}}">
+<link rel='stylesheet' href="{{url_for('.static', filename='styles/hits.css')}}">
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script type='module' src="{{url_for('.static', filename='js/hits.js')}}"></script>
+<script type="text/javascript">
+    var USERNAME = "{{ username }}";
+    var PASSWORD = "{{ password }}";
+    var HITId = "{{ hit_id }}";
+</script>
+{% endblock %}
+
+{% block content %}
+<div id="header" class="row">
+    <div class="col flex-grow-2">
+        <div style="width: 100%;"><button type="button" id="hitCreationPage" class="btn btn-primary mx-auto" data-toggle="modal" data-target="#hitCreateModal">Create New <img src="{{url_for('.static', filename='images/blueribbon.png')}}" class="db-boolimg"> HIT</button></div>
+    </div>
+    <div class="col" id="hitPageDownloadCol">
+        <div><button id="hitTableDownload">DOWNLOAD CSV</button></div> 
+        <div><i>Query returned <span id="totalHITsFiltered">0</span> rows.</i></div> 
+    </div>
+</div>
+
+<div id="mainDisplay">
+</div>
+
+<div id="hitDisplay">
+    <div id="hitControl">
+        <i id="noHITAlert" style="display: block;">
+            Please select an HIT from the database to view its controls!
+        </i>
+        <div id="hitSelected" class="container-fluid" style="display: none">
+            <div id="mainRow" class="row h-100 flex-nowrap no-scrollbar">
+                <div id="hitInfo" class="col">
+                    <div class="hitInfo no-scrollbar"><b class="noselect">ID: </b><span id="hitInfo_id">...</span></div>
+                    <div class="hitInfo no-scrollbar"><b class="noselect">Title: </b><span id="hitInfo_title">...</span></div>
+                    <div class="hitInfo no-scrollbar"><b class="noselect">Description: </b><span id="hitInfo_desc">...</span></div>
+                    <div class="hitInfo no-scrollbar"><b class="noselect">Status: </b><span id="hitInfo_status">...</span></div>
+                    <div class="hitInfo no-scrollbar"><b class="noselect">Creation: </b><span id="hitInfo_created">...</span></div>
+                    <div class="hitInfo no-scrollbar"><b class="noselect">Expiration: </b><span id="hitInfo_expired">...</span></div>
+                    <div class="hitInfo no-scrollbar"><b class="noselect">Max: </b><span id="hitInfo_max">...</span><b class="noselect">, Available: </b><span id="hitInfo_available">...</span><b class="noselect">, Completed: </b><span id="hitInfo_completed">...</span> </div>
+                </div>
+                <div id="hitAssignments" class="col">
+                    <div id="hitAssignmentsControls"><b>CONTROLS</b></div>
+                    <button id="goToAssignments" onclick="window.open('assignments?closable', '_blank');" class="controlButton">Full Assignments Page</button>
+                    <button id="batchDownload" onclick="batchDownload();" class="controlButton">Batch Download Data</button>
+                    <button id="extendHIT" onclick="extendHIT();" class="controlButton">Extend HIT Expiration</button>
+                </div>
+                <div id="assignmentDisplay" class="col-6"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL FOR CREATING AN HIT -->
+<div class="modal fade" id="hitCreateModal" tabindex="-1" role="dialog" aria-labelledby="hitCreateModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Create an <img src='/static/images/blueribbon.png' class="db-boolimg"><b>HIT</b>!</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="col hitCreate-uneditable">
+                    <div title="Title that will be used for the HIT when posted to MTurk."><b>Title: </b><span class="hitCreate-Title">{{ hit_info.title }}</span></div>
+                    <div title="Description that will be used for the HIT when posted to MTurk."><b>Description: </b><span class="hitCreate-Title">{{ hit_info.description }}</span></div>
+                    <div title="Qualifications a worker must have completed before being able to partake in the HIT."><b>Qualifications: </b>
+                        <ul style="margin-bottom: 0px; overflow: auto;" class="no-scrollbar">
+                            <li><b>Min. % HITs Approved: </b>{{ hit_info.approve_requirement }}%</li>
+                            <li><b>Min. # Approved HITs: </b>{{ hit_info.number_hits_approved }}</li>
+                            <li><b>Only <a href="https://www.mturk.com/worker/help#what_is_master_worker" target="_blank" style="text-decoration: none; color: black;">Master Worker</a>s: </b>{{ hit_info.require_master_workers }}</li>
+                            {% for qual in hit_info.advanced_qualifications%}
+                                <li style="white-space: nowrap;"><b>{{ qual.QualificationTypeId }}: </b>{{ qual.Comparator }} {{ qual.IntegerValues[0] }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div title="How many hours the HIT will last on MTurk before becoming unavailable for new assignments."><b>Lifetime: </b>{{ hit_info.lifetime }} hours</div>
+                    <div style="font-size: small; color: gray;">These fields can be edited in the <b>config.txt</b> of this experiment!</div>
+                </div>
+                <div class="col" id="hitCreate-editable">
+                    <div class="form-group row">
+                        <label for="hitCreateInput-duration" class="col-6 col-form-label"><b>Duration of HIT (Hours): </b></label>
+                        <div class="col" style="min-width: 150px;">
+                            <input class="form-control" type="number" value="6" min="1" step="1" id="hitCreateInput-duration">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="hitCreateInput-participants" class="col-6 col-form-label"><b>Number of Participants: </b></label>
+                        <div class="col" style="min-width: 150px;">
+                            <input class="form-control" type="number" value="1" min="1" step="1" id="hitCreateInput-participants">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="hitCreateInput-reward" class="col-6 col-form-label"><b>Reward per Participant: </b></label>
+                        <div class="col" style="min-width: 150px;">
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">$</span>
+                                </div>
+                                <input class="form-control" type="number" value="1.00" step="0.01" min="0" id="hitCreateInput-reward">
+                            </div>
+                        </div>
+                    </div>
+                    <div style="font-size: small; color: gray;">
+                        Make sure your duration gives <b>ample</b> time 
+                        for the worker to finish the experiment after starting, 
+                        including breaks! They won't be able to submit the HIT after 
+                        this timer runs out after starting! 6 hours is generally a safe bet.</div>
+                </div>
+                <div class="col hitCreate-uneditable" style="margin-top: 15px;">
+                    <div><b>MTurk Fee:</b> $<span id="hitCreate-mturkfee">0.00</span><b>, Total Estimated Base Cost:</b> $<span id="hitCreate-totalCost">0.00</span></div>
+                    <div style="font-size: small; color: gray;">Fee is 20% if fewer than 10 assignments, 40% otherwise. <i><a href="https://www.mturk.com/pricing" target="_blank" style="color: gray;">Source</a></i></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="hitCreate-submit">Create!</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

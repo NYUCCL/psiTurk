@@ -1,7 +1,6 @@
 # Flask imports
-from psiturk.dashboard import is_static_resource_call
 from flask import Blueprint, render_template, request, current_app as app, \
-    flash, session, redirect, url_for
+    flash, session, redirect, url_for, jsonify
 from flask_login import login_user, logout_user, current_user, LoginManager, UserMixin
 
 # PsiTurk imports
@@ -10,9 +9,13 @@ from psiturk.user_utils import PsiTurkAuthorization
 from psiturk.services_manager import SESSION_SERVICES_MANAGER_MODE_KEY, \
     psiturk_services_manager as services_manager
 from psiturk.psiturk_exceptions import *
+from psiturk.models import Hit
 
 # Misc. imports
 from functools import wraps
+
+# TEMP IMPORT UNTIL ADVANCED QUASLS FIXED UP
+import json
 
 ## Database setup
 
@@ -54,6 +57,8 @@ HIT_INFO = {
     "require_master_workers": config.get('HIT Configuration', 'require_master_workers'),
     "advanced_qualifications": advanced_qualifications
 }
+
+MAX_RESULTS = 100
 
 # ---------------------------------------------------------------------------- #
 #                                  FLASK LOGIN                                 #
@@ -139,7 +144,7 @@ def try_amt_services_wrapper(view):
 # ---------------------------------------------------------------------------- #
 #                              SEMI-STATIC-ROUTES                              #
 # ---------------------------------------------------------------------------- #
-# Routes which have minimal logic behind them in the dashboard
+# Routes which have minimal Python logic behind them in the dashboard
 
 # All dashboard requests must be logged in and have an AMT Services object
 @dashboard.before_request
@@ -162,18 +167,18 @@ def index():
 @dashboard.route('/hits/<hit_id>')
 @dashboard.route('/hits/<hit_id>/')
 def hits_list(hit_id=None):
-    return render_template('hits.html', hit_id=hit_id, hit_info=HIT_INFO)
+    return render_template('dashboard/hits.html', hit_id=hit_id, hit_info=HIT_INFO)
 
 # Database of assignments for a given HIT
 @dashboard.route('/hits/<hit_id>/assignments')
 @dashboard.route('/hits/<hit_id>/assignments/')
 def assignments_list(hit_id):
-    return render_template('assignments.html', hit_id=hit_id)
+    return render_template('dashboard/assignments.html', hit_id=hit_id)
 
 # ---------------------------------------------------------------------------- #
-#                                DYNAMIC ROUTES                                #
+#                                  FORM ROUTES                                 #
 # ---------------------------------------------------------------------------- #
-# Routes which can also return data
+# Routes which double as forms for posting
 
 # Login page for logging in a user
 @dashboard.route('/login', methods=('GET', 'POST'))
@@ -217,3 +222,21 @@ def mode():
     mode = services_manager.mode
     return render_template('dashboard/mode.html', mode=mode)
 
+# ---------------------------------------------------------------------------- #
+#                                  API ROUTES                                  #
+# ---------------------------------------------------------------------------- #
+
+@dashboard.route('/api/hits', methods=['POST'])
+def API_hits():
+    try:
+        response = services_manager.amt_services_wrapper.amt_services.mtc.list_hits(MaxResults=MAX_RESULTS)['HITs']
+        my_hitids = list(set([hit.hitid for hit in Hit.query.distinct(Hit.hitid)]))
+        response = map(lambda hit: dict(hit, local_hit=hit['HITId'] in my_hitids), response)
+        if 'only_local' in request.json and request.json['only_local']:
+            response = [hit for hit in response if hit['local']]
+        if 'statuses' in request.json and len(request.json['statuses']) > 0:
+            response = list(filter(lambda hit: hit['HITStatus'] in request.json['statuses'], response))
+        return jsonify({"success": True, "data": response})
+    except Exception as e:
+        flash(str(e), 'danger')
+        return jsonify({"success": False, "error": str(e)}), 400

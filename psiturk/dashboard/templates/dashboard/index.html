@@ -1,0 +1,59 @@
+{% extends 'dashboard/layouts/layout.html' %}
+ 
+{% block content %}
+{%- raw -%}
+<div id='workers_data' v-cloak>
+    
+    <div class='row'>
+        <div class='col'>
+            <h3>Options</h3>
+            <div class='mb-2'>
+                <div class='form-check'>
+                    <input class='form-check-input' type='checkbox'
+                        id='only-latest-codeversion'
+                    >
+                    <label class='form-check-label' for='only-latest-codeversion'>
+                        Only show most recent codeversion ({{latest_codeversion}})
+                    </label>
+                </div>
+            </div>
+            <div class='mb-2'>
+                <div class='form-check'>
+                    <input class='form-check-input' type='checkbox'
+                        id='group-by-condition'
+                    >
+                    <label class='form-check-label' for='group-by-condition'>
+                        Group by `condition`
+                    </label>
+                </div>
+            </div>
+            <div class='mb-2'>
+                <div class='form-check'>
+                    <input class='form-check-input' type='checkbox'
+                        id='status-group-complete'
+                    >
+                    <label class='form-check-label' for='status-group-complete'>
+                        Only show 'complete' statuses.
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class='col'>
+            <h3>Filters</h3>
+            <div class='mb-2' v-for='grouping_key in grouping_keys'>
+                <distinct-value-set :grouping_key='grouping_key' v-bind:filter_values.sync='filter_values'
+                ></distinct-value-set>
+            </div>
+        </div>
+    </div>
+</div>
+{%- endraw -%}
+{% endblock %} 
+
+{% block scripts %}
+{{ super() }}
+<script>
+    let current_codeversion = '{{current_codeversion}}';
+</script>
+<script type='text/javascript' src='/dashboard/static/index.js'></script>
+{% endblock %}

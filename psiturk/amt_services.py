@@ -256,23 +256,27 @@ class MTurkServices(object):
         else:
             endpoint_url = 'https://mturk-requester.us-east-1.amazonaws.com'
         kwargs = {
-            'region_name': 'us-east-1',
             'endpoint_url': endpoint_url
         }
         aws_access_key_id = self.config.get('AWS Access', 'aws_access_key_id')
         aws_secret_access_key = self.config.get('AWS Access',
                                                 'aws_secret_access_key')
-
+        session_kwargs = {
+            'region_name': 'us-east-1'
+        }
         if aws_access_key_id and aws_secret_access_key:
-            kwargs['aws_access_key_id'] = aws_access_key_id
-            kwargs['aws_secret_access_key'] = aws_secret_access_key
-
-        self.mtc = boto3.client('mturk', **kwargs)
+            session_kwargs['aws_access_key_id'] = aws_access_key_id
+            session_kwargs['aws_secret_access_key'] = aws_secret_access_key
+            self.session = boto3.session.Session(**session_kwargs)
+        else:
+            self.session = boto3.DEFAULT_SESSION
+            
+        self.mtc = self.session.client('mturk', **kwargs)
 
         # aws access key might have been set via env var -- fetch it and
         # set it to the psiturk config for dashboard use
         self.config.set('AWS Access', 'aws_access_key_id',
-                        boto3.DEFAULT_SESSION.get_credentials().access_key)
+                        self.session.get_credentials().access_key)
 
         return True
 
