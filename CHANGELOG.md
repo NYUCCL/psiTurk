@@ -22,6 +22,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Migrate from Travis CI to Github Actions (#500)
 - API now uses a custom error handler to pass sometimes-gory exception messages back to the api user (#502)
+- Change the Participant.datastring column to be lazy-loaded, causing the datastring to not be loaded by the
+  sqlalchemy model until explicilty requested. Leads to massive speed increases for any query involving the
+  Participant table for cases where the datastring is large. (#504)
 
 ## [3.1.0]
 ### Added
