@@ -4,12 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [unreleased]
+## [3.2.0]
 ### Added
 - Add custom MTurk qualification support (#493)
 - /dashboard/campaigns and /dashboard/tasks now warn if `do_scheduler` is `False` (#502)
 - amt_services_wrapper's _get_local_hitids no longer queries the Participants table for hitids.
-  Instead, it wholly relies on the Hit table (`amt_hits` by default). (#498) -- Thanks @evankirkles!
+  Instead, it wholly relies on the Hit table (`amt_hits` by default). (#498) -- Thanks @evankirkiles!
 
   Experiments that are migrating from psiturk v2 should run the new `psiturk migrate db` command
   when migrating to this release.
@@ -32,7 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - API now uses a custom error handler to pass sometimes-gory exception messages back to the api user (#502)
 - Change the Participant.datastring column to be lazy-loaded, causing the datastring to not be loaded by the
   sqlalchemy model until explicilty requested. Leads to massive speed increases for any query involving the
-  Participant table for cases where the datastring is large. (#504)
+  Participant table for cases where the datastring is large. (Thanks @evankirkiles!)(#504)
 
 ## [3.1.0]
 ### Added
