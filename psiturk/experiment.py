@@ -37,7 +37,7 @@ LOG_LEVELS = [logging.DEBUG, logging.INFO, logging.WARNING, logging.ERROR,
 logging.CRITICAL]
 LOG_LEVEL = LOG_LEVELS[CONFIG.getint('Server Parameters', 'loglevel')]
 
-logfile = CONFIG.get("Server Parameters", "errorlog")
+logfile = CONFIG.get("Server Parameters", "logfile")
 if logfile != '-':
     file_path = os.path.join(os.getcwd(), logfile)
     logging.basicConfig(filename=file_path, format='%(asctime)s %(message)s',
