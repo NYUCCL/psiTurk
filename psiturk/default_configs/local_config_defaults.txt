@@ -167,7 +167,7 @@ accesslog = /dev/null
 errorlog = server.log
 # For backwards compatibility, `logfile` is synonymous with `errorlog`. If
 # both are set, `errorlog` will be preferred over `logfile`.
-;logfile = server.log
+logfile = server.log
 
 # Log level for the psiturk gunicorn server
 loglevel = 2
