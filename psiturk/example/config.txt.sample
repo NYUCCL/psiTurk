@@ -165,7 +165,7 @@
 # If ON_CLOUD env var is set, then these both default to stdout (-)
 #
 ;accesslog = /dev/null
-;errorlog = server.log
+;errorlog =
 # For backwards compatibility, `logfile` is synonymous with `errorlog`. If
 # both are set, `errorlog` will be preferred over `logfile`.
 ;logfile = server.log
