@@ -17,16 +17,11 @@ config = PsiturkConfig()
 config.load_config()
 
 
-TABLENAME = config.get('Database Parameters', 'table_name')
-TABLE_PREFIX = config.getboolean('Database Parameters', 'table_prefix')
-CODE_VERSION = config.get('Task Parameters', 'experiment_code_version')
+ASSIGNMENTS_TABLENAME = config.get('Database Parameters', 'table_name')
+HITS_TABLENAME = config.get('Database Parameters', 'hits_table_name')
+CAMPAIGNS_TABLENAME = config.get('Database Parameters', 'campaigns_table_name')
 
-if TABLE_PREFIX:
-    AMT_HIT_TABLENAME = TABLENAME+'_amt_hit'
-    CAMPAIGN_TABLENAME = TABLENAME+'_campaign'
-else:
-    AMT_HIT_TABLENAME = 'amt_hit'
-    CAMPAIGN_TABLENAME = 'campaign'
+CODE_VERSION = config.get('Task Parameters', 'experiment_code_version')
 
 # Base class
 
@@ -48,7 +43,7 @@ class Participant(Base):
     """
     Object representation of a participant in the database.
     """
-    __tablename__ = TABLENAME
+    __tablename__ = ASSIGNMENTS_TABLENAME
 
     uniqueid = Column(String(128), primary_key=True)
     assignmentid = Column(String(128), nullable=False)
@@ -213,7 +208,7 @@ class Participant(Base):
 class Hit(Base):
     """
     """
-    __tablename__ = AMT_HIT_TABLENAME
+    __tablename__ = HITS_TABLENAME
     hitid = Column(String(128), primary_key=True)
 
 
@@ -221,7 +216,7 @@ class Campaign(Base):
     """
     """
 
-    __tablename__ = CAMPAIGN_TABLENAME
+    __tablename__ = CAMPAIGNS_TABLENAME
     id = Column(Integer, primary_key=True)
     codeversion = Column(String(128), nullable=False)
     mode = Column(String(128), nullable=False)
