@@ -101,7 +101,7 @@ from pytz import utc
 
 
 from .db import engine
-JOBS_TABLENAME = config.get('Database Parameters', 'jobs_table_name')
+JOBS_TABLENAME = CONFIG.get('Database Parameters', 'jobs_table_name')
 jobstores = {
     'default': SQLAlchemyJobStore(engine=engine, tablename=JOBS_TABLENAME)
 }
