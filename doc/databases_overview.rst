@@ -123,15 +123,13 @@ where `your_username`, `your_password` and `your_database` match the `USERNAME`,
 
 The table specified in config.txt::
 
-   table_name = turkdemo
+   assignment_table_name = turkdemo
 
-...will be created automatically when running the psiturk shell.  In addition two other tables are 
-automatically created (`amt_hit` and `campaign` which are used to schedule repeating tasks
-and hits).  If `table_prefix` is set to `true` in the config files these table names are
-made to match the main data table (e.g., `amt_hit` becomes `turkdemo_amt_hit` and `campaign` 
-becomes `turkdemo_campaign`).  This is useful if the database is used my multiple people.
+...will be created automatically when running the psiturk shell.  In addition several
+other tables are  automatically created to manage other aspects of task scheduling
+and hit management (see the `hits_table_name`, `campaigns_table_name`, and
+`jobs_table_name` options in config.txt).
 
-   table_prefix = true
 
 MySQL is (fairly) easy to install and free. However, a variety of web hosting
 services offer managed MySQL databases. Some are even

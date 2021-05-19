@@ -487,10 +487,9 @@ that you can connect to this url with a MySQL client prior to
 launching.
 
 
-table_name
+assignments_table_name
 ~~~~~~~~~~
-
-Specifies the table of the database you would like to write to.
+Specifies the table of the database you would like to write participant data to.
 
 :Type: ``string``
 
@@ -498,27 +497,57 @@ Specifies the table of the database you would like to write to.
 from performing as task by checking to see if the worker
 appears in the current database table already. Thus, for a
 single experiment (or sequence of related experiments) you want
-to keep the `table_name` value the same. If you start a new
+to keep the `assignments_table_name` value the same. If you start a new
 design where it not longer matters that someone has done a
-previous version of the task, you can change the `table_name`
-value and begin sorting the data into a new table.
+previous version of the task, you can change the `assignments_table_name`
+value and begin sorting the data into a new table. 
 
-table_prefix
+If multiple experiments or users share the same database then this
+table needs to be unique for each experiment/user.
+
+
+table_name
 ~~~~~~~~~~
 
-Specifies if the extra tables created by psiturk should have 
-the value of `table_name` set as as a prefix.
+Specifies the table of the database you would like to write participant data to.
 
-:Type: ``bool``
-:Default: ``false``
+:Type: ``string``
 
-The psiTurk dashboard creates to additional tables called `amt_hit`
-and `campaign` to manage aspects of the dashboard interface.
-If the database is shared across users or psiturk tasks then these
-tables can conflict.  Setting `table_prefix` to `true` will prefix
-these values with the unique table name profied in `table_name`.
-For instance is `table_name` is `exp1` then `amt_hit` becomes
-`exp1_amt_hit` and `campaign` becomes `exp1_campaign`.
+For backwards compatibility, `assignments_table_name` is synonymous with `table_name`. If
+both are set, `assignments_table_name` will be preferred over `table_name`.
+Please use `assignments_table_name` going forward but either will work for now.
+
+
+hits_table_name
+~~~~~~~~~~
+Specifies the table of the database for storing information about current HITs.
+
+:Type: ``string``
+
+psiTurk creates several tables for bookkeeping.  This one helps the dashboard
+and command line manage HITs.  If multiple experiments or users share the same database then this
+table needs to be unique for each experiment/user.
+
+campaigns_table_name
+~~~~~~~~~~
+Specifies the table of the database for storing campaigns.
+
+:Type: ``string``
+
+psiTurk creates several tables for bookkeeping.  This one helps the dashboard
+and command line manage campaigns. If multiple experiments or users share the same database then this
+table needs to be unique for each experiment/user.
+
+jobs_table_name
+~~~~~~~~~~
+Specifies the table of the database for storing job information.
+
+:Type: ``string``
+
+psiTurk creates several tables for bookkeeping.  This one helps the task
+schedule manage automated jobs.  If multiple experiments or users share the same database then this
+table needs to be unique for each experiment/user.
+
 
 Server Parameters
 -----------------
