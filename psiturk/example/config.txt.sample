@@ -163,13 +163,13 @@
 ;table_name = assignments
 
 # Name of the database table where hit information is stored
-;hits_table_name = hits
+;hits_table_name = amt_hit
 
 # Name of the database table where campaign information is stored
-;campaigns_table_name = campaigns
+;campaigns_table_name = campaign
 
 # Name of the database table where the task scheduler (apscheduler) places jobs
-;jobs_table_name = jobs
+;jobs_table_name = apscheduler_jobs
 
 ############################# Server Parameters ################################
 [Server Parameters]
