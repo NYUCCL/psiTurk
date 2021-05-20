@@ -50,6 +50,21 @@ require_master_workers = false
 # Deprecated. Use `require_quals_live` and `require_quals_sandbox` instead.
 require_quals =
 
+
+# qualification_ids, commma-delimited a worker is required to have in order to
+# take this HIT
+#
+# Will only be used during `live` mode. Is overridden by `require_quals`, if set.
+require_quals_live =
+
+
+# qualification_ids, commma-delimited a worker is required to have in order to
+# take this HIT
+#
+# Will only be used during `sandbox` mode. Is overridden by `require_quals`, if set.
+require_quals_sandbox =
+
+
 # qualification_ids, commma-delimited, that will disqualify a worker from
 # accepting this HIT
 #
@@ -57,6 +72,21 @@ require_quals =
 #
 # Deprecated. Use `block_quals_live` and `block_quals_sandbox` instead.
 block_quals =
+
+
+# qualification_ids, commma-delimited, that will disqualify a worker from
+# accepting this HIT
+#
+# Will only be used during `live` mode. Is overridden by `block_quals`, if set.
+block_quals_live =
+
+
+# qualification_ids, commma-delimited, that will disqualify a worker from
+# accepting this HIT
+#
+# Will only be used during `sandbox` mode. Is overridden by `block_quals`, if set.
+block_quals_sandbox =
+
 
 # A path to a custom JSON qualifications file, where you can define your own
 # MTurk qualification requirements, as seen in advanced_quals.json.sample
@@ -69,18 +99,6 @@ block_quals =
 advanced_quals_path =
 
 
-# qualification_ids, commma-delimited a worker is required to have in order to
-# take this HIT
-#
-# Will only be used during `live` mode. Is overridden by `require_quals`, if set.
-require_quals_live =
-
-# qualification_ids, commma-delimited, that will disqualify a worker from
-# accepting this HIT
-#
-# Will only be used during `live` mode. Is overridden by `block_quals`, if set.
-block_quals_live =
-
 # A path to a custom JSON qualifications file, where you can define your own
 # MTurk qualification requirements, as seen in advanced_quals.json.sample
 # Example:
@@ -90,18 +108,6 @@ block_quals_live =
 advanced_quals_path_live =
 
 
-# qualification_ids, commma-delimited a worker is required to have in order to
-# take this HIT
-#
-# Will only be used during `sandbox` mode. Is overridden by `require_quals`, if set.
-require_quals_sandbox =
-
-# qualification_ids, commma-delimited, that will disqualify a worker from
-# accepting this HIT
-#
-# Will only be used during `sandbox` mode. Is overridden by `block_quals`, if set.
-block_quals_sandbox =
-
 # A path to a custom JSON qualifications file, where you can define your own
 # MTurk qualification requirements, as seen in advanced_quals.json.sample
 # Example:
@@ -109,6 +115,7 @@ block_quals_sandbox =
 #
 # Will only be used during `sandbox` mode. Is overridden by `advanced_quals_path`, if set.
 advanced_quals_path_sandbox =
+
 
 ## Hit Configuration - Ad Url ##################################################
 # Config settings for constructing the task's "landing page"
