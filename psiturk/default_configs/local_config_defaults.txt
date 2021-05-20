@@ -38,22 +38,84 @@ approve_requirement = 95
 number_hits_approved = 0
 
 # Whether a worker must have the master worker qualification to take this hit.
-# Note that there is a commission surcharge for using this qualification
+# Note that there is a commission surcharge for using this qualification.
+# Applies in both `live` and `sandbox` modes
 require_master_workers = false
 
 # qualification_ids, commma-delimited a worker is required to have in order to
 # take this HIT
+#
+# If set, applies in both `live` and `sandbox` modes. Overrides `require_quals_{mode}`.
+#
+# Deprecated. Use `require_quals_live` and `require_quals_sandbox` instead.
 require_quals =
+
+
+# qualification_ids, commma-delimited a worker is required to have in order to
+# take this HIT
+#
+# Will only be used during `live` mode. Is overridden by `require_quals`, if set.
+require_quals_live =
+
+
+# qualification_ids, commma-delimited a worker is required to have in order to
+# take this HIT
+#
+# Will only be used during `sandbox` mode. Is overridden by `require_quals`, if set.
+require_quals_sandbox =
+
 
 # qualification_ids, commma-delimited, that will disqualify a worker from
 # accepting this HIT
+#
+# If set, applies in both `live` and `sandbox` modes. Overrides `block_quals_{mode}`.
+#
+# Deprecated. Use `block_quals_live` and `block_quals_sandbox` instead.
 block_quals =
+
+
+# qualification_ids, commma-delimited, that will disqualify a worker from
+# accepting this HIT
+#
+# Will only be used during `live` mode. Is overridden by `block_quals`, if set.
+block_quals_live =
+
+
+# qualification_ids, commma-delimited, that will disqualify a worker from
+# accepting this HIT
+#
+# Will only be used during `sandbox` mode. Is overridden by `block_quals`, if set.
+block_quals_sandbox =
+
 
 # A path to a custom JSON qualifications file, where you can define your own
 # MTurk qualification requirements, as seen in advanced_quals.json.sample
 # Example:
 #    ;advanced_quals_path = ./advanced_quals.json
-advanced_quals_path = 
+#
+# If set, applies in both `live` and `sandbox` modes. Overrides `advanced_quals_path_{mode}`.
+#
+# Deprecated. Use `advanced_quals_path_live` and `advanced_quals_path_sandbox` instead.
+advanced_quals_path =
+
+
+# A path to a custom JSON qualifications file, where you can define your own
+# MTurk qualification requirements, as seen in advanced_quals.json.sample
+# Example:
+#    ;advanced_quals_path = ./advanced_quals.json
+#
+# Will only be used during `live` mode. Is overridden by `advanced_quals_path`, if set.
+advanced_quals_path_live =
+
+
+# A path to a custom JSON qualifications file, where you can define your own
+# MTurk qualification requirements, as seen in advanced_quals.json.sample
+# Example:
+#    ;advanced_quals_path = ./advanced_quals.json
+#
+# Will only be used during `sandbox` mode. Is overridden by `advanced_quals_path`, if set.
+advanced_quals_path_sandbox =
+
 
 ## Hit Configuration - Ad Url ##################################################
 # Config settings for constructing the task's "landing page"
@@ -109,10 +171,10 @@ port = 22362
 # If ON_CLOUD env var is set, then these both default to stdout (-)
 #
 accesslog = /dev/null
-errorlog = server.log
+errorlog =
 # For backwards compatibility, `logfile` is synonymous with `errorlog`. If
 # both are set, `errorlog` will be preferred over `logfile`.
-;logfile = server.log
+logfile = server.log
 
 # Log level for the psiturk gunicorn server
 loglevel = 2
