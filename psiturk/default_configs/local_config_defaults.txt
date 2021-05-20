@@ -155,8 +155,10 @@ database_url = sqlite:///participants.db
 # unique for each experiment.
 
 # Name of the database table where participant data will be stored
-assignments_table_name = assignments
+assignments_table_name =
 
+# Deprecated. Use `assignments_table_name` instead.
+#
 # For backwards compatibility, `assignments_table_name` is synonymous with `table_name`. If
 # both are set, `assignments_table_name` will be preferred over `table_name`.
 table_name = assignments

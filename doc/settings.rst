@@ -487,11 +487,14 @@ that you can connect to this url with a MySQL client prior to
 launching.
 
 
+
 assignments_table_name
-~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+
 Specifies the table of the database you would like to write participant data to.
 
 :Type: ``string``
+:Default: assignments
 
 **IMPORTANT**: psiTurk prevents the same worker
 from performing as task by checking to see if the worker
@@ -500,7 +503,7 @@ single experiment (or sequence of related experiments) you want
 to keep the `assignments_table_name` value the same. If you start a new
 design where it not longer matters that someone has done a
 previous version of the task, you can change the `assignments_table_name`
-value and begin sorting the data into a new table. 
+value and begin sorting the data into a new table.
 
 If multiple experiments or users share the same database then this
 table needs to be unique for each experiment/user.
@@ -508,6 +511,8 @@ table needs to be unique for each experiment/user.
 
 table_name
 ~~~~~~~~~~
+
+`Deprecated`
 
 Specifies the table of the database you would like to write participant data to.
 
@@ -518,31 +523,40 @@ both are set, `assignments_table_name` will be preferred over `table_name`.
 Please use `assignments_table_name` going forward but either will work for now.
 
 
+
 hits_table_name
-~~~~~~~~~~
+~~~~~~~~~~~~~~~
+
 Specifies the table of the database for storing information about current HITs.
 
 :Type: ``string``
+:Default: amt_hit
 
-psiTurk creates several tables for bookkeeping.  This one helps the dashboard
-and command line manage HITs.  If multiple experiments or users share the same database then this
+psiTurk creates several tables for bookkeeping. This one helps the dashboard
+and command line manage HITs. If multiple experiments or users share the same database then this
 table needs to be unique for each experiment/user.
 
+
 campaigns_table_name
-~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~
+
 Specifies the table of the database for storing campaigns.
 
 :Type: ``string``
+:Default: campaign
 
 psiTurk creates several tables for bookkeeping.  This one helps the dashboard
 and command line manage campaigns. If multiple experiments or users share the same database then this
 table needs to be unique for each experiment/user.
 
+
 jobs_table_name
-~~~~~~~~~~
+~~~~~~~~~~~~~~~
+
 Specifies the table of the database for storing job information.
 
 :Type: ``string``
+:Default: apscheduler_jobs
 
 psiTurk creates several tables for bookkeeping.  This one helps the task
 schedule manage automated jobs.  If multiple experiments or users share the same database then this

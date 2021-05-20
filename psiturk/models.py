@@ -17,6 +17,8 @@ config = PsiturkConfig()
 config.load_config()
 
 
+# The "table_name" config key is deprecated -- it will be replaced by
+# `assignments_table_name` in a future release.
 ASSIGNMENTS_TABLENAME = config.get('Database Parameters', 'table_name')
 HITS_TABLENAME = config.get('Database Parameters', 'hits_table_name')
 CAMPAIGNS_TABLENAME = config.get('Database Parameters', 'campaigns_table_name')
@@ -157,7 +159,7 @@ class Participant(Base):
             print(("Error reading record:", self))
 
             return ""
-            
+
     @classmethod
     def count_completed(cls, codeversion, mode):
         completed_statuses = [3, 4, 5, 7]
@@ -249,7 +251,7 @@ class Campaign(Base):
         assert goal > count_completed, \
             f'Goal ({goal}) must be greater than the count of '\
             f'already-completed {count_completed}).'
-    
+
     @validates('mode')
     def validate_mode(self, key, mode):
         assert mode in ['sandbox', 'live'], 'Mode {} not recognized.'.format(mode)
