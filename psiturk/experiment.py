@@ -98,9 +98,12 @@ else:
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from pytz import utc
 
+
+
 from .db import engine
+JOBS_TABLENAME = CONFIG.get('Database Parameters', 'jobs_table_name')
 jobstores = {
-    'default': SQLAlchemyJobStore(engine=engine)
+    'default': SQLAlchemyJobStore(engine=engine, tablename=JOBS_TABLENAME)
 }
 if 'gunicorn' in os.environ.get('SERVER_SOFTWARE', ''):
     from apscheduler.schedulers.gevent import GeventScheduler as Scheduler

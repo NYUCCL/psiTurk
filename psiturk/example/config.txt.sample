@@ -150,8 +150,28 @@
 # If ON_CLOUD=1, then this defaults to env var $DATABASE_URL, if set.
 ;database_url = sqlite:///participants.db
 
+# psiTurk creates several database tables to store data and to manage aspects of
+# automated tasks, campaigns, etc...
+# if multiple users share the same database these value need to be changed to be
+# unique for each experiment.
+
 # Name of the database table where participant data will be stored
+;assignments_table_name =
+
+# Deprecated. Use `assignments_table_name` instead.
+#
+# For backwards compatibility, `assignments_table_name` is synonymous with `table_name`. If
+# both are set, `assignments_table_name` will be preferred over `table_name`.
 ;table_name = assignments
+
+# Name of the database table where hit information is stored
+;hits_table_name = amt_hit
+
+# Name of the database table where campaign information is stored
+;campaigns_table_name = campaign
+
+# Name of the database table where the task scheduler (apscheduler) places jobs
+;jobs_table_name = apscheduler_jobs
 
 ############################# Server Parameters ################################
 [Server Parameters]

@@ -17,7 +17,12 @@ config = PsiturkConfig()
 config.load_config()
 
 
-TABLENAME = config.get('Database Parameters', 'table_name')
+# The "table_name" config key is deprecated -- it will be replaced by
+# `assignments_table_name` in a future release.
+ASSIGNMENTS_TABLENAME = config.get('Database Parameters', 'table_name')
+HITS_TABLENAME = config.get('Database Parameters', 'hits_table_name')
+CAMPAIGNS_TABLENAME = config.get('Database Parameters', 'campaigns_table_name')
+
 CODE_VERSION = config.get('Task Parameters', 'experiment_code_version')
 
 # Base class
@@ -40,7 +45,7 @@ class Participant(Base):
     """
     Object representation of a participant in the database.
     """
-    __tablename__ = TABLENAME
+    __tablename__ = ASSIGNMENTS_TABLENAME
 
     uniqueid = Column(String(128), primary_key=True)
     assignmentid = Column(String(128), nullable=False)
@@ -154,7 +159,7 @@ class Participant(Base):
             print(("Error reading record:", self))
 
             return ""
-            
+
     @classmethod
     def count_completed(cls, codeversion, mode):
         completed_statuses = [3, 4, 5, 7]
@@ -205,14 +210,15 @@ class Participant(Base):
 class Hit(Base):
     """
     """
-    __tablename__ = 'amt_hit'
+    __tablename__ = HITS_TABLENAME
     hitid = Column(String(128), primary_key=True)
 
 
 class Campaign(Base):
     """
     """
-    __tablename__ = 'campaign'
+
+    __tablename__ = CAMPAIGNS_TABLENAME
     id = Column(Integer, primary_key=True)
     codeversion = Column(String(128), nullable=False)
     mode = Column(String(128), nullable=False)
@@ -245,7 +251,7 @@ class Campaign(Base):
         assert goal > count_completed, \
             f'Goal ({goal}) must be greater than the count of '\
             f'already-completed {count_completed}).'
-    
+
     @validates('mode')
     def validate_mode(self, key, mode):
         assert mode in ['sandbox', 'live'], 'Mode {} not recognized.'.format(mode)
