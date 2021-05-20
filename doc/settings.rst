@@ -583,6 +583,8 @@ Whether to enable the dashbaord. If True, then the ``login_username`` and
 :Type: ``bool``
 :Default: False
 
+.. seealso:: :ref:`dashboard-overview`
+
 
 .. _settings-do-scheduler:
 
@@ -627,6 +629,24 @@ web application (e.g., see `customizing psiturk <../customizing.html>`__)
 then you can set a login and password on certain
 web pages urls/routes. By default if you aren't
 using them, this is ignored.
+
+
+.. _settings-secret-key:
+
+secret_key
+~~~~~~~~~~
+
+:Type: ``string``
+:Default: None
+
+This is `required by psiTurk's underlying Flask server`__ for any route
+that uses a "Session", such as the :ref:`psiTurk Dashboard <dashboard-overview>`.
+
+It can be any string.
+
+__ https://flask.palletsprojects.com/en/1.1.x/quickstart/#sessions
+
+.. seealso:: :ref:`dashboard-overview`
 
 
 .. _settings-threads:
