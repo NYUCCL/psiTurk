@@ -92,7 +92,7 @@ class ExperimentServer(Application):
             'loglevels': self.loglevels,
             'loglevel': self.loglevels[config.getint("Server Parameters", "loglevel")],
             'accesslog': config.get('Server Parameters', "accesslog"),
-            'errorlog': config.get('Server Parameters', "errorlog"),
+            'errorlog': config.get('Server Parameters', "logfile"),
             'proc_name': 'psiturk_experiment_server_' + project_hash,
             'limit_request_line': '0',
         }
