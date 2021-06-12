@@ -13,6 +13,7 @@
     var USERNAME = "{{ username }}";
     var PASSWORD = "{{ password }}";
     var HITId = "{{ hit_id }}";
+    var BLUE_RIBBON_PATH = "{{url_for('.static', filename='images/blueribbon.png')}}";
 </script>
 {% endblock %}
 
@@ -63,7 +64,7 @@
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Create an <img src='/static/images/blueribbon.png' class="db-boolimg"><b>HIT</b>!</h5>
+                <h5 class="modal-title" id="exampleModalLabel">Create an <img src="{{url_for('.static', filename='images/blueribbon.png')}}" class="db-boolimg"><b>HIT</b>!</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
                 </button>

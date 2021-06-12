@@ -2,7 +2,7 @@ import { DatabaseView, DatabaseViewWithFilters } from './dbview.js';
 
 // The fields to be parsed from the returned HIT response
 var HIT_FIELDS = {
-    'local': {'title': '<img src="/static/images/blueribbon.png" class="db-boolimg">', 'type': 'bool', 'style': {'width': '50px', 'max-width': '50px'}},
+    'local': {'title': '<img src="' + BLUE_RIBBON_PATH + '" class="db-boolimg">', 'type': 'bool', 'style': {'width': '50px', 'max-width': '50px'}},
     'Title': {'title': 'Title', 'type': 'string', 'style': {'min-width': '100px', 'width': '20%', 'max-width': '300px'}},
     'Description': {'title': 'Description', 'type': 'string', 'style': {'min-width': '100px', 'width': '20%', 'max-width': '300px'}},
     'HITId': {'title': 'ID', 'type': 'string', 'style': {'width': '50px', 'max-width': '50px'}},

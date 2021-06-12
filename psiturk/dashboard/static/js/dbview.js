@@ -156,7 +156,7 @@ export class DatabaseView {
                 }
                 // Custom bool rendering
                 if (value['type'] == 'bool' && cellValue) {
-                    cellValue = "<img src='/static/images/blueribbon.png' class='db-boolimg'>"
+                    cellValue = "<img src='" + BLUE_RIBBON_PATH + "' class='db-boolimg'>"
                 }
                 let data$ = $('<td/>').html(cellValue);
                 data$.css('overflow-x', 'auto');
