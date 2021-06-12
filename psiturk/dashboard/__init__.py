@@ -32,6 +32,17 @@ login_manager.login_view = 'dashboard.login'
 
 
 def init_app(app):
+    if not app.config.get('LOGIN_DISABLED'):
+        # this dashboard requires a valid mturk connection -- try for one here
+        try:
+            _ = services_manager.amt_services_wrapper  # may throw error if aws keys not set
+        except NoMturkConnectionError:
+            raise Exception((
+                'Dashboard requested, but no valid mturk credentials found. '
+                'Either disable the dashboard in config, or set valid mturk credentials -- '
+                'see https://psiturk.readthedocs.io/en/latest/amt_setup.html#aws-credentials . '
+                '\nRefusing to start.'
+                ))
     login_manager.init_app(app)
 
 
@@ -44,16 +55,22 @@ class DashboardUser(UserMixin):
 def load_user(username):
     return DashboardUser(username=username)
 
+def is_static_resource_call():
+    return str(request.endpoint) == 'dashboard.static'
+
+def is_login_route():
+    return str(request.url_rule) == '/dashboard/login'
 
 def login_required(view):
     @wraps(view)
     def wrapped_view(*args, **kwargs):
-        if app.login_manager._login_disabled:  # for unit testing
-            return view(*args, **kwargs)
-        is_logged_in = current_user.get_id() is not None
-        is_static_resource_call = str(request.endpoint) == 'dashboard.static'
-        is_login_route = str(request.url_rule) == '/dashboard/login'
-        if not (is_static_resource_call or is_login_route or is_logged_in):
+        if current_user.is_authenticated:
+            pass
+        elif app.config.get('LOGIN_DISABLED'):  # for unit testing
+            pass
+        elif is_static_resource_call() or is_login_route():
+            pass
+        else:
             return login_manager.unauthorized()
         return view(*args, **kwargs)
 
@@ -75,12 +92,29 @@ def try_amt_services_wrapper(view):
                 app.logger.debug('I set services manager mode to {}'.format(services_manager.mode))
             return view(**kwargs)
         except Exception as e:
-            message = e.message if hasattr(e, 'message') else str(e)
-            flash(message, 'danger')
-            return redirect(url_for('.index'))
+            if not is_login_route() and not is_static_resource_call():
+                message = e.message if hasattr(e, 'message') else str(e)
+                flash(message, 'danger')
+
+                return redirect(url_for('.login'))
 
     return wrapped_view
 
+def warn_if_scheduler_not_running(view):
+    @wraps(view)
+    def wrapped_view(**kwargs):
+        app.logger.debug('checking if scheduler is running...')
+        do_scheduler = config.getboolean('Server Parameters', 'do_scheduler')
+        app.logger.debug(f'do_scheduler was {do_scheduler}')
+        if not do_scheduler:
+            flash((
+                'Warning: `do_scheduler` is set to False. '
+                'Tasks (such as campaigns) can be created, modified, or deleted, '
+                'but they will not be run by this psiturk instance.'
+            ), 'warning')
+        return view(**kwargs)
+
+    return wrapped_view
 
 @dashboard.before_request
 @login_required
@@ -125,9 +159,9 @@ def hits_list():
 def assignments_list():
     return render_template('dashboard/assignments/list.html')
 
-
 @dashboard.route('/campaigns')
 @dashboard.route('/campaigns/')
+@warn_if_scheduler_not_running
 def campaigns_list():
     completed_count = Participant.count_completed(
         codeversion=services_manager.codeversion,
@@ -148,6 +182,7 @@ def campaigns_list():
 
 @dashboard.route('/tasks')
 @dashboard.route('/tasks/')
+@warn_if_scheduler_not_running
 def tasks_list():
     return render_template('dashboard/tasks/list.html')
 
@@ -159,9 +194,6 @@ def login():
         password = request.form['password']
 
         try:
-            if 'example' in username or 'example' in password:
-                raise Exception(
-                    'Default username-password not permitted! Change them in your config file.')
             if not myauth.check_auth(username, password):
                 raise Exception('Incorrect username or password')
 

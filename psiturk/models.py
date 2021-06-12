@@ -4,7 +4,7 @@ import io
 import csv
 import json
 from sqlalchemy import Column, Integer, String, DateTime, Float, Text, Boolean, func, inspect
-from sqlalchemy.orm import validates
+from sqlalchemy.orm import validates, deferred
 from sqlalchemy.ext.declarative import declarative_base
 from psiturk.db import db_session
 from .psiturk_config import PsiturkConfig
@@ -17,7 +17,12 @@ config = PsiturkConfig()
 config.load_config()
 
 
-TABLENAME = config.get('Database Parameters', 'table_name')
+# The "table_name" config key is deprecated -- it will be replaced by
+# `assignments_table_name` in a future release.
+ASSIGNMENTS_TABLENAME = config.get('Database Parameters', 'table_name')
+HITS_TABLENAME = config.get('Database Parameters', 'hits_table_name')
+CAMPAIGNS_TABLENAME = config.get('Database Parameters', 'campaigns_table_name')
+
 CODE_VERSION = config.get('Task Parameters', 'experiment_code_version')
 
 # Base class
@@ -40,7 +45,7 @@ class Participant(Base):
     """
     Object representation of a participant in the database.
     """
-    __tablename__ = TABLENAME
+    __tablename__ = ASSIGNMENTS_TABLENAME
 
     uniqueid = Column(String(128), primary_key=True)
     assignmentid = Column(String(128), nullable=False)
@@ -60,9 +65,9 @@ class Participant(Base):
     status = Column(Integer, default=1)
     mode = Column(String(128))
     if 'postgres://' in config.get('Database Parameters', 'database_url').lower():
-        datastring = Column(Text)
+        datastring = deferred(Column(Text))
     else:
-        datastring = Column(Text(4294967295))
+        datastring = deferred(Column(Text(4294967295)))
 
     def __init__(self, **kwargs):
         self.uniqueid = "{workerid}:{assignmentid}".format(**kwargs)
@@ -154,7 +159,7 @@ class Participant(Base):
             print(("Error reading record:", self))
 
             return ""
-            
+
     @classmethod
     def count_completed(cls, codeversion, mode):
         completed_statuses = [3, 4, 5, 7]
@@ -205,14 +210,15 @@ class Participant(Base):
 class Hit(Base):
     """
     """
-    __tablename__ = 'amt_hit'
+    __tablename__ = HITS_TABLENAME
     hitid = Column(String(128), primary_key=True)
 
 
 class Campaign(Base):
     """
     """
-    __tablename__ = 'campaign'
+
+    __tablename__ = CAMPAIGNS_TABLENAME
     id = Column(Integer, primary_key=True)
     codeversion = Column(String(128), nullable=False)
     mode = Column(String(128), nullable=False)
@@ -245,7 +251,7 @@ class Campaign(Base):
         assert goal > count_completed, \
             f'Goal ({goal}) must be greater than the count of '\
             f'already-completed {count_completed}).'
-    
+
     @validates('mode')
     def validate_mode(self, key, mode):
         assert mode in ['sandbox', 'live'], 'Mode {} not recognized.'.format(mode)
@@ -274,6 +280,22 @@ class Campaign(Base):
             app.apscheduler.remove_job(self.campaign_job_id)
         except JobLookupError:
             pass
+
+        db_session.add(self)
+        db_session.commit()
+        return self
+
+    def set_new_goal(self, goal):
+        self.goal = goal
+        db_session.add(self)
+        db_session.commit()
+
+        from .experiment import app
+        job = app.apscheduler.get_job(self.campaign_job_id)
+        kwargs = job.kwargs
+        kwargs['campaign'] = self
+        job.modify(kwargs=kwargs)
+
         return self
 
     @classmethod

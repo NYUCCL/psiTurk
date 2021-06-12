@@ -156,8 +156,8 @@ All commands listed in this tutorial are meant to be typed into your terminal ap
       heroku app, replacing ``<XYZ>`` with your access and secret
       keys for :ref:`Amazon Web Services <amt-setup>`::
 
-        heroku config:set aws_access_key_id=<XYZ>
-        heroku config:set aws_secret_access_key=<XYZ>
+        heroku config:set AWS_ACCESS_KEY_ID=<XYZ>
+        heroku config:set AWS_SECRET_ACCESS_KEY=<XYZ>
 
 #. Stage all the files in your psiTurk example to your Git repository: ::
 

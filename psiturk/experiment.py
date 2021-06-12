@@ -37,7 +37,7 @@ LOG_LEVELS = [logging.DEBUG, logging.INFO, logging.WARNING, logging.ERROR,
 logging.CRITICAL]
 LOG_LEVEL = LOG_LEVELS[CONFIG.getint('Server Parameters', 'loglevel')]
 
-logfile = CONFIG.get("Server Parameters", "errorlog")
+logfile = CONFIG.get("Server Parameters", "logfile")
 if logfile != '-':
     file_path = os.path.join(os.getcwd(), logfile)
     logging.basicConfig(filename=file_path, format='%(asctime)s %(message)s',
@@ -56,7 +56,6 @@ app.secret_key = CONFIG.get('Server Parameters', 'secret_key')
 
 def check_templates_exist():
     # this checks for templates that are required if you are hosting your own ad.
-    try_these = ['thanks-mturksubmit.html', 'closepopup.html']
     try:
         try_these = ['thanks-mturksubmit.html', 'closepopup.html']
         [app.jinja_env.get_template(try_this) for try_this in try_these]
@@ -99,9 +98,12 @@ else:
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from pytz import utc
 
+
+
 from .db import engine
+JOBS_TABLENAME = CONFIG.get('Database Parameters', 'jobs_table_name')
 jobstores = {
-    'default': SQLAlchemyJobStore(engine=engine)
+    'default': SQLAlchemyJobStore(engine=engine, tablename=JOBS_TABLENAME)
 }
 if 'gunicorn' in os.environ.get('SERVER_SOFTWARE', ''):
     from apscheduler.schedulers.gevent import GeventScheduler as Scheduler
@@ -113,7 +115,11 @@ app.apscheduler = scheduler
 scheduler.app = app
 
 if CONFIG.getboolean('Server Parameters', 'do_scheduler'):
+    app.logger.info("Scheduler starting!")
     scheduler.start()
+else:
+    app.logger.info("Starting scheduler in 'paused' mode -- it will not run any tasks, but it can be used to create, modify, or delete tasks.")
+    scheduler.start(paused=True)
 
 
 #

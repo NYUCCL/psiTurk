@@ -629,11 +629,7 @@ class MTurkServicesWrapper(object):
         return {'hit_tally': num_hits}
 
     def _get_local_hitids(self):
-        participant_hitids = [
-            part.hitid for part in Participant.query.distinct(Participant.hitid)]
-        hit_hitids = [hit.hitid for hit in Hit.query.distinct(Hit.hitid)]
-        my_hitids = list(set(participant_hitids + hit_hitids))
-        return my_hitids
+        return [hit.hitid for hit in Hit.query.distinct(Hit.hitid)]
 
     @amt_services_wrapper_response
     def get_active_hits(self, all_studies=False):
@@ -665,7 +661,7 @@ class MTurkServicesWrapper(object):
 
     def _get_hits(self, all_studies=False):
         # get all hits from amt
-        # then filter to just the ones that have an id that appears in either local Hit or Worker tables
+        # then filter to just the ones that have an id that appears in the local Hit table
         response = self.amt_services.get_all_hits()
         if not response.success:
             raise response.exception
@@ -822,16 +818,19 @@ class MTurkServicesWrapper(object):
         if block_qualification_ids is None:
             block_qualification_ids = []
 
-        require_quals = self.config.get('HIT Configuration', 'require_quals', fallback=None)
+        key = f'require_quals_{self.mode}'
+        require_quals = self.config.get('HIT Configuration', key, fallback=None)
         if require_quals:
             require_qualification_ids.extend(require_quals.split(','))
 
-        block_quals = self.config.get('HIT Configuration', 'block_quals', fallback=None)
+        key = f'block_quals_{self.mode}'
+        block_quals = self.config.get('HIT Configuration', key, fallback=None)
         if block_quals:
             block_qualification_ids.extend(block_quals.split(','))
-        
-        advanced_quals_path = self.config.get('HIT Configuration', 'advanced_quals_path', fallback=None)
-        advanced_qualifications = []
+
+        key = f'advanced_quals_path_{self.mode}'
+        advanced_quals_path = self.config.get('HIT Configuration', key, fallback=None)
+        advanced_qualifications = [] # default
         if advanced_quals_path:
             with open(advanced_quals_path) as f:
                 advanced_qualifications = json.load(f)

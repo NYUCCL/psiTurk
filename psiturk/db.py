@@ -38,3 +38,30 @@ def truncate_tables():
     for table in Base.metadata.sorted_tables:
         db_session.execute(table.delete(bind=engine))
     db_session.commit()
+
+
+def migrate_db():
+    result = _populate_hits_table()
+    return result
+
+
+def _populate_hits_table():
+    from .models import Participant, Hit
+
+    # all non-debug unique hitids from the Participant table
+    participants = Participant.query.\
+        filter(~Participant.uniqueid.contains('debug')).\
+        distinct(Participant.hitid)
+    participant_table_hitids = [p.hitid for p in participants]
+
+    # all unique hitids from the Hits table
+    hit_table_hitids = [hit.hitid for hit in Hit.query.distinct(Hit.hitid)]
+
+    # participant table hitids missing from the Hits table
+    hit_table_missing_hitids = list(set(participant_table_hitids) - set(hit_table_hitids))
+
+    dicts = [dict(hitid=hitid) for hitid in hit_table_missing_hitids]
+    db_session.bulk_insert_mappings(Hit, dicts)
+    db_session.commit()
+
+    return {'message': f'Hit table (`{Hit.__table__.name}`) updated with {len(hit_table_missing_hitids)} hitids from Participant table (`{Participant.__table__.name}`)'}
