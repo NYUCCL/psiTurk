@@ -191,11 +191,10 @@ def login():
                 raise Exception('Incorrect username or password')
             user = DashboardUser(username=username)
             login_user(user)
-            flash("Logged in successfully.")
             next = request.args.get('next')
             return redirect(next or url_for('.index'))
         except Exception as e:
-            flash(str(e), 'danger')
+            pass
     return render_template('dashboard/login.html')
 
 # Logout endpoint logs out a user and sends back to login
@@ -206,21 +205,15 @@ def logout():
     return redirect(url_for('.login'))
 
 # Get/set mode of the current AMT Services Wrapper 
-@dashboard.route('/mode', methods=('GET', 'POST'))
+@dashboard.route('/mode', methods=['POST'])
 def mode():
-    if request.method == 'POST':
-        mode = request.form['mode']
-        if mode not in ['live', 'sandbox']:
-            flash('unrecognized mode: {}'.format(mode), 'danger')
-        else:
-            try:
-                services_manager.mode = mode
-                session[SESSION_SERVICES_MANAGER_MODE_KEY] = mode
-                flash('mode successfully updated to {}'.format(mode), 'success')
-            except Exception as e:
-                flash(str(e), 'danger')
-    mode = services_manager.mode
-    return render_template('dashboard/mode.html', mode=mode)
+    mode = request.json['mode']
+    try:
+        services_manager.mode = mode
+        session[SESSION_SERVICES_MANAGER_MODE_KEY] = mode
+        return jsonify({"success": True, "data": {"mode": mode}}), 200
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
 
 # ---------------------------------------------------------------------------- #
 #                                  API ROUTES                                  #

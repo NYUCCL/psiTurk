@@ -16,7 +16,8 @@
     <title></title>
   </head>
   <body>
-    {% include 'dashboard/flashed_messages.html' %}
+
+    {% block modals%}{% endblock %}
     {% block layout %}{% endblock %}
     
     {% block scripts %}{% endblock %}

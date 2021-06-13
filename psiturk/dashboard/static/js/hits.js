@@ -24,101 +24,120 @@ var ASSIGNMENT_FIELDS = {
     'ApprovalTime': {'title': 'Approved On', 'type': 'date', 'style': {'width': '300px'}},
 };
 
-// Database view for rendering the HIT
-var MainDBView = new DatabaseViewWithFilters('mainDisplay', {'onSelect': onHITSelectedChange, 'onFilter': onFilterChange}, 'hits');
+var HIT_STATUSES = ['Reviewable', 'Reviewing', 'Assignable', 'Unassignable'];
 
-// Sub-database view for rendering any HIT's assignments
-var cachedAssignments = {}
-var SubDBView = new DatabaseView('assignmentDisplay', {'onSelect': console.log}, 'assignments');
+/**
+ * Handles the database HIT views
+ */
+class HITDBDisplay {
 
-// Loads the HITs from the backend
-function loadHITs(statuses=[]) {
-    $.ajax({
-        type: 'POST',
-        url: '/dashboard/api/hits',
-        data: JSON.stringify({'statuses': statuses}),
-        contentType: 'application/json; charset=utf-8',
-        dataType: 'json',
-        headers: {
-            'Authorization': 'Basic ' + btoa(USERNAME + ':' + PASSWORD)
-        },
-        success: function(data) {
-            if (data.success && data.data.length > 0) {
-                MainDBView.updateData(data.data, HIT_FIELDS).then(() => {
-                    if (HITId) {
-                        let index = MainDBView.data.map(e => e['HITId']).indexOf(HITId);
-                        $('#row' + index).click();
-                    }
-                });
-            }
-        },
-        error: function(errorMsg) {
-            alert(errorMsg);
-        }
-    });
-}
-
-// Updates the HIT display with the data of the currently-clicked element
-var displayingHIT = false;
-function onHITSelectedChange(data) {
-    if (!displayingHIT) {
-        $('#hitSelected').css('display', 'flex');
-        $('#noHITAlert').css('display', 'none');
-        displayingHIT = true;
+    // Create the HIT display with references to the HTML elements it will
+    // use as a basis for controls and in which it will fill in the database.
+    constructor(domelements) {
+        this.DOM$ = domelements;
+        this.db = undefined;  // Main HIT database handler
+        this.hitSelected = false; // Is an HIT selected currently?
     }
 
-    // Update the HIT information column
-    let hitId = data['HITId'];
-    $('#hitInfo_id').text(hitId);
-    $('#hitInfo_title').text(data['Title']);
-    $('#hitInfo_desc').text(data['Description']);
-    $('#hitInfo_status').text(data['HITStatus']);
-    $('#hitInfo_created').text(data['CreationTime']);
-    $('#hitInfo_expired').text(data['Expiration']);
-    $('#hitInfo_max').text(data['MaxAssignments']);
-    $('#hitInfo_available').text(data['NumberOfAssignmentsAvailable']);
-    $('#hitInfo_completed').text(data['NumberOfAssignmentsCompleted']);
+    // Build the database views into their respective elmeents. There is one
+    // for the main database and another for the sub-assignments view
+    init() {
+        this.db = new DatabaseViewWithFilters(this.DOM$, {
+                'onSelect': this._hitSelectedHandler.bind(this), 
+                'onFilter': this._filterChangeHandler.bind(this)
+            }, 'hits');
+        
+        // Load the data
+        this._loadHITs();
+    }
 
-    // Update the current HREF
-    history.pushState({id: 'hitpage'}, '', window.location.origin + '/dashboard/hits/' + hitId + '/');
-
-
-    // Load in the assignment data for that HIT if not already cached
-    if (hitId in cachedAssignments) {
-        SubDBView.updateData(cachedAssignments[hitId], ASSIGNMENT_FIELDS);
-    } else {
-        SubDBView.clearData();
+    // Pulls the HIT data from the backend and loads it into the main database
+    _loadHITs(statuses=HIT_STATUSES) {
         $.ajax({
             type: 'POST',
-            url: '/dashboard/api/hits/' + hitId + '/assignments',
-            data: "{}",
+            url: '/dashboard/api/hits',
+            data: JSON.stringify({'statuses': statuses}),
             contentType: 'application/json; charset=utf-8',
             dataType: 'json',
-            success: function(data) {
+            success: (data) => {
                 if (data.success && data.data.length > 0) {
-                    cachedAssignments[hitId] = data.data;
-                    SubDBView.updateData(data.data, ASSIGNMENT_FIELDS);
+                    this.db.updateData(data.data, HIT_FIELDS).then(() => {
+                        if (HIT_ID) {
+                            let index = this.db.data.map(e => e['HITId']).indexOf(HITId);
+                            $('#row' + index).click();
+                        }
+                    });
                 }
             },
             error: function(errorMsg) {
-                alert(errorMsg);
+                console.log(errorMsg);
+                alert('Error loading HIT data.');
+                location.reload();
             }
-        })
+        });
+    }
+
+    /**
+     * HANDLER: New HIT is selected in the database view
+     * @param {object} data - The data of the newly-selected HIT
+     */
+    _hitSelectedHandler(data) {
+        if (!this.hitSelected) {
+            $('#hitSelected').css('display', 'flex');
+            $('#noHITAlert').css('display', 'none');
+            this.hitSelected = true;
+        }
+
+        // Update the HIT information column
+        let hitId = data['HITId'];
+        $('#hitInfo_id').text(hitId);
+        $('#hitInfo_title').text(data['Title']);
+        $('#hitInfo_desc').text(data['Description']);
+        $('#hitInfo_status').text(data['HITStatus']);
+        $('#hitInfo_created').text(data['CreationTime']);
+        $('#hitInfo_expired').text(data['Expiration']);
+        $('#hitInfo_max').text(data['MaxAssignments']);
+        $('#hitInfo_available').text(data['NumberOfAssignmentsAvailable']);
+        $('#hitInfo_completed').text(data['NumberOfAssignmentsCompleted']);
+
+        // Update the current HREF
+        history.pushState({id: 'hitpage'}, '', window.location.origin + '/dashboard/hits/' + hitId + '/');
+
+        // Load in the assignment data for that HIT if not already cached
+        if (hitId in cachedAssignments) {
+            SubDBView.updateData(cachedAssignments[hitId], ASSIGNMENT_FIELDS);
+        } else {
+            SubDBView.clearData();
+            $.ajax({
+                type: 'POST',
+                url: '/dashboard/api/hits/' + hitId + '/assignments',
+                data: "{}",
+                contentType: 'application/json; charset=utf-8',
+                dataType: 'json',
+                success: function(data) {
+                    if (data.success && data.data.length > 0) {
+                        cachedAssignments[hitId] = data.data;
+                        SubDBView.updateData(data.data, ASSIGNMENT_FIELDS);
+                    }
+                },
+                error: function(errorMsg) {
+                    alert(errorMsg);
+                }
+            })
+        }
+    }
+
+    /**
+     * HANDLER: Change in filters of main DB view
+     * @param {int} length - The number of rows showing post-filter
+     */
+    _filterChangeHandler(length) {
+        $('#totalHITsFiltered').html(length.toString());
     }
 }
 
-// Updates the query-row display with the number of rows filtered
-function onFilterChange(length) {
-    $('#totalHITsFiltered').html(length.toString());
-}
 
-// Batch downloads all the completed csv files from the server for the
-// currently selected HIT (uses the ID span, so directly reflected in DOM)
-function batchDownload() {
-    
-}
-
-// Calculates the HIT creation expense from the values in the HIT create menu
+// Updates the HIT expenses based on the modal
 function updateHITCreateExpense() {
     // Fee structure 07.22.15:
     // 20% for HITs with < 10 assignments
@@ -164,13 +183,40 @@ function createHIT() {
 
 // Populates the table view with HITs
 $(window).on('load', function() {
-    loadHITs(['Reviewable', 'Reviewing', 'Assignable', 'Unassignable']);
 
-    // Add HIT creation expense calculation
-    updateHITCreateExpense();
-    $('#hitCreateInput-participants').on('change', updateHITCreateExpense);
-    $('#hitCreateInput-reward').on('change', updateHITCreateExpense);
+    // Initialize the HIT display
+    // var disp = new HITDBDisplay({
+    //     filters: $('#DBFilters'),
+    //     display: $('#DBDisplay'),
+    // });
+    // disp.init();
 
-    // Add HIT creation function
-    $('#hitCreate-submit').on('click', createHIT);
+    // // Add HIT creation expense calculation
+    // updateHITCreateExpense();
+    // $('#hitCreateInput-participants').on('change', updateHITCreateExpense);
+    // $('#hitCreateInput-reward').on('change', updateHITCreateExpense);
+
+    // // Add HIT creation function
+    // $('#hitCreate-submit').on('click', createHIT);
+
+
+    // TESTING
+
+    // if (!($('.modal.in').length)) {
+    //     $('.modal-dialog').css({
+    //       top: 0,
+    //       left: 0
+    //     });
+    // }
+
+    $('#tableDownload').on('click', function() {
+        $('#filterModal').modal({
+            backdrop: false,
+            show: true
+        })
+    });
+
+    $('#filterModalDialog').draggable({
+        handle: "#filterModalHeader"
+    });
 });

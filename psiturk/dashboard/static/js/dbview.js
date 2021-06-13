@@ -61,27 +61,31 @@ var FILTER_TYPES = {
     }
 }
 
+/**
+ * View for a database.
+ */
 export class DatabaseView {
 
     // Injects a database view into the parent element
-    constructor(parentId, callbacks, name="") {
-        // Link callbacks
-        this.callbacks = callbacks;
-
-        // Set name of database
+    constructor(domelements, callbacks, name="") {
+        this.DOM$ = {
+            ...domelements,
+            root: $('<div id="dbContainer_' + this.name + '" class="db-container"></div>'),
+            tableView: $('<div id="tableView_"' + this.name +' class="db-tableView no-scrollbar"></div>'),
+            table: $('<table id="table_' + this.name + '" class="db-table"><thead class="db-thead"></thead><tbody class="db-tbody"></tbody></table>')
+        };
+        this.callbacks = callbacks; 
         this.name = name;
 
-        // Set visibility to false initially
-        this.visible = false;
-
         // Build elements
-        this.root$ = $('<div id="dbContainer_' + this.name + '" class="db-container"></div>');
-        this.table$ = $('<table id="table_' + this.name + '" class="db-table"><thead></thead><tbody></tbody></table>');
-        this.root$.append($('<div id="tableView_"' + this.name +' class="db-tableView no-scrollbar"></div>').append(this.table$));
+        this.DOM$.display.append(
+            this.DOM$.root.append(
+                this.DOM$.tableView.append(
+                    this.DOM$.table)));
 
-        // Begin the DB invisibly
-        this.root$.hide();
-        $('#' + parentId).append(this.root$);
+        // Begin the database invisibly (before data loads)
+        this.visible = false;
+        this.DOM$.root.hide();
 
         // Initialize data
         this.updateData([], [], false);
@@ -89,7 +93,7 @@ export class DatabaseView {
 
     // Hides the database and shows a "loading" icon
     clearData() {
-        this.root$.fadeOut();
+        this.DOM$.root.fadeOut();
         this.visible = false;
     }
 
@@ -101,7 +105,7 @@ export class DatabaseView {
         this.order = [...Array(50).keys()];
 
         // Reset headers of columns
-        let tHead$ = this.table$.find('thead');
+        let tHead$ = this.DOM$.table.find('thead');
         tHead$.empty();
         let headerTr$ = $('<tr/>');
         for (const [key, value] of Object.entries(fields)) {
@@ -132,12 +136,12 @@ export class DatabaseView {
     // render the current row.
     async renderTable(discriminator=undefined) {
         // Maintain previously selected row
-        let selectedRow = this.table$.find('tr.selected');
+        let selectedRow = this.DOM$.table.find('tr.selected');
         if (selectedRow) {
             selectedRow = selectedRow.attr('id');
         }
 
-        let tBody$ = this.table$.find('tbody');
+        let tBody$ = this.DOM$.table.find('tbody');
         tBody$.empty();
 
         // Insert the actual data into the body
@@ -180,7 +184,7 @@ export class DatabaseView {
         // If wasn't visible before, now make visible
         if (!this.visible) {
             this.visible = true;
-            this.root$.fadeIn();
+            this.DOM$.root.fadeIn();
         }
 
         // Call the onFilter handler
@@ -200,7 +204,7 @@ export class DatabaseView {
         let switchDirection = this.sort['last'] == byColIndex ? !this.sort['forwards'] : true;
         while (switching) {
             switching = false;
-            let rows = this.table$.find('tbody>tr');
+            let rows = this.DOM$.table.find('tbody>tr');
             // Loop through all the rows
             let shouldSwitch = false;
             for (let i = 0; i < (rows.length - 1) && !(shouldSwitch); i++) {
@@ -257,7 +261,7 @@ export class DatabaseViewWithFilters extends DatabaseView {
             .append($('<span class="db-filtersListTitle">FILTERS</span>'))
             .append(this.filters$);
         // Prepend it (before the table view from super constructor)
-        this.root$.prepend(this.filterLayout$);
+        this.DOM$.filters.append(this.filterLayout$);
 
         // Add listeners to search filter
         this.searchCbox$.on('change', (event) => {
