@@ -50,14 +50,124 @@
         </div>
     </div>
 
-    {# <div class="row p-2 flex-fill"> #}
+    <div class="row p-2 flex-fill">
 
         <!-- DB display auto-fills column -->
-        <div id="DBDisplay" class="my-2 db-display">
+        <div class="col-md-8 db-display rounded">
+            <div id="DBDisplay" class="row">
+            </div>
         </div>
 
+        <!-- Mobile spacing column -->
+        <div class="col d-md-none d-lg-none d-xl-none mt-2"></div>
+
         <!-- DB filters auto-fill column -->
-        <div id="DBFilters" class="col-md-auto" style="display: none;"></div>
+        <div class="col-md-4 db-sidebar">
+            <div class="container-fluid h-100 px-0 d-flex flex-column">
+                <div id="DBFilters"  class="row flex-shrink-0">
+                    <div class="col px-2">
+                        <div class="bg-dark rounded p-2">
+                            <ul class="list-group">
+                                <li class="list-group-item px-2 py-1" style="background-color: #eee">
+                                    <b class="noselect">ID: </b><span id="hitInfo_id">...</span>
+                                </li>
+                                <li class="list-group-item px-2 py-1" style="background-color: #eee">
+                                    <b class="noselect">Title: </b><span id="hitInfo_title">...</span>
+                                </li>
+                                <li class="list-group-item px-2 py-1" style="background-color: #eee">
+                                    <b class="noselect">Description: </b><span id="hitInfo_desc">...</span>
+                                </li>
+                                <li class="list-group-item px-2 py-1" style="background-color: #eee">
+                                    <b class="noselect">Status: </b><span id="hitInfo_status">...</span>
+                                </li>
+                                <li class="list-group-item px-2 py-1" style="background-color: #eee">
+                                    <b class="noselect">Creation: </b><span id="hitInfo_created">...</span>
+                                </li>
+                                <li class="list-group-item px-2 py-1" style="background-color: #eee">
+                                    <b class="noselect">Expiration: </b><span id="hitInfo_expired">...</span>
+                                </li>
+                                <li class="list-group-item px-2 py-1" style="background-color: #eee">
+                                    <b class="noselect">Max: </b><span id="hitInfo_max">...</span><b class="noselect">, Available: </b><span id="hitInfo_available">...</span><b class="noselect">, Completed: </b><span id="hitInfo_completed">...</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-2 flex-grow-1">
+                    <div class="col px-2">
+                        <div class="bg-dark rounded p-2">
+                            <div class="input-group mb-1">
+                                <div class="input-group-prepend">
+                                    <div class="input-group-text">
+                                        <input type="checkbox" aria-label="Checkbox for following text input">
+                                    </div>
+                                    <div class="input-group-text">
+                                        Search
+                                    </div>
+                                </div>
+                                <input type="text" class="form-control" aria-label="Text input with checkbox">
+                            </div>
+                            <div class="input-group mb-1">
+                                <div class="input-group-prepend">
+                                    <div class="input-group-text">
+                                        <input type="checkbox" aria-label="Checkbox for following text input">
+                                    </div>
+                                    <div class="input-group-text">
+                                        Search
+                                    </div>
+                                </div>
+                                <input type="text" class="form-control" aria-label="Text input with checkbox">
+                                <div class="input-group-append">
+                                    <button class="btn btn-primary" type="button" id="button-addon1">x</button>
+                                </div>
+                            </div>
+                            <div class="input-group mb-1">
+                                <div class="input-group-prepend">
+                                    <div class="input-group-text">
+                                        <input type="checkbox" aria-label="Checkbox for following text input">
+                                    </div>
+                                    <div class="input-group-text">
+                                        Search
+                                    </div>
+                                </div>
+                                <input type="text" class="form-control" aria-label="Text input with checkbox">
+                                <div class="input-group-append">
+                                    <button class="btn btn-primary" type="button" id="button-addon1">x</button>
+                                </div>
+                            </div>
+                            <div class="input-group mb-1">
+                                <div class="input-group-prepend">
+                                    <div class="input-group-text">
+                                        <input type="checkbox" aria-label="Checkbox for following text input">
+                                    </div>
+                                    <div class="input-group-text">
+                                        Search
+                                    </div>
+                                </div>
+                                <input type="text" class="form-control" aria-label="Text input with checkbox">
+                                <div class="input-group-append">
+                                    <button class="btn btn-primary" type="button" id="button-addon1">x</button>
+                                </div>
+                            </div>
+                            <div class="input-group mb-1">
+                                <div class="input-group-prepend">
+                                    <div class="input-group-text">
+                                        <input type="checkbox" aria-label="Checkbox for following text input">
+                                    </div>
+                                    <div class="input-group-text">
+                                        Search
+                                    </div>
+                                </div>
+                                <input type="text" class="form-control" aria-label="Text input with checkbox">
+                                <div class="input-group-append">
+                                    <button class="btn btn-primary" type="button" id="button-addon1">x</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- Hit controls column-->
         {# <div class="col-md-auto" style="background: yellow;">
@@ -85,7 +195,7 @@
                 <b class="noselect">, Completed: </b><span id="hitInfo_completed">...</span>
             </div>
         </div> #}
-    {# </div> #}
+    </div>
 
 </div>
 
@@ -205,7 +315,7 @@
 {% block modals %}
 
 <!-- Filter modal -->
-<div class="modal fade" id="filterModal" tabindex="-1" role="dialog" aria-labelledby="filterModalLabel">
+{# <div class="modal fade" id="filterModal" tabindex="-1" role="dialog" aria-labelledby="filterModalLabel">
   <div class="modal-dialog modal-dialog-centered" id="filterModalDialog" role="document">
     <div class="modal-content">
       <div class="modal-header" id="filterModalHeader">
@@ -220,6 +330,6 @@
       </div>
     </div>
   </div>
-</div>
+</div> #}
 
 {% endblock %}

@@ -261,7 +261,7 @@ export class DatabaseViewWithFilters extends DatabaseView {
             .append($('<span class="db-filtersListTitle">FILTERS</span>'))
             .append(this.filters$);
         // Prepend it (before the table view from super constructor)
-        this.DOM$.filters.append(this.filterLayout$);
+        // this.DOM$.filters.append(this.filterLayout$);
 
         // Add listeners to search filter
         this.searchCbox$.on('change', (event) => {

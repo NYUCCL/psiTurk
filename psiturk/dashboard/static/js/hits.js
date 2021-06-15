@@ -3,9 +3,9 @@ import { DatabaseView, DatabaseViewWithFilters } from './dbview.js';
 // The fields to be parsed from the returned HIT response
 var HIT_FIELDS = {
     'local': {'title': '<img src="' + BLUE_RIBBON_PATH + '" class="db-boolimg">', 'type': 'bool', 'style': {'width': '50px', 'max-width': '50px'}},
-    'Title': {'title': 'Title', 'type': 'string', 'style': {'min-width': '100px', 'width': '20%', 'max-width': '300px'}},
-    'Description': {'title': 'Description', 'type': 'string', 'style': {'min-width': '100px', 'width': '20%', 'max-width': '300px'}},
     'HITId': {'title': 'ID', 'type': 'string', 'style': {'width': '50px', 'max-width': '50px'}},
+    'Title': {'title': 'Title', 'type': 'string', 'style': {'min-width': '100px', 'width': '20%', 'max-width': '200px'}},
+    'Description': {'title': 'Description', 'type': 'string', 'style': {'min-width': '100px', 'width': '20%', 'max-width': '200px'}},
     'HITStatus': {'title': 'Status', 'type': 'string', 'style': {'width': '100px'}},
     'MaxAssignments': {'title': 'Max', 'type': 'num', 'style': {'width': '50px'}},
     'NumberOfAssignmentsAvailable': {'title': 'Available', 'type': 'num', 'style': {'width': '50px'}},
@@ -13,15 +13,6 @@ var HIT_FIELDS = {
     'NumberOfAssignmentsPending': {'title': 'Pending', 'type': 'num', 'style': {'width': '50px'}},
     'CreationTime': {'title': 'Created On', 'type': 'date', 'style': {'width': '300px'}},
     'Expiration': {'title': 'Expiration', 'type': 'date', 'style': {'width': '300px'}},
-};
-
-var ASSIGNMENT_FIELDS = {
-    'WorkerId': {'title': 'Worker ID', 'type': 'string', 'style': {'width': '200px'}},
-    'AssignmentId': {'title': 'Assignment ID', 'type': 'string', 'style': {'width': '320px'}},
-    'AssignmentStatus': {'title': 'Status', 'type': 'string', 'style': {'width': '100px'}},
-    'AcceptTime': {'title': 'Accepted On', 'type': 'date', 'style': {'width': '300px'}},
-    'SubmitTime': {'title': 'Submitted On', 'type': 'date', 'style': {'width': '300px'}},
-    'ApprovalTime': {'title': 'Approved On', 'type': 'date', 'style': {'width': '300px'}},
 };
 
 var HIT_STATUSES = ['Reviewable', 'Reviewing', 'Assignable', 'Unassignable'];
@@ -63,7 +54,7 @@ class HITDBDisplay {
                 if (data.success && data.data.length > 0) {
                     this.db.updateData(data.data, HIT_FIELDS).then(() => {
                         if (HIT_ID) {
-                            let index = this.db.data.map(e => e['HITId']).indexOf(HITId);
+                            let index = this.db.data.map(e => e['HITId']).indexOf(HIT_ID);
                             $('#row' + index).click();
                         }
                     });
@@ -102,29 +93,6 @@ class HITDBDisplay {
 
         // Update the current HREF
         history.pushState({id: 'hitpage'}, '', window.location.origin + '/dashboard/hits/' + hitId + '/');
-
-        // Load in the assignment data for that HIT if not already cached
-        if (hitId in cachedAssignments) {
-            SubDBView.updateData(cachedAssignments[hitId], ASSIGNMENT_FIELDS);
-        } else {
-            SubDBView.clearData();
-            $.ajax({
-                type: 'POST',
-                url: '/dashboard/api/hits/' + hitId + '/assignments',
-                data: "{}",
-                contentType: 'application/json; charset=utf-8',
-                dataType: 'json',
-                success: function(data) {
-                    if (data.success && data.data.length > 0) {
-                        cachedAssignments[hitId] = data.data;
-                        SubDBView.updateData(data.data, ASSIGNMENT_FIELDS);
-                    }
-                },
-                error: function(errorMsg) {
-                    alert(errorMsg);
-                }
-            })
-        }
     }
 
     /**
@@ -185,11 +153,11 @@ function createHIT() {
 $(window).on('load', function() {
 
     // Initialize the HIT display
-    // var disp = new HITDBDisplay({
-    //     filters: $('#DBFilters'),
-    //     display: $('#DBDisplay'),
-    // });
-    // disp.init();
+    var disp = new HITDBDisplay({
+        filters: $('#DBFilters'),
+        display: $('#DBDisplay'),
+    });
+    disp.init();
 
     // // Add HIT creation expense calculation
     // updateHITCreateExpense();
@@ -208,15 +176,4 @@ $(window).on('load', function() {
     //       left: 0
     //     });
     // }
-
-    $('#tableDownload').on('click', function() {
-        $('#filterModal').modal({
-            backdrop: false,
-            show: true
-        })
-    });
-
-    $('#filterModalDialog').draggable({
-        handle: "#filterModalHeader"
-    });
 });

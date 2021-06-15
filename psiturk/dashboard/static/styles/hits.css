@@ -1,20 +1,11 @@
-.sidebar-button {
-    margin-bottom: 5px;
-}
-
 .db-display {
-    height: calc(100vh - 150px);
+    height: calc(100vh - 140px);
     overflow: auto;
 }
 
-#filterModal {
-    position: absolute;
-    pointer-events:none;
-}
-
-#filterModalDialog {
-    position: fixed;
-    width: 100%;
-    margin: 0;
-    padding: 10px;
-}
+@media (min-width: 768px) { 
+    .db-sidebar {
+        height: calc(100vh - 140px);
+        overflow: scroll;
+    }
+ }

@@ -15,8 +15,6 @@
 .db-tableView {
   padding: 0px;
   -ms-overflow-style: none;
-  border: 1px solid #121212;
-  border-radius: 5px;
 }
 
 .db-thead th {
@@ -27,7 +25,6 @@
   top: 0;
   cursor: pointer;
   position: -webkit-sticky;
-  z-index: 10;
   text-align: left;
   padding: 5px;
   white-space: nowrap;
@@ -58,6 +55,9 @@
   display: none;
 }
 
+.db-tbody tr.selected > td {
+  background-color: #84DCC6;
+}
 
 .db-boolimg {
   height: 25px;
