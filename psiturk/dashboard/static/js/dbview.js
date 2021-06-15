@@ -51,7 +51,7 @@ export class DatabaseView {
         // Reset headers of columns
         let tHead$ = this.DOM$.table.find('thead');
         tHead$.empty();
-        let headerTr$ = $('<tr/>');
+        let headerTr$ = $('<tr><th>#</th></tr>');
         for (const [key, value] of Object.entries(fields)) {
             let th$ = $('<th/>');
             for (const [property, cssValue] of Object.entries(value['style'])) {
@@ -92,7 +92,7 @@ export class DatabaseView {
         let totalRows = 0;
         for (let i = 0; i < this.order.length && i < this.data.length; i++) {
             if (this.filter && !this.filter.passes(this.data[i])) { continue; }
-            let row$ = $('<tr/>');
+            let row$ = $('<tr><td>' + i + '</td></tr>');
             row$.attr('id', 'row_' + this.name + '_' + i);
             for (const [key, value] of Object.entries(this.fields)) {
                 let cellValue = this.data[i][key];
@@ -142,7 +142,7 @@ export class DatabaseView {
     // Sorts the table based on the header clicked
     sortByColumn(colTitle) {
         var switching = true;
-        let byColIndex = Object.keys(this.fields).indexOf(colTitle);
+        let byColIndex = Object.keys(this.fields).indexOf(colTitle) + 1;
         // Determine switch direction (swap from last)
         // If the last sort was on this column, reverse the sort, otherwise just do forwards
         let switchDirection = this.sort['last'] == byColIndex ? !this.sort['forwards'] : true;
