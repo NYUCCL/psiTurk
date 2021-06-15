@@ -10,7 +10,7 @@ var DEFAULT_SORT = {
 export class DatabaseView {
 
     // Injects a database view into the parent element
-    constructor(domelements, callbacks, name="") {
+    constructor(domelements, callbacks, name="", filter=undefined) {
         this.DOM$ = {
             ...domelements,
             root: $('<div id="dbContainer_' + this.name + '" class="db-container"></div>'),
@@ -19,6 +19,7 @@ export class DatabaseView {
         };
         this.callbacks = callbacks; 
         this.name = name;
+        this.filter = filter;
 
         // Build elements
         this.DOM$.display.append(
@@ -41,7 +42,7 @@ export class DatabaseView {
     }
 
     // Updates the data, builds headers does not re-render unless specified
-    async updateData(newData, fields, rerender=true, beforeReRender=undefined) {
+    async updateData(newData, fields, rerender=true) {
         this.data = newData;
         this.fields = fields;
         this.sort = DEFAULT_SORT;
@@ -64,10 +65,10 @@ export class DatabaseView {
         }
         tHead$.append(headerTr$);
 
-        // Reset the filters
-        if (rerender) { 
-            if (beforeReRender) {
-                beforeReRender();
+        if (rerender) {
+            // If filters exist, reset them
+            if (this.filter) {
+                this.filter.reset();
             }
             await this.renderTable();
         }
@@ -77,7 +78,7 @@ export class DatabaseView {
 
     // Re-renders the table based on the order, discriminator tells whether to
     // render the current row.
-    async renderTable(discriminator=undefined) {
+    async renderTable() {
         // Maintain previously selected row
         let selectedRow = this.DOM$.table.find('tr.selected');
         if (selectedRow) {
@@ -90,7 +91,7 @@ export class DatabaseView {
         // Insert the actual data into the body
         let totalRows = 0;
         for (let i = 0; i < this.order.length && i < this.data.length; i++) {
-            if (discriminator && !discriminator(this.data[i])) { continue; }
+            if (this.filter && !this.filter.passes(this.data[i])) { continue; }
             let row$ = $('<tr/>');
             row$.attr('id', 'row_' + this.name + '_' + i);
             for (const [key, value] of Object.entries(this.fields)) {
@@ -131,8 +132,8 @@ export class DatabaseView {
         }
 
         // Call the onFilter handler
-        if ('onFilter' in this.callbacks) {
-            this.callbacks['onFilter'](totalRows);
+        if (this.filter) {
+            this.filter.updateFilterCounts(totalRows);
         }
 
         return Promise.resolve();

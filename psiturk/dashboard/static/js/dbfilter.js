@@ -19,15 +19,15 @@ var FILTER_TYPES = {
     'num': {
         'greaterthan': {
             'title': '>',
-            'comparator': (a, b) => a > b
+            'comparator': (a, b) => a > parseInt(b)
         },
         'equals': {
             'title': '=',
-            'comparator': (a, b) => a == b
+            'comparator': (a, b) => a == parseInt(b)
         },
         'lessthan': {
             'title': '<',
-            'comparator': (a, b) => a < b
+            'comparator': (a, b) => a < parseInt(b)
         },
     },
     'date': {
@@ -47,15 +47,23 @@ var FILTER_TYPES = {
     'bool': {
         'is': {
             'title': 'exists',
-            'comparator': (a, b) => a
+            'comparator': (a, _) => a
         }, 
         'not': {
             'title': 'missing',
-            'comparator': (a, b) => !a
+            'comparator': (a, _) => !a
         }
     }
 }
 
+
+DEFAULT_FILTERS = {
+    'search': {
+        'text': '',
+        'active': false
+    },
+    'cols': {}
+};
 
 /**
  * Handles filtering a database table. Functions independently from the DB view,
@@ -70,19 +78,49 @@ var FILTER_TYPES = {
         this._buildElements(domelements);
         this.cols = columns;
         this.n = 0;
-        this.filters = {
-            'search': {
-                'text': '',
-                'active': false
-            },
-            'cols': {}
-        };
+        this.filters = DEFAULT_FILTERS;
 
         // Save the onchange handler
         this.onChangeHandler = onChange;
 
         // Prepend the database filters elements to the DOM root
         this.DOM$.filters.prepend(this.DOM$.layout);
+    }
+
+    // Removes all the filters
+    reset() {
+        this.filters = DEFAULT_FILTERS;
+        this.DOM$.search_I.val('');
+        this.DOM$.search_CB.prop('checked', false);
+        this.DOM$.filterLayout.empty();
+    }
+
+    // Does a row pass the filter?
+    passes(row) {
+        // First check the search filter on all columns
+        let passesFilter = true;
+        if (this.filters.search.active) {
+            passesFilter = false;
+            for (const [_, value] of Object.entries(row)) {
+                if (value && value.toString().toLowerCase().includes(this.filters.search.text.toLowerCase())) {
+                    passesFilter = true;
+                    break;
+                }
+            }
+        }
+
+        // Then check the col-specific filters 
+        if (passesFilter) {
+            passesFilter = Object.values(this.filters.cols).every((filter) => {
+                if (!filter['active'] || !filter['col'] || !filter['comp']) {
+                    return true;
+                } else {
+                    return FILTER_TYPES[this.cols[filter['col']].type][filter['comp']]['comparator'](row[filter['col']], filter['text']);
+                }
+            });
+        }
+
+        return passesFilter;
     }
 
     // Builds the HTML elements of the database filters
@@ -152,7 +190,7 @@ var FILTER_TYPES = {
         // Add the filter to the list of filters
         let index = '' + this.n;
         this.filters.cols[index] = {
-            col: -1,
+            col: undefined,
             comp: undefined,
             text: '',
             active: false,
@@ -194,6 +232,7 @@ var FILTER_TYPES = {
         delete_B.on('click', () => { 
             newFilter.remove(); 
             delete(this.filters.cols[index]);
+            this.onFilterChange();
         });
 
         // Append the filter to the DOM
@@ -205,18 +244,23 @@ var FILTER_TYPES = {
         this.onChangeHandler(this.filters);
     }
 
+    // Sets the numb
+    updateFilterCounts(length) {
+        this.DOM$.count.text(`(${length} matching)`);
+    }
+
     // Generates jquery element of the columns for a filter's dropdown options
     _dropDownColOptions() {
         let dropdown = $('<div class="dropdown-menu"></div>');
-        this.cols.forEach((col, i) => {
-            dropdown.append($('<button class="dropdown-item" type="button" data-col="' + i + '">' + col.title + '</button>'));
+        Object.entries(this.cols).forEach(([key, value], i) => {
+            dropdown.append($('<button class="dropdown-item" type="button" data-col="' + key + '">' + value.title + '</button>'));
         });
         return dropdown;
     }
 
     // Generates jquery element of the comparators for a filter's dropdown options
-    _dropDownCompOptions(colIndex, filterIndex, comp_B, filter_I) {
-        let type = this.cols[colIndex].type;
+    _dropDownCompOptions(col, filterIndex, comp_B, filter_I) {
+        let type = this.cols[col].type;
         let items = [];
         Object.entries(FILTER_TYPES[type]).forEach(([key, value], _) => {
             let option = $('<button class="dropdown-item" type="button" data-comp="' + key + '">' + value.title + '</button>');
