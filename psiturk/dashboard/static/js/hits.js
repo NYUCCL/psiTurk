@@ -38,7 +38,8 @@ class HITDBDisplay {
                 'onSelect': this._hitSelectedHandler.bind(this), 
                 'onFilter': this._filterChangeHandler.bind(this)
             }, 'hits');
-        this.dbfilters = new DatabaseFilters(this.DOM$, Object.values(HIT_FIELDS));
+        this.dbfilters = new DatabaseFilters(this.DOM$, 
+            Object.values(HIT_FIELDS), this._filterChangeHandler.bind(this));
         
         // Load the data
         this._loadHITs();
@@ -99,10 +100,9 @@ class HITDBDisplay {
 
     /**
      * HANDLER: Change in filters of main DB view
-     * @param {int} length - The number of rows showing post-filter
      */
-    _filterChangeHandler(length) {
-        $('#totalHITsFiltered').html(length.toString());
+    _filterChangeHandler() {
+        console.log('Filter changed! Propogating to DB...');
     }
 }
 

@@ -66,18 +66,23 @@ var FILTER_TYPES = {
 
     // Constructor initializes the filters with the names of the columns in the
     // database and DOM elements into which to put the database filters.
-    constructor(domelements, columns) {
+    constructor(domelements, columns, onChange) {
         this._buildElements(domelements);
         this.cols = columns;
+        this.n = 0;
         this.filters = {
-            'search': '',
-            'cols': []
+            'search': {
+                'text': '',
+                'active': false
+            },
+            'cols': {}
         };
 
-        // Prepend the database filters elemeents to the DOM root
-        this.DOM$.filters.prepend(this.DOM$.layout);
+        // Save the onchange handler
+        this.onChangeHandler = onChange;
 
-        this.addFilter();
+        // Prepend the database filters elements to the DOM root
+        this.DOM$.filters.prepend(this.DOM$.layout);
     }
 
     // Builds the HTML elements of the database filters
@@ -107,6 +112,16 @@ var FILTER_TYPES = {
                     .append(filterLayout)
                     .append(addFilterButton)
         };
+
+        // LISTENERS
+        // Add a new filter
+        this.DOM$.addFilter_B.on('click', this.addFilter.bind(this));
+        searchInput.on('change', (event) => {
+            this.filters.search.text = event.target.value;
+            this.onFilterChange();});
+        searchCbox.on('click', (event) => {
+            this.filters.search.active = event.target.checked;
+            this.onFilterChange();});
     }
 
     // Adds a database filter into the row, saving a filter entry into the array
@@ -114,10 +129,10 @@ var FILTER_TYPES = {
     addFilter() {
         let filter_CB = $('<input type="checkbox" aria-label="Filter checkbox">');
         let col_B = $('<button class="btn btn-light dropdown-toggle px-1" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="border-radius: 0px;">Column</button>');
-        let col_DD = this._dropDownOptions();
+        let col_DD = this._dropDownColOptions();
         let comp_B = $('<button class="btn btn-light dropdown-toggle px-1" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="border-radius: 0px;">Compare</button>');
         let comp_DD = $('<div class="dropdown-menu"></div>');
-        let filter_I = $('<input type="text" class="form-control" aria-label="Filter input">');
+        let filter_I = $('<input type="text" class="form-control" aria-label="Filter input" disabled>');
         let delete_B = $('<button class="btn btn-primary" type="button" id="button-addon1">x</button>');
         let newFilter = 
             $('<div class="input-group mb-1"></div>')
@@ -134,11 +149,13 @@ var FILTER_TYPES = {
                 .append($('<div class="input-group-append">')
                     .append(delete_B));
 
-
-        //! TODO: Add filter listeners
-
         // Add the filter to the list of filters
-        this.filters.cols.push({
+        let index = '' + this.n;
+        this.filters.cols[index] = {
+            col: -1,
+            comp: undefined,
+            text: '',
+            active: false,
             DOM$: {
                 root: newFilter,
                 active: filter_CB,
@@ -146,18 +163,71 @@ var FILTER_TYPES = {
                 comp: comp_B,
                 input: filter_I
             }
+        };
+        this.n += 1;
+
+        // When filtered column changes
+        col_DD.find('button').on('click', (event) => {
+            let col = $(event.currentTarget).data('col');
+            this.filters.cols[index].col = col;
+            col_B.html(event.currentTarget.innerHTML);
+            filter_I.prop('disabled', true);
+            this.filters.cols[index].comp = undefined;
+            comp_B.html('Compare');
+            comp_DD.empty();
+            comp_DD.append(this._dropDownCompOptions(col, index, comp_B, filter_I));
+        });
+        // When the input changes from user input
+        filter_I.on('change', (event) => {
+            this.filters.cols[index].text = event.target.value;
+            if (this.filters.cols[index].comp) {
+                this.onFilterChange();
+            }
+        });
+        // When the filter is activated
+        filter_CB.on('click', (event) => {
+            this.filters.cols[index].active = event.target.checked;
+            this.onFilterChange();
+        })
+
+        // Delete button filter destroyer
+        delete_B.on('click', () => { 
+            newFilter.remove(); 
+            delete(this.filters.cols[index]);
         });
 
         // Append the filter to the DOM
         this.DOM$.filterLayout.append(newFilter);
     }
 
-    // Generates jquery element of the columns for a filter's dropdown optionss
-    _dropDownOptions() {
+    // Centralize filter changes here
+    onFilterChange() {
+        this.onChangeHandler(this.filters);
+    }
+
+    // Generates jquery element of the columns for a filter's dropdown options
+    _dropDownColOptions() {
         let dropdown = $('<div class="dropdown-menu"></div>');
         this.cols.forEach((col, i) => {
             dropdown.append($('<button class="dropdown-item" type="button" data-col="' + i + '">' + col.title + '</button>'));
         });
         return dropdown;
+    }
+
+    // Generates jquery element of the comparators for a filter's dropdown options
+    _dropDownCompOptions(colIndex, filterIndex, comp_B, filter_I) {
+        let type = this.cols[colIndex].type;
+        let items = [];
+        Object.entries(FILTER_TYPES[type]).forEach(([key, value], _) => {
+            let option = $('<button class="dropdown-item" type="button" data-comp="' + key + '">' + value.title + '</button>');
+            items.push(option);
+            option.on('click', (event) => {
+                filter_I.prop('disabled', false);
+                comp_B.html(event.currentTarget.innerHTML);
+                this.filters.cols[filterIndex].comp = $(event.currentTarget).data('comp');
+                this.onFilterChange();
+            });
+        })
+        return items;
     }
 }
