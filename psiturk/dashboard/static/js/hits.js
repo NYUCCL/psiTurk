@@ -1,4 +1,5 @@
-import { DatabaseView, DatabaseViewWithFilters } from './dbview.js';
+import { DatabaseView } from './dbview.js';
+import { DatabaseFilters } from './dbfilter.js';
 
 // The fields to be parsed from the returned HIT response
 var HIT_FIELDS = {
@@ -33,10 +34,11 @@ class HITDBDisplay {
     // Build the database views into their respective elmeents. There is one
     // for the main database and another for the sub-assignments view
     init() {
-        this.db = new DatabaseViewWithFilters(this.DOM$, {
+        this.db = new DatabaseView(this.DOM$, {
                 'onSelect': this._hitSelectedHandler.bind(this), 
                 'onFilter': this._filterChangeHandler.bind(this)
             }, 'hits');
+        this.dbfilters = new DatabaseFilters(this.DOM$, Object.values(HIT_FIELDS));
         
         // Load the data
         this._loadHITs();

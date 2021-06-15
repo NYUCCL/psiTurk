@@ -61,9 +61,11 @@
         <!-- Mobile spacing column -->
         <div class="col d-md-none d-lg-none d-xl-none mt-2"></div>
 
-        <!-- DB filters auto-fill column -->
+        <!-- DB information sidebar -->
         <div class="col-md-4 db-sidebar">
             <div class="container-fluid h-100 px-0 d-flex flex-column">
+
+                <!-- Selected HIT information -->
                 <div class="row flex-shrink-0">
                     <div class="col px-2">
                         <div class="bg-dark rounded p-2">
@@ -94,14 +96,13 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Table filter info -->
                 <div class="row mt-2 flex-grow-1">
                     <div class="col px-2">
-                        <div class="bg-dark rounded p-2">
+                        <div class="bg-dark rounded p-2" id="DBFilters">
+                            {# <div class="text-light mb-1">Filters <small class="text-muted">(50 matching)</small></div>
 
-                            <div class="d-flex flex-row mb-1">
-                                <div class="text-light">Filters <small class="text-muted">(50 matching)</small></div>
-                                <div class="flex-grow-1"></div>
-                            </div>
 
                             <!-- Search db filters -->
                             <div class="input-group mb-1">
@@ -163,7 +164,7 @@
                             </div>
                             
                             <!-- Add a db filter button -->
-                            <button class="btn btn-secondary btn-sm btn-block mt-2" type="button" id="button-addon1" style="opacity: 0.8;">+ Add another database filter...</button>
+                            <button class="btn btn-secondary btn-sm btn-block mt-2" type="button" id="button-addon1" style="opacity: 0.8;">+ Add another database filter...</button> #}
                             <button class="btn btn-secondary btn-sm btn-block mt-2" type="button" id="button-addon1">Download table</button>
                         </div>
                     </div>

@@ -1,64 +1,7 @@
 // Defines a database view for manipulating HITs and Workers
-
-var DEFAULT_FILTERS = {
-    'searchFilter': undefined,
-    'comp': {}
-}
-
 var DEFAULT_SORT = {
     'last': undefined,
     'forwards': true
-}
-
-var FILTER_TYPES = {
-    'string': {
-        'contains': {
-            'title': 'contains',
-            'comparator': (a, b) => a.includes(b)
-        },
-        'equals': {
-            'title': 'equals',
-            'comparator': (a, b) => a == b
-        }
-    },
-    'num': {
-        'greaterthan': {
-            'title': '>',
-            'comparator': (a, b) => a > b
-        },
-        'equals': {
-            'title': '=',
-            'comparator': (a, b) => a == b
-        },
-        'lessthan': {
-            'title': '<',
-            'comparator': (a, b) => a < b
-        },
-    },
-    'date': {
-        'greaterthan': {
-            'title': '>',
-            'comparator': (a, b) => new Date(a) > new Date(b)
-        },
-        'equals': {
-            'title': '=',
-            'comparator': (a, b) => new Date(a) == new Date(b)
-        },
-        'lessthan': {
-            'title': '<',
-            'comparator': (a, b) => new Date(a) < new Date(b)
-        }
-    },
-    'bool': {
-        'is': {
-            'title': 'exists',
-            'comparator': (a, b) => a
-        }, 
-        'not': {
-            'title': 'missing',
-            'comparator': (a, b) => !a
-        }
-    }
 }
 
 /**
