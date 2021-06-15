@@ -64,7 +64,7 @@
         <!-- DB filters auto-fill column -->
         <div class="col-md-4 db-sidebar">
             <div class="container-fluid h-100 px-0 d-flex flex-column">
-                <div id="DBFilters"  class="row flex-shrink-0">
+                <div class="row flex-shrink-0">
                     <div class="col px-2">
                         <div class="bg-dark rounded p-2">
                             <ul class="list-group">
@@ -90,12 +90,20 @@
                                     <b class="noselect">Max: </b><span id="hitInfo_max">...</span><b class="noselect">, Available: </b><span id="hitInfo_available">...</span><b class="noselect">, Completed: </b><span id="hitInfo_completed">...</span>
                                 </li>
                             </ul>
+                            <button class="btn btn-primary btn-sm btn-block mt-2" type="button" id="button-addon1">View HIT Assignments</button>
                         </div>
                     </div>
                 </div>
                 <div class="row mt-2 flex-grow-1">
                     <div class="col px-2">
                         <div class="bg-dark rounded p-2">
+
+                            <div class="d-flex flex-row mb-1">
+                                <div class="text-light">Filters <small class="text-muted">(50 matching)</small></div>
+                                <div class="flex-grow-1"></div>
+                            </div>
+
+                            <!-- Search db filters -->
                             <div class="input-group mb-1">
                                 <div class="input-group-prepend">
                                     <div class="input-group-text">
@@ -107,94 +115,61 @@
                                 </div>
                                 <input type="text" class="form-control" aria-label="Text input with checkbox">
                             </div>
-                            <div class="input-group mb-1">
-                                <div class="input-group-prepend">
-                                    <div class="input-group-text">
-                                        <input type="checkbox" aria-label="Checkbox for following text input">
+
+                            <!-- Load in the DB filters -->
+                            <div id="DBFilters">
+                                <div class="input-group mb-1">
+                                    <div class="input-group-prepend">
+                                        <div class="input-group-text">
+                                            <input type="checkbox" aria-label="Checkbox for following text input">
+                                        </div>
+                                        <div class="input-group-text">
+                                            Search
+                                        </div>
                                     </div>
-                                    <div class="input-group-text">
-                                        Search
+                                    <input type="text" class="form-control" aria-label="Text input with checkbox">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-primary" type="button" id="button-addon1">x</button>
                                     </div>
                                 </div>
-                                <input type="text" class="form-control" aria-label="Text input with checkbox">
-                                <div class="input-group-append">
-                                    <button class="btn btn-primary" type="button" id="button-addon1">x</button>
+
+                                <div class="input-group mb-1">
+                                    <div class="input-group-prepend">
+                                        <div class="input-group-text">
+                                            <input type="checkbox" aria-label="Checkbox for following text input">
+                                        </div>
+                                        <div class="btn-group">
+                                            <button class="btn btn-light dropdown-toggle px-1" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="border-radius: 0px;">Column</button>
+                                            <div class="dropdown-menu">
+                                                <a class="dropdown-item" href="#">ASSDSD</a>
+                                                <a class="dropdown-item" href="#">Description</a>
+                                                <a class="dropdown-item" href="#">Created On</a>
+                                            </div>
+                                        </div>
+                                        <div class="btn-group">
+                                            <button class="btn btn-light dropdown-toggle px-1" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="border-radius: 0px;">Compare</button>
+                                            <div class="dropdown-menu">
+                                                <a class="dropdown-item" href="#">></a>
+                                                <a class="dropdown-item" href="#">=</a>
+                                                <a class="dropdown-item" href="#"><</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <input type="text" class="form-control" aria-label="Text input with checkbox">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-primary" type="button" id="button-addon1">x</button>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="input-group mb-1">
-                                <div class="input-group-prepend">
-                                    <div class="input-group-text">
-                                        <input type="checkbox" aria-label="Checkbox for following text input">
-                                    </div>
-                                    <div class="input-group-text">
-                                        Search
-                                    </div>
-                                </div>
-                                <input type="text" class="form-control" aria-label="Text input with checkbox">
-                                <div class="input-group-append">
-                                    <button class="btn btn-primary" type="button" id="button-addon1">x</button>
-                                </div>
-                            </div>
-                            <div class="input-group mb-1">
-                                <div class="input-group-prepend">
-                                    <div class="input-group-text">
-                                        <input type="checkbox" aria-label="Checkbox for following text input">
-                                    </div>
-                                    <div class="input-group-text">
-                                        Search
-                                    </div>
-                                </div>
-                                <input type="text" class="form-control" aria-label="Text input with checkbox">
-                                <div class="input-group-append">
-                                    <button class="btn btn-primary" type="button" id="button-addon1">x</button>
-                                </div>
-                            </div>
-                            <div class="input-group mb-1">
-                                <div class="input-group-prepend">
-                                    <div class="input-group-text">
-                                        <input type="checkbox" aria-label="Checkbox for following text input">
-                                    </div>
-                                    <div class="input-group-text">
-                                        Search
-                                    </div>
-                                </div>
-                                <input type="text" class="form-control" aria-label="Text input with checkbox">
-                                <div class="input-group-append">
-                                    <button class="btn btn-primary" type="button" id="button-addon1">x</button>
-                                </div>
-                            </div>
+                            
+                            <!-- Add a db filter button -->
+                            <button class="btn btn-secondary btn-sm btn-block mt-2" type="button" id="button-addon1" style="opacity: 0.8;">+ Add another database filter...</button>
+                            <button class="btn btn-secondary btn-sm btn-block mt-2" type="button" id="button-addon1">Download table</button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <!-- Hit controls column-->
-        {# <div class="col-md-auto" style="background: yellow;">
-            <div class="hitInfo no-scrollbar">
-                <b class="noselect">ID: </b><span id="hitInfo_id">...</span>
-            </div>
-            <div class="hitInfo no-scrollbar">
-                <b class="noselect">Title: </b><span id="hitInfo_title">...</span>
-            </div>
-            <div class="hitInfo no-scrollbar">
-                <b class="noselect">Description: </b><span id="hitInfo_desc">...</span>
-            </div>
-            <div class="hitInfo no-scrollbar">
-                <b class="noselect">Status: </b><span id="hitInfo_status">...</span>
-            </div>
-            <div class="hitInfo no-scrollbar">
-                <b class="noselect">Creation: </b><span id="hitInfo_created">...</span>
-            </div>
-            <div class="hitInfo no-scrollbar">
-                <b class="noselect">Expiration: </b><span id="hitInfo_expired">...</span>
-            </div>
-            <div class="hitInfo no-scrollbar">
-                <b class="noselect">Max: </b><span id="hitInfo_max">...</span>
-                <b class="noselect">, Available: </b><span id="hitInfo_available">...</span>
-                <b class="noselect">, Completed: </b><span id="hitInfo_completed">...</span>
-            </div>
-        </div> #}
     </div>
 
 </div>

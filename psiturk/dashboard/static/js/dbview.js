@@ -13,49 +13,49 @@ var DEFAULT_SORT = {
 var FILTER_TYPES = {
     'string': {
         'contains': {
-            'title': 'CONTAINS',
+            'title': 'contains',
             'comparator': (a, b) => a.includes(b)
         },
         'equals': {
-            'title': 'EQUALS',
+            'title': 'equals',
             'comparator': (a, b) => a == b
         }
     },
     'num': {
         'greaterthan': {
-            'title': 'GREATERTHAN',
+            'title': '>',
             'comparator': (a, b) => a > b
         },
         'equals': {
-            'title': 'EQUALS',
+            'title': '=',
             'comparator': (a, b) => a == b
         },
         'lessthan': {
-            'title': 'LESSTHAN',
+            'title': '<',
             'comparator': (a, b) => a < b
         },
     },
     'date': {
         'greaterthan': {
-            'title': 'GREATERTHAN',
+            'title': '>',
             'comparator': (a, b) => new Date(a) > new Date(b)
         },
         'equals': {
-            'title': 'EQUALS',
+            'title': '=',
             'comparator': (a, b) => new Date(a) == new Date(b)
         },
         'lessthan': {
-            'title': 'LESSTHAN',
+            'title': '<',
             'comparator': (a, b) => new Date(a) < new Date(b)
         }
     },
     'bool': {
         'is': {
-            'title': 'IS',
+            'title': 'exists',
             'comparator': (a, b) => a
         }, 
         'not': {
-            'title': 'NOT',
+            'title': 'missing',
             'comparator': (a, b) => !a
         }
     }

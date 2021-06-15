@@ -62,8 +62,8 @@ class HITDBDisplay {
             },
             error: function(errorMsg) {
                 console.log(errorMsg);
-                alert('Error loading HIT data.');
-                location.reload();
+                // alert('Error loading HIT data.');
+                // location.reload();
             }
         });
     }
@@ -158,6 +158,8 @@ $(window).on('load', function() {
         display: $('#DBDisplay'),
     });
     disp.init();
+
+    // Disable the navbar mode toggle until the HIT data is finished loading
 
     // // Add HIT creation expense calculation
     // updateHITCreateExpense();

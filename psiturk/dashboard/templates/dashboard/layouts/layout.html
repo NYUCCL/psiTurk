@@ -4,8 +4,9 @@
 {% set navigation_bar = [
     ('/dashboard/campaigns/', 'campaigns', 'Campaigns'),
     ('/dashboard/hits/', 'hits', 'HITs'),
-    ('/dashboard/tasks/', 'tasks', 'Tasks'),
     ('/dashboard/workers/', 'workers', 'Workers'),
+    ('/dashboard/tasks/', 'tasks', 'Tasks'),
+    ('/dashboard/About/', 'about', 'About'),
 ] -%}
 {% set active_page = active_page|default('none') -%}
 
@@ -35,6 +36,7 @@
                 </li>
                 {% endfor %}
             </ul>
+            <div class="mr-2 font-weight-light text-muted align-middle"><small>PsiTurk v1.0.0</small></div>
             <input
                 style="opacity: 0;"
                 type="checkbox"
