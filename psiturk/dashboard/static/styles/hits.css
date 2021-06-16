@@ -9,3 +9,18 @@
         overflow: scroll;
     }
  }
+
+.modal-uneditable {
+    background-color: #f0f3f5;
+    padding-top: 10px;
+    padding-bottom: 5px;
+    border-radius: 5px;
+    border-width: 0px;
+    -moz-box-shadow:    3px 3px 5px 4px #ccc;
+    -webkit-box-shadow: 3px 3px 5px 4px #ccc;
+    box-shadow:         1px 1px 5px 4px #ccc;
+}
+
+.modal-editable {
+    margin-top: 15px;
+}

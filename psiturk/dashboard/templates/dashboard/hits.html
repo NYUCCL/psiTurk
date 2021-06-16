@@ -184,13 +184,13 @@
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Create an <img src='/static/images/blueribbon.png' class="db-boolimg"><b>HIT</b>!</h5>
+                <h5 class="modal-title">Create an <b>HIT</b>!</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
-                <div class="col hitCreate-uneditable">
+                <div class="col modal-uneditable">
                     <div title="Title that will be used for the HIT when posted to MTurk."><b>Title: </b><span class="hitCreate-Title">{{ hit_info.title }}</span></div>
                     <div title="Description that will be used for the HIT when posted to MTurk."><b>Description: </b><span class="hitCreate-Title">{{ hit_info.description }}</span></div>
                     <div title="Qualifications a worker must have completed before being able to partake in the HIT."><b>Qualifications: </b>
@@ -206,7 +206,7 @@
                     <div title="How many hours the HIT will last on MTurk before becoming unavailable for new assignments."><b>Lifetime: </b>{{ hit_info.lifetime }} hours</div>
                     <div style="font-size: small; color: gray;">These fields can be edited in the <b>config.txt</b> of this experiment!</div>
                 </div>
-                <div class="col" id="hitCreate-editable">
+                <div class="col mt-2">
                     <div class="form-group row">
                         <label for="hitCreateInput-duration" class="col-6 col-form-label"><b>Duration of HIT (Hours): </b></label>
                         <div class="col" style="min-width: 150px;">
@@ -234,9 +234,9 @@
                         Make sure your duration gives <b>ample</b> time 
                         for the worker to finish the experiment after starting, 
                         including breaks! They won't be able to submit the HIT after 
-                        this timer runs out after starting! 6 hours is generally a safe bet.</div>
+                        this timer runs out after starting!</div>
                 </div>
-                <div class="col hitCreate-uneditable" style="margin-top: 15px;">
+                <div class="col modal-uneditable" style="margin-top: 15px;">
                     <div><b>MTurk Fee:</b> $<span id="hitCreate-mturkfee">0.00</span><b>, Total Estimated Base Cost:</b> $<span id="hitCreate-totalCost">0.00</span></div>
                     <div style="font-size: small; color: gray;">Fee is 20% if fewer than 10 assignments, 40% otherwise. <i><a href="https://www.mturk.com/pricing" target="_blank" style="color: gray;">Source</a></i></div>
                 </div>
