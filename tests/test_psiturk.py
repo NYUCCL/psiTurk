@@ -141,7 +141,7 @@ def test_insert_mode(psiturk_test_client):
         ad_string = temp_file.read()
 
     from psiturk.experiment import insert_mode
-    insert_mode(ad_string, 'debug')
+    insert_mode(ad_string)
 
 
 class PsiTurkStandardTests(PsiturkUnitTest):
