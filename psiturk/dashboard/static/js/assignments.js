@@ -4,7 +4,7 @@ import { DatabaseFilters } from './dbfilter.js';
 // The fields to be parsed from the returned HIT response
 var ASSIGNMENT_FIELDS = {
     'workerId': {'title': 'Worker ID', 'type': 'string', 'style': {'width': '200px'}},
-    'assignmentId': {'title': 'Assignment ID', 'type': 'string', 'style': {'width': '320px'}},
+    'assignmentId': {'title': 'Assignment ID', 'type': 'string', 'style': {'max-width': '150px'}},
     'status': {'title': 'Status', 'type': 'string', 'style': {'width': '100px'}},
     'accept_time': {'title': 'Accepted On', 'type': 'date', 'style': {'width': '300px'}},
     'submit_time': {'title': 'Submitted On', 'type': 'date', 'style': {'width': '300px'}},
@@ -13,7 +13,7 @@ var ASSIGNMENT_FIELDS = {
 if (HIT_LOCAL) {
     ASSIGNMENT_FIELDS = {
         'workerId': {'title': 'Worker ID', 'type': 'string', 'style': {'width': '200px'}},
-        'assignmentId': {'title': 'Assignment ID', 'type': 'string', 'style': {'width': '320px'}},
+        'assignmentId': {'title': 'Assignment ID', 'type': 'string', 'style': {'max-width': '150px'}},
         'status': {'title': 'Status', 'type': 'string', 'style': {'width': '100px'}},
         'bonus': {'title': 'Bonus', 'type': 'dollar', 'style': {'width': '100px'}},
         'codeversion': {'title': 'Code#', 'type': 'string', 'style': {'width': '100px'}},
