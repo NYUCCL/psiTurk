@@ -9,7 +9,7 @@ from psiturk.user_utils import PsiTurkAuthorization
 from psiturk.services_manager import SESSION_SERVICES_MANAGER_MODE_KEY, \
     psiturk_services_manager as services_manager
 from psiturk.psiturk_exceptions import *
-from psiturk.models import Hit
+from psiturk.models import Participant, Hit
 
 # Misc. imports
 from functools import wraps
@@ -173,7 +173,8 @@ def hits_list(hit_id=None):
 @dashboard.route('/hits/<hit_id>/assignments')
 @dashboard.route('/hits/<hit_id>/assignments/')
 def assignments_list(hit_id):
-    return render_template('dashboard/assignments.html', hit_id=hit_id)
+    my_hitids = list(set([hit.hitid for hit in Hit.query.distinct(Hit.hitid)]))
+    return render_template('dashboard/assignments.html', hit_id=hit_id, hit_local=hit_id in my_hitids)
 
 # ---------------------------------------------------------------------------- #
 #                                  FORM ROUTES                                 #
@@ -219,6 +220,7 @@ def mode():
 #                                  API ROUTES                                  #
 # ---------------------------------------------------------------------------- #
 
+# Retrieves all HITs associated with this account
 @dashboard.route('/api/hits', methods=['POST'])
 def API_hits():
     try:
@@ -229,7 +231,24 @@ def API_hits():
             response = [hit for hit in response if hit['local']]
         if 'statuses' in request.json and len(request.json['statuses']) > 0:
             response = list(filter(lambda hit: hit['HITStatus'] in request.json['statuses'], response))
-        return jsonify({"success": True, "data": response})
+        return jsonify({"success": True, "data": response}), 200
     except Exception as e:
-        flash(str(e), 'danger')
+        return jsonify({"success": False, "error": str(e)}), 400
+
+# Retrieves a list of assignments for a hit id
+@dashboard.route('/api/assignments', methods=['POST'])
+def API_assignments():
+    try:
+        hitids = request.json['hit_ids']
+        local = request.json['local']
+        if local:
+            response = [p.toAPIData() for p in Participant.query.filter(Participant.hitid.in_(hitids)).all()]
+        else:
+            response = services_manager.amt_services_wrapper.amt_services.get_assignments(hit_ids=hitids)
+            if not response.success:
+                raise response.exception
+            else:
+                response = response.data
+        return jsonify({"success": True, "data": response}), 200
+    except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 400

@@ -1,63 +1,147 @@
-<!doctype html>
-<head>
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-   <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script> 
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">        
-    <link rel=stylesheet href="/static/css/dbstyle.css" type="text/css">
-    <link rel=stylesheet href="/static/css/assignmentstyle.css" type="text/css">
-    <script type="text/javascript">
-        var HITId = "{{ hit_id }}";
-        // Attempts to go back to the HIT page by
-        //  a) closing the tab (if was opened by the HIT page)
-        //  b) simply redirecting to the HIT page 
-        function returnToHITPage() {
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.has('closable')) {
-                history.back();
-            } else {
-                window.location.href = '/database/HITs/{{ hit }}/';
-            }
-        }
-    </script>
-    <script src="/static/js/listAssignments.js" type="module"></script>
-</head>
-<body>
-    <h1><span id="backButton" class="material-icons noselect" onclick="returnToHITPage();">first_page</span> Assignments for HIT <i>{{ hit }}</i></h1>
+{% extends 'dashboard/layouts/layout.html' %}
+{% set active_page = 'none' %}
 
-    <div id="mainDisplay">
+{# --------------------------------- STYLES --------------------------------- #}
+{% block styles %}
+{{ super() }}
+
+<link rel='stylesheet' href="{{url_for('.static', filename='styles/dbview.css')}}">
+<link rel='stylesheet' href="{{url_for('.static', filename='styles/assignments.css')}}">
+
+{% endblock %}
+
+
+{# --------------------------------- SCRIPTS -------------------------------- #}
+{% block scripts %}
+{{ super() }}
+
+<script type='module' src="{{url_for('.static', filename='js/assignments.js')}}"></script>
+<!-- Set some local HIT information -->
+<script type="text/javascript">
+    var HIT_ID = "{{ hit_id }}";
+    var HIT_LOCAL = {% if hit_local %} true {% else %} false {% endif %};
+</script>
+
+{% endblock %}
+
+{# --------------------------------- CONTENT --------------------------------- #}
+{% block content %}
+<div class="col h-100 overflow-hidden">
+
+    <!-- HIT controls column -->
+    <div class="row">
+        <div class="col-sm py-1">
+            <button 
+                type="button" 
+                id="submitAll" 
+                class="btn btn-dark mx-auto w-100 text-nowrap" 
+                data-toggle="modal" 
+                data-target="#hitCreateModal">
+                Approve All
+            </button>
+        </div>
+        <div class="col-sm py-1">
+            <button 
+                type="button" 
+                id="bonusAll" 
+                class="btn btn-dark mx-auto w-100 text-nowrap">
+                Bonus All
+            </button>
+        </div>
     </div>
 
-    <div id="hitDisplay">
-        <div id="hitControl">
-            <i id="noHITAlert" style="display: block;">
-                Please select an assignment from the database to view its controls!
-            </i>
-            <div id="hitSelected" class="container-fluid" style="display: none">
-                <div id="mainRow" class="row h-100 flex-nowrap">
-                    <div id="hitInfo" class="col-sm">
-                        <div class="hitInfo no-scrollbar"><b>ID: </b><span id="hitInfo_id">...</span></div>
-                        <div class="hitInfo no-scrollbar"><b>Title: </b><span id="hitInfo_title">...</span></div>
-                        <div class="hitInfo no-scrollbar"><b>Description: </b><span id="hitInfo_desc">...</span></div>
-                        <div class="hitInfo no-scrollbar"><b>Status: </b><span id="hitInfo_status">...</span></div>
-                        <div class="hitInfo no-scrollbar"><b>Creation: </b><span id="hitInfo_created">...</span></div>
-                        <div class="hitInfo no-scrollbar"><b>Expiration: </b><span id="hitInfo_expired">...</span></div>
-                        <div class="hitInfo no-scrollbar"><b>Max: </b><span id="hitInfo_max">...</span>, <b>Available: </b><span id="hitInfo_available">...</span>, <b>Completed: </b><span id="hitInfo_completed">...</span> </div>
+    <div class="row p-2 flex-fill">
+
+        <!-- DB display auto-fills column -->
+        <div class="col-md-8 db-display rounded">
+            <div id="DBDisplay" class="row">
+            </div>
+        </div>
+
+        <!-- Mobile spacing column -->
+        <div class="col d-md-none d-lg-none d-xl-none mt-2"></div>
+
+        <!-- DB information sidebar -->
+        <div class="col-md-4 db-sidebar">
+            <div class="container-fluid h-100 px-0 d-flex flex-column">
+
+                <!-- Selected HIT information -->
+                <div class="row flex-shrink-0">
+                    <div class="col px-2">
+                        <div class="bg-dark rounded p-2">
+                            <ul class="list-group">
+                                <li class="list-group-item px-2 py-1" style="background-color: #eee">
+                                    <b class="noselect">Hit ID: </b><span id="assignmentInfo_hitid">...</span>
+                                </li>
+                                <li class="list-group-item px-2 py-1" style="background-color: #eee">
+                                    <b class="noselect">Worker ID: </b><span id="assignmentInfo_workerid">...</span>
+                                </li>
+                                <li class="list-group-item px-2 py-1" style="background-color: #eee">
+                                    <b class="noselect">Assignment ID: </b><span id="assignmentInfo_assignmentid">...</span>
+                                </li>
+                                <li class="list-group-item px-2 py-1" style="background-color: #eee">
+                                    <b class="noselect">Status: </b><span id="assignmentInfo_status">...</span>
+                                </li>
+                                <li class="list-group-item px-2 py-1" style="background-color: #eee">
+                                    <b class="noselect">Accepted: </b><span id="assignmentInfo_accepted">...</span>
+                                </li>
+                                <li class="list-group-item px-2 py-1" style="background-color: #eee">
+                                    <b class="noselect">Submitted: </b><span id="assignmentInfo_submitted">...</span>
+                                </li>
+                                <li class="list-group-item px-2 py-1" style="background-color: #eee">
+                                    <b class="noselect">Bonus: </b><span id="assignmentInfo_bonus">...</span>
+                                </li>
+                            </ul>
+                            <div class="row">
+                                <div class="col mt-2 pr-1">
+                                    <button 
+                                        type="button" 
+                                        id="approveOne" 
+                                        class="btn btn-success w-100 text-nowrap">
+                                        Approve
+                                    </button>
+                                </div>
+                                <div class="col mt-2 pl-1">
+                                    <button 
+                                        type="button" 
+                                        id="rejectOne" 
+                                        class="btn btn-danger w-100 text-nowrap">
+                                        Reject
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col mt-2">
+                                    <button 
+                                        type="button" 
+                                        id="bonusOne" 
+                                        class="btn btn-info w-100 text-nowrap">
+                                        Bonus
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div id="hitAssignments" class="col-sm">
-                        <div id="hitAssignmentsControls"><b>CONTROLS</b></div>
-                        <button id="goToAssignments" onclick="window.location.href='assignments'">Assignments Page</button>
-                    </div>
-                    <div id="hitApproved" class="col-sm">
-                        APPROVED
-                    </div>
-                    <div id="hitBonused" class="col-sm">
-                        BONUSED
+                </div>
+
+                <!-- Table filter info -->
+                <div class="row mt-2 flex-grow-1">
+                    <div class="col px-2">
+                        <div class="bg-dark rounded p-2" id="DBFilters">
+                            
+                            <button class="btn btn-secondary btn-sm btn-block mt-2" type="button" id="button-addon1">Download table</button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-</body>
+</div>
+
+<!-- Modals -->
+{% endblock %}
+
+{% block modals %}
+
+{% endblock %}

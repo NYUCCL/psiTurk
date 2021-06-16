@@ -187,7 +187,8 @@ class MTurkServices(object):
         for hit_id in hit_ids:
             paginator = self.mtc.get_paginator('list_assignments_for_hit')
             args = dict(
-                HITId=hit_id
+                HITId=hit_id,
+                PaginationConfig={'PageSize': 100}
             )
             if assignment_status:
                 args['AssignmentStatuses'] = [assignment_status]

@@ -4,9 +4,10 @@ import io
 import csv
 import json
 from sqlalchemy import Column, Integer, String, DateTime, Float, Text, Boolean, func, inspect
-from sqlalchemy.orm import validates
+from sqlalchemy.orm import validates, deferred
 from sqlalchemy.ext.declarative import declarative_base
 from psiturk.db import db_session
+from psiturk.psiturk_statuses import PSITURK_STATUS_CODES
 from .psiturk_config import PsiturkConfig
 from typing import List
 from itertools import groupby
@@ -60,9 +61,9 @@ class Participant(Base):
     status = Column(Integer, default=1)
     mode = Column(String(128))
     if 'postgres://' in config.get('Database Parameters', 'database_url').lower():
-        datastring = Column(Text)
+        datastring = deferred(Column(Text))
     else:
-        datastring = Column(Text(4294967295))
+        datastring = deferred(Column(Text(4294967295)))
 
     def __init__(self, **kwargs):
         self.uniqueid = "{workerid}:{assignmentid}".format(**kwargs)
@@ -78,6 +79,18 @@ class Participant(Base):
             self.cond,
             self.status,
             self.codeversion)
+    
+    def toAPIData(self):
+        return {
+            'hitId': self.hitid,
+            'assignmentId': self.assignmentid,
+            'workerId': self.workerid,
+            'submit_time': self.endhit,
+            'accept_time': self.beginhit,
+            'status': PSITURK_STATUS_CODES[self.status],
+            'codeversion': self.codeversion,
+            'bonus': self.bonus
+        }
 
     def get_trial_data(self):
         try:

@@ -3,7 +3,7 @@ import { DatabaseFilters } from './dbfilter.js';
 
 // The fields to be parsed from the returned HIT response
 var HIT_FIELDS = {
-    'local': {'title': '<img src="' + BLUE_RIBBON_PATH + '" class="db-boolimg">', 'type': 'bool', 'style': {'width': '50px', 'max-width': '50px'}},
+    'local_hit': {'title': '<img src="' + BLUE_RIBBON_PATH + '" class="db-boolimg">', 'type': 'bool', 'style': {'width': '50px', 'max-width': '50px'}},
     'HITId': {'title': 'ID', 'type': 'string', 'style': {'width': '50px', 'max-width': '50px'}},
     'Title': {'title': 'Title', 'type': 'string', 'style': {'min-width': '100px', 'width': '20%', 'max-width': '200px'}},
     'Description': {'title': 'Description', 'type': 'string', 'style': {'min-width': '100px', 'width': '20%', 'max-width': '200px'}},
@@ -37,8 +37,7 @@ class HITDBDisplay {
         this.dbfilters = new DatabaseFilters(this.DOM$, 
             HIT_FIELDS, this._filterChangeHandler.bind(this));
         this.db = new DatabaseView(this.DOM$, {
-                'onSelect': this._hitSelectedHandler.bind(this), 
-                'onFilter': this._filterChangeHandler.bind(this)
+                'onSelect': this._hitSelectedHandler.bind(this)
             }, 'hits', this.dbfilters);
         
         // Load the data
