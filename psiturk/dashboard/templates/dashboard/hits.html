@@ -175,54 +175,16 @@
 
 </div>
 
-<!-- Modals -->
+{% endblock %}
 
+{% block modals %}
 
-{# 
-<div id="header" class="row">
-    <div class="col flex-grow-2">
-        
-    </div>
-    <div class="col" id="hitPageDownloadCol">
-        <div><button id="hitTableDownload">DOWNLOAD CSV</button></div> 
-        <div><i>Query returned <span id="totalHITsFiltered">0</span> rows.</i></div> 
-    </div>
-</div>
-
-<div id="hitDisplay">
-    <div id="hitControl">
-        <i id="noHITAlert" style="display: block;">
-            Please select an HIT from the database to view its controls!
-        </i>
-        <div id="hitSelected" class="container-fluid" style="display: none">
-            <div id="mainRow" class="row h-100 flex-nowrap no-scrollbar">
-                <div id="hitInfo" class="col">
-                    <div class="hitInfo no-scrollbar"><b class="noselect">ID: </b><span id="hitInfo_id">...</span></div>
-                    <div class="hitInfo no-scrollbar"><b class="noselect">Title: </b><span id="hitInfo_title">...</span></div>
-                    <div class="hitInfo no-scrollbar"><b class="noselect">Description: </b><span id="hitInfo_desc">...</span></div>
-                    <div class="hitInfo no-scrollbar"><b class="noselect">Status: </b><span id="hitInfo_status">...</span></div>
-                    <div class="hitInfo no-scrollbar"><b class="noselect">Creation: </b><span id="hitInfo_created">...</span></div>
-                    <div class="hitInfo no-scrollbar"><b class="noselect">Expiration: </b><span id="hitInfo_expired">...</span></div>
-                    <div class="hitInfo no-scrollbar"><b class="noselect">Max: </b><span id="hitInfo_max">...</span><b class="noselect">, Available: </b><span id="hitInfo_available">...</span><b class="noselect">, Completed: </b><span id="hitInfo_completed">...</span> </div>
-                </div>
-                <div id="hitAssignments" class="col">
-                    <div id="hitAssignmentsControls"><b>CONTROLS</b></div>
-                    <button id="goToAssignments" onclick="window.open('assignments?closable', '_blank');" class="controlButton">Full Assignments Page</button>
-                    <button id="batchDownload" onclick="batchDownload();" class="controlButton">Batch Download Data</button>
-                    <button id="extendHIT" onclick="extendHIT();" class="controlButton">Extend HIT Expiration</button>
-                </div>
-                <div id="assignmentDisplay" class="col-6"></div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- MODAL FOR CREATING AN HIT -->
+<!-- Hit create modal -->
 <div class="modal fade" id="hitCreateModal" tabindex="-1" role="dialog" aria-labelledby="hitCreateModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Create an <img src="{{url_for('.static', filename='images/blueribbon.png')}}" class="db-boolimg"><b>HIT</b>!</h5>
+                <h5 class="modal-title" id="exampleModalLabel">Create an <img src='/static/images/blueribbon.png' class="db-boolimg"><b>HIT</b>!</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
                 </button>
@@ -237,7 +199,7 @@
                             <li><b>Min. # Approved HITs: </b>{{ hit_info.number_hits_approved }}</li>
                             <li><b>Only <a href="https://www.mturk.com/worker/help#what_is_master_worker" target="_blank" style="text-decoration: none; color: black;">Master Worker</a>s: </b>{{ hit_info.require_master_workers }}</li>
                             {% for qual in hit_info.advanced_qualifications%}
-                                <li style="white-space: nowrap;"><b>{{ qual.QualificationTypeId }}: </b>{{ qual.Comparator }} {{ qual.IntegerValues[0] }}</li>
+                                <li style="white-space: nowrap;"><b>{{ qual.QualificationTypeId }}: </b>{{ qual.Comparator }} {{ qual.IntegerValues[0] if 'IntegerValues' in qual }}</li>
                             {% endfor %}
                         </ul>
                     </div>
@@ -285,27 +247,6 @@
             </div>
         </div>
     </div>
-</div> #}
-{% endblock %}
-
-{% block modals %}
-
-<!-- Filter modal -->
-{# <div class="modal fade" id="filterModal" tabindex="-1" role="dialog" aria-labelledby="filterModalLabel">
-  <div class="modal-dialog modal-dialog-centered" id="filterModalDialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header" id="filterModalHeader">
-        <h4 class="modal-title" id="filterModalLabel">Modal Title</h4>
-        <button class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-      </div>
-      <div class="modal-body">
-        Modal Body
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-default" data-dismiss="modal">Close</button>
-      </div>
-    </div>
-  </div>
-</div> #}
+</div>
 
 {% endblock %}

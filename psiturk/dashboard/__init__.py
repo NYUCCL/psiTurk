@@ -222,7 +222,7 @@ def mode():
 
 # Retrieves all HITs associated with this account
 @dashboard.route('/api/hits', methods=['POST'])
-def API_hits():
+def API_list_hits():
     try:
         response = services_manager.amt_services_wrapper.amt_services.mtc.list_hits(MaxResults=MAX_RESULTS)['HITs']
         my_hitids = list(set([hit.hitid for hit in Hit.query.distinct(Hit.hitid)]))
@@ -237,7 +237,7 @@ def API_hits():
 
 # Retrieves a list of assignments for a hit id
 @dashboard.route('/api/assignments', methods=['POST'])
-def API_assignments():
+def API_list_assignments():
     try:
         hitids = request.json['hit_ids']
         local = request.json['local']
@@ -250,5 +250,22 @@ def API_assignments():
             else:
                 response = response.data
         return jsonify({"success": True, "data": response}), 200
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
+
+# Creates a local HIT
+@dashboard.route('/api/hits/create', methods=['POST'])
+def API_create_hit():
+    try:
+        num_workers = request.json['num_workers']
+        reward = request.json['reward']
+        duration = request.json['duration']
+        response = services_manager.amt_services_wrapper.create_hit(
+            num_workers=num_workers,
+            reward=reward,
+            duration=duration)
+        if not response.success:
+            raise response.exception
+        return jsonify({"success": True, "data": response.data}), 200
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 400
