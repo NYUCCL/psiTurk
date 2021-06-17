@@ -164,7 +164,6 @@ def index():
 # Database of local HITs with management controls
 @dashboard.route('/hits')
 @dashboard.route('/hits/')
-<<<<<<< HEAD
 @dashboard.route('/hits/<hit_id>')
 @dashboard.route('/hits/<hit_id>/')
 def hits_list(hit_id=None):
