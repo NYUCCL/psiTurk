@@ -97,7 +97,8 @@
                                     <button 
                                         type="button" 
                                         id="approveOne" 
-                                        class="btn btn-success w-100 text-nowrap">
+                                        class="btn btn-success w-100 text-nowrap"
+                                        disabled>
                                         Approve
                                     </button>
                                 </div>
@@ -105,7 +106,8 @@
                                     <button 
                                         type="button" 
                                         id="rejectOne" 
-                                        class="btn btn-danger w-100 text-nowrap">
+                                        class="btn btn-danger w-100 text-nowrap"
+                                        disabled>
                                         Reject
                                     </button>
                                 </div>
@@ -115,8 +117,9 @@
                                     <button 
                                         type="button" 
                                         id="bonusOne" 
-                                        class="btn btn-info w-100 text-nowrap">
-                                        Bonus
+                                        class="btn btn-info w-100 text-nowrap"
+                                        disabled>
+                                        <img src="{{url_for('.static', filename='images/blueribbon.png')}}" class="db-boolimg"> Auto Bonus
                                     </button>
                                 </div>
                             </div>

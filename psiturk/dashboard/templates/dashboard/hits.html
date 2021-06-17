@@ -43,8 +43,9 @@
         <div class="col-sm py-1">
             <button 
                 type="button" 
-                id="tableDownload" 
-                class="btn btn-dark mx-auto w-100 text-nowrap">
+                id="hitDebugPage" 
+                class="btn btn-dark mx-auto w-100 text-nowrap"
+                data-toggle="modal" data-target="#hitDebugModal">
                 <img src="{{url_for('.static', filename='images/blueribbon.png')}}" class="db-boolimg"> HIT Debug Link
             </button>
         </div>
@@ -80,7 +81,7 @@
                                     <b class="noselect">Description: </b><span id="hitInfo_desc">...</span>
                                 </li>
                                 <li class="list-group-item px-2 py-1" style="background-color: #eee">
-                                    <b class="noselect">Status: </b><span id="hitInfo_status">...</span>
+                                    <b class="noselect">Status: </b><span id="hitInfo_status">...</span><b class="noselect">, Reward: </b><span id="hitInfo_reward">...</span>
                                 </li>
                                 <li class="list-group-item px-2 py-1" style="background-color: #eee">
                                     <b class="noselect">Creation: </b><span id="hitInfo_created">...</span>
@@ -89,7 +90,10 @@
                                     <b class="noselect">Expiration: </b><span id="hitInfo_expired">...</span>
                                 </li>
                                 <li class="list-group-item px-2 py-1" style="background-color: #eee">
-                                    <b class="noselect">Max: </b><span id="hitInfo_max">...</span><b class="noselect">, Available: </b><span id="hitInfo_available">...</span><b class="noselect">, Completed: </b><span id="hitInfo_completed">...</span>
+                                    <b class="noselect">To Do: </b><span id="hitInfo_todo">...</span><b class="noselect">, Completed: </b><span id="hitInfo_completed">...</span>
+                                </li>
+                                <li class="list-group-item px-2 py-1" style="background-color: #eee">
+                                    <b class="noselect">Max: </b><span id="hitInfo_max">...</span><b class="noselect">, Available: </b><span id="hitInfo_available">...</span><b class="noselect">, Pending: </b><span id="hitInfo_pending">...</span>
                                 </li>
                             </ul>
                             <a class="btn btn-primary btn-sm btn-block mt-2" href="assignments">View HIT Assignments</a>
@@ -101,70 +105,6 @@
                 <div class="row mt-2 flex-grow-1">
                     <div class="col px-2">
                         <div class="bg-dark rounded p-2" id="DBFilters">
-                            {# <div class="text-light mb-1">Filters <small class="text-muted">(50 matching)</small></div>
-
-
-                            <!-- Search db filters -->
-                            <div class="input-group mb-1">
-                                <div class="input-group-prepend">
-                                    <div class="input-group-text">
-                                        <input type="checkbox" aria-label="Checkbox for following text input">
-                                    </div>
-                                    <div class="input-group-text">
-                                        Search
-                                    </div>
-                                </div>
-                                <input type="text" class="form-control" aria-label="Text input with checkbox">
-                            </div>
-
-                            <!-- Load in the DB filters -->
-                            <div id="DBFilters">
-                                <div class="input-group mb-1">
-                                    <div class="input-group-prepend">
-                                        <div class="input-group-text">
-                                            <input type="checkbox" aria-label="Checkbox for following text input">
-                                        </div>
-                                        <div class="input-group-text">
-                                            Search
-                                        </div>
-                                    </div>
-                                    <input type="text" class="form-control" aria-label="Text input with checkbox">
-                                    <div class="input-group-append">
-                                        <button class="btn btn-primary" type="button" id="button-addon1">x</button>
-                                    </div>
-                                </div>
-
-                                <div class="input-group mb-1">
-                                    <div class="input-group-prepend">
-                                        <div class="input-group-text">
-                                            <input type="checkbox" aria-label="Checkbox for following text input">
-                                        </div>
-                                        <div class="btn-group">
-                                            <button class="btn btn-light dropdown-toggle px-1" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="border-radius: 0px;">Column</button>
-                                            <div class="dropdown-menu">
-                                                <a class="dropdown-item" href="#">ASSDSD</a>
-                                                <a class="dropdown-item" href="#">Description</a>
-                                                <a class="dropdown-item" href="#">Created On</a>
-                                            </div>
-                                        </div>
-                                        <div class="btn-group">
-                                            <button class="btn btn-light dropdown-toggle px-1" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="border-radius: 0px;">Compare</button>
-                                            <div class="dropdown-menu">
-                                                <a class="dropdown-item" href="#">></a>
-                                                <a class="dropdown-item" href="#">=</a>
-                                                <a class="dropdown-item" href="#"><</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <input type="text" class="form-control" aria-label="Text input with checkbox">
-                                    <div class="input-group-append">
-                                        <button class="btn btn-primary" type="button" id="button-addon1">x</button>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Add a db filter button -->
-                            <button class="btn btn-secondary btn-sm btn-block mt-2" type="button" id="button-addon1" style="opacity: 0.8;">+ Add another database filter...</button> #}
                             <button class="btn btn-secondary btn-sm btn-block mt-2" type="button" id="button-addon1">Download table</button>
                         </div>
                     </div>
@@ -243,7 +183,75 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" id="hitCreate-submit">Create!</button>
+                <button type="button" class="btn btn-primary" id="hitCreate-submit">Create {% if live %}Live{% else %}Sandbox{% endif %} HIT!</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL FOR CREATING HIT DEBUG LINKS-->
+<div class="modal fade" id="hitDebugModal" tabindex="-1" role="dialog" aria-labelledby="hitDebugModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Generate an <b>HIT</b> debug link.</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="col" class="modal-editable">
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="hitDebug-hitidlabel">Hit ID</span>
+                        </div>
+                        <input type="text" class="form-control" placeholder="" id="hitDebug-hitid">
+                        <div class="input-group-append">
+                            <button class="btn btn-dark" id="hitDebug-hitidRandom">
+                                <span class="oi oi-random"></span>
+                            </button> 
+                        </div>
+                    </div>
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="hitDebug-workeridlabel">Worker ID</span>
+                        </div>
+                        <input type="text" class="form-control" placeholder="" id="hitDebug-workerid">
+                        <div class="input-group-append">
+                            <button class="btn btn-dark" id="hitDebug-workeridRandom">
+                                <span class="oi oi-random"></span>
+                            </button> 
+                        </div>
+                    </div>
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="hitDebug-assignmentidlabel">Assignment ID</span>
+                        </div>
+                        <input type="text" class="form-control" placeholder="" id="hitDebug-assignmentid">
+                        <div class="input-group-append">
+                            <button class="btn btn-dark" id="hitDebug-assignmentidRandom">
+                                 <span class="oi oi-random"></span>
+                            </button> 
+                        </div>
+                    </div>
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="hitDebug-hitidlabel">URL</span>
+                        </div>
+                        <input type="text" class="form-control" id="hitDebug-URL" readonly>
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" id="hitDebug-openURL">
+                                <span class="oi oi-external-link"></span>
+                            </button> 
+                            <button class="btn btn-dark" id="hitDebug-copyURL">
+                                <span class="oi oi-clipboard"></span>
+                            </button> 
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
             </div>
         </div>
     </div>

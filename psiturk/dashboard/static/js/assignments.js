@@ -68,6 +68,33 @@ class AssignmentsDBDisplay {
         });
     }
 
+    // Reloads specific assignment data
+    _reloadAssignments(assignment_ids) {
+        $.ajax({
+            type: 'POST',
+            url: '/api/assignments',
+            data: JSON.stringify({
+                'assignments': assignment_ids,
+                'local': HIT_LOCAL
+            }),
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            success: (data) => {
+                if (data.success) {
+                    let updatedData = this.db.data;
+                    data.data.forEach((el, _) => {
+                        let i = updatedData.findIndex(o => o['assignment_id'] == el['assignment_id'])
+                        updatedData[i] = el;
+                    });
+                    this.db.updateData(updatedData, ASSIGNMENT_FIELDS);
+                }
+            },
+            error: function(errorMsg) {
+                console.log(errorMsg);
+            }
+        });
+    }
+
     _filterChangeHandler() {
         this.db.renderTable();
     }
@@ -81,22 +108,79 @@ class AssignmentsDBDisplay {
         $('#assignmentInfo_accepted').text(data['accept_time']);
         $('#assignmentInfo_submitted').text(data['submit_time']);
 
+        // Update approval / rejection buttons
+        $('#approveOne').prop('disabled', !['Submitted', 'Rejected'].includes(data['status']));
+        $('#rejectOne').prop('disabled', data['status'] != 'Submitted');
+        $('#bonusOne').prop('disabled', !(data['bonus'] && data['bonus'] > 0 && ['Credited', 'Approved'].includes(data['status'])));
+
         if (HIT_LOCAL) {
             $('#assignmentInfo_bonus').text('$' + data['bonus'].toFixed(2));
         }
     }
 }
 
-// Populates the table view with HITs
+// Approves a single individual in the database
+function approveIndividualHandler() {
+    let assignment_id = $('#assignmentInfo_assignmentid').text();
+    $.ajax({
+        type: 'POST',
+        url: '/dashboard/api/assignments/approve',
+        data: JSON.stringify({
+            'assignments': [assignment_id],
+            'all_studies': !HIT_LOCAL
+        }),
+        contentType: 'application/json; charset=utf-8',
+        dataType: 'json',
+        success: function(data) {
+            if (data.success && data.data[0].success) {
+                disp._reloadAssignments([assignment_id]);
+            } else {
+                console.log(data);
+            }
+        },
+        error: function(errorMsg) {
+            console.log(errorMsg);
+        }
+    });
+}
+
+// Rejects a single individual in the database
+function rejectIndividualHandler() {
+    let assignment_id = $('#assignmentInfo_assignmentid').text();
+    $.ajax({
+        type: 'POST',
+        url: '/dashboard/api/assignments/reject',
+        data: JSON.stringify({
+            'assignments': [assignment_id],
+            'all_studies': !HIT_LOCAL
+        }),
+        contentType: 'application/json; charset=utf-8',
+        dataType: 'json',
+        success: function(data) {
+            if (data.success && data.data[0].success) {
+                disp._reloadAssignments([assignment_id]);
+            } else {
+                console.log(data);
+            }
+        },
+        error: function(errorMsg) {
+            console.log(errorMsg);
+        }
+    });
+}
+
+// Populates the table view with assignments, loads handlers
+var disp;
 $(window).on('load', function() {
 
-     // Initialize the HIT display
-     var disp = new AssignmentsDBDisplay({
+     // Initialize the assignment display
+    disp  = new AssignmentsDBDisplay({
         filters: $('#DBFilters'),
         display: $('#DBDisplay'),
     });
     disp.init();
 
-    // Render material icons
-    $('.material-icons').css('opacity','1');
+    // Approves/rejects/bonuses the currently selected assignment
+    $('#approveOne').on('click', approveIndividualHandler);
+    $('#rejectOne').on('click', rejectIndividualHandler);
 });

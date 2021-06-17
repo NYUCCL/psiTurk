@@ -42,7 +42,7 @@ export class DatabaseView {
     }
 
     // Updates the data, builds headers does not re-render unless specified
-    async updateData(newData, fields, rerender=true) {
+    async updateData(newData, fields, rerender=true, resetFilter=false) {
         this.data = newData;
         this.fields = fields;
         this.sort = DEFAULT_SORT;
@@ -67,7 +67,7 @@ export class DatabaseView {
 
         if (rerender) {
             // If filters exist, reset them
-            if (this.filter) {
+            if (this.filter && resetFilter) {
                 this.filter.reset();
             }
             await this.renderTable();
@@ -92,7 +92,7 @@ export class DatabaseView {
         let totalRows = 0;
         for (let i = 0; i < this.order.length && i < this.data.length; i++) {
             if (this.filter && !this.filter.passes(this.data[i])) { continue; }
-            let row$ = $('<tr><td>' + i + '</td></tr>');
+            let row$ = $('<tr><td>' + (i+1) + '</td></tr>');
             row$.attr('id', 'row_' + this.name + '_' + i);
             for (const [key, value] of Object.entries(this.fields)) {
                 let cellValue = this.data[i][key];

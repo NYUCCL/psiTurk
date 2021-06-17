@@ -6,12 +6,14 @@ var HIT_FIELDS = {
     'local_hit': {'title': '<img src="' + BLUE_RIBBON_PATH + '" class="db-boolimg">', 'type': 'bool', 'style': {'width': '50px', 'max-width': '50px'}},
     'HITId': {'title': 'ID', 'type': 'string', 'style': {'width': '50px', 'max-width': '50px'}},
     'Title': {'title': 'Title', 'type': 'string', 'style': {'min-width': '100px', 'width': '20%', 'max-width': '200px'}},
-    'Description': {'title': 'Description', 'type': 'string', 'style': {'min-width': '100px', 'width': '20%', 'max-width': '200px'}},
     'HITStatus': {'title': 'Status', 'type': 'string', 'style': {'width': '100px'}},
+    'Reward': {'title': 'Reward', 'type': 'string', 'style': {'width': '100px', 'max-width': '100px'}},
+    'ToDoAssignments': {'title': 'TODO', 'type': 'num', 'style': {'width': '50px'}},
     'MaxAssignments': {'title': 'Max', 'type': 'num', 'style': {'width': '50px'}},
     'NumberOfAssignmentsAvailable': {'title': 'Available', 'type': 'num', 'style': {'width': '50px'}},
     'NumberOfAssignmentsCompleted': {'title': 'Completed', 'type': 'num', 'style': {'width': '50px'}},
     'NumberOfAssignmentsPending': {'title': 'Pending', 'type': 'num', 'style': {'width': '50px'}},
+    'Description': {'title': 'Description', 'type': 'string', 'style': {'min-width': '100px', 'width': '20%', 'max-width': '200px'}},    
     'CreationTime': {'title': 'Created On', 'type': 'date', 'style': {'width': '300px'}},
     'Expiration': {'title': 'Expiration', 'type': 'date', 'style': {'width': '300px'}},
 };
@@ -87,11 +89,14 @@ class HITDBDisplay {
         $('#hitInfo_title').text(data['Title']);
         $('#hitInfo_desc').text(data['Description']);
         $('#hitInfo_status').text(data['HITStatus']);
+        $('#hitInfo_reward').text('$' + data['Reward']);
         $('#hitInfo_created').text(data['CreationTime']);
         $('#hitInfo_expired').text(data['Expiration']);
+        $('#hitInfo_todo').text(data['ToDoAssignments']);
         $('#hitInfo_max').text(data['MaxAssignments']);
         $('#hitInfo_available').text(data['NumberOfAssignmentsAvailable']);
         $('#hitInfo_completed').text(data['NumberOfAssignmentsCompleted']);
+        $('#hitInfo_pending').text(data['NumberOfAssignmentsPending']);
 
         // Update the current HREF
         history.pushState({id: 'hitpage'}, '', window.location.origin + '/dashboard/hits/' + hitId + '/');
@@ -130,9 +135,12 @@ function createHIT() {
     let reward = parseFloat($('#hitCreateInput-reward').val());
     let duration = parseInt($('#hitCreateInput-duration').val());
     
+    // Disables submitting the HIT twice
+    $('#hitCreate-submit').prop('disabled', true);
+
     $.ajax({
         type: 'POST',
-        url: '/api/HITs/create',
+        url: '/dashboard/api/hits/create',
         data: JSON.stringify({
             "num_workers": participants,
             "reward": reward,
@@ -141,42 +149,57 @@ function createHIT() {
         contentType: 'application/json; charset=utf-8',
         dataType: 'json',
         success: function() {
-            alert('HIT successfully created! You shall see it in the database if you refresh in a little bit.')
+            alert('HIT was successfully created! If you don\'t see it in the database view, refresh.')
             $('#hitCreateModal').modal('hide');
+            $('#hitCreate-submit').prop('disabled', false);
+
+            // Reload the HIT data
+            disp._loadHITs();
         },
         error: function() {
             alert('There was an error creating your HIT. Try again maybe? Also, check your qualifications.')
+            $('#hitCreate-submit').prop('disabled', false);
         }
     })
 }
 
+// Generates a random 6-length ID for the debug link
+function randomIdGenerator() {
+    return Math.random().toString(36).substr(2, 6).toUpperCase();
+ }
+
+// Sets the hit debug URL link
+function hitURLUpdate() {
+    $('#hitDebug-URL').val(`${window.location.protocol}//${window.location.host}/pub?assignmentId=${$('#hitDebug-assignmentid').val()}&workerId=${$('#hitDebug-workerid').val()}&hitId=${$('#hitDebug-hitid').val()}&mode=debug`);
+}
+
 // Populates the table view with HITs
+var disp;
 $(window).on('load', function() {
 
     // Initialize the HIT display
-    var disp = new HITDBDisplay({
+    disp = new HITDBDisplay({
         filters: $('#DBFilters'),
         display: $('#DBDisplay'),
     });
     disp.init();
 
-    // Disable the navbar mode toggle until the HIT data is finished loading
+    // Add HIT creation expense calculation
+    updateHITCreateExpense();
+    $('#hitCreateInput-participants').on('change', updateHITCreateExpense);
+    $('#hitCreateInput-reward').on('change', updateHITCreateExpense);
 
-    // // Add HIT creation expense calculation
-    // updateHITCreateExpense();
-    // $('#hitCreateInput-participants').on('change', updateHITCreateExpense);
-    // $('#hitCreateInput-reward').on('change', updateHITCreateExpense);
+    // Add HIT creation function
+    $('#hitCreate-submit').on('click', createHIT);
 
-    // // Add HIT creation function
-    // $('#hitCreate-submit').on('click', createHIT);
-
-
-    // TESTING
-
-    // if (!($('.modal.in').length)) {
-    //     $('.modal-dialog').css({
-    //       top: 0,
-    //       left: 0
-    //     });
-    // }
+    // Handle debug link generation
+    $('#hitDebug-hitidRandom').on('click', () => $('#hitDebug-hitid').val(randomIdGenerator()));
+    $('#hitDebug-workeridRandom').on('click', () => $('#hitDebug-workerid').val('debug' + randomIdGenerator()));
+    $('#hitDebug-assignmentidRandom').on('click', () => $('#hitDebug-assignmentid').val('debug' + randomIdGenerator()));
+    $('#hitDebug-openURL').on('click', () => window.open($('#hitDebug-URL').val(), '_blank'));
+    $('#hitDebug-copyURL').on('click', () => { $('#hitDebug-URL').select(); document.execCommand('copy'); });
+    $('#hitDebug-hitid').val(randomIdGenerator());
+    $('#hitDebug-workerid').val('debug' + randomIdGenerator());
+    $('#hitDebug-assignmentid').val('debug' + randomIdGenerator());
+    hitURLUpdate();
 });

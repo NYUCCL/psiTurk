@@ -220,13 +220,17 @@ def mode():
 #                                  API ROUTES                                  #
 # ---------------------------------------------------------------------------- #
 
+# ------------------------------ List Operations ----------------------------- #
+
 # Retrieves all HITs associated with this account
 @dashboard.route('/api/hits', methods=['POST'])
 def API_list_hits():
     try:
         response = services_manager.amt_services_wrapper.amt_services.mtc.list_hits(MaxResults=MAX_RESULTS)['HITs']
         my_hitids = list(set([hit.hitid for hit in Hit.query.distinct(Hit.hitid)]))
-        response = map(lambda hit: dict(hit, local_hit=hit['HITId'] in my_hitids), response)
+        response = map(lambda hit: dict(hit, 
+            local_hit=hit['HITId'] in my_hitids,
+            ToDoAssignments=hit['MaxAssignments'] - hit['NumberOfAssignmentsAvailable'] - hit['NumberOfAssignmentsCompleted'] - hit['NumberOfAssignmentsPending']), response)
         if 'only_local' in request.json and request.json['only_local']:
             response = [hit for hit in response if hit['local']]
         if 'statuses' in request.json and len(request.json['statuses']) > 0:
@@ -253,6 +257,8 @@ def API_list_assignments():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 400
 
+# ------------------------------ HIT operations ------------------------------ #
+
 # Creates a local HIT
 @dashboard.route('/api/hits/create', methods=['POST'])
 def API_create_hit():
@@ -267,5 +273,82 @@ def API_create_hit():
         if not response.success:
             raise response.exception
         return jsonify({"success": True, "data": response.data}), 200
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
+
+# --------------------------- Assignment operations -------------------------- #
+
+# Approves a list of assignments who have submitted their HIT
+@dashboard.route('/api/assignments/approve', methods=['POST'])
+def API_approve_assignments():
+    try:
+        assignments = request.json['assignments']
+        all_studies = request.json['all_studies']
+        data = []
+        for assignment in assignments:
+            try:
+                response = services_manager.amt_services_wrapper \
+                    .approve_assignment_by_assignment_id(assignment, all_studies)
+                data.append({
+                    "assignment": assignment,
+                    "success": response.status == "success",
+                    "message": str(response)})
+            except Exception as e:
+                data.append({
+                    "assignment": assignment, 
+                    "success": False, 
+                    "message": str(e)})
+        return jsonify({"success": True, "data": data}), 200
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
+
+# Rejects a list of workers who have submitted their HIT
+@dashboard.route('/api/assignments/reject', methods=['POST'])
+def API_reject_assignments():
+    try:
+        assignments = request.json['assignments']
+        all_studies = request.json['all_studies']
+        data = []
+        for assignment in assignments:
+            try:
+                resp = services_manager.amt_services_wrapper \
+                    .reject_assignment(assignment, all_studies)
+                data.append({
+                    "assignment": assignment, 
+                    "success": resp.status == 'success', 
+                    "message": str(ressp)})
+            except Exception as e:
+                data.append({
+                    "assignment": assignment, 
+                    "success": False, 
+                    "message": str(e)})
+        return jsonify({"success": True, "data": data}), 200
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
+
+# Bonuses a list of workers whose status is currently approved
+@dashboard.route('/api/assignments/bonus', methods=['POST'])
+def API_bonus_assignments():
+    try:
+        assignments = request.json['assignments']
+        all_studies = request.json['all_studies']
+        amount = request.json['amount']
+        reason = request.json['reason']
+        data = []
+        for assignment in assignments:
+            try:
+                resp = services_manager.amt_services_wrapper \
+                    .bonus_assignment_for_assignment_id(
+                        assignment, amount, reason, all_studies)
+                data.append({
+                    "assignment": assignment, 
+                    "success": resp.status == 'success', 
+                    "message": str(resp)})
+            except Exception as e:
+                data.append({
+                    "assignment": assignment, 
+                    "success": False, 
+                    "message": str(e)})
+        return jsonify({"success": True, "data": data}), 200
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 400
