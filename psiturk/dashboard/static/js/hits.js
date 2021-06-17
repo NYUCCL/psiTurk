@@ -30,7 +30,6 @@ class HITDBDisplay {
     constructor(domelements) {
         this.DOM$ = domelements;
         this.db = undefined;  // Main HIT database handler
-        this.hitSelected = false; // Is an HIT selected currently?
     }
 
     // Build the database views into their respective elmeents. There is one
@@ -77,11 +76,8 @@ class HITDBDisplay {
      * @param {object} data - The data of the newly-selected HIT
      */
     _hitSelectedHandler(data) {
-        if (!this.hitSelected) {
-            $('#hitSelected').css('display', 'flex');
-            $('#noHITAlert').css('display', 'none');
-            this.hitSelected = true;
-        }
+        // Enable the HIT assignment page
+        $('#assignmentsPage').removeClass('disabled');
 
         // Update the HIT information column
         let hitId = data['HITId'];

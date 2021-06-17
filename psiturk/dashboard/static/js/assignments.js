@@ -115,6 +115,8 @@ class AssignmentsDBDisplay {
 
         if (HIT_LOCAL) {
             $('#assignmentInfo_bonus').text('$' + data['bonus'].toFixed(2));
+        } else {
+            $('#assignmentInfo_bonus').text('No bonus data.');
         }
     }
 }

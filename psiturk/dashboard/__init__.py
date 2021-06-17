@@ -1,6 +1,6 @@
 # Flask imports
 from flask import Blueprint, render_template, request, current_app as app, \
-    flash, session, redirect, url_for, jsonify
+    flash, session, redirect, url_for, jsonify, g
 from flask_login import login_user, logout_user, current_user, LoginManager, UserMixin
 
 # PsiTurk imports
@@ -174,7 +174,8 @@ def hits_list(hit_id=None):
 @dashboard.route('/hits/<hit_id>/assignments/')
 def assignments_list(hit_id):
     my_hitids = list(set([hit.hitid for hit in Hit.query.distinct(Hit.hitid)]))
-    return render_template('dashboard/assignments.html', hit_id=hit_id, hit_local=hit_id in my_hitids)
+    hit_info = services_manager.amt_services_wrapper.get_hit(hit_id).data
+    return render_template('dashboard/assignments.html', hit_id=hit_id, hit_local=hit_id in my_hitids, hit_info=hit_info)
 
 # ---------------------------------------------------------------------------- #
 #                                  FORM ROUTES                                 #
@@ -353,3 +354,28 @@ def API_bonus_assignments():
         return jsonify({"success": True, "data": data}), 200
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 400
+
+# Gets the worker's data
+@dashboard.route('/api/assignments/data', methods=['POST'])
+def API_assignment_data():
+    try:
+        assignments = request.json['assignments']
+        data = {}
+        for assignment_id in assignments:
+            p = Participant.query.filter_by(assignmentid=assignment_id)\
+                .options('datastring').first()
+            jsonData = {
+                'question_data': get_question_data_json(p),
+                'event_data': get_event_data_json(p),
+                'trial_data': get_trial_data_json(p)
+            }
+            data[assignment_id] = jsonData
+        return jsonify({"success": True, "data": data}), 200
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
+
+# Writes data to an open zipfile
+def write_data_to_zip(participant, fields, zf, prefix=''):
+    for field in fields:
+        output = get_datafile(participant, field)
+        zf.writestr(prefix + field + '.csv', output)

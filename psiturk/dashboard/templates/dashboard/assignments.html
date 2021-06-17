@@ -69,14 +69,18 @@
                 <div class="row flex-shrink-0">
                     <div class="col px-2">
                         <div class="bg-dark rounded p-2">
-                            <ul class="list-group">
+                            <div class="col px-0">
+                                <ul class="list-group">
                                 <li class="list-group-item px-2 py-1" style="background-color: #eee">
-                                    <b class="noselect">Hit ID: </b><span id="assignmentInfo_hitid">...</span>
+                                    <b class="noselect">HIT ID: </b><span>{{ hit_info.options.hitid }}</span>
+                                </li>
+                                <li class="list-group-item px-2 py-1 text-nowrap overflow-auto" style="background-color: #eee">
+                                    <b class="noselect">HIT Title: </b><span>{{ hit_info.options.title }}</span>
                                 </li>
                                 <li class="list-group-item px-2 py-1" style="background-color: #eee">
                                     <b class="noselect">Worker ID: </b><span id="assignmentInfo_workerid">...</span>
                                 </li>
-                                <li class="list-group-item px-2 py-1" style="background-color: #eee">
+                                <li class="list-group-item px-2 py-1 text-nowrap overflow-auto" style="background-color: #eee">
                                     <b class="noselect">Assignment ID: </b><span id="assignmentInfo_assignmentid">...</span>
                                 </li>
                                 <li class="list-group-item px-2 py-1" style="background-color: #eee">
@@ -89,11 +93,11 @@
                                     <b class="noselect">Submitted: </b><span id="assignmentInfo_submitted">...</span>
                                 </li>
                                 <li class="list-group-item px-2 py-1" style="background-color: #eee">
-                                    <b class="noselect">Bonus: </b><span id="assignmentInfo_bonus">...</span>
+                                    <b class="noselect">HIT Reward: </b><span id="assignmentInfo_hitReward">${{ hit_info.options.reward }}</span>, <b class="noselect">Bonus: </b><span id="assignmentInfo_bonus">...</span>
                                 </li>
                             </ul>
-                            <div class="row">
-                                <div class="col mt-2 pr-1">
+                            <div class="row no-gutters">
+                                <div class="col mt-2">
                                     <button 
                                         type="button" 
                                         id="approveOne" 
@@ -102,7 +106,8 @@
                                         Approve
                                     </button>
                                 </div>
-                                <div class="col mt-2 pl-1">
+                                <div class="col-sm-0 mx-1"></div>
+                                <div class="col mt-2">
                                     <button 
                                         type="button" 
                                         id="rejectOne" 
@@ -112,16 +117,37 @@
                                     </button>
                                 </div>
                             </div>
-                            <div class="row">
+                            <div class="row no-gutters">
                                 <div class="col mt-2">
                                     <button 
                                         type="button" 
                                         id="bonusOne" 
-                                        class="btn btn-info w-100 text-nowrap"
+                                        class="btn btn-primary w-100 text-nowrap"
                                         disabled>
-                                        <img src="{{url_for('.static', filename='images/blueribbon.png')}}" class="db-boolimg"> Auto Bonus
+                                        Bonus
                                     </button>
                                 </div>
+                            </div>
+                            <div class="row no-gutters">
+                                <div class="col-7 mt-2 pr-1">
+                                    <button 
+                                        type="button" 
+                                        id="downloadOneData" 
+                                        class="btn btn-info w-100 text-nowrap"
+                                        disabled>
+                                        <img src="{{url_for('.static', filename='images/blueribbon.png')}}" class="db-boolimg"> Download
+                                    </button>
+                                </div>
+                                <div class="col-5 mt-2 pl-1">
+                                    <button 
+                                        type="button" 
+                                        id="viewOneData" 
+                                        class="btn btn-info w-100 text-nowrap"
+                                        disabled>
+                                        <img src="{{url_for('.static', filename='images/blueribbon.png')}}" class="db-boolimg"> View
+                                    </button>
+                                </div>
+                            </div>
                             </div>
                         </div>
                     </div>
@@ -146,5 +172,45 @@
 {% endblock %}
 
 {% block modals %}
+
+{% if hit_local %}
+<!-- MODAL FOR VIEWING WORKER DATA -->
+<div class="modal fade" id="viewWorkerDataModal" tabindex="-1" role="dialog" aria-labelledby="viewWorkerDataModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><img src='/static/images/blueribbon.png' class="db-boolimg"> View <b>worker</b> data for assignment <b id="workerDataAssignmentId">...</b>.</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="col assignmentModal-uneditable">
+                    <div id="viewWorkerDataTable" class="modalDBView no-scrollbar" style="min-height: 400px; height: 500px;"></div>
+                    <div style="margin-top: 5px;">There are <b id="numRowsInWorkerData">0</b> rows in this data source.</div>
+                </div>
+                <div class="col assignmentModal-editable">
+                    <div class="row" style="margin: auto;">
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="dataRadioOptions" id="showTrialData" value="trial_data">
+                            <label class="form-check-label" for="showTrialData">Trials</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="dataRadioOptions" id="showQuestionData" value="question_data" checked>
+                            <label class="form-check-label" for="showQuestionData">Questions</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="dataRadioOptions" id="showEventData" value="event_data">
+                            <label class="form-check-label" for="showEventData">Events</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 
 {% endblock %}
