@@ -24,8 +24,8 @@ HITs due to a change implemented by the psiturk ad server's hosting provider. Yo
 
 # Python versions
 
-- Psiturk v2 supports python 2 and python 3. Documentation for psiturk v2 is available [here]()
-- Psiturk v3 is python 3 only. Documentation available [here]()
+- Psiturk v2 supports python 2 and python 3. Documentation for psiturk v2 is available [here](https://psiturk.readthedocs.io/en/python2/)
+- Psiturk v3 is python 3 only. Documentation available [here](https://psiturk.readthedocs.io/en/latest/)
 
 # Developing
 

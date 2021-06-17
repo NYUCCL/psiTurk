@@ -20,7 +20,7 @@ where users should be sent when the task is complete.
 .. code-block:: javascript
 
     // Create the psiturk object
-    var psiTurk = PsiTurk(uniqueId, adServerLoc);
+    var psiturk = PsiTurk(uniqueId, adServerLoc);
 
     // Add some data and save
     psiturk.addUnstructuredData('age', 24)
