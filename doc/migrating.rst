@@ -71,13 +71,21 @@ environment variables over psiturk defaults. This enables
 having different config settings locally versus on hosted platforms such as Heorku.
 See the :ref:`configuration-overview` page for more information.
 
-Note that the location of a few config variables has changed:
-* ``contact_email_on_error``, ``browser_exclude_rule``, and ``cutoff_time`` have moved under the ``Task Parameters`` section.
+Note that the location of the following config vars moved to the "Task Parameters" section:
+
+* ``contact_email_on_error``
+* ``browser_exclude_rule``
+* ``cutoff_time``
+* ``allow_repeats``
+
+And a few have been renamed:
+
 * ``amt_keywords`` has been renamed to ``keywords``
-* ``launch_in_sandbox`` has been changed to ``launch_in_mode``.
+* ``launch_in_sandbox`` has been renamed to ``launch_in_mode``.
 
 And a few security-related config values now have *no* default values -- you must set your own
 for certain features to work:
+
 * ``login_username``
 * ``login_pw``
 * ``secret_key``

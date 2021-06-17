@@ -78,10 +78,10 @@ __ https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.htm
 
 For example, if a user's ``AWS_ACCESS_KEY_ID`` were 'foo', their
 ``AWS_SECRET_ACCESS_KEY`` were 'bar', they might set the following in
-their ``~/.aws/credentials`` file::
+their ``~/.aws/credentials`` file (lowercase, since they're note env vars)::
 
-  AWS_ACCESS_KEY_ID=foo
-  AWS_SECRET_ACCESSS_KEY=bar
+  aws_access_key_id=foo
+  aws_secret_access_key=bar
 
 Note that Boto3 respects certain environment variables that alter which files are
 searched for credentials and configuration settings. See

@@ -164,6 +164,7 @@ def index():
 # Database of local HITs with management controls
 @dashboard.route('/hits')
 @dashboard.route('/hits/')
+<<<<<<< HEAD
 @dashboard.route('/hits/<hit_id>')
 @dashboard.route('/hits/<hit_id>/')
 def hits_list(hit_id=None):
@@ -182,6 +183,7 @@ def assignments_list(hit_id):
 # Routes which double as forms for posting
 
 # Login page for logging in a user
+
 @dashboard.route('/login', methods=('GET', 'POST'))
 def login():
     if request.method == 'POST':

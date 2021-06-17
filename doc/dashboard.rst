@@ -6,7 +6,7 @@ Dashboard Overview
 
 A dashboard is available at route ``/dashboard``. The dashboard can be enabled
 by setting :ref:`settings-enable-dashboard` to ``True``, and by setting a
-:ref:`settings-login-username` and :ref:`settings-login-pw`.
+:ref:`settings-login-username`, :ref:`settings-login-pw`, and :ref:`settings-secret-key`.
 
 
 

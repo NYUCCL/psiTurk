@@ -209,6 +209,8 @@ Note that this option does not affect the behavior when a participant starts
 the experiment but the quits or refreshes the page. In those cases, they will
 still be locked out, regardless of the setting of `allow_repeats`.
 
+
+
 .. _require_quals:
 
 require_quals
@@ -218,6 +220,10 @@ A list of custom qualifications that participants must possess to
 perform your task.
 
 :Type: comma-delimited ``string``
+
+If set, applies in both ``live`` and ``sandbox`` modes. Overrides ``require_quals_live`` and ``require_quals_sandbox``.
+
+Deprecated. Use ``require_quals_live`` and ``require_quals_sandbox`` instead.
 
 You may need to ensure that workers have some requisite skill or pass some
 previous screening factors, such as language proficiency or having already
@@ -233,6 +239,29 @@ and `Best practices for managing workers in follow-up surveys <https://blog.mtur
 for additional details on custom qualifications.
 
 
+require_quals_live
+~~~~~~~~~~~~~~~~~~
+
+A list of custom qualifications that participants must possess to
+perform your task.
+
+:Type: comma-delimited ``string``
+
+Will only be used during ``live`` mode. Is overridden by ``require_quals``, if set.
+
+
+require_quals_sandbox
+~~~~~~~~~~~~~~~~~~~~~
+
+A list of custom qualifications that participants must possess to
+perform your task.
+
+:Type: comma-delimited ``string``
+
+Will only be used during ``sandbox`` mode. Is overridden by ``require_quals``, if set.
+
+
+
 .. _block_quals:
 
 block_quals
@@ -243,10 +272,40 @@ perform your task.
 
 :Type: comma-delimited ``string``
 
+If set, applies in both ``live`` and ``sandbox`` modes. Overrides ``block_quals_live`` and ``block_quals_sandbox``.
+
+Deprecated. Use ``block_quals_live`` and ``block_quals_sandbox`` instead.
+
 When you add a custom qualification to ``block_quals``, MTurk
 workers with that qualification already set will neither see your ad nor be able
 to accept your HIT. This is the recommended way of excluding participants who
 have performed other HITs for you from participating in your new HIT.
+
+
+
+block_quals_live
+~~~~~~~~~~~~~~~~
+
+Will only be used during ``live`` mode. Is overridden by ``block_quals``, if set.
+
+A list of custom qualifications that participants must not possess to
+perform your task.
+
+:Type: comma-delimited ``string``
+
+
+
+block_quals_sandbox
+~~~~~~~~~~~~~~~~~~~
+
+Will only be used during ``sandbox`` mode. Is overridden by ``block_quals``, if set.
+
+A list of custom qualifications that participants must not possess to
+perform your task.
+
+:Type: comma-delimited ``string``
+
+
 
 .. _advanced_quals:
 
@@ -256,6 +315,10 @@ advanced_quals_path
 A path to a custom JSON qualifications file, where you can define your own
 MTurk qualification requirements, as seen in `advanced_quals.json.sample`__
 
+If set, applies in both ``live`` and ``sandbox`` modes. Overrides ``advanced_quals_path_live`` and ``advanced_quals_path_sandbox``.
+
+Deprecated. Use ``advanced_quals_path_live`` and ``advanced_quals_path_sandbox`` instead.
+
 __ https://raw.githubusercontent.com/NYUCCL/psiTurk/master/psiturk/example/advanced_quals.json.sample
 
 :type: ``path``
@@ -263,6 +326,41 @@ __ https://raw.githubusercontent.com/NYUCCL/psiTurk/master/psiturk/example/advan
 Example::
 
     advanced_quals_path = ./advanced_quals.json
+
+
+
+advanced_quals_path_live
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+A path to a custom JSON qualifications file, where you can define your own
+MTurk qualification requirements, as seen in `advanced_quals.json.sample`__
+
+:type: ``path``
+
+Will only be used during ``live`` mode. Is overridden by ``advanced_quals_path``, if set.
+
+__ https://raw.githubusercontent.com/NYUCCL/psiTurk/master/psiturk/example/advanced_quals.json.sample
+
+
+advanced_quals_path_sandbox
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A path to a custom JSON qualifications file, where you can define your own
+MTurk qualification requirements, as seen in `advanced_quals.json.sample`__
+
+:type: ``path``
+
+Will only be used during ``sandbox`` mode. Is overridden by ``advanced_quals_path``, if set.
+
+__ https://raw.githubusercontent.com/NYUCCL/psiTurk/master/psiturk/example/advanced_quals.json.sample
+
+
+
+
+
+
+
+
 
 
 .. _hit_configuration_ad_url:
@@ -389,23 +487,80 @@ that you can connect to this url with a MySQL client prior to
 launching.
 
 
-table_name
-~~~~~~~~~~
 
-Specifies the table of the database you would like to write to.
+assignments_table_name
+~~~~~~~~~~~~~~~~~~~~~~
+
+Specifies the table of the database you would like to write participant data to.
 
 :Type: ``string``
+:Default: assignments
 
 **IMPORTANT**: psiTurk prevents the same worker
 from performing as task by checking to see if the worker
 appears in the current database table already. Thus, for a
 single experiment (or sequence of related experiments) you want
-to keep the `table_name` value the same. If you start a new
+to keep the `assignments_table_name` value the same. If you start a new
 design where it not longer matters that someone has done a
-previous version of the task, you can change the `table_name`
+previous version of the task, you can change the `assignments_table_name`
 value and begin sorting the data into a new table.
 
+If multiple experiments or users share the same database then this
+table needs to be unique for each experiment/user.
 
+
+table_name
+~~~~~~~~~~
+
+`Deprecated`
+
+Specifies the table of the database you would like to write participant data to.
+
+:Type: ``string``
+
+For backwards compatibility, `assignments_table_name` is synonymous with `table_name`. If
+both are set, `assignments_table_name` will be preferred over `table_name`.
+Please use `assignments_table_name` going forward but either will work for now.
+
+
+
+hits_table_name
+~~~~~~~~~~~~~~~
+
+Specifies the table of the database for storing information about current HITs.
+
+:Type: ``string``
+:Default: amt_hit
+
+psiTurk creates several tables for bookkeeping. This one helps the dashboard
+and command line manage HITs. If multiple experiments or users share the same database then this
+table needs to be unique for each experiment/user.
+
+
+campaigns_table_name
+~~~~~~~~~~~~~~~~~~~~
+
+Specifies the table of the database for storing campaigns.
+
+:Type: ``string``
+:Default: campaign
+
+psiTurk creates several tables for bookkeeping.  This one helps the dashboard
+and command line manage campaigns. If multiple experiments or users share the same database then this
+table needs to be unique for each experiment/user.
+
+
+jobs_table_name
+~~~~~~~~~~~~~~~
+
+Specifies the table of the database for storing job information.
+
+:Type: ``string``
+:Default: apscheduler_jobs
+
+psiTurk creates several tables for bookkeeping.  This one helps the task
+schedule manage automated jobs.  If multiple experiments or users share the same database then this
+table needs to be unique for each experiment/user.
 
 
 Server Parameters
@@ -485,6 +640,8 @@ Whether to enable the dashbaord. If True, then the ``login_username`` and
 :Type: ``bool``
 :Default: False
 
+.. seealso:: :ref:`dashboard-overview`
+
 
 .. _settings-do-scheduler:
 
@@ -529,6 +686,24 @@ web application (e.g., see `customizing psiturk <../customizing.html>`__)
 then you can set a login and password on certain
 web pages urls/routes. By default if you aren't
 using them, this is ignored.
+
+
+.. _settings-secret-key:
+
+secret_key
+~~~~~~~~~~
+
+:Type: ``string``
+:Default: None
+
+This is `required by psiTurk's underlying Flask server`__ for any route
+that uses a "Session", such as the :ref:`psiTurk Dashboard <dashboard-overview>`.
+
+It can be any string.
+
+__ https://flask.palletsprojects.com/en/1.1.x/quickstart/#sessions
+
+.. seealso:: :ref:`dashboard-overview`
 
 
 .. _settings-threads:

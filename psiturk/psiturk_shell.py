@@ -10,6 +10,7 @@ except ImportError:
 import urllib3.contrib.pyopenssl
 from psiturk.utils import *
 from psiturk.models import Participant
+from psiturk.db import migrate_db
 from psiturk import experiment_server_controller as control
 from psiturk.psiturk_config import PsiturkConfig
 from psiturk.version import version_number
@@ -1001,6 +1002,23 @@ class PsiturkNetworkShell(Cmd, object):
                 help_struct.keys()), 15, 80)
             self.print_topics(self.super_header, cmds_super, 15, 80)
 
+    @docopt_cmd
+    def do_migrate(self, arg):
+        """
+        Usage:
+          migrate db
+        """
+
+        # Right now, the only thing it does is copies all hitids from
+        # the assignments table into the amt_hits table
+        result = migrate_db()
+        self.poutput(result['message'])
+
+    migrate_commands = ('db')
+
+    def complete_migrate(self, text, line, begidx, endidx):
+        """ Tab-complete migrate command """
+        return [i for i in migrate_commands if i.startswith(text)]
 
 def run(script=None, execute=None, testfile=None, quiet=False):
     try:
