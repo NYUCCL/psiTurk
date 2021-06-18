@@ -180,6 +180,15 @@ $(window).on('load', function() {
     });
     disp.init();
 
+    // Listeners for moving with arrow keys
+    $(document).keydown((e) => {
+        if (e.which == 38) {
+            disp.db.selectPreviousRow();
+        } else if (e.which == 40) {
+            disp.db.selectNextRow();
+        }
+    });
+
     // Add HIT creation expense calculation
     updateHITCreateExpense();
     $('#hitCreateInput-participants').on('change', updateHITCreateExpense);

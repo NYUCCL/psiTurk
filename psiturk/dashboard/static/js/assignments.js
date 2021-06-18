@@ -10,6 +10,7 @@ var ASSIGNMENT_FIELDS = {
     'submit_time': {'title': 'Submitted On', 'type': 'date', 'style': {'width': '300px'}},
 };
 
+// For a local hit, add code version and bonus, as well as data fields
 if (HIT_LOCAL) {
     ASSIGNMENT_FIELDS = {
         'workerId': {'title': 'Worker ID', 'type': 'string', 'style': {'width': '200px'}},
@@ -20,6 +21,23 @@ if (HIT_LOCAL) {
         'accept_time': {'title': 'Accepted On', 'type': 'date', 'style': {'width': '300px'}},
         'submit_time': {'title': 'Submitted On', 'type': 'date', 'style': {'width': '300px'}},
     };
+
+    var DATA_FIELDS = {
+        'event_data': {
+            'eventtype': {'title': 'Event Type', 'type': 'string', 'style': {'width': '200px'}},
+            'value': {'title': 'Value', 'type': 'json', 'style': {'width': '200px'}},
+            'interval': {'title': 'Interval', 'type': 'num', 'style': {'width': '100px'}}
+        },
+        'question_data': {
+            'questionname': {'title': 'Question Name', 'type': 'string', 'style': {'width': '200px'}},
+            'response': {'title': 'Response', 'type': 'json', 'style': {'width': '200px', 'max-width': '600px'}}
+        },
+        'trial_data': {
+            'current_trial': {'title': 'Trial', 'type': 'num', 'style': {'width': '100px'}},
+            'trialdata': {'title': 'Data', 'type': 'json', 'style': {'width': '200px', 'max-width': '600px'}},
+            'dateTime': {'title': 'Time', 'type': 'date', 'style': {'width': '200px'}}
+        }
+    }
 }
 
 class AssignmentsDBDisplay {
@@ -115,9 +133,62 @@ class AssignmentsDBDisplay {
 
         if (HIT_LOCAL) {
             $('#assignmentInfo_bonus').text('$' + data['bonus'].toFixed(2));
+            $('#downloadOneData').prop('disabled', !['Credited', 'Approved', 'Submitted', 'Rejected', 'Bonused'].includes(data['status']));
+            $('#viewOneData').prop('disabled', !['Credited', 'Approved', 'Submitted', 'Rejected', 'Bonused'].includes(data['status']));
         } else {
             $('#assignmentInfo_bonus').text('No bonus data.');
         }
+    }
+}
+
+class AssignmentWorkerDataDBDisplay {
+
+    // Create the assignments worker data display
+    constructor(domelements) {
+        this.DOM$ = domelements;
+        this.db = undefined;  // Main assignment database handler
+        this.dataCache = {}; // { id: { questions, events, trials } }
+    }
+
+    // Build the database view, do not load with data yet.
+    init() {
+        this.db = new DatabaseView(this.DOM$, {
+                'onSelect': function() {}
+            }, 'workerdata');
+    }
+
+    // Loads a worker's data from the database into the cache
+    _loadWorkerData(assignment_id, callback) {
+        if (!(assignment_id in this.dataCache)) {
+            $.ajax({
+                type: 'POST',
+                url: '/dashboard/api/assignments/data',
+                data: JSON.stringify({
+                    'assignments': [assignment_id]
+                }),
+                contentType: 'application/json; charset=utf-8',
+                dataType: 'json',
+                success: (data) => {
+                    if (data.success) {
+                        this.dataCache[assignment_id] = data.data[assignment_id];
+                        callback();
+                    }
+                },
+                error: function(errorMsg) {
+                    console.log(errorMsg);
+                }
+            });
+        } else {
+            callback();
+        }
+    }
+
+    // Loads the worker data from the cache into the database
+    async displayWorkerData(assignment_id) {
+        this._loadWorkerData(assignment_id, () => {
+            let type = $('input[name="dataRadioOptions"]:checked').val();
+            this.db.updateData(this.dataCache[assignment_id][type], DATA_FIELDS[type], true);
+        });
     }
 }
 
@@ -135,7 +206,7 @@ function approveIndividualHandler() {
         dataType: 'json',
         success: function(data) {
             if (data.success && data.data[0].success) {
-                disp._reloadAssignments([assignment_id]);
+                mainDisp._reloadAssignments([assignment_id]);
             } else {
                 console.log(data);
             }
@@ -160,7 +231,7 @@ function rejectIndividualHandler() {
         dataType: 'json',
         success: function(data) {
             if (data.success && data.data[0].success) {
-                disp._reloadAssignments([assignment_id]);
+                mainDisp._reloadAssignments([assignment_id]);
             } else {
                 console.log(data);
             }
@@ -171,16 +242,42 @@ function rejectIndividualHandler() {
     });
 }
 
+// Listens for modal showing and loads in worker data for an assignment
+function viewWorkerDataHandler() {
+    let assignment_id = $('#assignmentInfo_assignmentid').text();
+    dataDisp.displayWorkerData(assignment_id);
+}
+
 // Populates the table view with assignments, loads handlers
-var disp;
+var mainDisp;
+var dataDisp;
 $(window).on('load', function() {
 
-     // Initialize the assignment display
-    disp  = new AssignmentsDBDisplay({
+    // Initialize the assignment display
+    mainDisp = new AssignmentsDBDisplay({
         filters: $('#DBFilters'),
         display: $('#DBDisplay'),
     });
-    disp.init();
+    mainDisp.init();
+
+    // Initialize worker data display
+    dataDisp = new AssignmentWorkerDataDBDisplay({
+        display: $('#DataDBDisplay'),
+    });
+    dataDisp.init();
+
+    // Listeners for moving with arrow keys
+    $(document).keydown((e) => {
+        if (e.which == 38) {
+            mainDisp.db.selectPreviousRow();
+        } else if (e.which == 40) {
+            mainDisp.db.selectNextRow();
+        }
+    });
+
+    // On view worker data request, load in the data
+    $('#viewOneData').on('click', viewWorkerDataHandler);
+    $('input[name="dataRadioOptions"]').on('change', viewWorkerDataHandler);
 
     // Approves/rejects/bonuses the currently selected assignment
     $('#approveOne').on('click', approveIndividualHandler);

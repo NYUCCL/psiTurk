@@ -21,6 +21,9 @@ export class DatabaseView {
         this.name = name;
         this.filter = filter;
 
+        // Index of the selected row
+        this.selectedRowIndex = undefined;
+
         // Build elements
         this.DOM$.display.append(
             this.DOM$.root.append(
@@ -46,7 +49,6 @@ export class DatabaseView {
         this.data = newData;
         this.fields = fields;
         this.sort = DEFAULT_SORT;
-        this.order = [...Array(50).keys()];
 
         // Reset headers of columns
         let tHead$ = this.DOM$.table.find('thead');
@@ -90,7 +92,7 @@ export class DatabaseView {
 
         // Insert the actual data into the body
         let totalRows = 0;
-        for (let i = 0; i < this.order.length && i < this.data.length; i++) {
+        for (let i = 0; i < this.data.length; i++) {
             if (this.filter && !this.filter.passes(this.data[i])) { continue; }
             let row$ = $('<tr><td>' + (i+1) + '</td></tr>');
             row$.attr('id', 'row_' + this.name + '_' + i);
@@ -113,10 +115,12 @@ export class DatabaseView {
                 }
                 row$.append(data$);
             }
+            let currentRow = totalRows;
             row$.on("click", (event) => {
                 let index = /_([0-9]*)$/g.exec(event.currentTarget.id);
                 let selected = parseInt(index[1]);
                 this.callbacks['onSelect'](this.data[selected]);
+                this.selectedRowIndex = currentRow;
                 $(event.currentTarget).addClass('selected').siblings().removeClass('selected');
             })
             tBody$.append(row$);
@@ -135,8 +139,26 @@ export class DatabaseView {
         if (this.filter) {
             this.filter.updateFilterCounts(totalRows);
         }
+    }
 
-        return Promise.resolve();
+    // Selects the previous row from the currently selected
+    selectPreviousRow() {
+        let rows = this.DOM$.table.find('tbody tr');
+        if (rows.length > 0 && this.selectedRowIndex > 0) {
+            this.selectedRowIndex--;
+            console.log(this.selectedRowIndex, this.totalRows, rows);
+            $(rows[this.selectedRowIndex]).click();
+        }
+    }
+
+    // Seletcs the next row from the currently selected
+    selectNextRow() {
+        let rows = this.DOM$.table.find('tbody tr');
+        if (rows.length > 0 && this.selectedRowIndex < rows.length - 1) {
+            this.selectedRowIndex++;
+            console.log(this.selectedRowIndex, this.totalRows, rows);
+            $(rows[this.selectedRowIndex]).click();
+        }
     }
 
     // Sorts the table based on the header clicked
@@ -183,151 +205,5 @@ export class DatabaseView {
         }
         this.sort['last'] = byColIndex;
         this.sort['forwards'] = switchDirection;
-    }
-}
-
-export class DatabaseViewWithFilters extends DatabaseView {
-
-    constructor(parentId, callbacks, name='') {
-        super(parentId, callbacks, name);
-
-        this.filters = DEFAULT_FILTERS;
-
-        // Build filter layout
-        this.filterLayout$ = $('<div id="dbFilterLayout_' + this.name + '" class="db-filtersLayout"></div>');
-        this.filters$ = $('<ul id="dbFilters_' + this.name + '" class="db-filters"></ul>');
-        this.searchCbox$ = $('<input type="checkbox" id="applySearch_' + this.name + '" class="db-filtersApplySearch">');
-        this.searchInput$ = $('<input type="text" id="searchText_' + this.name + '" class="db-filtersSearchTextInput">');
-        this.filterLayout$.append($('<span class="db-filtersListTitle">SEARCH</span>'))
-            .append($('<div id="searchLayout_' + this.name + '" class="db-filtersSearchLayout"></div>')
-                .append(this.searchCbox$)
-                .append(this.searchInput$))
-            .append($('<span class="db-filtersListTitle">FILTERS</span>'))
-            .append(this.filters$);
-        // Prepend it (before the table view from super constructor)
-        // this.DOM$.filters.append(this.filterLayout$);
-
-        // Add listeners to search filter
-        this.searchCbox$.on('change', (event) => {
-            if (event.target.checked) {
-                this.filters.searchFilter = this.searchInput$.val();
-            } else {
-                this.filters.searchFilter = undefined;
-            }
-            this.updateFilterCounts();
-            this.renderTable(); 
-        });
-        this.searchInput$.on('change', (event) => {
-            if (this.searchCbox$.prop('checked')) {
-                this.filters.searchFilter = event.target.value;
-                this.updateFilterCounts();
-                this.renderTable(); 
-            }
-        });
-    }
-
-    // ========== OVERRIDES ============
-
-    // Override update data to include filtering functionality
-    async updateData(newData, fields, rerender=true) {
-        this.filters = DEFAULT_FILTERS;
-        // Update the data and rerender filters before rerendering table
-        return super.updateData(newData, fields, rerender, () => {
-            this.renderFilters();
-            this.updateFilterCounts();
-        });
-    }
-
-    // Overridden rendertable simply uses the filtering function found here
-    async renderTable() {
-        return super.renderTable((row) => this.passesFilters(row));
-    }
-
-    // Tallies up the filter counts
-    updateFilterCounts() {
-        for (let i = 0; i < Object.keys(this.fields).length; i++) {
-            let count = 0;
-            this.data.forEach(row => {
-                if (this.passesFilters(row, Object.keys(this.fields)[i])) {
-                    count++;
-                }
-            })
-            $('#count_' + this.name + '_' + i).text(count);
-        }
-    }
-
-    // Resets the filters on the left
-    renderFilters() {
-        this.filters$.empty();
-        this.filters.comp = {};
-        let i = 0;
-        for (const [key, value] of Object.entries(this.fields)) {
-            this.filters.comp[key] = {'active': false, 'index': key, 'dataType': value['type'], 'type': Object.keys(FILTER_TYPES[value['type']])[0], 'value': ''};
-            let li$ = $('<li id="' + i + '_li"></li>');
-            let filterval$ = $('<input type="text" class="db-filterVal" id="filterVal_' + this.name + '_' + i + '" value="">');
-            let filteroption$ = $('<select class="db-filterOption" id="filterType_' + this.name + '_' + i + '"></select>');
-            for (const [key2, value2] of Object.entries(FILTER_TYPES[value['type']])) {
-                filteroption$.append($('<option value="' + key2 + '">' + value2['title'] + '</option>'));
-            }
-            let filtercbox$ = $('<input type="checkbox" value="' + i + '">');
-
-            // Event listeners for each filter
-            filtercbox$.on('change', (event) => {
-                this.filters.comp[key]['active'] = event.target.checked;
-                if (event.target.checked) {
-                    $('#filterCustom_' + this.name + '_' + key).css('display', 'block');
-                } else {
-                    $('#filterCustom_' + this.name + '_' + key).css('display', 'none');
-                }
-                this.updateFilterCounts();
-                this.renderTable();  
-            })
-            filteroption$.on('change', (event) => {
-                this.filters.comp[key]['type'] = event.target.value;
-                this.updateFilterCounts();
-                this.renderTable();
-            });
-            filterval$.on('change', (event) => {
-                this.filters.comp[key]['value'] = event.target.value;
-                this.updateFilterCounts();
-                this.renderTable();
-            })
-
-            // Build the elements for each filter
-            li$.append(filtercbox$)
-                .append('(')
-                .append($('<span id="count_' + this.name + '_' + i + '">?</span>)'))
-                .append(') ' + value['title'])
-                .append($('<div id="filterCustom_' + this.name + '_' + key + '" style="display: none"></div>')
-                    .append($(filteroption$))
-                    .append(filterval$));
-            this.filters$.append(li$);        
-            i++;
-        }
-    }
-
-    // Checks if a given row passes the current filters and search key
-    passesFilters(row, analyzeFilter=undefined) {
-        // First check the col-specific filters 
-        let passesFilter = Object.values(this.filters.comp).every((filter) => {
-            if (filter['type'] == undefined || (!filter['active'] && filter['index'] != analyzeFilter)) {
-                return true;
-            } else {
-                return FILTER_TYPES[filter['dataType']][filter['type']]['comparator'](row[filter['index']], filter['value']);
-            }
-        });
-
-        // Now check the search filter on all columns
-        if (this.filters.searchFilter != undefined && passesFilter) {
-            passesFilter = false;
-            for (const [_, value] of Object.entries(row)) {
-                if (value && value.toString().toLowerCase().includes(this.filters.searchFilter.toLowerCase())) {
-                    passesFilter = true;
-                    break;
-                }
-            }
-        }
-
-        return passesFilter;
     }
 }

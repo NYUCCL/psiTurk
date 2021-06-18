@@ -95,59 +95,63 @@
                                 <li class="list-group-item px-2 py-1" style="background-color: #eee">
                                     <b class="noselect">HIT Reward: </b><span id="assignmentInfo_hitReward">${{ hit_info.options.reward }}</span>, <b class="noselect">Bonus: </b><span id="assignmentInfo_bonus">...</span>
                                 </li>
-                            </ul>
-                            <div class="row no-gutters">
-                                <div class="col mt-2">
-                                    <button 
-                                        type="button" 
-                                        id="approveOne" 
-                                        class="btn btn-success w-100 text-nowrap"
-                                        disabled>
-                                        Approve
-                                    </button>
+                                </ul>
+                                <div class="row no-gutters">
+                                    <div class="col mt-2">
+                                        <button 
+                                            type="button" 
+                                            id="approveOne" 
+                                            class="btn btn-success w-100 text-nowrap"
+                                            disabled>
+                                            Approve
+                                        </button>
+                                    </div>
+                                    <div class="col-sm-0 mx-1"></div>
+                                    <div class="col mt-2">
+                                        <button 
+                                            type="button" 
+                                            id="rejectOne" 
+                                            class="btn btn-danger w-100 text-nowrap"
+                                            disabled>
+                                            Reject
+                                        </button>
+                                    </div>
                                 </div>
-                                <div class="col-sm-0 mx-1"></div>
-                                <div class="col mt-2">
-                                    <button 
-                                        type="button" 
-                                        id="rejectOne" 
-                                        class="btn btn-danger w-100 text-nowrap"
-                                        disabled>
-                                        Reject
-                                    </button>
+                                <div class="row no-gutters">
+                                    <div class="col mt-2">
+                                        <button 
+                                            type="button" 
+                                            id="bonusOne" 
+                                            class="btn btn-primary w-100 text-nowrap"
+                                            disabled>
+                                            Bonus
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="row no-gutters">
-                                <div class="col mt-2">
-                                    <button 
-                                        type="button" 
-                                        id="bonusOne" 
-                                        class="btn btn-primary w-100 text-nowrap"
-                                        disabled>
-                                        Bonus
-                                    </button>
+                                {% if hit_local %}
+                                <div class="row no-gutters">
+                                    <div class="col-7 mt-2 pr-1">
+                                        <button 
+                                            type="button" 
+                                            id="downloadOneData" 
+                                            class="btn btn-info w-100 text-nowrap"
+                                            disabled>
+                                            <img src="{{url_for('.static', filename='images/blueribbon.png')}}" class="db-boolimg"> Download
+                                        </button>
+                                    </div>
+                                    <div class="col-5 mt-2 pl-1">
+                                        <button 
+                                            type="button" 
+                                            id="viewOneData" 
+                                            class="btn btn-info w-100 text-nowrap"
+                                            data-toggle="modal" 
+                                            data-target="#viewDataModal"
+                                            disabled>
+                                            <img src="{{url_for('.static', filename='images/blueribbon.png')}}" class="db-boolimg"> View
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="row no-gutters">
-                                <div class="col-7 mt-2 pr-1">
-                                    <button 
-                                        type="button" 
-                                        id="downloadOneData" 
-                                        class="btn btn-info w-100 text-nowrap"
-                                        disabled>
-                                        <img src="{{url_for('.static', filename='images/blueribbon.png')}}" class="db-boolimg"> Download
-                                    </button>
-                                </div>
-                                <div class="col-5 mt-2 pl-1">
-                                    <button 
-                                        type="button" 
-                                        id="viewOneData" 
-                                        class="btn btn-info w-100 text-nowrap"
-                                        disabled>
-                                        <img src="{{url_for('.static', filename='images/blueribbon.png')}}" class="db-boolimg"> View
-                                    </button>
-                                </div>
-                            </div>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -157,7 +161,6 @@
                 <div class="row mt-2 flex-grow-1">
                     <div class="col px-2">
                         <div class="bg-dark rounded p-2" id="DBFilters">
-                            
                             <button class="btn btn-secondary btn-sm btn-block mt-2" type="button" id="button-addon1">Download table</button>
                         </div>
                     </div>
@@ -175,7 +178,7 @@
 
 {% if hit_local %}
 <!-- MODAL FOR VIEWING WORKER DATA -->
-<div class="modal fade" id="viewWorkerDataModal" tabindex="-1" role="dialog" aria-labelledby="viewWorkerDataModal" aria-hidden="true">
+<div class="modal fade" id="viewDataModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -185,10 +188,10 @@
             </div>
             <div class="modal-body">
                 <div class="col assignmentModal-uneditable">
-                    <div id="viewWorkerDataTable" class="modalDBView no-scrollbar" style="min-height: 400px; height: 500px;"></div>
-                    <div style="margin-top: 5px;">There are <b id="numRowsInWorkerData">0</b> rows in this data source.</div>
+                    <div id="DataDBDisplay" class="db-data-display"></div>
+                    {# <div style="margin-top: 5px;">There are <b id="numRowsInWorkerData">0</b> rows in this data source.</div> #}
                 </div>
-                <div class="col assignmentModal-editable">
+                <div class="col modal-editable">
                     <div class="row" style="margin: auto;">
                         <div class="form-check form-check-inline">
                             <input class="form-check-input" type="radio" name="dataRadioOptions" id="showTrialData" value="trial_data">

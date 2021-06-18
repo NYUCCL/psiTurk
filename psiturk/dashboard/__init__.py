@@ -362,20 +362,25 @@ def API_assignment_data():
         assignments = request.json['assignments']
         data = {}
         for assignment_id in assignments:
-            p = Participant.query.filter_by(assignmentid=assignment_id)\
-                .options('datastring').first()
+            p = Participant.query.filter_by(assignmentid=assignment_id).first()
+            q_data = json.loads(p.datastring)["questiondata"]
+            e_data = json.loads(p.datastring)["eventdata"]
+            t_data = json.loads(p.datastring)["data"]
             jsonData = {
-                'question_data': get_question_data_json(p),
-                'event_data': get_event_data_json(p),
-                'trial_data': get_trial_data_json(p)
+                'question_data': [{
+                    'questionname': q,
+                    'response': json.dumps(q_data[q])} for q in q_data],
+                'event_data': [{
+                    'eventtype': e['eventtype'],
+                    'interval': e['interval'],
+                    'value': e['value'],
+                    'timestamp': e['timestamp']} for e in e_data],
+                'trial_data': [{
+                    'current_trial': t['current_trial'],
+                    'dateTime': t['dateTime'],
+                    'trialdata': json.dumps(t['trialdata'])} for t in t_data]
             }
             data[assignment_id] = jsonData
         return jsonify({"success": True, "data": data}), 200
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 400
-
-# Writes data to an open zipfile
-def write_data_to_zip(participant, fields, zf, prefix=''):
-    for field in fields:
-        output = get_datafile(participant, field)
-        zf.writestr(prefix + field + '.csv', output)
