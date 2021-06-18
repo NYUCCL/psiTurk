@@ -177,6 +177,8 @@ def hits_list(hit_id=None):
 def assignments_list(hit_id, assignment_id=None):
     my_hitids = list(set([hit.hitid for hit in Hit.query.distinct(Hit.hitid)]))
     hit_info = services_manager.amt_services_wrapper.get_hit(hit_id).data
+    if not hit_info:
+        return redirect(url_for('.hits_list'))
     return render_template('dashboard/assignments.html', hit_id=hit_id, assignment_id=assignment_id, hit_local=hit_id in my_hitids, hit_info=hit_info)
 
 # ---------------------------------------------------------------------------- #
