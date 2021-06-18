@@ -10,6 +10,7 @@ from psiturk.services_manager import SESSION_SERVICES_MANAGER_MODE_KEY, \
     psiturk_services_manager as services_manager
 from psiturk.psiturk_exceptions import *
 from psiturk.models import Participant, Hit
+from psiturk.version import version_number
 
 # Misc. imports
 from functools import wraps
@@ -118,6 +119,12 @@ def init_app(app):
                 '\nRefusing to start.'
                 ))
     login_manager.init_app(app)
+    with app.app_context():
+        @app.context_processor
+        def inject_stage_and_region():
+            return dict(
+                psiturk_version_number=version_number, 
+                code_version_number=config.get('Task Parameters', 'experiment_code_version'))
 
 # Ensures AMT services exist for a view
 def try_amt_services_wrapper(view):
