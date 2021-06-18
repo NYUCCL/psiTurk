@@ -19,6 +19,9 @@
 <!-- Set some local HIT information -->
 <script type="text/javascript">
     var HIT_ID = "{{ hit_id }}";
+    var HIT_REWARD = {{ hit_info.options.reward }};
+    var HIT_ASSIGNMENTS = {{ hit_info.options.max_assignments }};
+    var ASSIGNMENT_ID = {% if assignment_id %}"{{ assignment_id }}"{% else %}undefined{% endif %};
     var HIT_LOCAL = {% if hit_local %} true {% else %} false {% endif %};
 </script>
 
@@ -33,10 +36,10 @@
         <div class="col-sm py-1">
             <button 
                 type="button" 
-                id="submitAll" 
+                id="approveAll" 
                 class="btn btn-dark mx-auto w-100 text-nowrap" 
                 data-toggle="modal" 
-                data-target="#hitCreateModal">
+                data-target="#approveModal">
                 Approve All
             </button>
         </div>
@@ -44,7 +47,9 @@
             <button 
                 type="button" 
                 id="bonusAll" 
-                class="btn btn-dark mx-auto w-100 text-nowrap">
+                class="btn btn-dark mx-auto w-100 text-nowrap"
+                data-toggle="modal" 
+                data-target="#bonusModal">
                 Bonus All
             </button>
         </div>
@@ -175,6 +180,56 @@
 {% endblock %}
 
 {% block modals %}
+
+<!-- APPROVAL MODAL -->
+<div class="modal fade" id="approveModal" tabindex="-1" role="dialog" aria-labelledby="assignmentsCreateModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Approve <b>workers</b>!</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="col modal-uneditable pb-2">
+                    <div id="DBApprovalTable" class="db-data-display"></div>
+                    <div>Approving <b id="numWorkersApproving">0</b> submitted workers!</div>
+                    <div><b>Reward: $</b><span>{{ hit_info.options.reward }}</span> x <span id="approval-numWorkers">X</span><b>, MTurk Fee: </b><span id="approval-mturkfee">XX</span>%<b>, Cost: $</b><span id="approval-total">X.XX</span></div>
+                    <div style="font-size: small; color: gray;">Fee is 20% if fewer than 10 assignments, 40% otherwise. <i><a href="https://www.mturk.com/pricing" target="_blank" style="color: gray;">Source</a></i></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="approval-submit">Approve!</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- BONUSING MODAL -->
+<div class="modal fade" id="bonusModal" tabindex="-1" role="dialog" aria-labelledby="assignmentsCreateModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Bonus <b>workers</b>!</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="col modal-uneditable pb-2">
+                    <div id="DBBonusTable" class="db-data-display"></div>
+                    <div>Bonusing <b id="numWorkersBonusing">0</b> submitted workers...</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="approval--submit">Approve!</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 {% if hit_local %}
 <!-- MODAL FOR VIEWING WORKER DATA -->

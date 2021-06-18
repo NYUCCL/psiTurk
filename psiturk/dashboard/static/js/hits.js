@@ -55,10 +55,15 @@ class HITDBDisplay {
             dataType: 'json',
             success: (data) => {
                 if (data.success && data.data.length > 0) {
-                    this.db.updateData(data.data, HIT_FIELDS).then(() => {
-                        if (HIT_ID) {
-                            let index = this.db.data.map(e => e['HITId']).indexOf(HIT_ID);
-                            $('#row' + index).click();
+                    this.db.updateData(data.data, HIT_FIELDS, {
+                        'rerender': true,
+                        'resetFilter': false,
+                        'maintainSelected': false,
+                        'index': 'HITId',
+                        'callback': () => {
+                            if (HIT_ID) {
+                                $('#' + this.db.trPrefix + HIT_ID).click();
+                            }
                         }
                     });
                 }

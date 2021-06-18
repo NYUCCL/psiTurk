@@ -15,20 +15,28 @@ export class DatabaseView {
             ...domelements,
             root: $('<div id="dbContainer_' + this.name + '" class="db-container"></div>'),
             tableView: $('<div id="tableView_"' + this.name +' class="db-tableView no-scrollbar"></div>'),
-            table: $('<table id="table_' + this.name + '" class="db-table"><thead class="db-thead"></thead><tbody class="db-tbody"></tbody></table>')
+            table: $('<table id="table_' + this.name + '" class="db-table"></table>'),
+            thead: $('<thead class="db-thead"></thead>'),
+            tbody: $('<tbody class="db-tbody"></tbody>')
         };
         this.callbacks = callbacks; 
         this.name = name;
+        this.trPrefix = 'row_' + this.name + '_';
         this.filter = filter;
 
-        // Index of the selected row
+        // Data of the currently selected row
+        this.index = undefined;
+        this.selectedRowData = undefined;
+        this.selectedRowID = undefined;
         this.selectedRowIndex = undefined;
 
         // Build elements
         this.DOM$.display.append(
             this.DOM$.root.append(
                 this.DOM$.tableView.append(
-                    this.DOM$.table)));
+                    this.DOM$.table.append(
+                        this.DOM$.thead).append(
+                        this.DOM$.tbody))));
 
         // Begin the database invisibly (before data loads)
         this.visible = false;
@@ -45,14 +53,14 @@ export class DatabaseView {
     }
 
     // Updates the data, builds headers does not re-render unless specified
-    async updateData(newData, fields, rerender=true, resetFilter=false) {
+    updateData(newData, fields, options={'rerender': true, 'resetFilter': false, 'maintainSelected': true, 'index': undefined, 'callback': undefined}) {
         this.data = newData;
         this.fields = fields;
         this.sort = DEFAULT_SORT;
+        this.index = options['index'];
 
         // Reset headers of columns
-        let tHead$ = this.DOM$.table.find('thead');
-        tHead$.empty();
+        this.DOM$.thead.empty();
         let headerTr$ = $('<tr><th>#</th></tr>');
         for (const [key, value] of Object.entries(fields)) {
             let th$ = $('<th/>');
@@ -65,37 +73,30 @@ export class DatabaseView {
             });
             headerTr$.append(th$.append(sortLink$));
         }
-        tHead$.append(headerTr$);
+        this.DOM$.thead.append(headerTr$);
 
-        if (rerender) {
+        if (options['rerender']) {
             // If filters exist, reset them
-            if (this.filter && resetFilter) {
+            if (this.filter && options['resetFilter']) {
                 this.filter.reset();
             }
-            await this.renderTable();
+            this.renderTable(options['maintainSelected'], options['callback']);
+        } else {
+            options['callback'] && options['callback']();
         }
-
-        return Promise.resolve();
     }
 
     // Re-renders the table based on the order, discriminator tells whether to
     // render the current row.
-    async renderTable() {
-        // Maintain previously selected row
-        let selectedRow = this.DOM$.table.find('tr.selected');
-        if (selectedRow) {
-            selectedRow = selectedRow.attr('id');
-        }
-
-        let tBody$ = this.DOM$.table.find('tbody');
-        tBody$.empty();
-
+    renderTable(maintainSelected, callback) {
+        this.DOM$.tbody.empty();
         // Insert the actual data into the body
         let totalRows = 0;
         for (let i = 0; i < this.data.length; i++) {
             if (this.filter && !this.filter.passes(this.data[i])) { continue; }
             let row$ = $('<tr><td>' + (i+1) + '</td></tr>');
-            row$.attr('id', 'row_' + this.name + '_' + i);
+            row$.attr('id', this.trPrefix + (this.index ? this.data[i][this.index] : i));
+            row$.data('index', i);
             for (const [key, value] of Object.entries(this.fields)) {
                 let cellValue = this.data[i][key];
                 if (!cellValue) {
@@ -117,17 +118,24 @@ export class DatabaseView {
             }
             let currentRow = totalRows;
             row$.on("click", (event) => {
-                let index = /_([0-9]*)$/g.exec(event.currentTarget.id);
-                let selected = parseInt(index[1]);
-                this.callbacks['onSelect'](this.data[selected]);
+                this.selectedRowData = this.data[i];
+                this.selectedRowID = event.currentTarget.id;
                 this.selectedRowIndex = currentRow;
+                this.callbacks['onSelect'](this.selectedRowData);
                 $(event.currentTarget).addClass('selected').siblings().removeClass('selected');
             })
-            tBody$.append(row$);
+            this.DOM$.tbody.append(row$);
             totalRows++;
         }
 
-        if (selectedRow) { $('#' + selectedRow).click(); } 
+        // Click the previously selected row by ID
+        if (maintainSelected && this.selectedRowID) {
+            $('#' + this.selectedRowID).click();
+        } else {
+            this.selectedRowData = undefined;
+            this.selectedRowID = undefined;
+            this.selectedRowIndex = undefined;
+        }
 
         // If wasn't visible before, now make visible
         if (!this.visible) {
@@ -139,6 +147,9 @@ export class DatabaseView {
         if (this.filter) {
             this.filter.updateFilterCounts(totalRows);
         }
+
+        // Run callback for when finished
+        callback && callback();
     }
 
     // Selects the previous row from the currently selected
@@ -146,19 +157,22 @@ export class DatabaseView {
         let rows = this.DOM$.table.find('tbody tr');
         if (rows.length > 0 && this.selectedRowIndex > 0) {
             this.selectedRowIndex--;
-            console.log(this.selectedRowIndex, this.totalRows, rows);
             $(rows[this.selectedRowIndex]).click();
         }
     }
 
-    // Seletcs the next row from the currently selected
+    // Selects the next row from the currently selected
     selectNextRow() {
         let rows = this.DOM$.table.find('tbody tr');
         if (rows.length > 0 && this.selectedRowIndex < rows.length - 1) {
             this.selectedRowIndex++;
-            console.log(this.selectedRowIndex, this.totalRows, rows);
             $(rows[this.selectedRowIndex]).click();
         }
+    }
+
+    // Gets the currently showing data (the data that passes the filters)
+    getDisplayedData() {
+        return this.DOM$.tbody.find('tr').get().map((tr) => this.data[$(tr).data('index')]);
     }
 
     // Sorts the table based on the header clicked

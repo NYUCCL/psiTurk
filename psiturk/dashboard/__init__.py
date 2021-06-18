@@ -172,10 +172,12 @@ def hits_list(hit_id=None):
 # Database of assignments for a given HIT
 @dashboard.route('/hits/<hit_id>/assignments')
 @dashboard.route('/hits/<hit_id>/assignments/')
-def assignments_list(hit_id):
+@dashboard.route('/hits/<hit_id>/assignments/<assignment_id>')
+@dashboard.route('/hits/<hit_id>/assignments/<assignment_id>/')
+def assignments_list(hit_id, assignment_id=None):
     my_hitids = list(set([hit.hitid for hit in Hit.query.distinct(Hit.hitid)]))
     hit_info = services_manager.amt_services_wrapper.get_hit(hit_id).data
-    return render_template('dashboard/assignments.html', hit_id=hit_id, hit_local=hit_id in my_hitids, hit_info=hit_info)
+    return render_template('dashboard/assignments.html', hit_id=hit_id, assignment_id=assignment_id, hit_local=hit_id in my_hitids, hit_info=hit_info)
 
 # ---------------------------------------------------------------------------- #
 #                                  FORM ROUTES                                 #
@@ -241,20 +243,26 @@ def API_list_hits():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 400
 
-# Retrieves a list of assignments for a hit id
+# Retrieves a list of assignments for a hit id or assignment ids (former is prioritized)
 @dashboard.route('/api/assignments', methods=['POST'])
 def API_list_assignments():
     try:
-        hitids = request.json['hit_ids']
+        hitids = request.json['hit_ids'] if 'hit_ids' in request.json else None
+        assignmentids = request.json['assignment_ids'] if 'assignment_ids' in request.json else None
         local = request.json['local']
         if local:
-            response = [p.toAPIData() for p in Participant.query.filter(Participant.hitid.in_(hitids)).all()]
-        else:
-            response = services_manager.amt_services_wrapper.amt_services.get_assignments(hit_ids=hitids)
-            if not response.success:
-                raise response.exception
+            if hitids:
+                response = [p.toAPIData() for p in Participant.query.filter(Participant.hitid.in_(hitids)).all()]
             else:
-                response = response.data
+                response = [p.toAPIData() for p in Participant.query.filter(Participant.assignmentid.in_(assignmentids)).all()]
+        else:
+            if hitids:
+                response = services_manager.amt_services_wrapper.amt_services.get_assignments(hit_ids=hitids).data
+            else:
+                response = []
+                for assignment_id in assignmentids:
+                    response.append(services_manager.amt_services_wrapper.amt_services \
+                        .get_assignment(assignment_id).data)
         return jsonify({"success": True, "data": response}), 200
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 400
