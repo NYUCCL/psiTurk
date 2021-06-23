@@ -1,0 +1,98 @@
+{% extends "dashboard/base.html" %}
+
+{% block layout %}
+<header></header>
+<div class='container'>
+    <div class='row'>
+        <nav class='sidebar col-md-2 d-block'>
+            <ul class='nav flex-column'>
+                <li class='nav-item'>
+                    <a class='nav-link' href='/dashboard/'><span class='oi oi-home'></span> Dashboard</a>
+                </li>
+                <li class='nav-item'>
+                    <a class='nav-link' href='/dashboard/hits/'>Hits</a>
+                </li>
+                <li class='nav-item'>
+                    <a class='nav-link' href='/dashboard/assignments/'>Assignments</a>
+                </li>
+                <li class='nav-item'>
+                    <a class='nav-link' href='/dashboard/mode'>Mode</a>
+                </li>
+                <li class='nav-item'>
+                    <a class='nav-link' href='/dashboard/campaigns'>Campaigns</a>
+                </li>
+                <li class='nav-item'>
+                    <a class='nav-link' href='/dashboard/tasks'>Tasks</a>
+                </li>
+            </ul>
+            {%- raw -%}
+            <div v-cloak id='nav_services_manager'>
+            <p>
+                <strong>Current mode:</strong> 
+                <span> {{mode}}</span>
+            </p>
+            <p>
+                <strong>Current codeversion:</strong> 
+                <span> {{codeversion}}</span>
+            </p>
+            <p>
+                <strong>Current amt balance:</strong> 
+                <span> {{amt_balance}}</span>
+            </p>
+            <p>
+                <strong>Current aws id:</strong> 
+                <span> {{aws_access_key_id}}</span>
+            </p>
+            </div>
+            {%- endraw -%}
+        </nav>
+        <div class='main col-md-9 col-lg-10 px-4'>
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+</div>
+<footer></footer>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="https://d3js.org/d3-array.v2.min.js"></script>
+
+<!-- beefy bootstrap... sheesh, all this just for dropdowns... -->
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+<script type='text/javascript'>
+
+var services_manager = {
+        'codeversion': '', 
+        'mode': '',
+        'amt_balance': '',
+        'aws_access_key_id': ''
+    }
+
+let vm_services_manager = new Vue({
+    el: '#nav_services_manager',
+    data: { 
+        services_manager
+    },
+    computed: {
+        mode: function(){ return this.services_manager.mode || '' },
+        codeversion: function() { return this.services_manager.codeversion || '' },
+        amt_balance: function() { return this.services_manager.amt_balance || '' },
+        aws_access_key_id: function() { return this.services_manager.aws_access_key_id || '' }
+    },
+    created: function(){
+        fetch('/api/services_manager/').then((response)=>{
+            return response.json()
+        })
+        .then(json=>{
+            for(const [key, value] of Object.entries(json)){
+                this.services_manager[key] = value
+            }
+        })
+    }
+})
+</script>
+{% endblock %}

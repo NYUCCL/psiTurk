@@ -189,7 +189,8 @@ class MTurkServices(object):
         for hit_id in hit_ids:
             paginator = self.mtc.get_paginator('list_assignments_for_hit')
             args = dict(
-                HITId=hit_id
+                HITId=hit_id,
+                PaginationConfig={'PageSize': 100}
             )
             if assignment_status:
                 args['AssignmentStatuses'] = [assignment_status]
@@ -268,7 +269,9 @@ class MTurkServices(object):
         aws_access_key_id = self.config.get('AWS Access', 'aws_access_key_id')
         aws_secret_access_key = self.config.get('AWS Access',
                                                 'aws_secret_access_key')
-
+        session_kwargs = {
+            'region_name': 'us-east-1'
+        }
         if aws_access_key_id and aws_secret_access_key:
             session_kwargs['aws_access_key_id'] = aws_access_key_id
             session_kwargs['aws_secret_access_key'] = aws_secret_access_key

@@ -1,0 +1,63 @@
+<!doctype html>
+<head>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+   <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script> 
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">        
+    <link rel=stylesheet href="/static/css/dbstyle.css" type="text/css">
+    <link rel=stylesheet href="/static/css/assignmentstyle.css" type="text/css">
+    <script type="text/javascript">
+        var HITId = "{{ hit_id }}";
+        // Attempts to go back to the HIT page by
+        //  a) closing the tab (if was opened by the HIT page)
+        //  b) simply redirecting to the HIT page 
+        function returnToHITPage() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('closable')) {
+                history.back();
+            } else {
+                window.location.href = '/database/HITs/{{ hit }}/';
+            }
+        }
+    </script>
+    <script src="/static/js/listAssignments.js" type="module"></script>
+</head>
+<body>
+    <h1><span id="backButton" class="material-icons noselect" onclick="returnToHITPage();">first_page</span> Assignments for HIT <i>{{ hit }}</i></h1>
+
+    <div id="mainDisplay">
+    </div>
+
+    <div id="hitDisplay">
+        <div id="hitControl">
+            <i id="noHITAlert" style="display: block;">
+                Please select an assignment from the database to view its controls!
+            </i>
+            <div id="hitSelected" class="container-fluid" style="display: none">
+                <div id="mainRow" class="row h-100 flex-nowrap">
+                    <div id="hitInfo" class="col-sm">
+                        <div class="hitInfo no-scrollbar"><b>ID: </b><span id="hitInfo_id">...</span></div>
+                        <div class="hitInfo no-scrollbar"><b>Title: </b><span id="hitInfo_title">...</span></div>
+                        <div class="hitInfo no-scrollbar"><b>Description: </b><span id="hitInfo_desc">...</span></div>
+                        <div class="hitInfo no-scrollbar"><b>Status: </b><span id="hitInfo_status">...</span></div>
+                        <div class="hitInfo no-scrollbar"><b>Creation: </b><span id="hitInfo_created">...</span></div>
+                        <div class="hitInfo no-scrollbar"><b>Expiration: </b><span id="hitInfo_expired">...</span></div>
+                        <div class="hitInfo no-scrollbar"><b>Max: </b><span id="hitInfo_max">...</span>, <b>Available: </b><span id="hitInfo_available">...</span>, <b>Completed: </b><span id="hitInfo_completed">...</span> </div>
+                    </div>
+                    <div id="hitAssignments" class="col-sm">
+                        <div id="hitAssignmentsControls"><b>CONTROLS</b></div>
+                        <button id="goToAssignments" onclick="window.location.href='assignments'">Assignments Page</button>
+                    </div>
+                    <div id="hitApproved" class="col-sm">
+                        APPROVED
+                    </div>
+                    <div id="hitBonused" class="col-sm">
+                        BONUSED
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>

@@ -1,0 +1,260 @@
+{% extends 'dashboard/layouts/layout.html' %}
+{% set active_page = 'hits' %}
+
+{# --------------------------------- STYLES --------------------------------- #}
+{% block styles %}
+{{ super() }}
+
+<link rel='stylesheet' href="{{url_for('.static', filename='styles/dbview.css')}}">
+<link rel='stylesheet' href="{{url_for('.static', filename='styles/hits.css')}}">
+
+{% endblock %}
+
+
+{# --------------------------------- SCRIPTS -------------------------------- #}
+{% block scripts %}
+{{ super() }}
+
+<script type='module' src="{{url_for('.static', filename='js/hits.js')}}"></script>
+<!-- Set some local HIT information -->
+<script type="text/javascript">
+    var HIT_ID = "{{ hit_id }}";
+    var BLUE_RIBBON_PATH = "{{url_for('.static', filename='images/blueribbon.png')}}";
+</script>
+
+{% endblock %}
+
+{# --------------------------------- CONTENT --------------------------------- #}
+{% block content %}
+<div class="col h-100 overflow-hidden">
+
+    <!-- HIT controls column -->
+    <div class="row">
+        <div class="col-sm py-1">
+            <button 
+                type="button" 
+                id="hitCreationPage" 
+                class="btn btn-dark mx-auto w-100 text-nowrap" 
+                data-toggle="modal" 
+                data-target="#hitCreateModal">
+                <img src="{{url_for('.static', filename='images/blueribbon.png')}}" class="db-boolimg"> Create New HIT
+            </button>
+        </div>
+        <div class="col-sm py-1">
+            <button 
+                type="button" 
+                id="hitDebugPage" 
+                class="btn btn-dark mx-auto w-100 text-nowrap"
+                data-toggle="modal" data-target="#hitDebugModal">
+                <img src="{{url_for('.static', filename='images/blueribbon.png')}}" class="db-boolimg"> HIT Debug Link
+            </button>
+        </div>
+    </div>
+
+    <div class="row p-2 flex-fill">
+
+        <!-- DB display auto-fills column -->
+        <div class="col-md-8 db-display rounded">
+            <div id="DBDisplay" class="row">
+            </div>
+        </div>
+
+        <!-- Mobile spacing column -->
+        <div class="col d-md-none d-lg-none d-xl-none mt-2"></div>
+
+        <!-- DB information sidebar -->
+        <div class="col-md-4 db-sidebar">
+            <div class="container-fluid h-100 px-0 d-flex flex-column">
+
+                <!-- Selected HIT information -->
+                <div class="row flex-shrink-0">
+                    <div class="col px-2">
+                        <div class="bg-dark rounded p-2">
+                            <ul class="list-group">
+                                <li class="list-group-item px-2 py-1" style="background-color: #eee">
+                                    <b class="noselect">ID: </b><span id="hitInfo_id">...</span>
+                                </li>
+                                <li class="list-group-item px-2 py-1" style="background-color: #eee">
+                                    <b class="noselect">Title: </b><span id="hitInfo_title">...</span>
+                                </li>
+                                <li class="list-group-item px-2 py-1" style="background-color: #eee">
+                                    <b class="noselect">Description: </b><span id="hitInfo_desc">...</span>
+                                </li>
+                                <li class="list-group-item px-2 py-1" style="background-color: #eee">
+                                    <b class="noselect">Status: </b><span id="hitInfo_status">...</span><b class="noselect">, Reward: </b><span id="hitInfo_reward">...</span>
+                                </li>
+                                <li class="list-group-item px-2 py-1" style="background-color: #eee">
+                                    <b class="noselect">Creation: </b><span id="hitInfo_created">...</span>
+                                </li>
+                                <li class="list-group-item px-2 py-1" style="background-color: #eee">
+                                    <b class="noselect">Expiration: </b><span id="hitInfo_expired">...</span>
+                                </li>
+                                <li class="list-group-item px-2 py-1" style="background-color: #eee">
+                                    <b class="noselect">To Do: </b><span id="hitInfo_todo">...</span><b class="noselect">, Completed: </b><span id="hitInfo_completed">...</span>
+                                </li>
+                                <li class="list-group-item px-2 py-1" style="background-color: #eee">
+                                    <b class="noselect">Max: </b><span id="hitInfo_max">...</span><b class="noselect">, Available: </b><span id="hitInfo_available">...</span><b class="noselect">, Pending: </b><span id="hitInfo_pending">...</span>
+                                </li>
+                            </ul>
+                            <a class="btn btn-primary btn-sm btn-block mt-2 disabled" id="assignmentsPage" href="assignments">View HIT Assignments</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Table filter info -->
+                <div class="row mt-2 flex-grow-1">
+                    <div class="col px-2">
+                        <div class="bg-dark rounded p-2" id="DBFilters">
+                            <button class="btn btn-secondary btn-sm btn-block mt-2" type="button" id="button-addon1">Download table</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block modals %}
+
+<!-- Hit create modal -->
+<div class="modal fade" id="hitCreateModal" tabindex="-1" role="dialog" aria-labelledby="hitCreateModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create an <b>HIT</b>!</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="col modal-uneditable">
+                    <div title="Title that will be used for the HIT when posted to MTurk."><b>Title: </b><span class="hitCreate-Title">{{ hit_info.title }}</span></div>
+                    <div title="Description that will be used for the HIT when posted to MTurk."><b>Description: </b><span class="hitCreate-Title">{{ hit_info.description }}</span></div>
+                    <div title="Qualifications a worker must have completed before being able to partake in the HIT."><b>Qualifications: </b>
+                        <ul style="margin-bottom: 0px; overflow: auto;" class="no-scrollbar">
+                            <li><b>Min. % HITs Approved: </b>{{ hit_info.approve_requirement }}%</li>
+                            <li><b>Min. # Approved HITs: </b>{{ hit_info.number_hits_approved }}</li>
+                            <li><b>Only <a href="https://www.mturk.com/worker/help#what_is_master_worker" target="_blank" style="text-decoration: none; color: black;">Master Worker</a>s: </b>{{ hit_info.require_master_workers }}</li>
+                            {% for qual in hit_info.advanced_qualifications%}
+                                <li style="white-space: nowrap;"><b>{{ qual.QualificationTypeId }}: </b>{{ qual.Comparator }} {{ qual.IntegerValues[0] if 'IntegerValues' in qual }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div title="How many hours the HIT will last on MTurk before becoming unavailable for new assignments."><b>Lifetime: </b>{{ hit_info.lifetime }} hours</div>
+                    <div style="font-size: small; color: gray;">These fields can be edited in the <b>config.txt</b> of this experiment!</div>
+                </div>
+                <div class="col mt-2">
+                    <div class="form-group row">
+                        <label for="hitCreateInput-duration" class="col-6 col-form-label"><b>Duration of HIT (Hours): </b></label>
+                        <div class="col" style="min-width: 150px;">
+                            <input class="form-control" type="number" value="6" min="1" step="1" id="hitCreateInput-duration">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="hitCreateInput-participants" class="col-6 col-form-label"><b>Number of Participants: </b></label>
+                        <div class="col" style="min-width: 150px;">
+                            <input class="form-control" type="number" value="1" min="1" step="1" id="hitCreateInput-participants">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="hitCreateInput-reward" class="col-6 col-form-label"><b>Reward per Participant: </b></label>
+                        <div class="col" style="min-width: 150px;">
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">$</span>
+                                </div>
+                                <input class="form-control" type="number" value="1.00" step="0.01" min="0" id="hitCreateInput-reward">
+                            </div>
+                        </div>
+                    </div>
+                    <div style="font-size: small; color: gray;">
+                        Make sure your duration gives <b>ample</b> time 
+                        for the worker to finish the experiment after starting, 
+                        including breaks! They won't be able to submit the HIT after 
+                        this timer runs out after starting!</div>
+                </div>
+                <div class="col modal-uneditable" style="margin-top: 15px;">
+                    <div><b>MTurk Fee:</b> $<span id="hitCreate-mturkfee">0.00</span><b>, Total Estimated Base Cost:</b> $<span id="hitCreate-totalCost">0.00</span></div>
+                    <div style="font-size: small; color: gray;">Fee is 20% if fewer than 10 assignments, 40% otherwise. <i><a href="https://www.mturk.com/pricing" target="_blank" style="color: gray;">Source</a></i></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="hitCreate-submit">Create {% if live %}Live{% else %}Sandbox{% endif %} HIT!</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL FOR CREATING HIT DEBUG LINKS-->
+<div class="modal fade" id="hitDebugModal" tabindex="-1" role="dialog" aria-labelledby="hitDebugModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Generate an <b>HIT</b> debug link.</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="col" class="modal-editable">
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="hitDebug-hitidlabel">Hit ID</span>
+                        </div>
+                        <input type="text" class="form-control" placeholder="" id="hitDebug-hitid">
+                        <div class="input-group-append">
+                            <button class="btn btn-dark" id="hitDebug-hitidRandom">
+                                <span class="oi oi-random"></span>
+                            </button> 
+                        </div>
+                    </div>
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="hitDebug-workeridlabel">Worker ID</span>
+                        </div>
+                        <input type="text" class="form-control" placeholder="" id="hitDebug-workerid">
+                        <div class="input-group-append">
+                            <button class="btn btn-dark" id="hitDebug-workeridRandom">
+                                <span class="oi oi-random"></span>
+                            </button> 
+                        </div>
+                    </div>
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="hitDebug-assignmentidlabel">Assignment ID</span>
+                        </div>
+                        <input type="text" class="form-control" placeholder="" id="hitDebug-assignmentid">
+                        <div class="input-group-append">
+                            <button class="btn btn-dark" id="hitDebug-assignmentidRandom">
+                                 <span class="oi oi-random"></span>
+                            </button> 
+                        </div>
+                    </div>
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="hitDebug-hitidlabel">URL</span>
+                        </div>
+                        <input type="text" class="form-control" id="hitDebug-URL" readonly>
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" id="hitDebug-openURL">
+                                <span class="oi oi-external-link"></span>
+                            </button> 
+                            <button class="btn btn-dark" id="hitDebug-copyURL">
+                                <span class="oi oi-clipboard"></span>
+                            </button> 
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

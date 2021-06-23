@@ -1,0 +1,67 @@
+.db-container {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  flex-direction: row;
+  align-content: center;
+  justify-content: flex-start;
+}
+
+.db-table {
+  margin: 0px;
+  flex-grow: 2;
+}
+
+.db-tableView {
+  padding: 0px;
+  -ms-overflow-style: none;
+}
+
+.db-thead th {
+  background: #343a40;
+  color: #fff;
+  font-weight: initial;
+  position: sticky;
+  top: 0;
+  cursor: pointer;
+  position: -webkit-sticky;
+  text-align: left;
+  padding: 5px;
+  white-space: nowrap;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.db-tbody tr {
+  background: #f1f1f1;
+}
+
+.db-tbody tr:nth-child(2n) {
+  background: #e0e0e0;
+}
+
+.db-tbody tr td {
+  padding: 10px;
+  white-space: nowrap;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.db-tbody th::-webkit-scrollbar {
+  display: none;
+}
+
+.db-tbody td::-webkit-scrollbar {
+  display: none;
+}
+
+.db-tbody tr.selected > td {
+  background-color: #84DCC6;
+}
+
+.db-boolimg {
+  height: 23px;
+  width: auto;
+  transition: height 0.5s;
+  -webkit-transition: height 0.5s;
+}

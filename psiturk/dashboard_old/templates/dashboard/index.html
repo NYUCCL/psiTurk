@@ -9,7 +9,8 @@
             <h3>Options</h3>
             <div class='mb-2'>
                 <div class='form-check'>
-                    <input class='form-check-input' type='checkbox'
+                    <input class='form-check-input' type='checkbox' 
+                        v-model='only_latest_codeversion'
                         id='only-latest-codeversion'
                     >
                     <label class='form-check-label' for='only-latest-codeversion'>
@@ -19,7 +20,8 @@
             </div>
             <div class='mb-2'>
                 <div class='form-check'>
-                    <input class='form-check-input' type='checkbox'
+                    <input class='form-check-input' type='checkbox' 
+                        v-model='group_by_condition'
                         id='group-by-condition'
                     >
                     <label class='form-check-label' for='group-by-condition'>
@@ -29,7 +31,8 @@
             </div>
             <div class='mb-2'>
                 <div class='form-check'>
-                    <input class='form-check-input' type='checkbox'
+                    <input class='form-check-input' type='checkbox' 
+                        v-model='only_show_complete_status'
                         id='status-group-complete'
                     >
                     <label class='form-check-label' for='status-group-complete'>
@@ -45,6 +48,21 @@
                 ></distinct-value-set>
             </div>
         </div>
+    </div>
+    
+    <div v-for='(_key, key_index) in grouping_keys' class='mb-2'>
+    </div>
+    <div>
+        <table class='table'>
+            <thead>
+                <th v-for="key in keys">{{key}}</th>
+            </thead>
+            <tbody>
+                <tr v-for="(row, index) in filtered_data">
+                    <td v-for="value in row">{{value}}</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 </div>
 {%- endraw -%}
