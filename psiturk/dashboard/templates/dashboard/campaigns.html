@@ -1,0 +1,112 @@
+{% extends 'dashboard/layouts/layout.html' %}
+{% set active_page = 'hits' %}
+
+{# --------------------------------- STYLES --------------------------------- #}
+{% block styles %}
+{{ super() }}
+
+<link rel='stylesheet' href="{{url_for('.static', filename='styles/dbview.css')}}">
+<link rel='stylesheet' href="{{url_for('.static', filename='styles/hits.css')}}">
+
+{% endblock %}
+
+
+{# --------------------------------- SCRIPTS -------------------------------- #}
+{% block scripts %}
+{{ super() }}
+
+<script type='module' src="{{url_for('.static', filename='js/hits.js')}}"></script>
+<!-- Set some local HIT information -->
+<script type="text/javascript">
+    var HIT_ID = "{{ hit_id }}";
+    var BLUE_RIBBON_PATH = "{{url_for('.static', filename='images/blueribbon.png')}}";
+</script>
+
+{% endblock %}
+
+{# --------------------------------- CONTENT --------------------------------- #}
+{% block content %}
+<div class="col h-100 overflow-hidden">
+
+    <!-- HIT controls column -->
+    <div class="row">
+        <div class="col-sm py-1">
+            <button 
+                type="button" 
+                id="hitCreationPage" 
+                class="btn btn-dark mx-auto w-100 text-nowrap" 
+                data-toggle="modal" 
+                data-target="#hitCreateModal">
+                <img src="{{url_for('.static', filename='images/blueribbon.png')}}" class="db-boolimg"> Create New Campaign
+            </button>
+        </div>
+    </div>
+
+    <div class="row p-2 flex-fill">
+
+        <!-- DB display auto-fills column -->
+        <div class="col-md-8 db-display rounded no-scrollbar">
+            <div id="DBDisplay" class="row">
+            </div>
+        </div>
+
+        <!-- Mobile spacing column -->
+        <div class="col d-md-none d-lg-none d-xl-none mt-2"></div>
+
+        <!-- DB information sidebar -->
+        <div class="col-md-4 db-sidebar no-scrollbar">
+            <div class="container-fluid h-100 px-0 d-flex flex-column">
+
+                <!-- Selected HIT information -->
+                <div class="row flex-shrink-0">
+                    <div class="col px-2">
+                        <div class="bg-dark rounded p-2">
+                            <ul class="list-group">
+                                <li class="list-group-item px-2 py-1" style="background-color: #eee">
+                                    <b class="noselect">ID: </b><span id="hitInfo_id">...</span>
+                                </li>
+                                <li class="list-group-item px-2 py-1" style="background-color: #eee">
+                                    <b class="noselect">Title: </b><span id="hitInfo_title">...</span>
+                                </li>
+                                <li class="list-group-item px-2 py-1" style="background-color: #eee">
+                                    <b class="noselect">Description: </b><span id="hitInfo_desc">...</span>
+                                </li>
+                                <li class="list-group-item px-2 py-1" style="background-color: #eee">
+                                    <b class="noselect">Status: </b><span id="hitInfo_status">...</span><b class="noselect">, Reward: </b><span id="hitInfo_reward">...</span>
+                                </li>
+                                <li class="list-group-item px-2 py-1" style="background-color: #eee">
+                                    <b class="noselect">Creation: </b><span id="hitInfo_created">...</span>
+                                </li>
+                                <li class="list-group-item px-2 py-1" style="background-color: #eee">
+                                    <b class="noselect">Expiration: </b><span id="hitInfo_expired">...</span>
+                                </li>
+                                <li class="list-group-item px-2 py-1" style="background-color: #eee">
+                                    <b class="noselect">To Do: </b><span id="hitInfo_todo">...</span><b class="noselect">, Completed: </b><span id="hitInfo_completed">...</span>
+                                </li>
+                                <li class="list-group-item px-2 py-1" style="background-color: #eee">
+                                    <b class="noselect">Max: </b><span id="hitInfo_max">...</span><b class="noselect">, Available: </b><span id="hitInfo_available">...</span><b class="noselect">, Pending: </b><span id="hitInfo_pending">...</span>
+                                </li>
+                            </ul>
+                            <a class="btn btn-primary btn-sm btn-block mt-2 disabled" id="assignmentsPage" href="assignments">View HIT Assignments</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Table filter info -->
+                <div class="row mt-2 flex-grow-1">
+                    <div class="col px-2">
+                        <div class="bg-dark rounded p-2" id="DBFilters">
+                            <button class="btn btn-secondary btn-sm btn-block mt-2" type="button" id="button-addon1">Download table</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block modals %}
+{% endblock %}

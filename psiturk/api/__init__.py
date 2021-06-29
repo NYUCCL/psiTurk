@@ -158,26 +158,6 @@ class Campaigns(Resource):
 
         return campaign
 
-
-class CampaignList(Resource):
-    def get(self):
-        campaigns = Campaign.query.filter(Campaign.codeversion == services_manager.codeversion,
-                                          Campaign.mode == services_manager.mode).all()
-        return campaigns
-
-    def post(self):
-        data = request.json
-        # check if one already exists that is active...
-        if Campaign.active_campaign_exists():
-            raise APIException(
-                message='Active campaign already exists. Cancel that campaign first in order to create a new one.')
-        codeversion = services_manager.codeversion
-        mode = services_manager.mode
-        campaign = Campaign.launch_new_campaign(codeversion=codeversion, mode=mode, **data)
-        return campaign, 201
-
-
-
 class Tasks(Resource):
     def delete(self, task_id):
         app.apscheduler.remove_job(str(task_id))
@@ -212,6 +192,51 @@ class TaskList(Resource):
         raise APIException(message='task name `{}` not recognized!'.format(data['name']))
 
 # -------------------------- DASHBOARD v2 RESOURCES -------------------------- #
+
+class CampaignsList(Resource):
+
+    # POST: Returns a list of campaigns from the local database
+    #  codeversion: the codeversion for which to retrieve campaigns for
+    def post(self):
+        codeversion = request.json['codeversion']
+        query = Campaign.query.filter(Campaign.mode == services_manager.mode)
+        if codeversion:
+            query = query.filter(Campaign.codeversion == services_manager.codeversion)
+        _return = query.all()
+        return _return
+
+class CampaignsAction(Resource):
+
+    # POST: Actions for campaigns
+    def post(self, action=None):
+
+        # ACTION: Create a campaign
+        #  goal: the target number of participants to hit
+        #  minutes_between_rounds: how many minutes to wait between rounds
+        #  assignments_between_rounds: how many assignments per round (9)
+        #  hit_reward: the reward for the HIT
+        #  hit_duration_hours: how long the HIT lasts before a user is unable to submit
+        if action == 'create':
+            goal = request.json['goal']
+            minutes_between_rounds = request.json['minutes_between_rounds']
+            assignments_per_round = request.json['assignments_per_round']
+            hit_reward = request.json['hit_reward']
+            hit_duration_hours = request.json['hit_duration_hours']
+            # check if one already exists that is active...
+            if Campaign.active_campaign_exists():
+                raise APIException(
+                    message='Active campaign already exists. Cancel that campaign first in order to create a new one.')
+            codeversion = services_manager.codeversion
+            mode = services_manager.mode
+            _return = Campaign.launch_new_campaign(
+                codeversion=codeversion, 
+                mode=mode, 
+                goal=goal, 
+                minutes_between_rounds=minutes_between_rounds,
+                assignments_per_round=assignments_per_round, 
+                hit_reward=hit_reward,
+                hit_duration_hours=hit_duration_hours)
+            return _return, 201
 
 # A constant used in amt service queries to expand pages
 MAX_RESULTS = 100
@@ -412,13 +437,15 @@ class ServicesManager(Resource):
 
 # ------------------------------ RESOURCE ADDING ----------------------------- #
 
-api.add_resource(CampaignList, '/campaigns', '/campaigns/')
-api.add_resource(Campaigns, '/campaigns/<campaign_id>')
 
 api.add_resource(TaskList, '/tasks', '/tasks/')
 api.add_resource(Tasks, '/tasks/<task_id>')
 
 # Dashboard API endpoints
+
+# Campaigns
+api.add_resource(CampaignsList, '/campaigns', '/campaigns/')
+api.add_resource(CampaignsAction, '/campaigns/action/<action>')
 
 # Service Manager
 api.add_resource(ServicesManager, '/services_manager', '/services_manager/')
