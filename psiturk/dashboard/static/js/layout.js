@@ -3,7 +3,7 @@ function modeSwitchListener() {
     $('#toggleLiveMode').attr('disabled', true);
     $.ajax({
         type: 'POST',
-        url: '/dashboard/mode',
+        url: '/api/services_manager',
         data: JSON.stringify({mode: mode}),
         contentType: 'application/json; charset=utf-8',
         dataType: 'json',

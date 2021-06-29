@@ -49,24 +49,25 @@ class HITDBDisplay {
     _loadHITs(statuses=HIT_STATUSES) {
         $.ajax({
             type: 'POST',
-            url: '/dashboard/api/hits',
-            data: JSON.stringify({'statuses': statuses}),
+            url: '/api/hits/',
+            data: JSON.stringify({
+                'statuses': statuses,
+                'only_local': false
+            }),
             contentType: 'application/json; charset=utf-8',
             dataType: 'json',
             success: (data) => {
-                if (data.success && data.data.length > 0) {
-                    this.db.updateData(data.data, HIT_FIELDS, {
-                        'rerender': true,
-                        'resetFilter': false,
-                        'maintainSelected': false,
-                        'index': 'HITId',
-                        'callback': () => {
-                            if (HIT_ID) {
-                                $('#' + this.db.trPrefix + HIT_ID).click();
-                            }
+                this.db.updateData(data, HIT_FIELDS, {
+                    'rerender': true,
+                    'resetFilter': false,
+                    'maintainSelected': false,
+                    'index': 'HITId',
+                    'callback': () => {
+                        if (HIT_ID) {
+                            $('#' + this.db.trPrefix + HIT_ID).click();
                         }
-                    });
-                }
+                    }
+                });
             },
             error: function(errorMsg) {
                 console.log(errorMsg);
@@ -141,7 +142,7 @@ function createHIT() {
 
     $.ajax({
         type: 'POST',
-        url: '/dashboard/api/hits/create',
+        url: '/api/hits/action/create',
         data: JSON.stringify({
             "num_workers": participants,
             "reward": reward,

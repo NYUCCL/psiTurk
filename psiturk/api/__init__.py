@@ -1,10 +1,11 @@
 from __future__ import generator_stop
-from flask import Blueprint, jsonify, make_response, request, current_app as app
+from flask import Blueprint, jsonify, make_response, request, session, current_app as app
 from flask.json import JSONEncoder
 from flask_restful import Api, Resource
 from psiturk.dashboard import login_required
-from psiturk.services_manager import psiturk_services_manager as services_manager
-from psiturk.models import Participant, Campaign
+from psiturk.services_manager import SESSION_SERVICES_MANAGER_MODE_KEY, \
+    psiturk_services_manager as services_manager
+from psiturk.models import Participant, Campaign, Hit
 from psiturk.experiment import app
 from psiturk.psiturk_exceptions import *
 from psiturk.amt_services_wrapper import WrapperResponse
@@ -15,6 +16,7 @@ from apscheduler.job import Job
 from apscheduler.triggers.base import BaseTrigger
 import datetime
 import pytz
+import json
 from pytz.tzinfo import BaseTzInfo
 
 api_blueprint = Blueprint('api', __name__, url_prefix='/api')
@@ -90,33 +92,6 @@ def output_json(data, code, headers=None):
 def before_request():
     pass
 
-
-class ServicesManager(Resource):
-    def get(self):
-        _return = {
-            'mode': 'unavailable',
-            'codeversion': 'unavailable',
-            'amt_balance': 'unavailable',
-            'aws_access_key_id': 'unavailable'
-        }
-        try:
-            _return['mode'] = services_manager.mode
-            _return['codeversion'] = services_manager.codeversion
-            _return['amt_balance'] = services_manager.amt_balance
-            _return['aws_access_key_id'] = services_manager.config.get('AWS Access',
-                                                                       'aws_access_key_id')
-        except PsiturkException:
-            pass
-        return _return
-
-
-class AssignmentList(Resource):
-    def get(self, assignment_id=None):
-        all_workers = [worker.object_as_dict(filter_these=['datastring']) for worker in
-                       Participant.query.filter(Participant.mode != 'debug').all()]
-        return all_workers
-
-
 class AssignmentsAction(Resource):
     def post(self, action=None):
         data = request.json
@@ -157,47 +132,6 @@ class Hits(Resource):
         if not response.success:
             raise response.exception
         return '', 204
-
-
-class HitList(Resource):
-    def get(self, status=None):
-        if status == 'active':
-            hits = services_manager.amt_services_wrapper.get_active_hits().data
-        else:
-            hits = services_manager.amt_services_wrapper.get_all_hits().data
-        hits = [hit.__dict__ for hit in hits]
-        return hits
-
-
-class HitsAction(Resource):
-    def get(self, action=None):
-        if action == 'expire_all':
-            response = services_manager.amt_services_wrapper.expire_all_hits()
-            if response.success:
-                return response.data['results'], 201
-            else:
-                raise response.exception
-
-        elif action == 'delete_all':
-            response = services_manager.amt_services_wrapper.delete_all_hits()
-            if response.success:
-                return response.data['results'], 201
-            else:
-                raise response.exception
-
-        elif action == 'approve_all':
-            hits = services_manager.amt_services_wrapper.get_all_hits().data
-
-            _return = []
-            for hit in hits:
-                hit_response = services_manager.amt_services_wrapper.approve_assignments_for_hit(
-                    hit.options['hitid'], all_studies=True)
-                _return.append(hit_response)
-            return _return, 201
-
-        else:
-            raise APIException(message='action `{}` not recognized!'.format(action))
-
 
 class Campaigns(Resource):
     def get(self, campaign_id):
@@ -277,20 +211,224 @@ class TaskList(Resource):
 
         raise APIException(message='task name `{}` not recognized!'.format(data['name']))
 
+# -------------------------- DASHBOARD v2 RESOURCES -------------------------- #
 
-api.add_resource(ServicesManager, '/services_manager', '/services_manager/')
+# A constant used in amt service queries to expand pages
+MAX_RESULTS = 100
+class HitsList(Resource):
 
-api.add_resource(AssignmentList, '/assignments', '/assignments/')
-api.add_resource(AssignmentsAction, '/assignments/action/<action>')
+    # POST: Returns a list of HITs from MTurk
+    #  only_local: Only return local HITs
+    #  statuses: Filter for these HIT statuses
+    def post(self):
+        only_local = request.json['only_local']
+        statuses = request.json['statuses']
+        _return = services_manager.amt_services_wrapper.amt_services.mtc.list_hits(MaxResults=MAX_RESULTS)['HITs']
+        my_hitids = list(set([hit.hitid for hit in Hit.query.distinct(Hit.hitid)]))
+        _return = list(map(lambda hit: dict(hit, 
+            local_hit=hit['HITId'] in my_hitids,
+            ToDoAssignments=hit['MaxAssignments'] - hit['NumberOfAssignmentsAvailable'] - hit['NumberOfAssignmentsCompleted'] - hit['NumberOfAssignmentsPending']), _return))
+        if only_local:
+            _return = [hit for hit in _return if hit['local']]
+        if len(statuses) > 0:
+            _return = list(filter(lambda hit: hit['HITStatus'] in request.json['statuses'], _return))
+        return _return
 
-api.add_resource(Hits, '/hit/<hit_id>')
-api.add_resource(HitList, '/hits/', '/hits/<status>')
-api.add_resource(HitsAction, '/hits/action/<action>')
+class HitsAction(Resource):
+
+    # POST: Perform an HIT action 
+    def post(self, action=None):
+
+        # ACTION: Create
+        #  num_workers: the number of workers for the assignment
+        #  reward: the reward for the hit
+        #  duration: the duration of the hit
+        if action == 'create':
+            num_workers = request.json['num_workers']
+            reward = request.json['reward']
+            duration = request.json['duration']
+            _return = services_manager.amt_services_wrapper.create_hit(
+                num_workers=num_workers,
+                reward=reward,
+                duration=duration)
+            return _return
+
+class AssignmentsList(Resource):
+
+    # POST: Returns a list of Assignments for a HIT from MTurk
+    #  hit_ids: a list of hit ids for which to get assignments
+    #  assignment_ids: a list of assignment_ids for which to get assignments
+    #  local: when true, queries local data instead of just MTurk
+    def post(self):
+        hitids = request.json['hit_ids'] if 'hit_ids' in request.json else None
+        assignmentids = request.json['assignment_ids'] if 'assignment_ids' in request.json else None
+        local = request.json['local']
+        if local:
+            if hitids:
+                _return = [p.toAPIData() for p in Participant.query.filter(Participant.hitid.in_(hitids)).all()]
+            else:
+                _return = [p.toAPIData() for p in Participant.query.filter(Participant.assignmentid.in_(assignmentids)).all()]
+        else:
+            if hitids:
+                _return = services_manager.amt_services_wrapper.amt_services.get_assignments(hit_ids=hitids).data
+            else:
+                _return = []
+                for assignment_id in assignmentids:
+                    _return.append(services_manager.amt_services_wrapper.amt_services \
+                        .get_assignment(assignment_id).data)
+        return _return
+
+
+class AssignmentsAction(Resource):
+
+    # POST: Perform an assignment action 
+    def post(self, action):
+
+        # ACTION: Approve
+        #  assignments: a list of assignment ids to approve
+        #  all_studies: approve in mturk even if not in local db?
+        if action == 'approve':
+            assignments = request.json['assignments']
+            all_studies = request.json['all_studies']
+            _return = []
+            for assignment in assignments:
+                try:
+                    response = services_manager.amt_services_wrapper \
+                        .approve_assignment_by_assignment_id(assignment, all_studies)
+                    _return.append({
+                        "assignment": assignment,
+                        "success": response.status == "success",
+                        "message": str(response)})
+                except Exception as e:
+                    _return.append({
+                        "assignment": assignment, 
+                        "success": False, 
+                        "message": str(e)})
+            return _return
+
+        # ACTION: Reject
+        #  assignments: a list of assignment ids to reject
+        #  all_studies: reject in mturk even if not in local db?
+        elif action == 'reject':
+            assignments = request.json['assignments']
+            all_studies = request.json['all_studies']
+            _return = []
+            for assignment in assignments:
+                try:
+                    response = services_manager.amt_services_wrapper \
+                        .reject_assignment(assignment, all_studies)
+                    _return.append({
+                        "assignment": assignment, 
+                        "success": response.status == 'success', 
+                        "message": str(response)})
+                except Exception as e:
+                    _return.append({
+                        "assignment": assignment, 
+                        "success": False, 
+                        "message": str(e)})
+            return _return
+
+        # ACTION: Bonus
+        #  assignments: a list of assignment ids to bonus
+        #  all_studies: bonus in mturk even if not in local db?
+        #  amount: a float value to bonus, or "auto" for auto-bonusing from local
+        #  reason: a string reason to send to the worker
+        elif action == 'bonus':
+            assignments = request.json['assignments']
+            all_studies = request.json['all_studies']
+            amount = request.json['amount']
+            reason = request.json['reason']
+            _return = []
+            for assignment in assignments:
+                try:
+                    resp = services_manager.amt_services_wrapper \
+                        .bonus_assignment_for_assignment_id(
+                            assignment, amount, reason, all_studies)
+                    _return.append({
+                        "assignment": assignment, 
+                        "success": resp.status == 'success', 
+                        "message": str(resp)})
+                except Exception as e:
+                    _return.append({
+                        "assignment": assignment, 
+                        "success": False, 
+                        "message": str(e)})
+            return _return
+
+        # ACTION: Data
+        #  assignments: a list of assignment ids to retrieve data for
+        elif action == 'data':
+            assignments = request.json['assignments']
+            _return = {}
+            for assignment_id in assignments:
+                p = Participant.query.filter_by(assignmentid=assignment_id).first()
+                q_data = json.loads(p.datastring)["questiondata"]
+                e_data = json.loads(p.datastring)["eventdata"]
+                t_data = json.loads(p.datastring)["data"]
+                jsonData = {
+                    'question_data': [{
+                        'questionname': q,
+                        'response': json.dumps(q_data[q])} for q in q_data],
+                    'event_data': [{
+                        'eventtype': e['eventtype'],
+                        'interval': e['interval'],
+                        'value': e['value'],
+                        'timestamp': e['timestamp']} for e in e_data],
+                    'trial_data': [{
+                        'current_trial': t['current_trial'],
+                        'dateTime': t['dateTime'],
+                        'trialdata': json.dumps(t['trialdata'])} for t in t_data]
+                }
+                _return[assignment_id] = jsonData
+            return _return
+
+class ServicesManager(Resource):
+
+    # POST: Set the services manager mode
+    #  mode: live or sandbox, the desired mode
+    def post(self):
+        mode = request.json['mode']
+        services_manager.mode = mode
+        session[SESSION_SERVICES_MANAGER_MODE_KEY] = mode
+    
+    # GET: Retrieves information from the services manager
+    def get(self):
+        _return = {
+            'mode': 'unavailable',
+            'codeversion': 'unavailable',
+            'amt_balance': 'unavailable',
+            'aws_access_key_id': 'unavailable'
+        }
+        try:
+            _return['mode'] = services_manager.mode
+            _return['codeversion'] = services_manager.codeversion
+            _return['amt_balance'] = services_manager.amt_balance
+            _return['aws_access_key_id'] = services_manager.config.get('AWS Access',
+                                                                       'aws_access_key_id')
+        except PsiturkException:
+            pass
+        return _return
+
+
+# ------------------------------ RESOURCE ADDING ----------------------------- #
 
 api.add_resource(CampaignList, '/campaigns', '/campaigns/')
 api.add_resource(Campaigns, '/campaigns/<campaign_id>')
 
 api.add_resource(TaskList, '/tasks', '/tasks/')
 api.add_resource(Tasks, '/tasks/<task_id>')
+
+# Dashboard API endpoints
+
+# Service Manager
+api.add_resource(ServicesManager, '/services_manager', '/services_manager/')
+
+# HITs
+api.add_resource(HitsList, '/hits', '/hits/')
+api.add_resource(HitsAction, '/hits/action/<action>')
+
+# Assignments
+api.add_resource(AssignmentsList, '/assignments', '/assignments/')
+api.add_resource(AssignmentsAction, '/assignments/action/<action>')
 
 api.init_app(api_blueprint)

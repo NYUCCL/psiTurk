@@ -82,7 +82,7 @@ class AssignmentsDBDisplay {
     _loadAssignments(hitId) {
         $.ajax({
             type: 'POST',
-            url: '/dashboard/api/assignments',
+            url: '/api/assignments/',
             data: JSON.stringify({
                 hit_ids: [hitId],
                 local: HIT_LOCAL
@@ -90,8 +90,8 @@ class AssignmentsDBDisplay {
             contentType: 'application/json; charset=utf-8',
             dataType: 'json',
             success: (data) => {
-                if (data.success && data.data.length > 0) {
-                    this.db.updateData(data.data, ASSIGNMENT_FIELDS, {
+                if (data.length > 0) {
+                    this.db.updateData(data, ASSIGNMENT_FIELDS, {
                         'rerender': true,
                         'resetFilter': false,
                         'maintainSelected': false,
@@ -115,7 +115,7 @@ class AssignmentsDBDisplay {
     _reloadAssignments(assignment_ids) {
         $.ajax({
             type: 'POST',
-            url: '/dashboard/api/assignments',
+            url: '/api/assignments/',
             data: JSON.stringify({
                 'assignment_ids': assignment_ids,
                 'local': HIT_LOCAL
@@ -123,21 +123,18 @@ class AssignmentsDBDisplay {
             contentType: 'application/json; charset=utf-8',
             dataType: 'json',
             success: (data) => {
-                console.log(data);
-                if (data.success) {
-                    let updatedData = this.db.data;
-                    data.data.forEach((el, _) => {
-                        let i = updatedData.findIndex(o => o['assignmentId'] == el['assignmentId'])
-                        updatedData[i] = el;
-                    });
-                    this.db.updateData(updatedData, ASSIGNMENT_FIELDS, {
-                        'rerender': true,
-                        'resetFilter': false,
-                        'maintainSelected': true,
-                        'index': 'assignmentId',
-                        'callback': () => {}
-                    });
-                }
+                let updatedData = this.db.data;
+                data.forEach((el, _) => {
+                    let i = updatedData.findIndex(o => o['assignmentId'] == el['assignmentId'])
+                    updatedData[i] = el;
+                });
+                this.db.updateData(updatedData, ASSIGNMENT_FIELDS, {
+                    'rerender': true,
+                    'resetFilter': false,
+                    'maintainSelected': true,
+                    'index': 'assignmentId',
+                    'callback': () => {}
+                });
             },
             error: function(errorMsg) {
                 console.log(errorMsg);
@@ -197,17 +194,15 @@ class AssignmentWorkerDataDBDisplay {
         if (!(assignment_id in this.dataCache)) {
             $.ajax({
                 type: 'POST',
-                url: '/dashboard/api/assignments/data',
+                url: '/api/assignments/action/data',
                 data: JSON.stringify({
                     'assignments': [assignment_id]
                 }),
                 contentType: 'application/json; charset=utf-8',
                 dataType: 'json',
                 success: (data) => {
-                    if (data.success) {
-                        this.dataCache[assignment_id] = data.data[assignment_id];
-                        callback();
-                    }
+                    this.dataCache[assignment_id] = data[assignment_id];
+                    callback();
                 },
                 error: function(errorMsg) {
                     console.log(errorMsg);
@@ -237,7 +232,7 @@ class AssignmentWorkerDataDBDisplay {
 function assignmentAPI(assignment_ids, endpoint, payload={}, callbacks={'success': () => {}, 'failure': () => {}}) {
     $.ajax({
         type: 'POST',
-        url: '/dashboard/api/assignments/' + endpoint,
+        url: '/api/assignments/action/' + endpoint,
         data: JSON.stringify({
             'assignments': assignment_ids,
             'all_studies': !HIT_LOCAL,
@@ -246,12 +241,11 @@ function assignmentAPI(assignment_ids, endpoint, payload={}, callbacks={'success
         contentType: 'application/json; charset=utf-8',
         dataType: 'json',
         success: function(data) {
-            if (data.success && data.data[0].success) {
+            if (data.every(el => !el.success)) {
+                callbacks['failure']();
+            } else {
                 mainDisp._reloadAssignments(assignment_ids);
                 callbacks['success']();
-            } else {
-                console.log(data);
-                callbacks['failure']();
             }
         },
         error: function(errorMsg) {
