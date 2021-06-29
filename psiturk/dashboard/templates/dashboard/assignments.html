@@ -58,7 +58,7 @@
     <div class="row p-2 flex-fill">
 
         <!-- DB display auto-fills column -->
-        <div class="col-md-8 db-display rounded">
+        <div class="col-md-8 db-display rounded no-scrollbar">
             <div id="DBDisplay" class="row">
             </div>
         </div>
@@ -67,7 +67,7 @@
         <div class="col d-md-none d-lg-none d-xl-none mt-2"></div>
 
         <!-- DB information sidebar -->
-        <div class="col-md-4 db-sidebar">
+        <div class="col-md-4 db-sidebar no-scrollbar">
             <div class="container-fluid h-100 px-0 d-flex flex-column">
 
                 <!-- Selected HIT information -->
@@ -79,13 +79,13 @@
                                 <li class="list-group-item px-2 py-1" style="background-color: #eee">
                                     <b class="noselect">HIT ID: </b><span>{{ hit_info.options.hitid }}</span>
                                 </li>
-                                <li class="list-group-item px-2 py-1 text-nowrap overflow-auto" style="background-color: #eee">
+                                <li class="list-group-item px-2 py-1 text-nowrap overflow-auto no-scrollbar" style="background-color: #eee">
                                     <b class="noselect">HIT Title: </b><span>{{ hit_info.options.title }}</span>
                                 </li>
                                 <li class="list-group-item px-2 py-1" style="background-color: #eee">
                                     <b class="noselect">Worker ID: </b><span id="assignmentInfo_workerid">...</span>
                                 </li>
-                                <li class="list-group-item px-2 py-1 text-nowrap overflow-auto" style="background-color: #eee">
+                                <li class="list-group-item px-2 py-1 text-nowrap overflow-auto no-scrollbar" style="background-color: #eee">
                                     <b class="noselect">Assignment ID: </b><span id="assignmentInfo_assignmentid">...</span>
                                 </li>
                                 <li class="list-group-item px-2 py-1" style="background-color: #eee">
@@ -193,7 +193,7 @@
             </div>
             <div class="modal-body">
                 <div class="col modal-uneditable pb-2">
-                    <div id="DBApprovalTable" class="db-data-display"></div>
+                    <div id="DBApprovalTable" class="db-data-display no-scrollbar"></div>
                     <div>Approving <b id="numWorkersApproving">0</b> submitted workers!</div>
                     <div><b>Reward: $</b><span>{{ hit_info.options.reward }}</span> x <span id="approval-numWorkers">X</span><b>, MTurk Fee: </b><span id="approval-mturkfee">XX</span>%<b>, Cost: $</b><span id="approval-total">X.XX</span></div>
                     <div style="font-size: small; color: gray;">Fee is 20% if fewer than 10 assignments, 40% otherwise. <i><a href="https://www.mturk.com/pricing" target="_blank" style="color: gray;">Source</a></i></div>
@@ -219,7 +219,7 @@
             </div>
             <div class="modal-body">
                 <div class="col modal-uneditable pb-2">
-                    <div id="DBBonusTable" class="db-data-display"></div>
+                    <div id="DBBonusTable" class="db-data-display no-scrollbar"></div>
                     <div class="mb-1">Bonusing <b id="numWorkersBonusing">0</b> submitted workers...</div>
                 </div>
                 <div class="col modal-editable">

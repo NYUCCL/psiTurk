@@ -7,6 +7,12 @@ body {
   background-color: #161616;
 }
 
+.no-scrollbar::-webkit-scrollbar {
+  -webkit-appearance: none;
+  width: 0;
+  height: 0;
+}
+
 .form-signin {
   width: 100%;
   max-width: 330px;
