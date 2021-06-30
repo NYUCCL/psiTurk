@@ -193,6 +193,19 @@ class TaskList(Resource):
 
 # -------------------------- DASHBOARD v2 RESOURCES -------------------------- #
 
+class WorkersList(Resource):
+
+    # POST: Returns the full list of workers from the local database
+    #  codeversion: the codeversion for which to retrieve workers for
+    def post(self):
+        codeversion = request.json['codeversion']
+        print('starting...')
+        query = Participant.query
+        if codeversion:
+            query = query.filter(Participant.codeversion == codeversion)
+        _return = query.all()
+        return [p.toAPIData() for p in _return]
+
 class CampaignsList(Resource):
 
     # POST: Returns a list of campaigns from the local database
@@ -442,6 +455,9 @@ api.add_resource(TaskList, '/tasks', '/tasks/')
 api.add_resource(Tasks, '/tasks/<task_id>')
 
 # Dashboard API endpoints
+
+# Workers
+api.add_resource(WorkersList, '/workers', '/workers/')
 
 # Campaigns
 api.add_resource(CampaignsList, '/campaigns', '/campaigns/')

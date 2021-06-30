@@ -1,5 +1,5 @@
 {% extends 'dashboard/layouts/layout.html' %}
-{% set active_page = 'campaigns' %}
+{% set active_page = 'workers' %}
 
 {# --------------------------------- STYLES --------------------------------- #}
 {% block styles %}
@@ -15,10 +15,10 @@
 {% block scripts %}
 {{ super() }}
 
-<script type='module' src="{{url_for('.static', filename='js/hits.js')}}"></script>
+<script type='module' src="{{url_for('.static', filename='js/workers.js')}}"></script>
 <!-- Set some local HIT information -->
 <script type="text/javascript">
-    var HIT_ID = "{{ hit_id }}";
+    var WORKER_ID = "{{ worker_id }}";
     var BLUE_RIBBON_PATH = "{{url_for('.static', filename='images/blueribbon.png')}}";
 </script>
 
@@ -37,7 +37,7 @@
                 class="btn btn-dark mx-auto w-100 text-nowrap" 
                 data-toggle="modal" 
                 data-target="#hitCreateModal">
-                <img src="{{url_for('.static', filename='images/blueribbon.png')}}" class="db-boolimg"> Create New Campaign
+                <img src="{{url_for('.static', filename='images/blueribbon.png')}}" class="db-boolimg"> Some Worker Function
             </button>
         </div>
     </div>
@@ -63,31 +63,27 @@
                         <div class="bg-dark rounded p-2">
                             <ul class="list-group">
                                 <li class="list-group-item px-2 py-1" style="background-color: #eee">
-                                    <b class="noselect">ID: </b><span id="hitInfo_id">...</span>
+                                    <b class="noselect">HIT ID: </b><span id="workerInfo_hitid">...</span>
                                 </li>
                                 <li class="list-group-item px-2 py-1" style="background-color: #eee">
-                                    <b class="noselect">Title: </b><span id="hitInfo_title">...</span>
+                                    <b class="noselect">Worker ID: </b><span id="workerInfo_id">...</span>
+                                </li>
+                                <li class="list-group-item px-2 py-1 text-nowrap overflow-auto no-scrollbar" style="background-color: #eee">
+                                    <b class="noselect">Assignment ID: </b><span id="workerInfo_assignmentid">...</span>
                                 </li>
                                 <li class="list-group-item px-2 py-1" style="background-color: #eee">
-                                    <b class="noselect">Description: </b><span id="hitInfo_desc">...</span>
+                                    <b class="noselect">Status: </b><span id="workerInfo_status">...</span>
                                 </li>
                                 <li class="list-group-item px-2 py-1" style="background-color: #eee">
-                                    <b class="noselect">Status: </b><span id="hitInfo_status">...</span><b class="noselect">, Reward: </b><span id="hitInfo_reward">...</span>
+                                    <b class="noselect">Accepted: </b><span id="workerInfo_accepted">...</span>
                                 </li>
                                 <li class="list-group-item px-2 py-1" style="background-color: #eee">
-                                    <b class="noselect">Creation: </b><span id="hitInfo_created">...</span>
+                                    <b class="noselect">Submitted: </b><span id="workerInfo_submitted">...</span>
                                 </li>
                                 <li class="list-group-item px-2 py-1" style="background-color: #eee">
-                                    <b class="noselect">Expiration: </b><span id="hitInfo_expired">...</span>
+                                    <b class="noselect">Bonus: </b><span id="workerInfo_bonus">...</span><b class="noselect">, Code Version: </b><span id="workerInfo_codeVersion">...</span>
                                 </li>
-                                <li class="list-group-item px-2 py-1" style="background-color: #eee">
-                                    <b class="noselect">To Do: </b><span id="hitInfo_todo">...</span><b class="noselect">, Completed: </b><span id="hitInfo_completed">...</span>
-                                </li>
-                                <li class="list-group-item px-2 py-1" style="background-color: #eee">
-                                    <b class="noselect">Max: </b><span id="hitInfo_max">...</span><b class="noselect">, Available: </b><span id="hitInfo_available">...</span><b class="noselect">, Pending: </b><span id="hitInfo_pending">...</span>
-                                </li>
-                            </ul>
-                            <a class="btn btn-primary btn-sm btn-block mt-2 disabled" id="assignmentsPage" href="assignments">View HIT Assignments</a>
+                                </ul>
                         </div>
                     </div>
                 </div>

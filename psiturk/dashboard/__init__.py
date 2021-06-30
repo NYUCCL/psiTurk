@@ -190,6 +190,20 @@ def assignments_list(hit_id, assignment_id=None):
         return redirect(url_for('.hits_list'))
     return render_template('dashboard/assignments.html', hit_id=hit_id, assignment_id=assignment_id, hit_local=hit_id in my_hitids, hit_info=hit_info)
 
+# Database of campaigns
+@dashboard.route('/campaigns')
+@dashboard.route('/campaigns/')
+def campaigns_list():
+    return render_template('dashboard/campaigns.html', hit_info=HIT_INFO)
+
+# Database of all workers
+@dashboard.route('/workers')
+@dashboard.route('/workers/')
+@dashboard.route('/workers/<worker_id>')
+@dashboard.route('/workers/<worker_id>/')
+def workers_list(worker_id=None):
+    return render_template('dashboard/workers.html', hit_info=HIT_INFO, worker_id=worker_id)
+
 # ---------------------------------------------------------------------------- #
 #                                  FORM ROUTES                                 #
 # ---------------------------------------------------------------------------- #
