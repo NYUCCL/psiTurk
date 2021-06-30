@@ -53,6 +53,20 @@ var FILTER_TYPES = {
             'title': 'missing',
             'comparator': (a, _) => !a
         }
+    },
+    'dollar': {
+        'greaterthan': {
+            'title': '>',
+            'comparator': (a, b) => a > parseInt(b)
+        },
+        'equals': {
+            'title': '=',
+            'comparator': (a, b) => a == parseInt(b)
+        },
+        'lessthan': {
+            'title': '<',
+            'comparator': (a, b) => a < parseInt(b)
+        }
     }
 }
 
@@ -60,7 +74,8 @@ var FILTER_TYPES = {
 DEFAULT_FILTERS = {
     'search': {
         'text': '',
-        'active': true
+        'active': true,
+        'inverted': false
     },
     'cols': {}
 };
@@ -109,6 +124,8 @@ DEFAULT_FILTERS = {
                     break;
                 }
             }
+            // Invert if search filter is inverted
+            if (this.filters.search.inverted) { passesFilter = !passesFilter; }
         }
 
         // Then check the col-specific filters 
@@ -117,7 +134,8 @@ DEFAULT_FILTERS = {
                 if (!filter['active'] || !filter['col'] || !filter['comp']) {
                     return true;
                 } else {
-                    return FILTER_TYPES[this.cols[filter['col']].type][filter['comp']]['comparator'](row[filter['col']], filter['text']);
+                    let passesComp = FILTER_TYPES[this.cols[filter['col']].type][filter['comp']]['comparator'](row[filter['col']], filter['text']);
+                    return filter['inverted'] ? !passesComp : passesComp;
                 }
             });
         }
@@ -129,6 +147,7 @@ DEFAULT_FILTERS = {
     _buildElements(rootdom) {
         let count = $('<small class="text-muted">(0 matching)</small>');
         let searchCbox = $('<input type="checkbox" aria-label="Checkbox for search filter" checked>');
+        let searchInverseCbox = $('<input type="checkbox" aria-label="Checkbox for inverting search filter">')
         let searchInput = $('<input type="text" class="form-control" aria-label="Search filter input">');
         let filterLayout = $('<div></div>');
         let addFilterButton = $('<button class="btn btn-secondary btn-sm btn-block mt-2" type="button" style="opacity: 0.8;">+ Add another database filter...</button>');
@@ -137,6 +156,7 @@ DEFAULT_FILTERS = {
             ...rootdom,
             count: count,
             search_CB: searchCbox,
+            search_inverse_CB: searchInverseCbox,
             search_I: searchInput,
             filterLayout: filterLayout,
             addFilter_B: addFilterButton,
@@ -149,11 +169,14 @@ DEFAULT_FILTERS = {
                         .append($('<div class="input-group-prepend"></div>')
                             .append($('<div class="input-group-text"></div>')
                                 .append(searchCbox))
+                            .append($('<div class="input-group-text"></div>')
+                                .append(searchInverseCbox))
                             .append($('<div class="input-group-text">Search</div>')))
                         .append(searchInput))
                     .append(filterLayout)
                     .append(addFilterButton)
                     .append(downloadTableButton)
+                    .append($('<div class="text-muted mt-1"><small>First checkbox: Activated? Second checkbox: Inverted? </small></div>'))
         };
 
         // LISTENERS
@@ -165,6 +188,9 @@ DEFAULT_FILTERS = {
         searchCbox.on('click', (event) => {
             this.filters.search.active = event.target.checked;
             this.onFilterChange();});
+        searchInverseCbox.on('click', (event) => {
+            this.filters.search.inverted = event.target.checked;
+            this.onFilterChange();});
         // Download the table
         downloadTableButton.on('click', () => { this.onDownloadHandler(); });
     }
@@ -173,6 +199,7 @@ DEFAULT_FILTERS = {
     // and keeping a reference to its dom element.
     addFilter() {
         let filter_CB = $('<input type="checkbox" aria-label="Filter checkbox" checked>');
+        let filter_inverse_CB = $('<input type="checkbox" aria-label="Filter checkbox">');
         let col_B = $('<button class="btn btn-light dropdown-toggle px-1" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="border-radius: 0px;">Column</button>');
         let col_DD = this._dropDownColOptions();
         let comp_B = $('<button class="btn btn-light dropdown-toggle px-1" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="border-radius: 0px;">Compare</button>');
@@ -184,6 +211,8 @@ DEFAULT_FILTERS = {
                 .append($('<div class="input-group-prepend"></div>')
                     .append($('<div class="input-group-text"></div>')
                         .append(filter_CB))
+                    .append($('<div class="input-group-text"></div>')
+                        .append(filter_inverse_CB))
                     .append($('<div class="btn-group"></div>')
                         .append(col_B)
                         .append(col_DD))
@@ -201,6 +230,7 @@ DEFAULT_FILTERS = {
             comp: undefined,
             text: '',
             active: true,
+            inverted: false,
             DOM$: {
                 root: newFilter,
                 active: filter_CB,
@@ -232,6 +262,11 @@ DEFAULT_FILTERS = {
         // When the filter is activated
         filter_CB.on('click', (event) => {
             this.filters.cols[index].active = event.target.checked;
+            this.onFilterChange();
+        })
+        // When the filter is inverted
+        filter_inverse_CB.on('click', (event) => {
+            this.filters.cols[index].inverted = event.target.checked;
             this.onFilterChange();
         })
 
