@@ -69,7 +69,10 @@ class AssignmentsDBDisplay {
     // for the main database and another for the sub-assignments view
     init() {
         this.dbfilters = new DatabaseFilters(this.DOM$, 
-            ASSIGNMENT_FIELDS, this._filterChangeHandler.bind(this));
+            ASSIGNMENT_FIELDS, {
+                onChange: this._filterChangeHandler.bind(this),
+                onDownload: this._downloadTableHandler.bind(this)
+            });
         this.db = new DatabaseView(this.DOM$, {
                 'onSelect': this._assignmentSelectedHandler.bind(this)
             }, 'assignments', this.dbfilters);
@@ -142,8 +145,18 @@ class AssignmentsDBDisplay {
         });
     }
 
+    /**
+     * HANDLER: Change in filters of main DB view
+     */
     _filterChangeHandler() {
         this.db.renderTable();
+    }
+
+    /**
+     * HANDLER: Download table
+     */
+    _downloadTableHandler() {
+        this.db.downloadData('assignments_' + HIT_ID);
     }
 
     // Handler for assignment select

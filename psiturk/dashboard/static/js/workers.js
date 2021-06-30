@@ -57,7 +57,10 @@ class WorkerDBDisplay {
     // for the main database and another for the sub-assignments view
     init() {
         this.dbfilters = new DatabaseFilters(this.DOM$, 
-            WORKER_FIELDS, this._filterChangeHandler.bind(this));
+            WORKER_FIELDS, {
+                onChange: this._filterChangeHandler.bind(this),
+                onDownload: this._downloadTableHandler.bind(this)
+            });
         this.db = new DatabaseView(this.DOM$, {
                 'onSelect': this._workerSelectedHandler.bind(this)
             }, 'workers', this.dbfilters);
@@ -159,6 +162,13 @@ class WorkerDBDisplay {
      */
      _filterChangeHandler() {
         this.db.renderTable();
+    }
+
+    /**
+     * HANDLER: Download table
+     */
+     _downloadTableHandler() {
+        this.db.downloadData('workers');
     }
 }
 
@@ -359,6 +369,7 @@ function viewWorkerDataHandler() {
 
 // Populates the table view with HITs
 var mainDisp;
+var dataDisp;
 $(window).on('load', function() {
 
     // Initialize the HIT display
@@ -367,6 +378,12 @@ $(window).on('load', function() {
         display: $('#DBDisplay'),
     });
     mainDisp.init();
+
+    // Initialize worker data display
+    dataDisp = new WorkerDataDBDisplay({
+        display: $('#DataDBDisplay'),
+    });
+    dataDisp.init();
 
     // Listeners for moving with arrow keys
     $(document).keydown((e) => {

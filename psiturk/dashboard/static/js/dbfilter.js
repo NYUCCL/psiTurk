@@ -74,14 +74,16 @@ DEFAULT_FILTERS = {
 
     // Constructor initializes the filters with the names of the columns in the
     // database and DOM elements into which to put the database filters.
-    constructor(domelements, columns, onChange) {
+    constructor(domelements, columns, callbacks) {
         this._buildElements(domelements);
         this.cols = columns;
         this.n = 0;
         this.filters = DEFAULT_FILTERS;
 
         // Save the onchange handler
+        let { onChange, onDownload } = callbacks;
         this.onChangeHandler = onChange;
+        this.onDownloadHandler = onDownload;
 
         // Prepend the database filters elements to the DOM root
         this.DOM$.filters.prepend(this.DOM$.layout);
@@ -129,7 +131,8 @@ DEFAULT_FILTERS = {
         let searchCbox = $('<input type="checkbox" aria-label="Checkbox for search filter" checked>');
         let searchInput = $('<input type="text" class="form-control" aria-label="Search filter input">');
         let filterLayout = $('<div></div>');
-        let addFilterButton = $('<button class="btn btn-secondary btn-sm btn-block mt-2" type="button" id="button-addon1" style="opacity: 0.8;">+ Add another database filter...</button>');
+        let addFilterButton = $('<button class="btn btn-secondary btn-sm btn-block mt-2" type="button" style="opacity: 0.8;">+ Add another database filter...</button>');
+        let downloadTableButton =  $('<button class="btn btn-secondary btn-sm btn-block mt-2" type="button">Download table</button>');
         this.DOM$ = {
             ...rootdom,
             count: count,
@@ -137,6 +140,7 @@ DEFAULT_FILTERS = {
             search_I: searchInput,
             filterLayout: filterLayout,
             addFilter_B: addFilterButton,
+            downloadTable_B: downloadTableButton,
             layout: $('<div></div>').append(
                     $('<div class="text-light mb-1"></div>')
                         .append($('<span>Filters </span>')
@@ -149,6 +153,7 @@ DEFAULT_FILTERS = {
                         .append(searchInput))
                     .append(filterLayout)
                     .append(addFilterButton)
+                    .append(downloadTableButton)
         };
 
         // LISTENERS
@@ -160,6 +165,8 @@ DEFAULT_FILTERS = {
         searchCbox.on('click', (event) => {
             this.filters.search.active = event.target.checked;
             this.onFilterChange();});
+        // Download the table
+        downloadTableButton.on('click', () => { this.onDownloadHandler(); });
     }
 
     // Adds a database filter into the row, saving a filter entry into the array

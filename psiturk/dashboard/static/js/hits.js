@@ -36,7 +36,10 @@ class HITDBDisplay {
     // for the main database and another for the sub-assignments view
     init() {
         this.dbfilters = new DatabaseFilters(this.DOM$, 
-            HIT_FIELDS, this._filterChangeHandler.bind(this));
+            HIT_FIELDS, { 
+                onChange: this._filterChangeHandler.bind(this),
+                onDownload: this._downloadTableHandler.bind(this)
+            });
         this.db = new DatabaseView(this.DOM$, {
                 'onSelect': this._hitSelectedHandler.bind(this)
             }, 'hits', this.dbfilters);
@@ -109,6 +112,13 @@ class HITDBDisplay {
      */
     _filterChangeHandler() {
         this.db.renderTable();
+    }
+
+    /**
+     * HANDLER: Download table
+     */
+    _downloadTableHandler() {
+        this.db.downloadData('hits');
     }
 }
 

@@ -52,6 +52,50 @@ export class DatabaseView {
         this.visible = false;
     }
 
+    // Downloads the data as a .CSV
+    downloadData(fileName='table') {
+        let csv = 'i,';
+
+        // Get the CSV headers
+        var rows = this.DOM$.table.find('tr');
+        let headers = Object.keys(this.fields);
+        for (let i = 0; i < headers.length; i++) {
+            csv += headers[i] + ',';
+        }
+        csv = csv.slice(0, -1) + '\n';
+
+        // Now fill in the rows of data
+        for (let i = 1; i < rows.length; i++) {
+            let childs = $(rows[i]).children('td');
+            csv += childs[0].innerHTML + ',';
+            for (let j = 1; j < childs.length; j++) {
+                let val = childs[j].innerHTML;
+                switch (Object.values(this.fields)[j-1].type) {
+                    case 'bool':
+                        val = val == '' ? 'false' : 'true';
+                        break;
+                    case 'string':
+                    case 'date':
+                        val = val.replace(',', '');
+                    default:
+                        break;
+                }
+                csv += val + ',';
+            }
+            csv = csv.slice(0, -1) + '\n';
+        }
+        csv.slice(0, -1);
+
+        // Build a download link and click on it, then remove it
+        var element = document.createElement('a');
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,'  + encodeURIComponent(csv));
+        element.setAttribute('download', fileName + '.csv');
+        element.style.display = 'none';
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
+    }
+
     // Updates the data, builds headers does not re-render unless specified
     updateData(newData, fields, options={'rerender': true, 'resetFilter': false, 'maintainSelected': true, 'index': undefined, 'callback': undefined}) {
         this.data = newData;
