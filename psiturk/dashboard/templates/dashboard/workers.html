@@ -6,7 +6,7 @@
 {{ super() }}
 
 <link rel='stylesheet' href="{{url_for('.static', filename='styles/dbview.css')}}">
-<link rel='stylesheet' href="{{url_for('.static', filename='styles/hits.css')}}">
+<link rel='stylesheet' href="{{url_for('.static', filename='styles/workers.css')}}">
 
 {% endblock %}
 
@@ -33,11 +33,31 @@
         <div class="col-sm py-1">
             <button 
                 type="button" 
-                id="hitCreationPage" 
+                id="workerFunction" 
                 class="btn btn-dark mx-auto w-100 text-nowrap" 
                 data-toggle="modal" 
                 data-target="#hitCreateModal">
                 <img src="{{url_for('.static', filename='images/blueribbon.png')}}" class="db-boolimg"> Some Worker Function
+            </button>
+        </div>
+        <div class="col-sm py-1">
+            <button 
+                type="button" 
+                id="approveAll" 
+                class="btn btn-dark mx-auto w-100 text-nowrap" 
+                data-toggle="modal" 
+                data-target="#approveModal">
+                Approve All
+            </button>
+        </div>
+        <div class="col-sm py-1">
+            <button 
+                type="button" 
+                id="bonusAll" 
+                class="btn btn-dark mx-auto w-100 text-nowrap"
+                data-toggle="modal" 
+                data-target="#bonusModal">
+                Bonus All
             </button>
         </div>
     </div>
@@ -51,7 +71,7 @@
         </div>
 
         <!-- Mobile spacing column -->
-        <div class="col d-md-none d-lg-none d-xl-none mt-2"></div>
+        <div class="col d-md-none d-lg-none d-xl-none mt-4"></div>
 
         <!-- DB information sidebar -->
         <div class="col-md-4 db-sidebar no-scrollbar">
@@ -83,7 +103,61 @@
                                 <li class="list-group-item px-2 py-1" style="background-color: #eee">
                                     <b class="noselect">Bonus: </b><span id="workerInfo_bonus">...</span><b class="noselect">, Code Version: </b><span id="workerInfo_codeVersion">...</span>
                                 </li>
-                                </ul>
+                            </ul>
+                            <div class="row no-gutters">
+                                <div class="col mt-2">
+                                    <button 
+                                        type="button" 
+                                        id="approveOne" 
+                                        class="btn btn-success w-100 text-nowrap"
+                                        disabled>
+                                        Approve
+                                    </button>
+                                </div>
+                                <div class="col-sm-0 mx-1"></div>
+                                <div class="col mt-2">
+                                    <button 
+                                        type="button" 
+                                        id="rejectOne" 
+                                        class="btn btn-danger w-100 text-nowrap"
+                                        disabled>
+                                        Reject
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="row no-gutters">
+                                <div class="col mt-2">
+                                    <button 
+                                        type="button" 
+                                        id="bonusOne" 
+                                        class="btn btn-primary w-100 text-nowrap"
+                                        disabled>
+                                        Bonus
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="row no-gutters">
+                                <div class="col-7 mt-2 pr-1">
+                                    <button 
+                                        type="button" 
+                                        id="downloadOneData" 
+                                        class="btn btn-info w-100 text-nowrap"
+                                        disabled>
+                                        <img src="{{url_for('.static', filename='images/blueribbon.png')}}" class="db-boolimg"> Download
+                                    </button>
+                                </div>
+                                <div class="col-5 mt-2 pl-1">
+                                    <button 
+                                        type="button" 
+                                        id="viewOneData" 
+                                        class="btn btn-info w-100 text-nowrap"
+                                        data-toggle="modal" 
+                                        data-target="#viewDataModal"
+                                        disabled>
+                                        <img src="{{url_for('.static', filename='images/blueribbon.png')}}" class="db-boolimg"> View
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -105,4 +179,122 @@
 {% endblock %}
 
 {% block modals %}
+
+
+<!-- APPROVAL MODAL -->
+<div class="modal fade" id="approveModal" tabindex="-1" role="dialog" aria-labelledby="assignmentsCreateModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Approve <b>workers</b>!</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="col modal-uneditable pb-2">
+                    <div id="DBApprovalTable" class="db-data-display no-scrollbar"></div>
+                    <div>Approving <b id="numWorkersApproving">0</b> submitted workers!</div>
+                    <div style="font-size: small; color: gray;">Cannot show HIT rewards in the workers page.</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="approval-submit">Approve!</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- BONUSING MODAL -->
+<div class="modal fade" id="bonusModal" tabindex="-1" role="dialog" aria-labelledby="assignmentsCreateModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Bonus <b>workers</b>!</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="col modal-uneditable pb-2">
+                    <div id="DBBonusTable" class="db-data-display no-scrollbar"></div>
+                    <div class="mb-1">Bonusing <b id="numWorkersBonusing">0</b> submitted workers...</div>
+                </div>
+                <div class="col modal-editable">
+                        
+                        <div class="form-group row">
+                            <label for="hitCreateInput-reward" class="col-2 col-form-label" style="text-align: right;"><b>Bonus: </b></label>
+                            <div class="col-10 flex-grow-2">
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">$</span>
+                                    </div>
+                                    <div class="input-group-prepend active">
+                                        <button class="btn btn-primary" type="button" id="bonus-autoToggle"><img src="{{url_for('.static', filename='images/blueribbon.png')}}" class="db-boolimg"> Auto</button>
+                                    </div>
+                                    <input class="form-control" type="number" value="0.00" step="0.01" min="0" id="bonus-value">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="hitCreateInput-reward" class="col-2 col-form-label" style="text-align: right;"><b>Reason: </b></label>
+                            <div class="col-10 flex-grow-2">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" placeholder="Reason" value="" id="bonus-reason">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-1"><b>Total: $</b><span>X.XX</span><b>, Min. MTurk Fee: </b><span id="approval-mturkfee">20</span>%<b>, Min. Cost: $</b><span id="approval-total">X.XX</span></div>
+                        <div style="font-size: small; color: gray;">
+                            When <b><i>Auto</i></b> is on, bonus amounts will be loaded for each worker from the Bonus column of the database. This feature is only available for local HITs. In the worker tab, the MTurk fee is not calculated, either. It can be either 20% or 40% based on how many HITs were in that batch.
+                        </div>
+                    </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="bonus-submit">Bonus!</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL FOR VIEWING WORKER DATA -->
+<div class="modal fade" id="viewDataModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><img src="{{url_for('.static', filename='images/blueribbon.png')}}" class="db-boolimg"> View <b>worker</b> data for assignment <b id="workerDataAssignmentId">...</b>.</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="col assignmentModal-uneditable">
+                    <div id="DataDBDisplay" class="db-data-display"></div>
+                    {# <div style="margin-top: 5px;">There are <b id="numRowsInWorkerData">0</b> rows in this data source.</div> #}
+                </div>
+                <div class="col modal-editable">
+                    <div class="row" style="margin: auto;">
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="dataRadioOptions" id="showTrialData" value="trial_data">
+                            <label class="form-check-label" for="showTrialData">Trials</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="dataRadioOptions" id="showQuestionData" value="question_data" checked>
+                            <label class="form-check-label" for="showQuestionData">Questions</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="dataRadioOptions" id="showEventData" value="event_data">
+                            <label class="form-check-label" for="showEventData">Events</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}

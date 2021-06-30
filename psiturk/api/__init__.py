@@ -198,8 +198,11 @@ class WorkersList(Resource):
     # POST: Returns the full list of workers from the local database
     #  codeversion: the codeversion for which to retrieve workers for
     def post(self):
+        worker_ids = request.json['worker_ids']
         codeversion = request.json['codeversion']
         query = Participant.query
+        if len(worker_ids) > 0:
+            query = query.filter(Participant.workerid.in_(worker_ids))
         if codeversion:
             query = query.filter(Participant.codeversion == codeversion)
         _return = query.all()

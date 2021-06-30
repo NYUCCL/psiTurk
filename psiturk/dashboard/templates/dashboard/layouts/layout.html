@@ -36,9 +36,15 @@
                 </li>
                 {% endfor %}
             </ul>
-            <div class="mr-2 font-weight-light text-muted align-middle">
-                <small>PsiTurk v{{ psiturk_version_number }}</small> - 
-                <small>Code v{{ code_version_number }}</small>
+            <div class="mr-2 font-weight-light text-muted align-middle h-100 overflow-auto">
+                <div class="col d-sm-none d-md-flex text-nowrap align-center">
+                    <small>PsiTurk <span class="text-info">v{{ psiturk_version_number }}</span></small>
+                    <small>- Code <span class="text-info">v{{ code_version_number }}</span></small>
+                </div>
+                <div class="col d-sm-none d-md-flex text-nowrap align-center">
+                    <small>AMT Balance: <span class="text-info">$<span id="layout-amtbalance">{{ amt_balance }}</span></span></small>
+                </div>
+                <div class="col d-sm-flex d-md-none my-2"></div>
             </div>
             <input
                 style="opacity: 0;"
@@ -91,6 +97,6 @@
 <!-- Bootstrap toggle plugin -->
 <script src="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/js/bootstrap4-toggle.min.js"></script>
 <!-- Custom scripts -->
-<script type='module' src="{{url_for('.static', filename='js/layout.js')}}"></script>
+<script type='text/javascript' src="{{url_for('.static', filename='js/layout.js')}}"></script>
 
 {% endblock %}
