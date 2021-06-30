@@ -199,7 +199,6 @@ class WorkersList(Resource):
     #  codeversion: the codeversion for which to retrieve workers for
     def post(self):
         codeversion = request.json['codeversion']
-        print('starting...')
         query = Participant.query
         if codeversion:
             query = query.filter(Participant.codeversion == codeversion)

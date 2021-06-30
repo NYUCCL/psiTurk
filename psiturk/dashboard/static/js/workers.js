@@ -44,7 +44,6 @@ class WorkerDBDisplay {
             contentType: 'application/json; charset=utf-8',
             dataType: 'json',
             success: (data) => {
-                console.log(data);
                 this.db.updateData(data, WORKER_FIELDS, {
                     'rerender': true,
                     'resetFilter': false,
@@ -78,7 +77,6 @@ class WorkerDBDisplay {
         $('#workerInfo_submitted').text(data['submit_time']);
         $('#workerInfo_bonus').text('$' + parseFloat(data['bonus']).toFixed(2));
         $('#workerInfo_codeVersion').text(data['codeversion']);
-
 
         // Update the current HREF
         history.pushState({id: 'hitpage'}, '', window.location.origin + '/dashboard/workers/' + workerId + '/');

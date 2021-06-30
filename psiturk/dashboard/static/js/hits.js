@@ -7,7 +7,7 @@ var HIT_FIELDS = {
     'HITId': {'title': 'ID', 'type': 'string', 'style': {'width': '50px', 'max-width': '50px'}},
     'Title': {'title': 'Title', 'type': 'string', 'style': {'min-width': '100px', 'width': '20%', 'max-width': '200px'}},
     'HITStatus': {'title': 'Status', 'type': 'string', 'style': {'width': '100px'}},
-    'Reward': {'title': 'Reward', 'type': 'string', 'style': {'width': '100px', 'max-width': '100px'}},
+    'Reward': {'title': 'Reward', 'type': 'dollar', 'style': {'width': '100px', 'max-width': '100px'}},
     'ToDoAssignments': {'title': 'TODO', 'type': 'num', 'style': {'width': '50px'}},
     'MaxAssignments': {'title': 'Max', 'type': 'num', 'style': {'width': '50px'}},
     'NumberOfAssignmentsAvailable': {'title': 'Available', 'type': 'num', 'style': {'width': '50px'}},
