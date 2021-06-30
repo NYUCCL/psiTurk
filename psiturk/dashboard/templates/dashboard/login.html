@@ -1,12 +1,39 @@
  {% extends 'dashboard/base.html' %}
  
- {% block layout %}
- <div class='container'>
- <form class='form-signin' method='post'>
-    <h1 class='h3 mb-3 font-weight-normal'>Please sign in</h1>
-    <input type="text" class="form-control" name="username" placeholder="username">
-    <input type="password" class="form-control" name="password" placeholder="password">
-    <button type="submit" class="btn btn-lg btn-primary">Sign in</button>
- </form>
- </div>
+{% block layout %}
+<div id="loginContainer" class="d-flex justify-center vh-100">
+   <form class="form-signin text-center" method='post'>
+      <img class="mb-4" src="/static/images/university.jpeg" alt="" width="72" height="72">
+      <h1 class="h3 mb-3 font-weight-normal text-secondary">Please sign in</h1>
+      <label for="inputEmail" class="sr-only">Email address</label>
+      <input type="text" name="username" class="form-control" placeholder="Username" required="" autofocus="">
+      <label for="inputPassword" class="sr-only">Password</label>
+      <input type="password" name="password" class="form-control" placeholder="Password" required="">
+      <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+      <p class="mt-5 mb-3 text-muted">PsiTurk Dashboard</p>
+   </form>
+</div>
+
+<style>
+#loginContainer {
+  display: -ms-flexbox;
+  display: -webkit-box;
+  display: flex;
+  -ms-flex-align: center;
+  -ms-flex-pack: center;
+  -webkit-box-align: center;
+  align-items: center;
+  -webkit-box-pack: center;
+  justify-content: center;
+  padding-top: 40px;
+  padding-bottom: 40px;
+}
+</style>
+
+   {# <form class='form-signin' method='post'>
+      <h1 class='h3 mb-3 font-weight-normal text-white text-center'>LOGIN</h1>
+      <input type="text" class="form-control mb-1" name="username" placeholder="username">
+      <input type="password" class="form-control mb-2" name="password" placeholder="password">
+      <button type="submit" class="btn btn-lg btn-primary w-100">Sign in</button>
+   </form> #}
  {% endblock %}
