@@ -136,13 +136,15 @@
                                 {% if hit_local %}
                                 <div class="row no-gutters">
                                     <div class="col-7 mt-2 pr-1">
-                                        <button 
-                                            type="button" 
-                                            id="downloadOneData" 
-                                            class="btn btn-info w-100 text-nowrap"
-                                            disabled>
-                                            <img src="{{url_for('.static', filename='images/blueribbon.png')}}" class="db-boolimg"> Download
-                                        </button>
+                                        <a id="downloadOneDataHref" href="javascript:void(0);" download>
+                                            <button 
+                                                type="button" 
+                                                id="downloadOneData" 
+                                                class="btn btn-info w-100 text-nowrap"
+                                                disabled>
+                                                <img src="{{url_for('.static', filename='images/blueribbon.png')}}" class="db-boolimg"> Download
+                                            </button>
+                                        </a>
                                     </div>
                                     <div class="col-5 mt-2 pl-1">
                                         <button 

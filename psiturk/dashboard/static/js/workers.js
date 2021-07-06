@@ -150,11 +150,18 @@ class WorkerDBDisplay {
         $('#approveOne').prop('disabled', !['Submitted', 'Rejected'].includes(data['status']));
         $('#rejectOne').prop('disabled', data['status'] != 'Submitted');
         $('#bonusOne').prop('disabled', !['Credited', 'Approved'].includes(data['status']));
-        $('#downloadOneData').prop('disabled', !['Credited', 'Approved', 'Submitted', 'Rejected', 'Bonused'].includes(data['status']));
-        $('#viewOneData').prop('disabled', !['Credited', 'Approved', 'Submitted', 'Rejected', 'Bonused'].includes(data['status']));
+        $('#downloadOneData').prop('disabled', data['status'] == 'Allocated');
+        $('#viewOneData').prop('disabled', data['status'] == 'Allocated');
 
         // Update the current HREF
         history.pushState({id: 'hitpage'}, '', window.location.origin + '/dashboard/workers/' + workerId + '/');
+
+        // Update the data download HREF
+        if (data['status'] != 'Allocated') {
+            $('#downloadOneDataHref').attr('href', '/api/assignments/action/datadownload?assignmentid=' + data['assignmentId']);
+        } else {
+            $('#downloadOneDataHref').removeAttr('href');
+        }
     }
 
     /**
@@ -367,6 +374,11 @@ function viewWorkerDataHandler() {
     $('#workerDataAssignmentId').text(assignment_id);
 }
 
+function downloadWorkerDataHandler() {
+    let assignment_id = $('#workerInfo_assignmentid').text();
+    $('#dataDownloadHref').click()
+}
+
 // Populates the table view with HITs
 var mainDisp;
 var dataDisp;
@@ -395,9 +407,7 @@ $(window).on('load', function() {
     });
 
     // On view worker data request, load in the data
-    $('#downloadOneData').on('click', () => {
-        // mainDisp._reloadAssignments(['3I3WADAZ9Q5QECKJM5NCXE9VS1X5OL']);
-    });
+    $('#downloadOneData').on('click', downloadWorkerDataHandler);
     $('#viewOneData').on('click', viewWorkerDataHandler);
     $('input[name="dataRadioOptions"]').on('change', viewWorkerDataHandler);
 

@@ -1,5 +1,5 @@
 from __future__ import generator_stop
-from flask import Blueprint, jsonify, make_response, request, session, current_app as app
+from flask import Blueprint, jsonify, make_response, request, session, current_app as app, send_file
 from flask.json import JSONEncoder
 from flask_restful import Api, Resource
 from psiturk.dashboard import login_required
@@ -17,6 +17,8 @@ from apscheduler.triggers.base import BaseTrigger
 import datetime
 import pytz
 import json
+from io import BytesIO
+import zipfile
 from pytz.tzinfo import BaseTzInfo
 
 api_blueprint = Blueprint('api', __name__, url_prefix='/api')
@@ -253,6 +255,36 @@ class CampaignsAction(Resource):
                 hit_duration_hours=hit_duration_hours)
             return _return, 201
 
+
+
+class ServicesManager(Resource):
+
+    # POST: Set the services manager mode
+    #  mode: live or sandbox, the desired mode
+    def post(self):
+        mode = request.json['mode']
+        services_manager.mode = mode
+        session[SESSION_SERVICES_MANAGER_MODE_KEY] = mode
+    
+    # GET: Retrieves information from the services manager
+    def get(self):
+        _return = {
+            'mode': 'unavailable',
+            'codeversion': 'unavailable',
+            'amt_balance': 'unavailable',
+            'aws_access_key_id': 'unavailable'
+        }
+        try:
+            _return['mode'] = services_manager.mode
+            _return['codeversion'] = services_manager.codeversion
+            _return['amt_balance'] = services_manager.amt_balance
+            _return['aws_access_key_id'] = services_manager.config.get('AWS Access',
+                                                                       'aws_access_key_id')
+        except PsiturkException:
+            pass
+        return _return
+
+
 # A constant used in amt service queries to expand pages
 MAX_RESULTS = 100
 class HitsList(Resource):
@@ -320,6 +352,22 @@ class AssignmentsList(Resource):
 
 
 class AssignmentsAction(Resource):
+
+    # GET: For downloading data
+    def get(self, action):
+
+        # ACTION: Download data
+        #  assignment: the assignment id for which to download data
+        if action == 'datadownload':
+            assignmentid = request.args.get('assignmentid')
+            fields = ['question_data', 'trial_data', 'event_data']
+            participant = Participant.query.filter(Participant.assignmentid == assignmentid).first()
+            mem_file = BytesIO()
+            with zipfile.ZipFile(mem_file, 'w', compression=zipfile.ZIP_DEFLATED) as zf:
+                write_data_to_zip(participant, fields, zf)
+            mem_file.seek(0)
+            return send_file(mem_file, attachment_filename=participant.workerid + '_data.zip', as_attachment=True)
+
 
     # POST: Perform an assignment action 
     def post(self, action):
@@ -422,32 +470,32 @@ class AssignmentsAction(Resource):
                 _return[assignment_id] = jsonData
             return _return
 
-class ServicesManager(Resource):
 
-    # POST: Set the services manager mode
-    #  mode: live or sandbox, the desired mode
-    def post(self):
-        mode = request.json['mode']
-        services_manager.mode = mode
-        session[SESSION_SERVICES_MANAGER_MODE_KEY] = mode
-    
-    # GET: Retrieves information from the services manager
-    def get(self):
-        _return = {
-            'mode': 'unavailable',
-            'codeversion': 'unavailable',
-            'amt_balance': 'unavailable',
-            'aws_access_key_id': 'unavailable'
+# --------------------------- DATA WRITING HELPERS --------------------------- #
+
+# Writes data to an open zipfile
+def write_data_to_zip(participant, fields, zf, prefix=''):
+    for field in fields:
+        output = get_datafile(participant, field)
+        zf.writestr(prefix + field + '.csv', output)
+
+def get_datafile(participant, datatype):
+    contents = {
+        "trial_data": {
+            "function": lambda p: p.get_trial_data(),
+            "headerline": "uniqueid,currenttrial,time,trialData\n"        
+        }, 
+        "event_data": {
+            "function": lambda p: p.get_event_data(),
+            "headerline": "uniqueid,eventtype,interval,value,time\n"        
+        }, 
+        "question_data": {
+            "function": lambda p: p.get_question_data(),
+            "headerline": "uniqueid,questionname,response\n"
+        },
         }
-        try:
-            _return['mode'] = services_manager.mode
-            _return['codeversion'] = services_manager.codeversion
-            _return['amt_balance'] = services_manager.amt_balance
-            _return['aws_access_key_id'] = services_manager.config.get('AWS Access',
-                                                                       'aws_access_key_id')
-        except PsiturkException:
-            pass
-        return _return
+    ret = contents[datatype]["headerline"] + contents[datatype]["function"](participant)
+    return ret
 
 
 # ------------------------------ RESOURCE ADDING ----------------------------- #

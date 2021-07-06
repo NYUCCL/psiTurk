@@ -175,8 +175,14 @@ class AssignmentsDBDisplay {
 
         if (HIT_LOCAL) {
             $('#assignmentInfo_bonus').text('$' + data['bonus'].toFixed(2));
-            $('#downloadOneData').prop('disabled', !['Credited', 'Approved', 'Submitted', 'Rejected', 'Bonused'].includes(data['status']));
-            $('#viewOneData').prop('disabled', !['Credited', 'Approved', 'Submitted', 'Rejected', 'Bonused'].includes(data['status']));
+            $('#downloadOneData').prop('disabled', data['status'] == 'Allocated');
+            $('#viewOneData').prop('disabled', data['status'] == 'Allocated');
+            // Update the data download HREF
+            if (data['status'] != 'Allocated') {
+                $('#downloadOneDataHref').attr('href', '/api/assignments/action/datadownload?assignmentid=' + data['assignmentId']);
+            } else {
+                $('#downloadOneDataHref').removeAttr('href');
+            }
         } else {
             $('#assignmentInfo_bonus').text('No bonus data.');
         }
