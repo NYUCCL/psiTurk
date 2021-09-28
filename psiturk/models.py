@@ -19,7 +19,8 @@ config.load_config()
 
 # The "table_name" config key is deprecated -- it will be replaced by
 # `assignments_table_name` in a future release.
-ASSIGNMENTS_TABLENAME = config.get('Database Parameters', 'table_name')
+ASSIGNMENTS_TABLENAME = config.get('Database Parameters', 'assignments_table_name') or \
+                        config.get('Database Parameters', 'table_name')
 HITS_TABLENAME = config.get('Database Parameters', 'hits_table_name')
 CAMPAIGNS_TABLENAME = config.get('Database Parameters', 'campaigns_table_name')
 
