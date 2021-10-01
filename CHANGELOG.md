@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Fix SSTI vulnerability in ad and consent pages (#517)
+- Fix backwards-compat bug for assignments-table (#528) -- Thanks @jacob-lee!
 
 ## [3.2.0]
 ### Added
