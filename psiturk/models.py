@@ -7,6 +7,7 @@ from sqlalchemy import Column, Integer, String, DateTime, Float, Text, Boolean, 
 from sqlalchemy.orm import validates, deferred
 from sqlalchemy.ext.declarative import declarative_base
 from psiturk.db import db_session
+from psiturk.psiturk_statuses import PSITURK_STATUS_CODES
 from .psiturk_config import PsiturkConfig
 from typing import List
 from itertools import groupby
@@ -83,6 +84,18 @@ class Participant(Base):
             self.cond,
             self.status,
             self.codeversion)
+
+    def toAPIData(self):
+        return {
+            'hitId': self.hitid,
+            'assignmentId': self.assignmentid,
+            'workerId': self.workerid,
+            'submit_time': self.endhit,
+            'accept_time': self.beginhit,
+            'status': PSITURK_STATUS_CODES[self.status],
+            'codeversion': self.codeversion,
+            'bonus': self.bonus
+        }
 
     def get_trial_data(self):
         try:
