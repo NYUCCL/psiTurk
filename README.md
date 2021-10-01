@@ -1,6 +1,6 @@
 <img src="https://raw.githubusercontent.com/NYUCCL/psiTurk/gh-pages/static/images/psiturk_logo_README.png">
 
-[![Build Status](https://travis-ci.org/NYUCCL/psiTurk.png?branch=master)](https://travis-ci.org/NYUCCL/psiTurk)
+[![Build Status](https://github.com/NYUCCL/psiTurk/actions/workflows/python-app.yml/badge.svg)](https://github.com/NYUCCL/psiTurk/actions/workflows/python-app.yml)
 [![Latest Version](https://img.shields.io/pypi/v/psiturk.svg?style=flat-square&label=latest%20stable%20version)](https://pypi.python.org/pypi/psiturk/)
 [![Coverage Status](https://coveralls.io/repos/github/NYUCCL/psiTurk/badge.svg?branch=master)](https://coveralls.io/github/NYUCCL/psiTurk?branch=master)
 [![License](http://img.shields.io/badge/license-MIT-red.svg)](http://en.wikipedia.org/wiki/MIT_License)
