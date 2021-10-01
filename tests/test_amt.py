@@ -71,7 +71,6 @@ class TestAmtServices(object):
                 'HITId': 'ABC123'
             }
         })
-        # import pytest; pytest.set_trace()
         response = amt_services_wrapper.create_hit(1, 0.01, 1,
                                                    require_qualification_ids=[REQUIRE_QUAL_ID])
         if not response.success:
@@ -103,7 +102,6 @@ class TestAmtServices(object):
                 'HITId': 'ABC123'
             }
         })
-        # import pytest; pytest.set_trace()
         response = amt_services_wrapper.create_hit(1, 0.01, 1,
                                                    require_qualification_ids=REQUIRE_QUAL_IDS)
         if not response.success:
@@ -175,7 +173,6 @@ class TestAmtServices(object):
                 'HITId': 'ABC123'
             }
         })
-        # import pytest; pytest.set_trace()
         response = amt_services_wrapper.create_hit(1, 0.01, 1,
                                                    block_qualification_ids=[BLOCK_QUAL_ID])
         if not response.success:
@@ -212,7 +209,6 @@ class TestAmtServices(object):
                 'HITId': 'ABC123'
             }
         })
-        # import pytest; pytest.set_trace()
         response = amt_services_wrapper.create_hit(1, 0.01, 1,
                                                    require_qualification_ids=[REQUIRE_QUAL_ID],
                                                    block_qualification_ids=[BLOCK_QUAL_ID])
