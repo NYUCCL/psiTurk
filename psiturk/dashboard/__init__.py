@@ -1,24 +1,25 @@
-from __future__ import generator_stop
+# Flask imports
 from flask import Blueprint, render_template, request, current_app as app, \
-    flash, session, g, redirect, url_for
-from flask_login import login_user, logout_user, current_user
-from functools import wraps
+    flash, session, g, redirect, url_for, jsonify
+from flask_login import login_user, logout_user, current_user, LoginManager, UserMixin
+
+# Psiturk imports
 from psiturk.psiturk_config import PsiturkConfig
 from psiturk.user_utils import PsiTurkAuthorization, nocache
 from psiturk.psiturk_exceptions import *
-
 from psiturk.services_manager import SESSION_SERVICES_MANAGER_MODE_KEY, \
     psiturk_services_manager as services_manager
-from flask_login import LoginManager, UserMixin
-
-# # Database setup
 from psiturk.models import Participant
+from psiturk.version import version_number
 
-# load the configuration options
+# Misc. imports
+from functools import wraps
+
+# Load configuration options
 config = PsiturkConfig()
 config.load_config()
 
-# if you want to add a password protect route use this
+# For password protected routes
 myauth = PsiTurkAuthorization(config)
 
 # import the Blueprint
@@ -44,6 +45,15 @@ def init_app(app):
                 '\nRefusing to start.'
                 ))
     login_manager.init_app(app)
+    with app.app_context():
+        @app.context_processor
+        def inject_context_vars():
+            return dict(
+                psiturk_version_number = version_number,
+                code_version_number = config.get('Task Parameters', 'experiment_code_version'),
+                aws_access_key_id = services_manager.config.get('AWS Access', 'aws_access_key_id'),
+                amt_balance = services_manager.amt_balance
+                )
 
 
 class DashboardUser(UserMixin):
@@ -126,18 +136,10 @@ def before_request():
 @dashboard.route('/mode', methods=('GET', 'POST'))
 def mode():
     if request.method == 'POST':
-        mode = request.form['mode']
-        if mode not in ['live', 'sandbox']:
-            flash('unrecognized mode: {}'.format(mode), 'danger')
-        else:
-            try:
-                services_manager.mode = mode
-                session[SESSION_SERVICES_MANAGER_MODE_KEY] = mode
-                flash('mode successfully updated to {}'.format(mode), 'success')
-            except Exception as e:
-                flash(str(e), 'danger')
-    mode = services_manager.mode
-    return render_template('dashboard/mode.html', mode=mode)
+        mode = request.json['mode']
+        services_manager.mode = mode
+        session[SESSION_SERVICES_MANAGER_MODE_KEY] = mode
+        return jsonify(), 200
 
 
 @dashboard.route('/index')
@@ -151,13 +153,13 @@ def index():
 @dashboard.route('/hits')
 @dashboard.route('/hits/')
 def hits_list():
-    return render_template('dashboard/hits/list.html')
+    return render_template('dashboard/hits.html')
 
 
 @dashboard.route('/assignments')
 @dashboard.route('/assignments/')
 def assignments_list():
-    return render_template('dashboard/assignments/list.html')
+    return render_template('dashboard/assignments.html')
 
 @dashboard.route('/campaigns')
 @dashboard.route('/campaigns/')
@@ -173,7 +175,7 @@ def campaigns_list():
     maybe_will_complete_count = services_manager.amt_services_wrapper.count_maybe_will_complete(
         hits=all_hits).data
 
-    return render_template('dashboard/campaigns/list.html',
+    return render_template('dashboard/campaigns.html',
                            completed_count=completed_count,
                            pending_count=pending_count,
                            maybe_will_complete_count=maybe_will_complete_count,
@@ -184,7 +186,7 @@ def campaigns_list():
 @dashboard.route('/tasks/')
 @warn_if_scheduler_not_running
 def tasks_list():
-    return render_template('dashboard/tasks/list.html')
+    return render_template('dashboard/tasks.html')
 
 
 @dashboard.route('/login', methods=('GET', 'POST'))

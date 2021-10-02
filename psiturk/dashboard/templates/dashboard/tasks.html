@@ -56,5 +56,5 @@
 {{ super() }}
 <script type='text/javascript'>
 </script>
-<script type='text/javascript' src='/dashboard/static/tasks/list.js'></script>
+<script type='text/javascript' src="{{ url_for('.static', filename='js/tasks.js') }}"></script>
 {% endblock %}

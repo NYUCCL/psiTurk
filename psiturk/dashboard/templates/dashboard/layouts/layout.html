@@ -1,52 +1,62 @@
 {% extends "dashboard/base.html" %}
 
+{# Set the navigation bar pages and the currently active page#}
+{% set navigation_bar = [
+  ('/dashboard/hits/', 'hits', 'HITs'),
+  ('/dashboard/assignments/', 'assignments', 'Assignments'),
+  ('/dashboard/campaigns/', 'campaigns', 'Campaigns'),
+  ('/dashboard/tasks/', 'tasks', 'Tasks'),
+] -%}
+{% set active_page = active_page | default('none') -%}
+
+{# Is the current session in live mode or sandbox? #}
+{% set live = session['services_manager_mode'] == 'live' %}
+
 {% block layout %}
-<header></header>
-<div class='container'>
-    <div class='row'>
-        <nav class='sidebar col-md-2 d-block'>
-            <ul class='nav flex-column'>
-                <li class='nav-item'>
-                    <a class='nav-link' href='/dashboard/'><span class='oi oi-home'></span> Dashboard</a>
+    <!-- Navigation bar -->
+    <nav class='navbar navbar-expand-sm navbar-dark bg-dark'>
+        <a class="navbar-brand" href="/dashboard/">
+            Dashboard
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                {% for href, id, caption in navigation_bar%}
+                <li class="nav-item{% if id == active_page %} active{% endif %}">
+                    <a class='nav-link' href={{href|e}}>{{caption|e}}</a>
                 </li>
-                <li class='nav-item'>
-                    <a class='nav-link' href='/dashboard/hits/'>Hits</a>
-                </li>
-                <li class='nav-item'>
-                    <a class='nav-link' href='/dashboard/assignments/'>Assignments</a>
-                </li>
-                <li class='nav-item'>
-                    <a class='nav-link' href='/dashboard/mode'>Mode</a>
-                </li>
-                <li class='nav-item'>
-                    <a class='nav-link' href='/dashboard/campaigns'>Campaigns</a>
-                </li>
-                <li class='nav-item'>
-                    <a class='nav-link' href='/dashboard/tasks'>Tasks</a>
-                </li>
+                {% endfor %}
             </ul>
-            {%- raw -%}
-            <div v-cloak id='nav_services_manager'>
-            <p>
-                <strong>Current mode:</strong> 
-                <span> {{mode}}</span>
-            </p>
-            <p>
-                <strong>Current codeversion:</strong> 
-                <span> {{codeversion}}</span>
-            </p>
-            <p>
-                <strong>Current amt balance:</strong> 
-                <span> {{amt_balance}}</span>
-            </p>
-            <p>
-                <strong>Current aws id:</strong> 
-                <span> {{aws_access_key_id}}</span>
-            </p>
+            <div class="mr-2 font-weight-light text-muted align-middle h-100 overflow-auto">
+                <div class="d-md-none d-lg-block">
+                  <div class="col d-sm-none d-md-flex text-nowrap align-center">
+                      <small>PsiTurk <span class="text-info">v{{ psiturk_version_number }}</span>&nbsp;</small>
+                      <small> - Code <span class="text-info">v{{ code_version_number }}</span></small>
+                  </div>
+                  <div class="col d-sm-none d-md-flex text-nowrap align-center overflow-auto">
+                      <small>AMT Balance: <span class="text-info">$<span id="layout-amtbalance">{{ amt_balance }}</span></span>&nbsp;</small>
+                      <small> - AWS ID: <span class="text-info">{{ aws_access_key_id }}</span></small>
+                  </div>
+              </div>
             </div>
-            {%- endraw -%}
-        </nav>
-        <div class='main col-md-9 col-lg-10 px-4'>
+                <input
+                  style="opacity: 0;"
+                  type="checkbox"
+                  id="toggleLiveMode"
+                  {% if live %}checked{% endif %}
+                  data-toggle="toggle"
+                  data-on="Live"
+                  data-off="Sandbox"
+                  data-onstyle="outline-primary"
+                  data-offstyle="outline-secondary"
+                  data-size="sm">
+          </div>
+      </nav>
+<div class='container-fluid'>
+    <div class='row'>
+        <div class='main col px-4'>
             {% block content %}{% endblock %}
         </div>
     </div>
@@ -54,45 +64,31 @@
 <footer></footer>
 {% endblock %}
 
+
+{# ---------------------------------- STYLES -------------------------------- #}
+{% block styles %}
+{{ super() }}
+
+<!-- BootStrap toggle plugin -->
+<link href="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/css/bootstrap4-toggle.min.css" rel="stylesheet">
+<!-- Custom styles -->
+<link rel='stylesheet' href="{{ url_for('.static', filename='styles/layout.css') }}">
+
+{% endblock %}
+
+
+{# ---------------------------------- SCRIPTS -------------------------------- #}
 {% block scripts %}
 {{ super() }}
 <script src="https://d3js.org/d3-array.v2.min.js"></script>
 
 <!-- beefy bootstrap... sheesh, all this just for dropdowns... -->
-<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 
-<script type='text/javascript'>
-
-var services_manager = {
-        'codeversion': '', 
-        'mode': '',
-        'amt_balance': '',
-        'aws_access_key_id': ''
-    }
-
-let vm_services_manager = new Vue({
-    el: '#nav_services_manager',
-    data: { 
-        services_manager
-    },
-    computed: {
-        mode: function(){ return this.services_manager.mode || '' },
-        codeversion: function() { return this.services_manager.codeversion || '' },
-        amt_balance: function() { return this.services_manager.amt_balance || '' },
-        aws_access_key_id: function() { return this.services_manager.aws_access_key_id || '' }
-    },
-    created: function(){
-        fetch('/api/services_manager/').then((response)=>{
-            return response.json()
-        })
-        .then(json=>{
-            for(const [key, value] of Object.entries(json)){
-                this.services_manager[key] = value
-            }
-        })
-    }
-})
-</script>
+<!-- Bootstrap toggle plugin -->
+<script src="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/js/bootstrap4-toggle.min.js"></script>
+<!-- Custom scripts -->
+<script type='text/javascript' src="{{ url_for('.static', filename='js/layout.js') }}"></script>
 {% endblock %}
