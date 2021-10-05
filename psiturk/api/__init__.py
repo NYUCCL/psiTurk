@@ -1,10 +1,9 @@
 from __future__ import generator_stop
-from flask import Blueprint, jsonify, make_response, request, session, current_app as app, send_file
+from flask import Blueprint, jsonify, make_response, request, current_app as app, send_file
 from flask.json import JSONEncoder
 from flask_restful import Api, Resource
 from psiturk.dashboard import login_required
-from psiturk.services_manager import SESSION_SERVICES_MANAGER_MODE_KEY, \
-    psiturk_services_manager as services_manager
+from psiturk.services_manager import psiturk_services_manager as services_manager
 from psiturk.models import Participant, Campaign, Hit
 from psiturk.experiment import app
 from psiturk.psiturk_exceptions import *
