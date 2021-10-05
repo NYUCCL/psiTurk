@@ -16,6 +16,7 @@ let vm_tasks = new Vue({
     data: {
         tasks: [],
         approve_all_interval_trimmed: 0,
+        loading: false
     },
     computed: {
         approve_all_task: function(){
@@ -38,10 +39,12 @@ let vm_tasks = new Vue({
     },
     methods: {
         fetch_tasks: function(){
+            this.loading = true
             fetch('/api/tasks/').then(response=>{
                 return response.json()
             }).then(json=>{
                 this.tasks = json
+                this.loading = false;
             })
         },
         schedule_approve_all_task: function(){

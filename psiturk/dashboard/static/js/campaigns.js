@@ -105,10 +105,12 @@ let vm_campaigns = new Vue({
     },
     methods: {
         fetch_all_campaigns: function(){
+            this.loading = true;
             return fetch('/api/campaigns').then(response=>{
                 return response.json()
             }).then(json=>{
                 this.campaigns = json
+                this.loading = false;
             })
         },
         create_new_campaign: function(){

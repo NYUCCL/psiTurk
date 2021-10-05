@@ -8,7 +8,7 @@ Vue.component('distinct-value-set', {
     template:   `<div>
                     <h4>{{grouping_key}}</h4>
                     <template v-if='filter_values[grouping_key]'>
-                        <distinct-value-checkbox 
+                        <distinct-value-checkbox
                             v-for='distinct_value in group_distinct_values'
                             v-bind:key='distinct_value'
                             v-bind:filter_value_label="distinct_value"
@@ -32,12 +32,12 @@ Vue.component('distinct-value-checkbox', {
     },
     template: `
         <div class='form-check form-check-inline'>
-            <input class='form-check-input' type='checkbox' 
+            <input class='form-check-input' type='checkbox'
                 v-bind:id="'checkbox-' + grouping_key + '-' + filter_value_label"
                 v-bind:checked='filter_checked'
                 v-on:change="$emit('change', $event.target.checked)"
                 >
-            <label class='form-check-label' 
+            <label class='form-check-label'
                 :for="'checkbox-' + grouping_key + '-' + filter_value_label"
             >{{filter_value_label}}</label>
         </div>
@@ -59,10 +59,11 @@ var d3app = new Vue({
         raw_data: [],
         only_show_complete_status: true,
         group_by_condition: true,
-        only_latest_codeversion: true,
+        only_current_codeversion: true,
         filter_values: {},
         complete_statuses: [3,4,5,7],
-        latest_codeversion: current_codeversion,
+        current_codeversion: current_codeversion,
+        loading: false
     },
     computed: {
         keys: function() {
@@ -76,7 +77,7 @@ var d3app = new Vue({
             if (this.only_show_complete_status){
                 _rollup_grouping.delete('status')
             }
-            if (this.only_latest_codeversion){
+            if (this.only_current_codeversion){
                 _rollup_grouping.delete('codeversion')
             }
             return _rollup_grouping
@@ -91,9 +92,9 @@ var d3app = new Vue({
                     return this.complete_statuses.includes(row.status)
                 })
             }
-            if (this.only_latest_codeversion){
+            if (this.only_current_codeversion){
                 _worker_data = _worker_data.filter(row => {
-                    return row.codeversion == this.latest_codeversion
+                    return row.codeversion == this.current_codeversion
                 })
             }
             var worker_data_counts = d3.rollup(_worker_data,
@@ -114,25 +115,25 @@ var d3app = new Vue({
             })
             return distincts
         },
-        filter_values_with_defaults: function(){            
+        filter_values_with_defaults: function(){
             let new_filter_values = {}
             Object.keys(this.distinct_values).forEach(distinct_key=>{
                 if (this.distinct_values[distinct_key].length){
                     new_filter_values[distinct_key] = {}
                     this.distinct_values[distinct_key].forEach(distinct_value => {
                         new_filter_values[distinct_key][distinct_value] = true
-                    })   
+                    })
                 }
             })
-            
+
             Object.assign(new_filter_values, this.filter_values)
             this.filter_values = new_filter_values
-            return new_filter_values            
+            return new_filter_values
         },
-        
+
         filtered_data: function(){
             let _filter_values = this.filter_values_with_defaults
-            return this.flat_data.filter(row => { 
+            return this.flat_data.filter(row => {
                 return this.grouping_keys.every((key,index) => {
                     let value = row[index]
                     return _filter_values[key][value]
@@ -141,12 +142,14 @@ var d3app = new Vue({
         }
     },
     created: function(){
+        this.loading = true;
         fetch('/api/assignments/')
         .then((response)=>{
             return response.json()
         })
         .then((json)=>{
             this.raw_data = json
+            this.loading = false;
         })
     },
     methods: {

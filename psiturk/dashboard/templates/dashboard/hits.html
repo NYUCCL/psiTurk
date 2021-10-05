@@ -1,4 +1,5 @@
 {% extends 'dashboard/layouts/layout.html' %}
+{% set active_page = 'hits' %}
 
 {% block content %}
 <div id='hits'>
@@ -78,6 +79,14 @@
         </div>
     </div>
 
+    <div v-if="loading">
+      <div class="d-flex justify-content-center mb-3">
+        <div class="spinner-border" role="status">
+          <span class="sr-only">Loading...</span>
+        </div>
+      </div>
+    </div>
+
     <div>
         <table class='table'>
             <thead>
@@ -109,10 +118,11 @@
                 ></tr>
             </tbody>
         </table>
+
         <div>
-        <p><sup>1</sup>MTurk defines "Completed" as submissions that you have either Approved or Rejected.</p>
-        <p><sup>2</sup>MTurk defines "Pending" as submissions that have been "accepted" by a worker or that are being "viewed" by a worker. A worker has the "hit duration" to complete the hit. Many users use tools that automatically accept HITs for them and put them in a queue. Workers may not begin working on your hit until it is close to the duration expiry.</p>
-        <p><sup>3</sup>Outstanding submissions that need to be either approved or rejected before the hit can be deleted.</p>
+          <p><sup>1</sup>MTurk defines "Completed" as submissions that you have either Approved or Rejected.</p>
+          <p><sup>2</sup>MTurk defines "Pending" as submissions that have been "accepted" by a worker or that are being "viewed" by a worker. A worker has the "hit duration" to complete the hit. Many users use tools that automatically accept HITs for them and put them in a queue. Workers may not begin working on your hit until it is close to the duration expiry.</p>
+          <p><sup>3</sup>Outstanding submissions that need to be either approved or rejected before the hit can be deleted.</p>
         </div>
     </div>
 </div>
