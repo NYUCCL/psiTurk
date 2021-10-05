@@ -264,7 +264,7 @@ class AssignmentsAction(Resource):
             raise APIException(message='action `{}` not recognized!'.format(action))
 
 
-class Hits(Resource):
+class HitResource(Resource):
     def patch(self, hit_id):
         data = request.json
         if 'is_expired' in data and data['is_expired']:
@@ -325,7 +325,7 @@ class HitsAction(Resource):
             raise APIException(message='action `{}` not recognized!'.format(action))
 
 
-class Campaigns(Resource):
+class CampaignResource(Resource):
     def get(self, campaign_id):
         campaign = Campaign.query.filter(Campaign.id == campaign_id).one()
         return campaign
@@ -370,7 +370,7 @@ class CampaignList(Resource):
 
 
 
-class Tasks(Resource):
+class TaskResource(Resource):
     def delete(self, task_id):
         app.apscheduler.remove_job(str(task_id))
         return '', 204
@@ -404,15 +404,23 @@ class TaskList(Resource):
         raise APIException(message='task name `{}` not recognized!'.format(data['name']))
 
 
+class WorkerResource(Resource):
+    def get(self, worker_id):
+        p = Participant.query.filter(Participant.workerid == worker_id).one()
+        return p.toAPIData()
+
+
 class WorkerList(Resource):
-    # POST: Returns the full list of workers from the local database
-    #  codeversion: the codeversion for which to retrieve workers for
-    def post(self):
-        worker_ids = request.json['worker_ids']
-        codeversion = request.json['codeversion']
+
+    def get(self, codeversion=None):
+        '''
+        Returns workers from the local database
+
+        codeversion:
+            the codeversion on which to filter retrieved workers
+        '''
+
         query = Participant.query
-        if len(worker_ids) > 0:
-            query = query.filter(Participant.workerid.in_(worker_ids))
         if codeversion:
             query = query.filter(Participant.codeversion == codeversion)
         _return = query.all()
@@ -456,19 +464,20 @@ api.add_resource(AssignmentList, '/assignments', '/assignments/')
 api.add_resource(AssignmentsAction, '/assignments/action/<action>')
 
 # Hits
-api.add_resource(Hits, '/hit/<hit_id>')
-api.add_resource(HitList, '/hits/', '/hits/<status>')
+api.add_resource(HitResource, '/hit/<hit_id>')
+api.add_resource(HitList, '/hits/', '/hits/status/<status>')
 api.add_resource(HitsAction, '/hits/action/<action>')
 
 # Campaigns
+api.add_resource(CampaignResource, '/campaign/<campaign_id>')
 api.add_resource(CampaignList, '/campaigns', '/campaigns/')
-api.add_resource(Campaigns, '/campaigns/<campaign_id>')
 
 # Tasks
+api.add_resource(TaskResource, '/task/<task_id>')
 api.add_resource(TaskList, '/tasks', '/tasks/')
-api.add_resource(Tasks, '/tasks/<task_id>')
 
 # Workers
-api.add_resource(WorkerList, '/workers', '/workers/')
+api.add_resource(WorkerList, '/workers', '/workers/', '/workers/codeversion/<codeversion>')
+api.add_resource(WorkerResource, '/worker/<worker_id>')
 
 api.init_app(api_blueprint)
