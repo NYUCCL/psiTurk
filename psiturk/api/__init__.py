@@ -285,7 +285,8 @@ class HitResource(Resource):
 
 
 class HitList(Resource):
-    def get(self, status=None):
+    def get(self):
+        status = request.args.get('status')
         if status == 'active':
             hits = services_manager.amt_services_wrapper.get_active_hits().data
         else:
@@ -411,14 +412,14 @@ class WorkerResource(Resource):
 
 class WorkerList(Resource):
 
-    def get(self, codeversion=None):
+    def get(self):
         '''
         Returns workers from the local database
 
         codeversion:
             the codeversion on which to filter retrieved workers
         '''
-
+        codeversion = request.args.get('codeversion')
         query = Participant.query
         if codeversion:
             query = query.filter(Participant.codeversion == codeversion)
@@ -464,7 +465,7 @@ api.add_resource(AssignmentsAction, '/assignments/action/<action>')
 
 # Hits
 api.add_resource(HitResource, '/hit/<hit_id>')
-api.add_resource(HitList, '/hits/', '/hits/status/<status>')
+api.add_resource(HitList, '/hits', '/hits/')
 api.add_resource(HitsAction, '/hits/action/<action>')
 
 # Campaigns
