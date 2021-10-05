@@ -59,15 +59,15 @@ Vue.component('hit-table-row', {
             <dl>
                 <dt>HitId</dt>
                 <dd>{{ hit_data.hitid }}</dd>
-                
+
                 <dt>Title</dt>
-                <dd>{{ hit_data.title }}</dd>            
+                <dd>{{ hit_data.title }}</dd>
             </dl>
         </td>
         <td>{{ hit_data.status }}</td>
         <td>
             <div class='dropdown'>
-                <button class='btn btn-sm btn-outline-dark dropdown-toggle' 
+                <button class='btn btn-sm btn-outline-dark dropdown-toggle'
                     type='button' data-toggle='dropdown'
                 >Action</button>
                 <div class='dropdown-menu'>
@@ -77,13 +77,13 @@ Vue.component('hit-table-row', {
                         class='dropdown-item'
                         href='#'
                     >Approve all</a>
-                    <a  
+                    <a
                         v-if='!hit_data.is_expired'
                         v-on:click='expire'
                         class='dropdown-item'
                         href='#'
                     >Expire</a>
-                    <a  
+                    <a
                         v-else
                         v-on:click='delete_hit'
                         class='dropdown-item'
@@ -116,7 +116,8 @@ let vm_hits = new Vue({
             // 'Assignable'|'Unassignable'|'Reviewable'|'Reviewing'|'Disposed',
             'only_show_active_hits': [],
             'only_show_reviewable_hits': []
-        }
+        },
+        loading: true
     }),
     computed: {
         filtered_hits: function(){
@@ -163,12 +164,14 @@ let vm_hits = new Vue({
     },
     methods: {
         fetch_all_hits: function(){
+            this.loading = true;
             fetch('/api/hits/').then((response)=>{
                 return response.json()
             })
             .then((json)=>{
-                this.hits = json
-            })            
+                this.hits = json;
+                this.loading = false;
+            })
         },
         delete_hit: function(hit){
             this.hits.splice(this.hits.indexOf(hit), 1)
@@ -185,7 +188,7 @@ let vm_hits = new Vue({
                     if (_result.success) {
                         vm_flash_messages.add_success_message('Successfully expired hit: ' + _result.data.hit_id)
                     } else {
-                        vm_flash_messages.add_error_message(json.exception, 
+                        vm_flash_messages.add_error_message(json.exception,
                             'Failed to expire hit: ' + _result.data.hit_id)
                     }
                 }

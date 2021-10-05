@@ -1,4 +1,5 @@
 {% extends 'dashboard/layouts/layout.html' %}
+{% set active_page = 'campaigns' %}
 
 {% block content %}
 <div id='campaigns'>
@@ -32,6 +33,15 @@
 
 
     {%- raw -%}
+
+    <div v-if="loading">
+      <div class="d-flex justify-content-center mb-3">
+        <div class="spinner-border" role="status">
+          <span class="sr-only">Loading...</span>
+        </div>
+      </div>
+    </div>
+
     <div class='row'>
         <div class='col-12 mb-4'>
             <div v-if='active_campaign'>
