@@ -1,26 +1,26 @@
 {% extends 'dashboard/layouts/layout.html' %}
- 
+
 {% block content %}
 {%- raw -%}
 <div id='workers_data' v-cloak>
-    
+
     <div class='row'>
         <div class='col'>
             <h3>Options</h3>
             <div class='mb-2'>
                 <div class='form-check'>
-                    <input class='form-check-input' type='checkbox' 
+                    <input class='form-check-input' type='checkbox'
                         v-model='only_latest_codeversion'
                         id='only-latest-codeversion'
                     >
                     <label class='form-check-label' for='only-latest-codeversion'>
-                        Only show most recent codeversion ({{latest_codeversion}})
+                        Only show most recent codeversion ({{ latest_codeversion }})
                     </label>
                 </div>
             </div>
             <div class='mb-2'>
                 <div class='form-check'>
-                    <input class='form-check-input' type='checkbox' 
+                    <input class='form-check-input' type='checkbox'
                         v-model='group_by_condition'
                         id='group-by-condition'
                     >
@@ -31,7 +31,7 @@
             </div>
             <div class='mb-2'>
                 <div class='form-check'>
-                    <input class='form-check-input' type='checkbox' 
+                    <input class='form-check-input' type='checkbox'
                         v-model='only_show_complete_status'
                         id='status-group-complete'
                     >
@@ -49,7 +49,7 @@
             </div>
         </div>
     </div>
-    
+
     <div v-for='(_key, key_index) in grouping_keys' class='mb-2'>
     </div>
     <div>
@@ -66,12 +66,12 @@
     </div>
 </div>
 {%- endraw -%}
-{% endblock %} 
+{% endblock %}
 
 {% block scripts %}
 {{ super() }}
 <script>
-    let current_codeversion = '{{current_codeversion}}';
+    let current_codeversion = '{{ current_codeversion }}';
 </script>
-<script type='text/javascript' src='/dashboard/static/index.js'></script>
+<script type='text/javascript' src="{{ url_for('.static', filename='js/index.js') }}"></script>
 {% endblock %}
