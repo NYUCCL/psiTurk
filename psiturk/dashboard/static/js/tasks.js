@@ -33,7 +33,7 @@ let vm_tasks = new Vue({
             set: function(value){
                 this.approve_all_interval_trimmed = parseFloat(Math.round(value * 100) / 100).toFixed(2);
             }
-            
+
         }
     },
     methods: {
@@ -73,7 +73,7 @@ let vm_tasks = new Vue({
                 }
                 vm_flash_messages.add_success_message('Successfully deleted task ' + this.approve_all_task.id)
                 return this.fetch_tasks()
-                
+
             })
         }
     },
