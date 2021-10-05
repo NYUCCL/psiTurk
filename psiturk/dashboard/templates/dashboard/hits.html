@@ -1,4 +1,4 @@
-{% extends 'dashboard/layouts/hits.html' %}
+{% extends 'dashboard/layouts/layout.html' %}
 
 {% block content %}
 <div id='hits'>
@@ -6,7 +6,7 @@
     <div>
         <h3>Batch Operations</h3>
         <div class='form-group'>
-            <button 
+            <button
                 v-on:click='expire_all'
                 :disabled='!any_unexpired'
                 type='button' class='btn btn-primary'>Expire all</button>
@@ -17,18 +17,18 @@
             >No unexpired hits found.</span>
         </div>
         <div class='form-group'>
-            <button 
+            <button
                 v-on:click='approve_all'
                 :disabled='!any_outstanding_submissions'
-                type='button' class='btn btn-primary'>Approve all</button> 
+                type='button' class='btn btn-primary'>Approve all</button>
             <small>Approves all submissions for all hits.</small>
-            <span 
-                v-if='!any_outstanding_submissions' 
+            <span
+                v-if='!any_outstanding_submissions'
                 class='badge badge-info'
             >No hits found with oustanding submissions.</span>
         </div>
         <div class='form-group'>
-            <button 
+            <button
                 v-on:click='delete_all'
                 :disabled='!any_deletable'
                 type='button' class='btn btn-primary'>Delete all</button>
@@ -77,7 +77,7 @@
             </div>
         </div>
     </div>
-    
+
     <div>
         <table class='table'>
             <thead>
@@ -98,7 +98,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr 
+                <tr
                     is='hit-table-row'
                     v-for='hit in filtered_hits'
                     v-bind:key='hit.options.hitid'
@@ -120,5 +120,5 @@
 
 {% block scripts %}
 {{ super() }}
-<script type='text/javascript' src='/dashboard/static/hits/list.js'></script>
+<script type='text/javascript' src="{{ url_for('.static', filename='js/hits.js') }}"></script>
 {% endblock %}
