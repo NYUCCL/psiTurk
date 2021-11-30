@@ -1,4 +1,5 @@
 {% extends 'dashboard/layouts/layout.html' %}
+{% set active_page = 'tasks' %}
 
 {% block content %}
 {%- raw -%}
@@ -28,6 +29,15 @@
             </template>
         </div>
     </div>
+
+    <div v-if="loading">
+      <div class="d-flex justify-content-center mb-3">
+        <div class="spinner-border" role="status">
+          <span class="sr-only">Loading...</span>
+        </div>
+      </div>
+    </div>
+
     <table class='table'>
         <thead>
             <tr>
@@ -56,5 +66,5 @@
 {{ super() }}
 <script type='text/javascript'>
 </script>
-<script type='text/javascript' src='/dashboard/static/tasks/list.js'></script>
+<script type='text/javascript' src="{{ url_for('.static', filename='js/tasks.js') }}"></script>
 {% endblock %}

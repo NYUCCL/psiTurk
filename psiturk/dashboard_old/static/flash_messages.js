@@ -2,20 +2,20 @@ Vue.component('vue-flash-message', {
     props: ['message','category'],
     computed: {
         _category: function(){
-            if (this.category == 'message') { 
-                return 'info' 
+            if (this.category == 'message') {
+                return 'info'
             } else {
                 return this.category
             }
         },
         _class: function(){
-            return 'alert alert-dismissible alert-' + this._category
+            return 'alert alert-dismissible m-0 alert-' + this._category
         }
     },
     template: `
         <div :class='_class' role='alert'>
-            <button 
-                v-on:click="$emit('close')" 
+            <button
+                v-on:click="$emit('close')"
                 type='button' class='close' aria-label='close'><span aria-hidden='true'>×</span></button>
             {{message}}
         </div>

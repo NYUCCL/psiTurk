@@ -197,11 +197,17 @@ def list_hits(stubber, helpers, amt_services_wrapper):
 
         stubber.add_response('list_hits', hits_json)
         if active:
-            results = (amt_services_wrapper.get_active_hits(
-                all_studies=all_studies)).data
+            response = amt_services_wrapper.get_active_hits(
+                all_studies=all_studies)
+            if not response.data:
+                raise response.execption
+            results = response.data
         else:
-            results = (amt_services_wrapper.get_all_hits(
-                all_studies=all_studies)).data
+            response = amt_services_wrapper.get_all_hits(
+                all_studies=all_studies)
+            if not response.data:
+                raise response.exception
+            results = response.data
         return results
 
     return do_it

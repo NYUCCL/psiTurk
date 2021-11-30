@@ -1,9 +1,10 @@
 {% extends 'dashboard/layouts/layout.html' %}
- 
+{% set active_page = 'home' %}
+
 {% block content %}
 {%- raw -%}
 <div id='workers_data' v-cloak>
-    
+
     <div class='row'>
         <div class='col'>
             <h3>Options</h3>
@@ -12,8 +13,8 @@
                     <input class='form-check-input' type='checkbox'
                         id='only-latest-codeversion'
                     >
-                    <label class='form-check-label' for='only-latest-codeversion'>
-                        Only show most recent codeversion ({{latest_codeversion}})
+                    <label class='form-check-label' for='only-current-codeversion'>
+                        Only show most recent codeversion ({{ current_codeversion }})
                     </label>
                 </div>
             </div>
@@ -48,12 +49,12 @@
     </div>
 </div>
 {%- endraw -%}
-{% endblock %} 
+{% endblock %}
 
 {% block scripts %}
 {{ super() }}
 <script>
-    let current_codeversion = '{{current_codeversion}}';
+    let current_codeversion = '{{ current_codeversion }}';
 </script>
-<script type='text/javascript' src='/dashboard/static/index.js'></script>
+<script type='text/javascript' src="{{ url_for('.static', filename='js/index.js') }}"></script>
 {% endblock %}

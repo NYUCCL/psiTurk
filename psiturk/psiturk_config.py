@@ -96,13 +96,18 @@ class PsiturkConfig(ConfigParser):
                 'prefer_this': 'advanced_quals_path',
                 'over_this': 'advanced_quals_path_sandbox'
             },
+            {
+                'in_section': 'Database Parameters',
+                'prefer_this': 'assignments_table_name',
+                'over_this': 'table_name'
+            }
         ]
         for bc in backwards_compatibilities:
             env_key = f'PSITURK_{bc["prefer_this"].upper()}'
             if env_key in os.environ:
                 self.set(bc['in_section'], bc['over_this'], os.environ.get(env_key))
             else:
-                preferred = self.get('HIT Configuration', bc['prefer_this'], fallback=None)
+                preferred = self.get(bc['in_section'], bc['prefer_this'], fallback=None)
                 if preferred:
                     self.set(bc['in_section'], bc['over_this'], preferred)
 

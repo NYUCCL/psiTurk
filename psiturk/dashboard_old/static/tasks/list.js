@@ -16,6 +16,7 @@ let vm_tasks = new Vue({
     data: {
         tasks: [],
         approve_all_interval_trimmed: 0,
+        loading: false
     },
     computed: {
         approve_all_task: function(){
@@ -33,15 +34,17 @@ let vm_tasks = new Vue({
             set: function(value){
                 this.approve_all_interval_trimmed = parseFloat(Math.round(value * 100) / 100).toFixed(2);
             }
-            
+
         }
     },
     methods: {
         fetch_tasks: function(){
+            this.loading = true
             fetch('/api/tasks/').then(response=>{
                 return response.json()
             }).then(json=>{
                 this.tasks = json
+                this.loading = false;
             })
         },
         schedule_approve_all_task: function(){
@@ -73,7 +76,7 @@ let vm_tasks = new Vue({
                 }
                 vm_flash_messages.add_success_message('Successfully deleted task ' + this.approve_all_task.id)
                 return this.fetch_tasks()
-                
+
             })
         }
     },

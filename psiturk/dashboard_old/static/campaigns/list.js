@@ -18,8 +18,7 @@ Vue.component('campaign-table-row',{
 
 let vm_campaigns = new Vue({
     el: '#campaigns',
-    data: { 
-        services_manager,
+    data: {
         campaigns: [],
         create_goal_rounded: 0,
         assignments_per_round_rounded: 0,
@@ -27,9 +26,6 @@ let vm_campaigns = new Vue({
         extend_this_many_rounded: 0,
         update_active_campaign_goal_rounded: 0,
         completed_count: completed_count,
-        available_count: available_count,
-        pending_count: pending_count,
-        maybe_will_complete_count: maybe_will_complete_count,
         hit_reward_rounded: parseFloat(0.00),
         hit_duration_hours_rounded: parseFloat(0.00)
     },
@@ -109,10 +105,12 @@ let vm_campaigns = new Vue({
     },
     methods: {
         fetch_all_campaigns: function(){
+            this.loading = true;
             return fetch('/api/campaigns').then(response=>{
                 return response.json()
             }).then(json=>{
                 this.campaigns = json
+                this.loading = false;
             })
         },
         create_new_campaign: function(){
