@@ -188,7 +188,7 @@ def assignments_list(hit_id, assignment_id=None):
     hit_info = services_manager.amt_services_wrapper.get_hit(hit_id).data
     if not hit_info:
         return redirect(url_for('.hits_list'))
-    return render_template('dashboard/assignments.html', hit_id=hit_id, assignment_id=assignment_id, hit_local=hit_id in my_hitids, hit_info=hit_info)
+    return render_template('dashboard/assignments.html', hit_id=hit_id, assignment_id=assignment_id, hit_local=hit_id in my_hitids, hit_info=hit_info, bonus_message=config.get('Shell Parameters', 'bonus_message'))
 
 # Database of campaigns
 @dashboard.route('/campaigns')

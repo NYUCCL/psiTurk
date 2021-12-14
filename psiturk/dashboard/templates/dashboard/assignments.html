@@ -21,6 +21,7 @@
     var HIT_ID = "{{ hit_id }}";
     var HIT_REWARD = {{ hit_info.options.reward }};
     var HIT_ASSIGNMENTS = {{ hit_info.options.max_assignments }};
+    var BONUS_REASON = {% if bonus_message %}"{{ bonus_message }}"{% else %}undefined{% endif %};
     var ASSIGNMENT_ID = {% if assignment_id %}"{{ assignment_id }}"{% else %}undefined{% endif %};
     var HIT_LOCAL = {% if hit_local %} true {% else %} false {% endif %};
 </script>
@@ -231,7 +232,7 @@
                                     <div class="input-group-prepend">
                                         <span class="input-group-text">$</span>
                                     </div>
-                                    <div class="input-group-prepend active">
+                                    <div class="input-group-prepend">
                                         <button class="btn btn-primary" type="button" id="bonus-autoToggle"><img src="{{url_for('.static', filename='images/blueribbon.png')}}" class="db-boolimg"> Auto</button>
                                     </div>
                                     <input class="form-control" type="number" value="0.00" step="0.01" min="0" id="bonus-value">
@@ -242,11 +243,11 @@
                             <label for="hitCreateInput-reward" class="col-2 col-form-label" style="text-align: right;"><b>Reason: </b></label>
                             <div class="col-10 flex-grow-2">
                                 <div class="input-group">
-                                    <input type="text" class="form-control" placeholder="Reason" value="" id="bonus-reason">
+                                    <input type="text" class="form-control" placeholder="{{ bonus_message }}" value="" id="bonus-reason">
                                 </div>
                             </div>
                         </div>
-                        <div class="mb-1"><b>Total: $</b><span>X.XX</span><b>, MTurk Fee: </b><span id="approval-mturkfee">XX</span>%<b>, Cost: $</b><span id="approval-total">X.XX</span></div>
+                        <div class="mb-1"><b>Total: $</b><span id="bonus-baseTotal">X.XX</span><b>, MTurk Fee: </b><span id="bonus-mturkfee">XX</span>%<b>, Cost: $</b><span id="bonus-total">X.XX</span></div>
                         <div style="font-size: small; color: gray;">
                             When <b><i>Auto</i></b> is on, bonus amounts will be loaded for each worker from the Bonus column of the database. (local HITs only)
                         </div>

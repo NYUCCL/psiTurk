@@ -315,7 +315,7 @@ function rejectIndividualHandler() {
     $('#rejectOne').prop('disabled', true);
     assignmentAPI([assignment_id], 'reject', {}, {
         'success': () => {
-            alert('Rejeection successful!');
+            alert('Rejection successful!');
         },
         'failure': () => {
             $('#approveOne').prop('disabled', false);
@@ -328,7 +328,16 @@ function rejectIndividualHandler() {
 function bonusAllHandler() {
     let assignment_ids = bonusDispView.getDisplayedData().map((el) => el['assignmentId']);
     let amount = parseFloat($('#bonus-value').val());
+    if ($('#bonus-autoToggle').hasClass('active')) { amount = 'auto'; }
     let reason = $('#bonus-reason').val();
+    if (!reason) {
+        if (BONUS_REASON) {
+            reason = BONUS_REASON;
+        } else {
+            alert("No bonus reason given, and default bonus_message not set!");
+            return;
+        }
+    }
     $('#bonus-submit').prop('disabled', true);
     assignmentAPI(assignment_ids, 'bonus', {
         'amount': amount,
@@ -373,6 +382,27 @@ function approveWorkersModal() {
     }
 }
 
+// Handler for bonus information changing
+function bonusInfoChanged() {
+    let assignments = mainDisp.db.getDisplayedData();
+
+    // Find base total
+    let total = assignments.length * $('#bonus-value').val();
+    let totalText = `${$('#bonus-value').val()} x ${assignments.length}`;
+    if ($('#bonus-autoToggle').hasClass('active')) {
+        total = bonusDispView.getDisplayedData().reduce((prevValue, el) => prevValue + el['bonus'], 0);
+        totalText = total.toFixed(2);
+    }
+    $('#bonus-baseTotal').text(totalText);
+
+    // MTurk fee is 20% for HITs with < 10 assignments, 40% for HITs with 10 or more
+    let mturkfee = HIT_ASSIGNMENTS > 9 ? 0.4 : 0.2;
+    $('#bonus-mturkfee').text(100 * mturkfee);
+
+    // Now set grand total
+    $('#bonus-total').text((total * (1 + mturkfee)).toFixed(2));
+}
+
 // Opens the worker bonus modal with the workers currently in the table
 var bonusDispView;
 function bonusWorkersModal() {
@@ -383,13 +413,23 @@ function bonusWorkersModal() {
     }
     bonusDispView.updateData(assignments, BONUS_FIELDS);
     $('#numWorkersBonusing').text(assignments.length);
-    $('#bonus-numWorkers').text(assignments.length);
-
-    // MTurk fee is 20% for HITs with < 10 assignments, 40% for HITs with 10 or more
-    let mturkfee = HIT_ASSIGNMENTS > 9 ? 0.4 : 0.2;
-    $('#bonus-mturkfee').text(100 * mturkfee);
-    // $('#approval-total').text(totalCost.toFixed(2));
+    bonusInfoChanged();
 }
+
+// Opens the worker bonus modal with the single worker selected
+function bonusOneWorkerModal() {
+    let assignment_id = $('#assignmentInfo_assignmentid').text();
+    let assignments = mainDisp.db.getDisplayedData();
+    assignments = assignments.filter(data => data['assignmentId'] == assignment_id);
+    if (!bonusDispView) {
+        bonusDispView = new DatabaseView({display: $('#DBBonusTable')});
+    }
+    bonusDispView.updateData(assignments, BONUS_FIELDS);
+    $('#numWorkersBonusing').text(assignments.length);
+    bonusInfoChanged();
+    $('#bonusModal').modal('show');
+}
+
 // Listens for modal showing and loads in worker data for an assignment
 function viewWorkerDataHandler() {
     let assignment_id = $('#assignmentInfo_assignmentid').text();
@@ -432,8 +472,24 @@ $(window).on('load', function() {
     $('input[name="dataRadioOptions"]').on('change', viewWorkerDataHandler);
 
     // Approves/rejects/bonuses the currently selected assignment
+    if (!HIT_LOCAL) {
+        $("#bonus-autoToggle").prop('disabled', true);
+    } else {
+        $('#bonus-autoToggle').on('click', () => {
+            if ($('#bonus-autoToggle').hasClass('active')) {
+                $('#bonus-autoToggle').removeClass('active');
+                bonusInfoChanged();
+                $('#bonus-value').prop('disabled', false);
+            } else {
+                $('#bonus-autoToggle').addClass('active');
+                bonusInfoChanged();
+                $('#bonus-value').prop('disabled', true);
+            }
+        })
+    }
     $('#approveOne').on('click', approveIndividualHandler);
     $('#rejectOne').on('click', rejectIndividualHandler);
+    $('#bonusOne').on('click', bonusOneWorkerModal);
     $('#approval-submit').on('click', approveAllHandler);
     $('#bonus-submit').on('click', bonusAllHandler);
 
