@@ -6,6 +6,7 @@ var ASSIGNMENT_FIELDS = {
     'workerId': {'title': 'Worker ID', 'type': 'string', 'style': {'width': '200px'}},
     'assignmentId': {'title': 'Assignment ID', 'type': 'string', 'style': {'max-width': '150px'}},
     'status': {'title': 'Status', 'type': 'string', 'style': {'width': '100px'}},
+    'bonused': {'title': 'Bonused', 'type': 'dollar', 'style': {'width': '100px'}},
     'accept_time': {'title': 'Accepted On', 'type': 'date', 'style': {'width': '300px'}},
     'submit_time': {'title': 'Submitted On', 'type': 'date', 'style': {'width': '300px'}},
 };
@@ -32,6 +33,7 @@ if (HIT_LOCAL) {
         'assignmentId': {'title': 'Assignment ID', 'type': 'string', 'style': {'max-width': '150px'}},
         'status': {'title': 'Status', 'type': 'string', 'style': {'width': '100px'}},
         'bonus': {'title': 'Bonus', 'type': 'dollar', 'style': {'width': '100px'}},
+        'bonused': {'title': 'Bonused', 'type': 'dollar', 'style': {'width': '100px'}},
         'codeversion': {'title': 'Code#', 'type': 'string', 'style': {'width': '100px'}},
         'accept_time': {'title': 'Accepted On', 'type': 'date', 'style': {'width': '300px'}},
         'submit_time': {'title': 'Submitted On', 'type': 'date', 'style': {'width': '300px'}},
@@ -100,9 +102,7 @@ class AssignmentsDBDisplay {
                         'maintainSelected': false,
                         'index': 'assignmentId',
                         'callback': () => {
-                            if (ASSIGNMENT_ID) {
-                                $('#' + this.db.trPrefix + ASSIGNMENT_ID).click();
-                            }
+                            this._loadBonusesPaid(hitId);
                         }
                     });
                 }
@@ -112,6 +112,48 @@ class AssignmentsDBDisplay {
                 console.log(errorMsg);
             }
         });
+    }
+
+    // Gets bonus information about the HIT 
+    _loadBonusesPaid(hitId) {
+        $.ajax({
+            type: 'POST',
+            url: '/api/bonuses',
+            data: JSON.stringify({
+                hit_id: hitId
+            }),
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            success: (bonusData) => {
+                let bonuses = {}
+                bonusData.bonuses.forEach((bonus) => {
+                    if (bonuses[bonus['assignmentId']] == undefined) {
+                        bonuses[bonus['assignmentId']] = bonus['bonusAmount'];
+                    } else {
+                        bonuses[bonus['assignmentId']] += bonus['bonusAmount'];
+                    }
+                });
+                let updatedData = this.db.data;
+                updatedData.forEach((el, i) => {
+                    updatedData[i]['bonused'] = bonuses[el['assignmentId']];
+                });
+                this.db.updateData(updatedData, ASSIGNMENT_FIELDS, {
+                    'rerender': true,
+                    'resetFilter': false,
+                    'maintainSelected': true,
+                    'index': 'assignmentId',
+                    'callback': () => {
+                        if (ASSIGNMENT_ID) {
+                            $('#' + this.db.trPrefix + ASSIGNMENT_ID).click();
+                        }
+                    }
+                });
+            },
+            error: function(errorMsg) {
+                alert(errorMsg);
+                console.log(errorMsg);
+            }
+        })
     }
 
     // Reloads specific assignment data
@@ -136,7 +178,9 @@ class AssignmentsDBDisplay {
                     'resetFilter': false,
                     'maintainSelected': true,
                     'index': 'assignmentId',
-                    'callback': () => {}
+                    'callback': () => {
+                        this._loadBonusesPaid(hitId);
+                    }
                 });
             },
             error: function(errorMsg) {
@@ -184,8 +228,9 @@ class AssignmentsDBDisplay {
                 $('#downloadOneDataHref').removeAttr('href');
             }
         } else {
-            $('#assignmentInfo_bonus').text('No bonus data.');
+            $('#assignmentInfo_bonus').text('???');
         }
+        $('#assignmentInfo_bonused').text(data['bonused'] ? '$' + data['bonused'] : undefined);
 
         // Update the current HREF
         history.pushState({id: 'hitpage'}, '', window.location.origin + '/dashboard/hits/' + HIT_ID + '/assignments/' + data['assignmentId']);

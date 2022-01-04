@@ -221,6 +221,40 @@ class MTurkServices(object):
             'status': assignment['AssignmentStatus'],
         }
         return worker_data
+    
+    @amt_service_response
+    def get_bonuses(self, hit_id=None, assignment_ids=None):
+        """Get paid bonuses."""
+        bonuses = []
+        if hit_id:
+            paginator = self.mtc.get_paginator('list_bonus_payments')
+            args = dict(
+                HITId=hit_id,
+                PaginationConfig={'PageSize': 100}
+            )
+            for page in paginator.paginate(**args):
+                bonuses.extend(page['BonusPayments'])
+        elif assignment_ids:
+            if not isinstance(assignment_ids, list):
+                assignment_ids = [assignment_ids]
+            for assignment_id in assignment_ids:
+                paginator = self.mtc.get_paginator('list_bonus_payments')
+                args = dict(
+                    AssignmentId=assignment_id,
+                    PaginationConfig={'PageSize': 100}
+                )
+                for page in paginator.paginate(**args):
+                    bonuses.extend(page['BonusPayments'])
+        bonus_data = [{
+            'workerId': bonus['WorkerId'],
+            'bonusAmount': bonus['BonusAmount'],
+            'assignmentId': bonus['AssignmentId'],
+            'reason': bonus['Reason'],
+            'grantTime': bonus['GrantTime']
+        } for bonus in bonuses]
+        print(bonus_data)
+        return bonus_data
+        
 
     @amt_service_response
     def bonus_assignment(self, assignment_id, worker_id, amount, reason=""):

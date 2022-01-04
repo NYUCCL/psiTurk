@@ -57,15 +57,15 @@ var FILTER_TYPES = {
     'dollar': {
         'greaterthan': {
             'title': '>',
-            'comparator': (a, b) => a > parseInt(b)
+            'comparator': (a, b) => a > parseFloat(b)
         },
         'equals': {
             'title': '=',
-            'comparator': (a, b) => a == parseInt(b)
+            'comparator': (a, b) => a == parseFloat(b)
         },
         'lessthan': {
             'title': '<',
-            'comparator': (a, b) => a < parseInt(b)
+            'comparator': (a, b) => a < parseFloat(b)
         }
     }
 }

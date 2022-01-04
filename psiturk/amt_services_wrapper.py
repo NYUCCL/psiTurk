@@ -230,6 +230,14 @@ class MTurkServicesWrapper(object):
             elif status == 'Unassignable':
                 maybe_will_complete_count += hit.options['number_assignments_pending']
         return maybe_will_complete_count
+    
+    @amt_services_wrapper_response
+    def get_bonuses(self, hit_id=None, assignment_ids=None):
+        """
+        Returns all bonuses if hit_id is set, or specific assignment bonuses.
+        """
+        bonus_data = self.amt_services.get_bonuses(hit_id, assignment_ids).data
+        return {'bonuses': bonus_data}
 
     @amt_services_wrapper_response
     def get_assignments(self, hit_ids=None, assignment_status=None, all_studies=False):

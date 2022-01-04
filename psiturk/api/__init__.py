@@ -471,6 +471,19 @@ class AssignmentsAction(Resource):
             return _return
 
 
+class BonusList(Resource):
+
+    # POST: Returns a list of bonuses for a HIT from MTurk
+    #  hit_id: a specific hit to get all bonuses for (priority)
+    #  assignment_ids: list of assignment ids to get bonuses for
+    def post(self):
+        hit_id = request.json['hit_id'] if 'hit_id' in request.json else None
+        assignment_ids = request.json['assignment_ids'] if 'assignment_ids' in request.json else None
+        _return = services_manager.amt_services_wrapper.get_bonuses(
+            hit_id=hit_id, assignment_ids=assignment_ids)
+        return _return.data
+
+
 # --------------------------- DATA WRITING HELPERS --------------------------- #
 
 # Writes data to an open zipfile
@@ -519,6 +532,9 @@ api.add_resource(ServicesManager, '/services_manager', '/services_manager/')
 # HITs
 api.add_resource(HitsList, '/hits', '/hits/')
 api.add_resource(HitsAction, '/hits/action/<action>')
+
+# Bonuses
+api.add_resource(BonusList, '/bonuses', '/bonuses/')
 
 # Assignments
 api.add_resource(AssignmentsList, '/assignments', '/assignments/')

@@ -112,8 +112,8 @@ export class DatabaseView {
                 th$.css(property, cssValue);
             }
             let sortLink$ = $('<a>' + value['title'] + '</a>')
-            sortLink$.on('click', () => { 
-                this.sortByColumn(key); 
+            sortLink$.on('click', () => {
+                this.sortByColumn(key);
             });
             headerTr$.append(th$.append(sortLink$));
         }
@@ -167,7 +167,7 @@ export class DatabaseView {
                 this.selectedRowData = this.data[i];
                 this.selectedRowID = event.currentTarget.id;
                 this.selectedRowIndex = currentRow;
-                this.callbacks['onSelect'](this.selectedRowData);
+                if (this.callbacks['onSelect'] != undefined) this.callbacks['onSelect'](this.selectedRowData);
                 $(event.currentTarget).addClass('selected').siblings().removeClass('selected');
             })
             this.DOM$.tbody.append(row$);
@@ -225,6 +225,7 @@ export class DatabaseView {
     sortByColumn(colTitle) {
         var switching = true;
         let byColIndex = Object.keys(this.fields).indexOf(colTitle) + 1;
+        let colType = this.fields[colTitle]['type'];
         // Determine switch direction (swap from last)
         // If the last sort was on this column, reverse the sort, otherwise just do forwards
         let switchDirection = this.sort['last'] == byColIndex ? !this.sort['forwards'] : true;
@@ -236,24 +237,27 @@ export class DatabaseView {
             for (let i = 0; i < (rows.length - 1) && !(shouldSwitch); i++) {
                 let first = $(rows[i]).find('td:eq(' + byColIndex + ')').html();
                 let second = $(rows[i+1]).find('td:eq(' + byColIndex + ')').html();
+                if (colType == 'date') {
+                    first = new Date(first);
+                    second = new Date(second);
+                } else if (colType == 'num') {
+                    first = parseFloat(first);
+                    second = parseFloat(second);
+                } else if (colType == 'dollar') {
+                    first = parseFloat(first.replace(/\$/g, ''));
+                    second = parseFloat(second.replace(/\$/g, ''));
+                    first = isNaN(first) ? 0 : first;
+                    second = isNaN(second) ? 0 : second;
+                } else {
+                    first = first.toLowerCase();
+                    second = second.toLowerCase();
+                }
 
                 // Determine comparator from column type, default is string compare
                 if (switchDirection) {
-                    if (Object.entries(this.fields)[byColIndex][1]['type'] == 'date') {
-                        shouldSwitch = new Date(first) < new Date(second);
-                    } else if (Object.entries(this.fields)[byColIndex][1]['type'] == 'num') {
-                        shouldSwitch = parseFloat(first) < parseFloat(second);
-                    } else {
-                        shouldSwitch = first.toLowerCase() < second.toLowerCase();
-                    }
+                    shouldSwitch = first < second;
                 } else {
-                    if (Object.entries(this.fields)[byColIndex][1]['type'] == 'date') {
-                        shouldSwitch = new Date(first) > new Date(second);
-                    } else if (Object.entries(this.fields)[byColIndex][1]['type'] == 'num') {
-                        shouldSwitch = parseFloat(first) > parseFloat(second);
-                    } else {
-                        shouldSwitch = first.toLowerCase() > second.toLowerCase();
-                    }
+                    shouldSwitch = first > second;
                 }
 
                 // If should switch matches switch direction, then go
