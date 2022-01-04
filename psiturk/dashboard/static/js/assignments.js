@@ -22,6 +22,7 @@ var APPROVE_FIELDS = {
 var BONUS_FIELDS = {
     'workerId': {'title': 'Worker ID', 'type': 'string', 'style': {'width': '200px'}},
     'bonus': {'title': 'Bonus', 'type': 'dollar', 'style': {'width': '100px'}},
+    'bonused': {'title': 'Bonused', 'type': 'dollar', 'style': {'width': '100px'}},
     'status': {'title': 'Status', 'type': 'string', 'style': {'width': '100px'}},
     'assignmentId': {'title': 'Assignment ID', 'type': 'string', 'style': {'width': '320px'}},
 }
@@ -102,7 +103,7 @@ class AssignmentsDBDisplay {
                         'maintainSelected': false,
                         'index': 'assignmentId',
                         'callback': () => {
-                            this._loadBonusesPaid(hitId);
+                            this._loadBonusesPaid(HIT_ID);
                         }
                     });
                 }
@@ -179,7 +180,7 @@ class AssignmentsDBDisplay {
                     'maintainSelected': true,
                     'index': 'assignmentId',
                     'callback': () => {
-                        this._loadBonusesPaid(hitId);
+                        this._loadBonusesPaid(HIT_ID);
                     }
                 });
             },
@@ -293,30 +294,33 @@ class AssignmentWorkerDataDBDisplay {
 }
 
 // Approves a list of assignment ids and then reloads them
-function assignmentAPI(assignment_ids, endpoint, payload={}, callbacks={'success': () => {}, 'failure': () => {}}) {
-    $.ajax({
-        type: 'POST',
-        url: '/api/assignments/action/' + endpoint,
-        data: JSON.stringify({
-            'assignments': assignment_ids,
-            'all_studies': !HIT_LOCAL,
-            ...payload
-        }),
-        contentType: 'application/json; charset=utf-8',
-        dataType: 'json',
-        success: function(data) {
-            if (data.every(el => !el.success)) {
-                callbacks['failure']();
-            } else {
-                mainDisp._reloadAssignments(assignment_ids);
-                callbacks['success']();
+function assignmentAPI(assignment_ids, endpoint, payload={}, reload=true) {
+    return new Promise((resolve, reject) => {
+        $.ajax({
+            type: 'POST',
+            url: '/api/assignments/action/' + endpoint,
+            data: JSON.stringify({
+                'assignments': assignment_ids,
+                'all_studies': !HIT_LOCAL,
+                ...payload
+            }),
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            success: function(data) {
+                if (data.every(el => !el.success)) {
+                    reject();
+                } else {
+                    if (reload) { mainDisp._reloadAssignments(assignment_ids); }
+                    resolve();
+                }
+            },
+            error: function(errorMsg) {
+                console.log(errorMsg);
+                reject();
             }
-        },
-        error: function(errorMsg) {
-            console.log(errorMsg);
-            callbacks['failure']();
-        }
-    });
+        });
+    })
+    
 }
 
 // Approves a single individual in the database
@@ -324,15 +328,14 @@ function approveIndividualHandler() {
     let assignment_id = $('#assignmentInfo_assignmentid').text();
     $('#approveOne').prop('disabled', true);
     $('#rejectOne').prop('disabled', true);
-    assignmentAPI([assignment_id], 'approve', {}, {
-        'success': () => {
-            alert('Approval successful!');
-        },
-        'failure': () => {
-            $('#approveOne').prop('disabled', false);
-            $('#rejectOne').prop('disabled', false);
-            alert('Approval unsuccessful');
-        }
+    assignmentAPI([assignment_id], 'approve', {})
+    .then(() =>{
+        alert('Approval successful!');
+    })
+    .catch(() => {
+        $('#approveOne').prop('disabled', false);
+        $('#rejectOne').prop('disabled', false);
+        alert('Approval unsuccessful');
     });
 }
 
@@ -340,16 +343,15 @@ function approveIndividualHandler() {
 function approveAllHandler() {
     let assignment_ids = approvalDispView.getDisplayedData().map((el) => el['assignmentId']);
     $('#approval-submit').prop('disabled', true);
-    assignmentAPI(assignment_ids, 'approve', {}, {
-        'success': () => {
-            $('#approveModal').modal('hide');
-            $('#approval-submit').prop('disabled', false);
-            alert('Approval successful!');
-        },
-        'failure': () => {
-            $('#approval-submit').prop('disabled', false);
-            alert('Approval unsuccessful.');
-        }
+    assignmentAPI(assignment_ids, 'approve', {})
+    .then(() => {
+        $('#approveModal').modal('hide');
+        $('#approval-submit').prop('disabled', false);
+        alert('Approval successful!');
+    })
+    .catch(() => {
+        $('#approval-submit').prop('disabled', false);
+        alert('Approval unsuccessful.');
     });
 }
 
@@ -358,20 +360,21 @@ function rejectIndividualHandler() {
     let assignment_id = $('#assignmentInfo_assignmentid').text();
     $('#approveOne').prop('disabled', true);
     $('#rejectOne').prop('disabled', true);
-    assignmentAPI([assignment_id], 'reject', {}, {
-        'success': () => {
-            alert('Rejection successful!');
-        },
-        'failure': () => {
-            $('#approveOne').prop('disabled', false);
-            $('#rejectOne').prop('disabled', false);
-            alert('Rejection unsuccessful');
-        }
+    assignmentAPI([assignment_id], 'reject', {})
+    .then(() => {
+        alert('Rejection successful!');
+    })
+    .catch(() => {
+        $('#approveOne').prop('disabled', false);
+        $('#rejectOne').prop('disabled', false);
+        alert('Rejection unsuccessful');
     });
 }
 
+var bonusesUploaded;
 function bonusAllHandler() {
-    let assignment_ids = bonusDispView.getDisplayedData().map((el) => el['assignmentId']);
+    let displayedData = bonusDispView.getDisplayedData();
+    let assignment_ids = displayedData.map((el) => el['assignmentId']);
     let amount = parseFloat($('#bonus-value').val());
     if ($('#bonus-autoToggle').hasClass('active')) { amount = 'auto'; }
     let reason = $('#bonus-reason').val();
@@ -384,21 +387,51 @@ function bonusAllHandler() {
         }
     }
     $('#bonus-submit').prop('disabled', true);
-    assignmentAPI(assignment_ids, 'bonus', {
-        'amount': amount,
-        'reason': reason
-    }, 
-    {
-        'success': () => {
+    // in case of custom bonus amounts
+    if (amount == 'auto' && bonusesUploaded != undefined) {
+        // bonus each worker, and wait for all to complete
+        assignment_ids = [];
+        let bonusPromises = displayedData.reduce((result, el) => {
+            if (bonusesUploaded[el['workerId']]) {
+                assignment_ids.push(el['assignmentId']);
+                result.push(
+                    assignmentAPI(el['assignmentId'], 'bonus', {
+                        amount: bonusesUploaded[el['workerId']],
+                        reason: reason
+                    }, false)
+                );
+            }
+            return result;
+        }, []);
+        // once all complete, notify how many succeeded and how many failed
+        Promise.allSettled(bonusPromises).then((results) => {
+            let statuses = results.reduce((acc, result) => {
+                acc[result.status == "fulfilled" ? 0 : 1] += 1;
+                return acc;
+            }, [0, 0]);
+            let status = [];
+            if (statuses[0] > 0) status.push(`Successfully bonused ${statuses[0]} workers!`);
+            if (statuses[1] > 0) status.push(`Failed to bonus ${statuses[1]} workers.`);
+            // update the assignments
+            mainDisp._reloadAssignments(assignment_ids);
+            // alert of status and close the modal
+            alert(status.join(' '));
+            $('#bonusModal').modal('hide');
+            $('#bonus-submit').prop('disabled', false);
+        })
+    // otherwise let the API handle everything
+    } else {
+        assignmentAPI(assignment_ids, 'bonus', {amount, reason})
+        .then(() => {
             $('#bonusModal').modal('hide');
             $('#bonus-submit').prop('disabled', false);
             alert('Bonus successful!');
-        },
-        'failure': () => {
+        })
+        .catch(() => {
             $('#bonus-submit').prop('disabled', false);
             alert('Bonus unsuccessful');
-        }
-    })
+        });
+    }
 }
 
 // Opens the worker approval modal with the workers currently in the table
@@ -430,12 +463,13 @@ function approveWorkersModal() {
 // Handler for bonus information changing
 function bonusInfoChanged() {
     let assignments = mainDisp.db.getDisplayedData();
+    $("#bonus-autoToggle").prop('disabled', (!HIT_LOCAL && !bonusesUploaded));
 
     // Find base total
     let total = assignments.length * $('#bonus-value').val();
     let totalText = `${$('#bonus-value').val()} x ${assignments.length}`;
     if ($('#bonus-autoToggle').hasClass('active')) {
-        total = bonusDispView.getDisplayedData().reduce((prevValue, el) => prevValue + el['bonus'], 0);
+        total = bonusDispView.getDisplayedData().reduce((prevValue, el) => prevValue + (el['bonus'] ? el['bonus'] : 0), 0);
         totalText = total.toFixed(2);
     }
     $('#bonus-baseTotal').text(totalText);
@@ -456,9 +490,37 @@ function bonusWorkersModal() {
     if (!bonusDispView) {
         bonusDispView = new DatabaseView({display: $('#DBBonusTable')});
     }
+    bonusesUploaded = undefined;
     bonusDispView.updateData(assignments, BONUS_FIELDS);
     $('#numWorkersBonusing').text(assignments.length);
     bonusInfoChanged();
+}
+
+// Reads a CSV of worker bonuses into bonusesUploaded
+function handleBonusFileUpload(event) {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+        bonusesUploaded = {};
+        const lines = event.target.result.split('\n');
+        for (let i = 1; i < lines.length; i++) {
+            let cols = lines[i].split(',');
+            bonusesUploaded[cols[0]] = parseFloat(cols[1]);
+        }
+        let newAssignments = [...bonusDispView.getDisplayedData()];
+        for (let i = 0; i < newAssignments.length; i++) {
+            if (bonusesUploaded[newAssignments[i]['workerId']] != undefined) {
+                newAssignments[i] = {
+                    ...newAssignments[i],
+                    'bonus': bonusesUploaded[newAssignments[i]['workerId']]
+                };
+            }
+        }
+        bonusDispView.updateData(newAssignments, BONUS_FIELDS);
+        $('#bonus-file').val('');
+        $("#bonus-autoToggle").click();
+        bonusInfoChanged();
+    };
+    reader.readAsText(event.target.files[0]);
 }
 
 // Opens the worker bonus modal with the single worker selected
@@ -517,21 +579,23 @@ $(window).on('load', function() {
     $('input[name="dataRadioOptions"]').on('change', viewWorkerDataHandler);
 
     // Approves/rejects/bonuses the currently selected assignment
-    if (!HIT_LOCAL) {
-        $("#bonus-autoToggle").prop('disabled', true);
-    } else {
-        $('#bonus-autoToggle').on('click', () => {
-            if ($('#bonus-autoToggle').hasClass('active')) {
-                $('#bonus-autoToggle').removeClass('active');
-                bonusInfoChanged();
-                $('#bonus-value').prop('disabled', false);
-            } else {
-                $('#bonus-autoToggle').addClass('active');
-                bonusInfoChanged();
-                $('#bonus-value').prop('disabled', true);
-            }
-        })
-    }
+    $('#bonus-autoToggle').on('click', () => {
+        if ($('#bonus-autoToggle').hasClass('active')) {
+            $('#bonus-autoToggle').removeClass('active');
+            bonusInfoChanged();
+            $('#bonus-value').prop('disabled', false);
+        } else {
+            $('#bonus-autoToggle').addClass('active');
+            bonusInfoChanged();
+            $('#bonus-value').prop('disabled', true);
+        }
+    });
+
+    // Input listeners
+    $('#bonus-value').on('change', bonusInfoChanged);
+    $('#bonus-file').on('change', handleBonusFileUpload);
+
+    // Button listeners
     $('#approveOne').on('click', approveIndividualHandler);
     $('#rejectOne').on('click', rejectIndividualHandler);
     $('#bonusOne').on('click', bonusOneWorkerModal);

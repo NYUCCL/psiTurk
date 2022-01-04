@@ -79,7 +79,6 @@ def amt_service_response(func):
             response = func(*args, **kwargs)
             return AmtServicesSuccessResponse(operation=func.__name__, data=response)
         except Exception as e:
-            # print(e)
             return AmtServicesErrorResponse(operation=func.__name__, exception=e)
 
     return wrapper
@@ -252,7 +251,6 @@ class MTurkServices(object):
             'reason': bonus['Reason'],
             'grantTime': bonus['GrantTime']
         } for bonus in bonuses]
-        print(bonus_data)
         return bonus_data
         
 

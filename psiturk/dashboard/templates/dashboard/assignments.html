@@ -212,7 +212,7 @@
 
 <!-- BONUSING MODAL -->
 <div class="modal fade" id="bonusModal" tabindex="-1" role="dialog" aria-labelledby="assignmentsCreateModal" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Bonus <b>workers</b>!</h5>
@@ -250,12 +250,18 @@
                             </div>
                         </div>
                         <div class="mb-1"><b>Total: $</b><span id="bonus-baseTotal">X.XX</span><b>, MTurk Fee: </b><span id="bonus-mturkfee">XX</span>%<b>, Cost: $</b><span id="bonus-total">X.XX</span></div>
-                        <div style="font-size: small; color: gray;">
-                            When <b><i>Auto</i></b> is on, bonus amounts will be loaded for each worker from the Bonus column of the database. (local HITs only)
+                        <div style="font-size: small; color: gray; user-select: none;">
+                            When <b><i>Auto</i></b> is on, bonus amounts will be loaded for each worker from the Bonus column of the database (local HITs only).
+                            Alternatively, you can enable <b><i>Auto</i></b> for non-local HITs by filling the Bonus column from a CSV with the file browser below.
+                            The CSV's first column must be the worker's ID, and the second column must be the bonus dollar amount.
                         </div>
                     </div>
             </div>
             <div class="modal-footer">
+                <div class="custom-file" style="margin-right: 20px; white-space: nowrap; overflow: hidden;">
+                    <input type="file" class="custom-file-input" id="bonus-file">
+                    <label class="custom-file-label" for="bonus-file">Choose bonus file...</label>
+                  </div>
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                 <button type="button" class="btn btn-primary" id="bonus-submit">Bonus!</button>
             </div>
