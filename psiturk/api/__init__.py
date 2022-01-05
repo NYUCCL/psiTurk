@@ -278,6 +278,15 @@ class TaskList(Resource):
         raise APIException(message='task name `{}` not recognized!'.format(data['name']))
 
 
+class BonusList(Resource):
+    def post(self):
+        data = request.json
+        hit_id = data['hit_id'] if 'hit_id' in data else None
+        assignment_ids = data['assignment_ids'] if 'assignment_ids' in data else None
+        bonuses = services_manager.amt_services_wrapper.get_bonuses(
+            hit_id=hit_id, assignment_ids=assignment_ids).data
+        return bonuses, 201
+
 api.add_resource(ServicesManager, '/services_manager', '/services_manager/')
 
 api.add_resource(AssignmentList, '/assignments', '/assignments/')
@@ -292,5 +301,7 @@ api.add_resource(Campaigns, '/campaigns/<campaign_id>')
 
 api.add_resource(TaskList, '/tasks', '/tasks/')
 api.add_resource(Tasks, '/tasks/<task_id>')
+
+api.add_resource(BonusList, '/bonuses', '/bonuses/')
 
 api.init_app(api_blueprint)
