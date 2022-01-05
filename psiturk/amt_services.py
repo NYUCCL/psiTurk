@@ -189,7 +189,8 @@ class MTurkServices(object):
         for hit_id in hit_ids:
             paginator = self.mtc.get_paginator('list_assignments_for_hit')
             args = dict(
-                HITId=hit_id
+                HITId=hit_id,
+                PaginationConfig={'PageSize':100}
             )
             if assignment_status:
                 args['AssignmentStatuses'] = [assignment_status]
@@ -228,7 +229,8 @@ class MTurkServices(object):
         if hit_id:
             paginator = self.mtc.get_paginator('list_bonus_payments')
             args = dict(
-                HITId=hit_id
+                HITId=hit_id,
+                PaginationConfig={'PageSize':100}
             )
             for page in paginator.paginate(**args):
                 bonuses.extend(page['BonusPayments'])
@@ -239,6 +241,7 @@ class MTurkServices(object):
                 paginator = self.mtc.get_paginator('list_bonus_payments')
                 args = dict(
                     AssignmentId=assignment_id,
+                    PaginationConfig={'PageSize':100}
                 )
                 for page in paginator.paginate(**args):
                     bonuses.extend(page['BonusPayments'])
@@ -417,7 +420,8 @@ class MTurkServices(object):
         qualification_types = []
         kwargs = {
             'MustBeRequestable': MustBeRequestable,
-            'MustBeOwnedByCaller': MustBeOwnedByCaller
+            'MustBeOwnedByCaller': MustBeOwnedByCaller,
+            'PaginationConfig': {'PageSize':100}
         }
         if Query:
             kwargs['Query'] = Query
