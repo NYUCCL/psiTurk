@@ -605,4 +605,9 @@ $(window).on('load', function() {
     // Approves/bonuses all the workers in the database showing
     $('#approveAll').on('click', approveWorkersModal);
     $('#bonusAll').on('click', bonusWorkersModal);
+
+    // Set up the batch download button on local
+    if (HIT_LOCAL) {
+        $('#downloadOneDataHref').attr('href', '/api/assignments/action/datadownload?assignmentid=' + data['assignmentId']);
+    }
 });
