@@ -308,6 +308,22 @@ class HitsList(Resource):
 
 class HitsAction(Resource):
 
+    # GET: Batch download HIT data
+    def get(self, action):
+
+        # ACTION: Download data
+        #  assignment: the assignment id for which to download data
+        if action == 'datadownload':
+            hitid = request.args.get('hitid')
+            fields = ['question_data', 'trial_data', 'event_data']
+            participants = Participant.query.filter(Participant.hitid == hitid).all()
+            mem_file = BytesIO()
+            with zipfile.ZipFile(mem_file, 'w', compression=zipfile.ZIP_DEFLATED) as zf:
+                for participant in participants:
+                    write_data_to_zip(participant, fields, zf, prefix=participant.workerid + '_data/')
+            mem_file.seek(0)
+            return send_file(mem_file, attachment_filename=hitid + '_hitdata.zip', as_attachment=True)
+
     # POST: Perform an HIT action 
     def post(self, action=None):
 
@@ -361,7 +377,9 @@ class AssignmentsAction(Resource):
         if action == 'datadownload':
             assignmentid = request.args.get('assignmentid')
             fields = ['question_data', 'trial_data', 'event_data']
-            participant = Participant.query.filter(Participant.assignmentid == assignmentid).first()
+            participant = Participant.query.filter(Participant.assignmentid == assignmentid).one_or_none()
+            if not participant:
+                return {'success': False, 'message': 'Assignment id not found.'}, 404
             mem_file = BytesIO()
             with zipfile.ZipFile(mem_file, 'w', compression=zipfile.ZIP_DEFLATED) as zf:
                 write_data_to_zip(participant, fields, zf)
@@ -490,9 +508,12 @@ class BonusList(Resource):
 def write_data_to_zip(participant, fields, zf, prefix=''):
     for field in fields:
         output = get_datafile(participant, field)
-        zf.writestr(prefix + field + '.csv', output)
+        if output:
+            zf.writestr(prefix + field + '.csv', output)
 
 def get_datafile(participant, datatype):
+    if not participant.datastring:
+        return None
     contents = {
         "trial_data": {
             "function": lambda p: p.get_trial_data(),

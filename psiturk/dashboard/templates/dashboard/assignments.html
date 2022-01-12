@@ -1,313 +1,519 @@
-{% extends 'dashboard/layouts/layout.html' %}
-{% set active_page = 'none' %}
+{% extends 'dashboard/layouts/layout.html' %} {% set active_page = 'none' %} {#
+--------------------------------- STYLES --------------------------------- #} {%
+block styles %} {{ super() }}
 
-{# --------------------------------- STYLES --------------------------------- #}
-{% block styles %}
-{{ super() }}
+<link
+  rel="stylesheet"
+  href="{{url_for('.static', filename='styles/dbview.css')}}"
+/>
+<link
+  rel="stylesheet"
+  href="{{url_for('.static', filename='styles/assignments.css')}}"
+/>
 
-<link rel='stylesheet' href="{{url_for('.static', filename='styles/dbview.css')}}">
-<link rel='stylesheet' href="{{url_for('.static', filename='styles/assignments.css')}}">
+{% endblock %} {# --------------------------------- SCRIPTS
+-------------------------------- #} {% block scripts %} {{ super() }}
 
-{% endblock %}
-
-
-{# --------------------------------- SCRIPTS -------------------------------- #}
-{% block scripts %}
-{{ super() }}
-
-<script type='module' src="{{url_for('.static', filename='js/assignments.js')}}"></script>
+<script
+  type="module"
+  src="{{url_for('.static', filename='js/assignments.js')}}"
+></script>
 <!-- Set some local HIT information -->
 <script type="text/javascript">
-    var HIT_ID = "{{ hit_id }}";
-    var HIT_REWARD = {{ hit_info.options.reward }};
-    var HIT_ASSIGNMENTS = {{ hit_info.options.max_assignments }};
-    var BONUS_REASON = {% if bonus_message %}"{{ bonus_message }}"{% else %}undefined{% endif %};
-    var ASSIGNMENT_ID = {% if assignment_id %}"{{ assignment_id }}"{% else %}undefined{% endif %};
-    var HIT_LOCAL = {% if hit_local %} true {% else %} false {% endif %};
+  var HIT_ID = "{{ hit_id }}";
+  var HIT_REWARD = {{ hit_info.options.reward }};
+  var HIT_ASSIGNMENTS = {{ hit_info.options.max_assignments }};
+  var BONUS_REASON = {% if bonus_message %}"{{ bonus_message }}"{% else %}undefined{% endif %};
+  var ASSIGNMENT_ID = {% if assignment_id %}"{{ assignment_id }}"{% else %}undefined{% endif %};
+  var HIT_LOCAL = {% if hit_local %} true {% else %} false {% endif %};
 </script>
 
-{% endblock %}
-
-{# --------------------------------- CONTENT --------------------------------- #}
-{% block content %}
+{% endblock %} {# --------------------------------- CONTENT
+--------------------------------- #} {% block content %}
 <div class="col h-100 overflow-hidden">
+  <!-- HIT controls column -->
+  <div class="row">
+    <div class="col-sm py-1">
+      <button
+        type="button"
+        id="approveAll"
+        class="btn btn-dark mx-auto w-100 text-nowrap"
+        data-toggle="modal"
+        data-target="#approveModal"
+      >
+        Approve All
+      </button>
+    </div>
+    <div class="col-sm py-1">
+      <button
+        type="button"
+        id="bonusAll"
+        class="btn btn-dark mx-auto w-100 text-nowrap"
+        data-toggle="modal"
+        data-target="#bonusModal"
+      >
+        Bonus All
+      </button>
+    </div>
+    {% if hit_local %}
+    <div class="col-sm py-1">
+      <a
+        id="downloadAllDataHref"
+        href="/api/hits/action/datadownload?hitid={{ hit_id }}"
+      >
+        <button
+          type="button"
+          id="downloadAll"
+          class="btn btn-dark mx-auto w-100 text-nowrap"
+        >
+          <img
+            src="{{url_for('.static', filename='images/blueribbon.png')}}"
+            class="db-boolimg"
+          />
+          Download All
+        </button>
+      </a>
+    </div>
+    {% endif %}
+  </div>
 
-    <!-- HIT controls column -->
-    <div class="row">
-        <div class="col-sm py-1">
-            <button 
-                type="button" 
-                id="approveAll" 
-                class="btn btn-dark mx-auto w-100 text-nowrap" 
-                data-toggle="modal" 
-                data-target="#approveModal">
-                Approve All
-            </button>
-        </div>
-        <div class="col-sm py-1">
-            <button 
-                type="button" 
-                id="bonusAll" 
-                class="btn btn-dark mx-auto w-100 text-nowrap"
-                data-toggle="modal" 
-                data-target="#bonusModal">
-                Bonus All
-            </button>
-        </div>
+  <div class="row p-2 flex-fill">
+    <!-- DB display auto-fills column -->
+    <div class="col-md-8 db-display rounded no-scrollbar">
+      <div id="DBDisplay" class="row"></div>
     </div>
 
-    <div class="row p-2 flex-fill">
+    <!-- Mobile spacing column -->
+    <div class="col d-md-none d-lg-none d-xl-none mt-4"></div>
 
-        <!-- DB display auto-fills column -->
-        <div class="col-md-8 db-display rounded no-scrollbar">
-            <div id="DBDisplay" class="row">
+    <!-- DB information sidebar -->
+    <div class="col-md-4 db-sidebar no-scrollbar">
+      <div class="container-fluid h-100 px-0 d-flex flex-column">
+        <!-- Selected HIT information -->
+        <div class="row flex-shrink-0">
+          <div class="col px-2">
+            <div class="bg-dark rounded p-2">
+              <div class="col px-0">
+                <ul class="list-group">
+                  <li
+                    class="list-group-item px-2 py-1"
+                    style="background-color: #eee"
+                  >
+                    <b class="noselect">HIT ID: </b
+                    ><span>{{ hit_info.options.hitid }}</span>
+                  </li>
+                  <li
+                    class="list-group-item px-2 py-1 text-nowrap overflow-auto no-scrollbar"
+                    style="background-color: #eee"
+                  >
+                    <b class="noselect">HIT Title: </b
+                    ><span>{{ hit_info.options.title }}</span>
+                  </li>
+                  <li
+                    class="list-group-item px-2 py-1"
+                    style="background-color: #eee"
+                  >
+                    <b class="noselect">Worker ID: </b
+                    ><span id="assignmentInfo_workerid">...</span>
+                  </li>
+                  <li
+                    class="list-group-item px-2 py-1 text-nowrap overflow-auto no-scrollbar"
+                    style="background-color: #eee"
+                  >
+                    <b class="noselect">Assignment ID: </b
+                    ><span id="assignmentInfo_assignmentid">...</span>
+                  </li>
+                  <li
+                    class="list-group-item px-2 py-1"
+                    style="background-color: #eee"
+                  >
+                    <b class="noselect">Status: </b
+                    ><span id="assignmentInfo_status">...</span>
+                  </li>
+                  <li
+                    class="list-group-item px-2 py-1"
+                    style="background-color: #eee"
+                  >
+                    <b class="noselect">Accepted: </b
+                    ><span id="assignmentInfo_accepted">...</span>
+                  </li>
+                  <li
+                    class="list-group-item px-2 py-1"
+                    style="background-color: #eee"
+                  >
+                    <b class="noselect">Submitted: </b
+                    ><span id="assignmentInfo_submitted">...</span>
+                  </li>
+                  <li
+                    class="list-group-item px-2 py-1"
+                    style="background-color: #eee"
+                  >
+                    <b class="noselect">HIT Reward: </b
+                    ><span id="assignmentInfo_hitReward"
+                      >${{ hit_info.options.reward }}</span
+                    >, <b class="noselect">Bonus: </b
+                    ><span id="assignmentInfo_bonus">...</span>,
+                    <b class="noselect">Bonused: </b
+                    ><span id="assignmentInfo_bonused">...</span>
+                  </li>
+                </ul>
+                <div class="row no-gutters">
+                  <div class="col mt-2">
+                    <button
+                      type="button"
+                      id="approveOne"
+                      class="btn btn-success w-100 text-nowrap"
+                      disabled
+                    >
+                      Approve
+                    </button>
+                  </div>
+                  <div class="col-sm-0 mx-1"></div>
+                  <div class="col mt-2">
+                    <button
+                      type="button"
+                      id="rejectOne"
+                      class="btn btn-danger w-100 text-nowrap"
+                      disabled
+                    >
+                      Reject
+                    </button>
+                  </div>
+                </div>
+                <div class="row no-gutters">
+                  <div class="col mt-2">
+                    <button
+                      type="button"
+                      id="bonusOne"
+                      class="btn btn-primary w-100 text-nowrap"
+                      disabled
+                    >
+                      Bonus
+                    </button>
+                  </div>
+                </div>
+                {% if hit_local %}
+                <div class="row no-gutters">
+                  <div class="col-7 mt-2 pr-1">
+                    <a
+                      id="downloadOneDataHref"
+                      href="javascript:void(0);"
+                      download
+                    >
+                      <button
+                        type="button"
+                        id="downloadOneData"
+                        class="btn btn-info w-100 text-nowrap"
+                        disabled
+                      >
+                        <img
+                          src="{{url_for('.static', filename='images/blueribbon.png')}}"
+                          class="db-boolimg"
+                        />
+                        Download
+                      </button>
+                    </a>
+                  </div>
+                  <div class="col-5 mt-2 pl-1">
+                    <button
+                      type="button"
+                      id="viewOneData"
+                      class="btn btn-info w-100 text-nowrap"
+                      data-toggle="modal"
+                      data-target="#viewDataModal"
+                      disabled
+                    >
+                      <img
+                        src="{{url_for('.static', filename='images/blueribbon.png')}}"
+                        class="db-boolimg"
+                      />
+                      View
+                    </button>
+                  </div>
+                </div>
+                {% endif %}
+              </div>
             </div>
+          </div>
         </div>
 
-        <!-- Mobile spacing column -->
-        <div class="col d-md-none d-lg-none d-xl-none mt-4"></div>
-
-        <!-- DB information sidebar -->
-        <div class="col-md-4 db-sidebar no-scrollbar">
-            <div class="container-fluid h-100 px-0 d-flex flex-column">
-
-                <!-- Selected HIT information -->
-                <div class="row flex-shrink-0">
-                    <div class="col px-2">
-                        <div class="bg-dark rounded p-2">
-                            <div class="col px-0">
-                                <ul class="list-group">
-                                <li class="list-group-item px-2 py-1" style="background-color: #eee">
-                                    <b class="noselect">HIT ID: </b><span>{{ hit_info.options.hitid }}</span>
-                                </li>
-                                <li class="list-group-item px-2 py-1 text-nowrap overflow-auto no-scrollbar" style="background-color: #eee">
-                                    <b class="noselect">HIT Title: </b><span>{{ hit_info.options.title }}</span>
-                                </li>
-                                <li class="list-group-item px-2 py-1" style="background-color: #eee">
-                                    <b class="noselect">Worker ID: </b><span id="assignmentInfo_workerid">...</span>
-                                </li>
-                                <li class="list-group-item px-2 py-1 text-nowrap overflow-auto no-scrollbar" style="background-color: #eee">
-                                    <b class="noselect">Assignment ID: </b><span id="assignmentInfo_assignmentid">...</span>
-                                </li>
-                                <li class="list-group-item px-2 py-1" style="background-color: #eee">
-                                    <b class="noselect">Status: </b><span id="assignmentInfo_status">...</span>
-                                </li>
-                                <li class="list-group-item px-2 py-1" style="background-color: #eee">
-                                    <b class="noselect">Accepted: </b><span id="assignmentInfo_accepted">...</span>
-                                </li>
-                                <li class="list-group-item px-2 py-1" style="background-color: #eee">
-                                    <b class="noselect">Submitted: </b><span id="assignmentInfo_submitted">...</span>
-                                </li>
-                                <li class="list-group-item px-2 py-1" style="background-color: #eee">
-                                    <b class="noselect">HIT Reward: </b><span id="assignmentInfo_hitReward">${{ hit_info.options.reward }}</span>,
-                                    <b class="noselect">Bonus: </b><span id="assignmentInfo_bonus">...</span>,
-                                    <b class="noselect">Bonused: </b><span id="assignmentInfo_bonused">...</span>
-                                </li>
-                                </ul>
-                                <div class="row no-gutters">
-                                    <div class="col mt-2">
-                                        <button 
-                                            type="button" 
-                                            id="approveOne" 
-                                            class="btn btn-success w-100 text-nowrap"
-                                            disabled>
-                                            Approve
-                                        </button>
-                                    </div>
-                                    <div class="col-sm-0 mx-1"></div>
-                                    <div class="col mt-2">
-                                        <button 
-                                            type="button" 
-                                            id="rejectOne" 
-                                            class="btn btn-danger w-100 text-nowrap"
-                                            disabled>
-                                            Reject
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="row no-gutters">
-                                    <div class="col mt-2">
-                                        <button 
-                                            type="button" 
-                                            id="bonusOne" 
-                                            class="btn btn-primary w-100 text-nowrap"
-                                            disabled>
-                                            Bonus
-                                        </button>
-                                    </div>
-                                </div>
-                                {% if hit_local %}
-                                <div class="row no-gutters">
-                                    <div class="col-7 mt-2 pr-1">
-                                        <a id="downloadOneDataHref" href="javascript:void(0);" download>
-                                            <button 
-                                                type="button" 
-                                                id="downloadOneData" 
-                                                class="btn btn-info w-100 text-nowrap"
-                                                disabled>
-                                                <img src="{{url_for('.static', filename='images/blueribbon.png')}}" class="db-boolimg"> Download
-                                            </button>
-                                        </a>
-                                    </div>
-                                    <div class="col-5 mt-2 pl-1">
-                                        <button 
-                                            type="button" 
-                                            id="viewOneData" 
-                                            class="btn btn-info w-100 text-nowrap"
-                                            data-toggle="modal" 
-                                            data-target="#viewDataModal"
-                                            disabled>
-                                            <img src="{{url_for('.static', filename='images/blueribbon.png')}}" class="db-boolimg"> View
-                                        </button>
-                                    </div>
-                                </div>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Table filter info -->
-                <div class="row mt-2 flex-grow-1">
-                    <div class="col px-2">
-                        <div class="bg-dark rounded p-2" id="DBFilters"></div>
-                    </div>
-                </div>
-            </div>
+        <!-- Table filter info -->
+        <div class="row mt-2 flex-grow-1">
+          <div class="col px-2">
+            <div class="bg-dark rounded p-2" id="DBFilters"></div>
+          </div>
         </div>
+      </div>
     </div>
-
+  </div>
 </div>
 
 <!-- Modals -->
-{% endblock %}
-
-{% block modals %}
+{% endblock %} {% block modals %}
 
 <!-- APPROVAL MODAL -->
-<div class="modal fade" id="approveModal" tabindex="-1" role="dialog" aria-labelledby="assignmentsCreateModal" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Approve <b>workers</b>!</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="col modal-uneditable pb-2">
-                    <div id="DBApprovalTable" class="db-data-display no-scrollbar"></div>
-                    <div>Approving <b id="numWorkersApproving">0</b> submitted workers!</div>
-                    <div><b>Reward: $</b><span>{{ hit_info.options.reward }}</span> x <span id="approval-numWorkers">X</span><b>, MTurk Fee: </b><span id="approval-mturkfee">XX</span>%<b>, Cost: $</b><span id="approval-total">X.XX</span></div>
-                    <div style="font-size: small; color: gray;">Fee is 20% if fewer than 10 assignments, 40% otherwise. <i><a href="https://www.mturk.com/pricing" target="_blank" style="color: gray;">Source</a></i></div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" id="approval-submit">Approve!</button>
-            </div>
+<div
+  class="modal fade"
+  id="approveModal"
+  tabindex="-1"
+  role="dialog"
+  aria-labelledby="assignmentsCreateModal"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Approve <b>workers</b>!</h5>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="modal"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="col modal-uneditable pb-2">
+          <div id="DBApprovalTable" class="db-data-display no-scrollbar"></div>
+          <div>
+            Approving <b id="numWorkersApproving">0</b> submitted workers!
+          </div>
+          <div>
+            <b>Reward: $</b><span>{{ hit_info.options.reward }}</span> x
+            <span id="approval-numWorkers">X</span><b>, MTurk Fee: </b
+            ><span id="approval-mturkfee">XX</span>%<b>, Cost: $</b
+            ><span id="approval-total">X.XX</span>
+          </div>
+          <div style="font-size: small; color: gray">
+            Fee is 20% if fewer than 10 assignments, 40% otherwise.
+            <i
+              ><a
+                href="https://www.mturk.com/pricing"
+                target="_blank"
+                style="color: gray"
+                >Source</a
+              ></i
+            >
+          </div>
         </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+          Close
+        </button>
+        <button type="button" class="btn btn-primary" id="approval-submit">
+          Approve!
+        </button>
+      </div>
     </div>
+  </div>
 </div>
 
 <!-- BONUSING MODAL -->
-<div class="modal fade" id="bonusModal" tabindex="-1" role="dialog" aria-labelledby="assignmentsCreateModal" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Bonus <b>workers</b>!</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="col modal-uneditable pb-2">
-                    <div id="DBBonusTable" class="db-data-display no-scrollbar"></div>
-                    <div class="mb-1">Bonusing <b id="numWorkersBonusing">0</b> submitted workers...</div>
-                </div>
-                <div class="col modal-editable">
-                        
-                        <div class="form-group row">
-                            <label for="hitCreateInput-reward" class="col-2 col-form-label" style="text-align: right;"><b>Bonus: </b></label>
-                            <div class="col-10 flex-grow-2">
-                                <div class="input-group">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text">$</span>
-                                    </div>
-                                    <div class="input-group-prepend">
-                                        <button class="btn btn-primary" type="button" id="bonus-autoToggle"><img src="{{url_for('.static', filename='images/blueribbon.png')}}" class="db-boolimg"> Auto</button>
-                                    </div>
-                                    <input class="form-control" type="number" value="0.00" step="0.01" min="0" id="bonus-value">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label for="hitCreateInput-reward" class="col-2 col-form-label" style="text-align: right;"><b>Reason: </b></label>
-                            <div class="col-10 flex-grow-2">
-                                <div class="input-group">
-                                    <input type="text" class="form-control" placeholder="{{ bonus_message }}" value="" id="bonus-reason">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="mb-1"><b>Total: $</b><span id="bonus-baseTotal">X.XX</span><b>, MTurk Fee: </b><span id="bonus-mturkfee">XX</span>%<b>, Cost: $</b><span id="bonus-total">X.XX</span></div>
-                        <div style="font-size: small; color: gray; user-select: none;">
-                            When <b><i>Auto</i></b> is on, bonus amounts will be loaded for each worker from the Bonus column of the database (local HITs only).
-                            Alternatively, you can enable <b><i>Auto</i></b> for non-local HITs by filling the Bonus column from a CSV with the file browser below.
-                            The CSV's first column must be the worker's ID, and the second column must be the bonus dollar amount.
-                        </div>
-                    </div>
-            </div>
-            <div class="modal-footer">
-                <div class="custom-file" style="margin-right: 20px; white-space: nowrap; overflow: hidden;">
-                    <input type="file" class="custom-file-input" id="bonus-file">
-                    <label class="custom-file-label" for="bonus-file">Choose bonus file...</label>
-                  </div>
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" id="bonus-submit">Bonus!</button>
-            </div>
+<div
+  class="modal fade"
+  id="bonusModal"
+  tabindex="-1"
+  role="dialog"
+  aria-labelledby="assignmentsCreateModal"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Bonus <b>workers</b>!</h5>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="modal"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="col modal-uneditable pb-2">
+          <div id="DBBonusTable" class="db-data-display no-scrollbar"></div>
+          <div class="mb-1">
+            Bonusing <b id="numWorkersBonusing">0</b> submitted workers...
+          </div>
         </div>
+        <div class="col modal-editable">
+          <div class="form-group row">
+            <label
+              for="hitCreateInput-reward"
+              class="col-2 col-form-label"
+              style="text-align: right"
+              ><b>Bonus: </b></label
+            >
+            <div class="col-10 flex-grow-2">
+              <div class="input-group">
+                <div class="input-group-prepend">
+                  <span class="input-group-text">$</span>
+                </div>
+                <div class="input-group-prepend">
+                  <button
+                    class="btn btn-primary"
+                    type="button"
+                    id="bonus-autoToggle"
+                  >
+                    <img
+                      src="{{url_for('.static', filename='images/blueribbon.png')}}"
+                      class="db-boolimg"
+                    />
+                    Auto
+                  </button>
+                </div>
+                <input
+                  class="form-control"
+                  type="number"
+                  value="0.00"
+                  step="0.01"
+                  min="0"
+                  id="bonus-value"
+                />
+              </div>
+            </div>
+          </div>
+          <div class="form-group row">
+            <label
+              for="hitCreateInput-reward"
+              class="col-2 col-form-label"
+              style="text-align: right"
+              ><b>Reason: </b></label
+            >
+            <div class="col-10 flex-grow-2">
+              <div class="input-group">
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="{{ bonus_message }}"
+                  value=""
+                  id="bonus-reason"
+                />
+              </div>
+            </div>
+          </div>
+          <div class="mb-1">
+            <b>Total: $</b><span id="bonus-baseTotal">X.XX</span
+            ><b>, MTurk Fee: </b><span id="bonus-mturkfee">XX</span>%<b
+              >, Cost: $</b
+            ><span id="bonus-total">X.XX</span>
+          </div>
+          <div style="font-size: small; color: gray; user-select: none">
+            When <b><i>Auto</i></b> is on, bonus amounts will be loaded for each
+            worker from the Bonus column of the database (local HITs only).
+            Alternatively, you can enable <b><i>Auto</i></b> for non-local HITs
+            by filling the Bonus column from a CSV with the file browser below.
+            The CSV's first column must be the worker's ID, and the second
+            column must be the bonus dollar amount.
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div
+          class="custom-file"
+          style="margin-right: 20px; white-space: nowrap; overflow: hidden"
+        >
+          <input type="file" class="custom-file-input" id="bonus-file" />
+          <label class="custom-file-label" for="bonus-file"
+            >Choose bonus file...</label
+          >
+        </div>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+          Close
+        </button>
+        <button type="button" class="btn btn-primary" id="bonus-submit">
+          Bonus!
+        </button>
+      </div>
     </div>
+  </div>
 </div>
 
 {% if hit_local %}
 
 <!-- MODAL FOR VIEWING WORKER DATA -->
-<div class="modal fade" id="viewDataModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title"><img src="{{url_for('.static', filename='images/blueribbon.png')}}" class="db-boolimg"> View <b>worker</b> data for assignment <b id="workerDataAssignmentId">...</b>.</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="col assignmentModal-uneditable">
-                    <div id="DataDBDisplay" class="db-data-display"></div>
-                    {# <div style="margin-top: 5px;">There are <b id="numRowsInWorkerData">0</b> rows in this data source.</div> #}
-                </div>
-                <div class="col modal-editable">
-                    <div class="row" style="margin: auto;">
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="dataRadioOptions" id="showTrialData" value="trial_data">
-                            <label class="form-check-label" for="showTrialData">Trials</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="dataRadioOptions" id="showQuestionData" value="question_data" checked>
-                            <label class="form-check-label" for="showQuestionData">Questions</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="dataRadioOptions" id="showEventData" value="event_data">
-                            <label class="form-check-label" for="showEventData">Events</label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            </div>
+<div
+  class="modal fade"
+  id="viewDataModal"
+  tabindex="-1"
+  role="dialog"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <img
+            src="{{url_for('.static', filename='images/blueribbon.png')}}"
+            class="db-boolimg"
+          />
+          View <b>worker</b> data for assignment
+          <b id="workerDataAssignmentId">...</b>.
+        </h5>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <div class="col assignmentModal-uneditable">
+          <div id="DataDBDisplay" class="db-data-display"></div>
+          {#
+          <div style="margin-top: 5px">
+            There are <b id="numRowsInWorkerData">0</b> rows in this data
+            source.
+          </div>
+          #}
         </div>
+        <div class="col modal-editable">
+          <div class="row" style="margin: auto">
+            <div class="form-check form-check-inline">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="dataRadioOptions"
+                id="showTrialData"
+                value="trial_data"
+              />
+              <label class="form-check-label" for="showTrialData">Trials</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="dataRadioOptions"
+                id="showQuestionData"
+                value="question_data"
+                checked
+              />
+              <label class="form-check-label" for="showQuestionData"
+                >Questions</label
+              >
+            </div>
+            <div class="form-check form-check-inline">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="dataRadioOptions"
+                id="showEventData"
+                value="event_data"
+              />
+              <label class="form-check-label" for="showEventData">Events</label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+          Close
+        </button>
+      </div>
     </div>
+  </div>
 </div>
-{% endif %}
-
-{% endblock %}
+{% endif %} {% endblock %}
