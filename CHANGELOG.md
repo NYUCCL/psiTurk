@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Fix backwards-compat bug for assignments-table (#528) -- Thanks @jacob-lee!
 
+## [3.2.2]
+### Fixed
+- Pin markupsafe to 2.0.1 (#541) -- Thanks for the report @jmuchovej
 
 ## [3.2.1]
 ### Fixed
