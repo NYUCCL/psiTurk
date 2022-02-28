@@ -72,3 +72,4 @@ tests/shell_transcripts/*
 _site
 
 .venv
+venv
