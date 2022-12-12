@@ -161,6 +161,8 @@ def test_do_commands(get_shell, pytestconfig, cmds, name, stubber, capsys):
     else:
         # if name == 'worker_approve_all':
         # pytest.set_trace()
+        for cmd in cmds:
+            shell.runcmds_plus_hooks(cmd)
         response = shell.runcmds_plus_hooks(cmds)
         captured = capsys.readouterr()
         # with capsys.disabled():
