@@ -210,6 +210,23 @@ class WorkersList(Resource):
         _return = query.all()
         return [p.toAPIData() for p in _return]
 
+
+class WorkersAction(Resource):
+
+    # POST: Perform a worker action
+    def post(self, action):
+
+        # ACTION: Message
+        #  workers: a list of worker ids to message
+        #  message_subject: the subject line of the message
+        #  message_body: the body of the message
+        if action == 'message':
+            worker_ids = request.json['worker_ids']
+            m_subject = request.json['message_subject']
+            m_body = request.json['message_body']
+            _return = services_manager.amt_services_wrapper.notify_workers(workers, m_subject, m_body)
+            return _return.data
+
 class CampaignsList(Resource):
 
     # POST: Returns a list of campaigns from the local database
@@ -542,6 +559,7 @@ api.add_resource(Tasks, '/tasks/<task_id>')
 
 # Workers
 api.add_resource(WorkersList, '/workers', '/workers/')
+api.add_resource(WorkersAction, '/workers/action/<action>')
 
 # Campaigns
 api.add_resource(CampaignsList, '/campaigns', '/campaigns/')

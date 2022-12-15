@@ -252,7 +252,11 @@ class MTurkServices(object):
             'grantTime': bonus['GrantTime']
         } for bonus in bonuses]
         return bonus_data
-        
+    
+    @amt_service_response
+    def notify_workers(self, worker_ids, message_subject, message_body):
+        """Notify workers"""
+        return self.mtc.notify_workers(WorkerIds=worker_ids, Subject=message_subject, MessageText=message_body)
 
     @amt_service_response
     def bonus_assignment(self, assignment_id, worker_id, amount, reason=""):

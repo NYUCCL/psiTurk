@@ -204,6 +204,22 @@ class MTurkServicesWrapper(object):
         return worker_count
 
     @amt_services_wrapper_response
+    def notify_workers(self, worker_ids, m_subject, m_body):
+        """Sends an email to all workers specified in worker_ids
+
+        Args:
+            workers (_type_): A list of worker ids (up to 100)
+            m_subject (_type_): The subject of the email (max 200 chars)
+            m_body (_type_): The body of the email (max 4096 chars)
+
+        Returns:
+            _type_: _description_
+        """
+        if not worker_ids:
+            raise Exception("Worker IDs not specified!")
+        return self.amt_services.notify_workers(worker_ids, m_subject, m_body)
+
+    @amt_services_wrapper_response
     def count_available(self, hits=None):
         if not hits:
             hits = self.get_all_hits().data
