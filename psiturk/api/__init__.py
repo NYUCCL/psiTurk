@@ -1,10 +1,10 @@
 from __future__ import generator_stop
-from flask import Blueprint, jsonify, make_response, request, current_app as app
+from flask import Blueprint, jsonify, make_response, request, current_app as app, send_file
 from flask.json import JSONEncoder
 from flask_restful import Api, Resource
 from psiturk.dashboard import login_required
 from psiturk.services_manager import psiturk_services_manager as services_manager
-from psiturk.models import Participant, Campaign
+from psiturk.models import Participant, Campaign, Hit
 from psiturk.experiment import app
 from psiturk.psiturk_exceptions import *
 from psiturk.amt_services_wrapper import WrapperResponse
@@ -15,6 +15,9 @@ from apscheduler.job import Job
 from apscheduler.triggers.base import BaseTrigger
 import datetime
 import pytz
+import json
+from io import BytesIO
+import zipfile
 from pytz.tzinfo import BaseTzInfo
 
 api_blueprint = Blueprint('api', __name__, url_prefix='/api')
@@ -118,13 +121,134 @@ class AssignmentList(Resource):
 
 
 class AssignmentsAction(Resource):
+
+
+    # GET: For downloading data
+    def get(self, action):
+        """
+        """
+
+        # ACTION: Download data
+        #  assignment: the assignment id for which to download data
+        if action == 'datadownload':
+            assignmentid = request.args.get('assignmentid')
+            fields = ['question_data', 'trial_data', 'event_data']
+            participant = Participant.query.filter(Participant.assignmentid == assignmentid).first()
+            mem_file = BytesIO()
+            with zipfile.ZipFile(mem_file, 'w', compression = zipfile.ZIP_DEFLATED) as zf:
+                write_data_to_zip(participant, fields, zf)
+            mem_file.seek(0)
+            return send_file(mem_file, attachment_filename = participant.workerid + '_data.zip', as_attachment=True)
+
+
     def post(self, action=None):
-        data = request.json
-        if action == 'approve_all':
+        """
+        """
+
+        # ACTION: Approve
+        #  assignments: a list of assignment ids to approve
+        #  all_studies: approve in mturk even if not in local db?
+        if action == 'approve':
+            assignments = request.json['assignments']
+            all_studies = request.json['all_studies']
+            _return = []
+            for assignment in assignments:
+                try:
+                    response = services_manager.amt_services_wrapper \
+                        .approve_assignment_by_assignment_id(assignment, all_studies)
+                    _return.append({
+                        "assignment": assignment,
+                        "success": response.status == "success",
+                        "message": str(response)})
+                except Exception as e:
+                    _return.append({
+                        "assignment": assignment,
+                        "success": False,
+                        "message": str(e)})
+            return _return
+
+        # ACTION: Reject
+        #  assignments: a list of assignment ids to reject
+        #  all_studies: reject in mturk even if not in local db?
+        elif action == 'reject':
+            assignments = request.json['assignments']
+            all_studies = request.json['all_studies']
+            _return = []
+            for assignment in assignments:
+                try:
+                    response = services_manager.amt_services_wrapper \
+                        .reject_assignment(assignment, all_studies)
+                    _return.append({
+                        "assignment": assignment,
+                        "success": response.status == 'success',
+                        "message": str(response)})
+                except Exception as e:
+                    _return.append({
+                        "assignment": assignment,
+                        "success": False,
+                        "message": str(e)})
+            return _return
+
+        # ACTION: Bonus
+        #  assignments: a list of assignment ids to bonus
+        #  all_studies: bonus in mturk even if not in local db?
+        #  amount: a float value to bonus, or "auto" for auto-bonusing from local
+        #  reason: a string reason to send to the worker
+        elif action == 'bonus':
+            assignments = request.json['assignments']
+            all_studies = request.json['all_studies']
+            amount = request.json['amount']
+            reason = request.json['reason']
+            _return = []
+            for assignment in assignments:
+                try:
+                    resp = services_manager.amt_services_wrapper \
+                        .bonus_assignment_for_assignment_id(
+                            assignment, amount, reason, all_studies)
+                    _return.append({
+                        "assignment": assignment,
+                        "success": resp.status == 'success',
+                        "message": str(resp)})
+                except Exception as e:
+                    _return.append({
+                        "assignment": assignment,
+                        "success": False,
+                        "message": str(e)})
+            return _return
+
+        # ACTION: Data
+        #  assignments: a list of assignment ids to retrieve data for
+        elif action == 'data':
+            assignments = request.json['assignments']
+            _return = {}
+            for assignment_id in assignments:
+                p = Participant.query.filter_by(assignmentid=assignment_id).first()
+                q_data = json.loads(p.datastring)["questiondata"]
+                e_data = json.loads(p.datastring)["eventdata"]
+                t_data = json.loads(p.datastring)["data"]
+                jsonData = {
+                    'question_data': [{
+                        'questionname': q,
+                        'response': json.dumps(q_data[q])} for q in q_data],
+                    'event_data': [{
+                        'eventtype': e['eventtype'],
+                        'interval': e['interval'],
+                        'value': e['value'],
+                        'timestamp': e['timestamp']} for e in e_data],
+                    'trial_data': [{
+                        'current_trial': t['current_trial'],
+                        'dateTime': t['dateTime'],
+                        'trialdata': json.dumps(t['trialdata'])} for t in t_data]
+                }
+                _return[assignment_id] = jsonData
+            return _return
+
+        elif action == 'approve_all':
             response = services_manager.amt_services_wrapper.approve_all_assignments()
             if not response.success:
                 raise response.exception
             return response.data['results']
+
         elif action == 'bonus_all':
             if 'reason' not in data or not data['reason']:
                 raise APIException(message='bonus reason is missing!')
@@ -134,11 +258,12 @@ class AssignmentsAction(Resource):
             if not response.success:
                 raise response.exception
             return response.data['results'], 201
+
         else:
             raise APIException(message='action `{}` not recognized!'.format(action))
 
 
-class Hits(Resource):
+class HitResource(Resource):
     def patch(self, hit_id):
         data = request.json
         if 'is_expired' in data and data['is_expired']:
@@ -160,7 +285,8 @@ class Hits(Resource):
 
 
 class HitList(Resource):
-    def get(self, status=None):
+    def get(self):
+        status = request.args.get('status')
         if status == 'active':
             hits = services_manager.amt_services_wrapper.get_active_hits().data
         else:
@@ -199,7 +325,7 @@ class HitsAction(Resource):
             raise APIException(message='action `{}` not recognized!'.format(action))
 
 
-class Campaigns(Resource):
+class CampaignResource(Resource):
     def get(self, campaign_id):
         campaign = Campaign.query.filter(Campaign.id == campaign_id).one()
         return campaign
@@ -244,7 +370,7 @@ class CampaignList(Resource):
 
 
 
-class Tasks(Resource):
+class TaskResource(Resource):
     def delete(self, task_id):
         app.apscheduler.remove_job(str(task_id))
         return '', 204
@@ -278,19 +404,80 @@ class TaskList(Resource):
         raise APIException(message='task name `{}` not recognized!'.format(data['name']))
 
 
+class WorkerResource(Resource):
+    def get(self, worker_id):
+        p = Participant.query.filter(Participant.workerid == worker_id).one()
+        return p.toAPIData()
+
+
+class WorkerList(Resource):
+
+    def get(self):
+        '''
+        Returns workers from the local database
+
+        codeversion:
+            the codeversion on which to filter retrieved workers
+        '''
+        codeversion = request.args.get('codeversion')
+        query = Participant.query
+        if codeversion:
+            query = query.filter(Participant.codeversion == codeversion)
+        _return = query.all()
+        return [p.toAPIData() for p in _return]
+
+
+# --------------------------- DATA WRITING HELPERS --------------------------- #
+
+# Writes data to an open zipfile
+def write_data_to_zip(participant, fields, zf, prefix=''):
+    for field in fields:
+        output = get_datafile(participant, field)
+        zf.writestr(prefix + field + '.csv', output)
+
+def get_datafile(participant, datatype):
+    contents = {
+        "trial_data": {
+            "function": lambda p: p.get_trial_data(),
+            "headerline": "uniqueid,currenttrial,time,trialData\n"
+        },
+        "event_data": {
+            "function": lambda p: p.get_event_data(),
+            "headerline": "uniqueid,eventtype,interval,value,time\n"
+        },
+        "question_data": {
+            "function": lambda p: p.get_question_data(),
+            "headerline": "uniqueid,questionname,response\n"
+        },
+        }
+    ret = contents[datatype]["headerline"] + contents[datatype]["function"](participant)
+    return ret
+
+
+# ------------------------------ RESOURCE ADDING ----------------------------- #
+
+# Services Manager
 api.add_resource(ServicesManager, '/services_manager', '/services_manager/')
 
+# Assignments
 api.add_resource(AssignmentList, '/assignments', '/assignments/')
 api.add_resource(AssignmentsAction, '/assignments/action/<action>')
 
-api.add_resource(Hits, '/hit/<hit_id>')
-api.add_resource(HitList, '/hits/', '/hits/<status>')
+# Hits
+api.add_resource(HitResource, '/hit/<hit_id>')
+api.add_resource(HitList, '/hits', '/hits/')
 api.add_resource(HitsAction, '/hits/action/<action>')
 
+# Campaigns
+api.add_resource(CampaignResource, '/campaign/<campaign_id>')
 api.add_resource(CampaignList, '/campaigns', '/campaigns/')
-api.add_resource(Campaigns, '/campaigns/<campaign_id>')
 
+# Tasks
+api.add_resource(TaskResource, '/task/<task_id>')
 api.add_resource(TaskList, '/tasks', '/tasks/')
-api.add_resource(Tasks, '/tasks/<task_id>')
+
+# Workers
+api.add_resource(WorkerList, '/workers', '/workers/', '/workers/codeversion/<codeversion>')
+api.add_resource(WorkerResource, '/worker/<worker_id>')
 
 api.init_app(api_blueprint)
