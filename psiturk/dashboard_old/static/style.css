@@ -4,13 +4,7 @@ body {
 }
 
 body {
-  background-color: #161616;
-}
-
-.no-scrollbar::-webkit-scrollbar {
-  -webkit-appearance: none;
-  width: 0;
-  height: 0;
+  background-color: #f5f5f5;
 }
 
 .form-signin {

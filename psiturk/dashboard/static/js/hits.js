@@ -1,232 +1,293 @@
-Vue.component('hit-table-row', {
-    props: ['hit'],
-    computed: {
-        hit_data: function(){
-            return this.hit.options
-        }
-    },
-    methods: {
-        expire: function(){
-            fetch('/api/hit/' + this.hit_data.hitid, {
-                method: 'PATCH',
-                body: JSON.stringify({
-                    'is_expired': true
-                }),
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            }).then((response)=>{
-                return response.json()
-            }).then(hit_patch=>{
-                vm_flash_messages.add_success_message('Successfully expired hit: ' + this.hit_data.hitid)
-                this.$emit('update:hit', hit_patch)
-            }).catch(error => console.error('Error:', error))
-        },
-        delete_hit: function(){
-            fetch('/api/hit/' + this.hit_data.hitid, {
-                method: 'DELETE'
-            })
-            .then((response)=>{
-                if (!response.ok){
-                    return response.json().then(json=>{
-                        vm_flash_messages.add_error_message(json.exception, json.message)
-                    })
-                }
-                vm_flash_messages.add_success_message('Successfully deleted hit: ' + this.hit_data.hitid)
-                this.$emit('delete:hit')
-            })
-        },
-        approve_all: function(){
-            fetch('/api/hit/' + this.hit_data.hitid, {
-                method: 'PATCH',
-                body: JSON.stringify({
-                    'action': 'approve_all'
-                }),
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            }).then(response=>{
-                return response.json()
-            }).then(hit_patch=>{
-                vm_flash_messages.add_success_message('Approved all for hit: ' + this.hit_data.hitid)
-                this.$emit('update:hit', hit_patch)
-            }).catch(error=> console.error('Error:', error))
-        }
-    },
-    template: `
-    <tr>
-        <td>
-            <dl>
-                <dt>HitId</dt>
-                <dd>{{ hit_data.hitid }}</dd>
+import { DatabaseView } from "./dbview.js";
+import { DatabaseFilters } from "./dbfilter.js";
 
-                <dt>Title</dt>
-                <dd>{{ hit_data.title }}</dd>
-            </dl>
-        </td>
-        <td>{{ hit_data.status }}</td>
-        <td>
-            <div class='dropdown'>
-                <button class='btn btn-sm btn-outline-dark dropdown-toggle'
-                    type='button' data-toggle='dropdown'
-                >Action</button>
-                <div class='dropdown-menu'>
-                    <a
-                        v-if='!!hit_data.number_submissions_needing_action'
-                        v-on:click='approve_all'
-                        class='dropdown-item'
-                        href='#'
-                    >Approve all</a>
-                    <a
-                        v-if='!hit_data.is_expired'
-                        v-on:click='expire'
-                        class='dropdown-item'
-                        href='#'
-                    >Expire</a>
-                    <a
-                        v-else
-                        v-on:click='delete_hit'
-                        class='dropdown-item'
-                        href='#'
-                    >Delete</a>
-                </div>
-            </div>
-        </td>
-        <td>{{ hit_data.max_assignments }}</td>
-        <td>{{ hit_data.number_assignments_completed }}</td>
-        <td>{{ hit_data.number_assignments_available }}</td>
-        <td>{{ hit_data.number_assignments_pending }}</td>
-        <td>{{ hit_data.number_submissions_needing_action }}</td>
-        <td>{{ hit_data.duration_in_seconds / 60 }}</td>
-        <td>{{ hit_data.reward }}</td>
-        <td>{{ new Date(hit_data.creation_time) }}</td>
-        <td>{{ new Date(hit_data.expiration) }}</td>
-        <td>{{ hit_data.is_expired }}</td>
-    </tr>
-    `
-})
+// The fields to be parsed from the returned HIT response
+var HIT_FIELDS = {
+  local_hit: {
+    title: '<img src="' + BLUE_RIBBON_PATH + '" class="db-boolimg">',
+    type: "bool",
+    style: { width: "50px", "max-width": "50px" },
+  },
+  HITId: {
+    title: "ID",
+    type: "string",
+    style: { width: "50px", "max-width": "50px" },
+  },
+  Title: {
+    title: "Title",
+    type: "string",
+    style: { "min-width": "100px", width: "20%", "max-width": "200px" },
+  },
+  HITStatus: { title: "Status", type: "string", style: { width: "100px" } },
+  Reward: {
+    title: "Reward",
+    type: "dollar",
+    style: { width: "100px", "max-width": "100px" },
+  },
+  ToDoAssignments: { title: "TODO", type: "num", style: { width: "50px" } },
+  MaxAssignments: { title: "Max", type: "num", style: { width: "50px" } },
+  NumberOfAssignmentsAvailable: {
+    title: "Available",
+    type: "num",
+    style: { width: "50px" },
+  },
+  NumberOfAssignmentsCompleted: {
+    title: "Completed",
+    type: "num",
+    style: { width: "50px" },
+  },
+  NumberOfAssignmentsPending: {
+    title: "Pending",
+    type: "num",
+    style: { width: "50px" },
+  },
+  Description: {
+    title: "Description",
+    type: "string",
+    style: { "min-width": "100px", width: "20%", "max-width": "200px" },
+  },
+  CreationTime: {
+    title: "Created On",
+    type: "date",
+    style: { width: "300px" },
+  },
+  Expiration: { title: "Expiration", type: "date", style: { width: "300px" } },
+};
 
-let vm_hits = new Vue({
-    el: '#hits',
-    data: () => ({
-        hits: [],
-        show_active: true,
-        show_hits: 'show_all_hits',
-        filter_map: {
-            // 'Assignable'|'Unassignable'|'Reviewable'|'Reviewing'|'Disposed',
-            'only_show_active_hits': [],
-            'only_show_reviewable_hits': []
-        },
-        loading: true
-    }),
-    computed: {
-        filtered_hits: function(){
-            if (this.show_hits == 'show_all_hits'){
-                return this.hits
-            } else if (this.show_hits == 'only_show_active_hits'){
-                return this.active_hits
-            } else if (this.show_hits == 'only_show_reviewable_hits'){
-                return this.hits.filter(hit=>{
-                    return ['Reviewable','Reviewing'].includes(hit.options.status)
-                })
-            } else {
-                return this.hits
+var HIT_STATUSES = ["Reviewable", "Reviewing", "Assignable", "Unassignable"];
+
+/**
+ * Handles the database HIT views
+ */
+class HITDBDisplay {
+  // Create the HIT display with references to the HTML elements it will
+  // use as a basis for controls and in which it will fill in the database.
+  constructor(domelements) {
+    this.DOM$ = domelements;
+    this.db = undefined; // Main HIT database handler
+  }
+
+  // Build the database views into their respective elmeents. There is one
+  // for the main database and another for the sub-assignments view
+  init() {
+    this.dbfilters = new DatabaseFilters(this.DOM$, HIT_FIELDS, {
+      onChange: this._filterChangeHandler.bind(this),
+      onDownload: this._downloadTableHandler.bind(this),
+    });
+    this.db = new DatabaseView(
+      this.DOM$,
+      {
+        onSelect: this._hitSelectedHandler.bind(this),
+      },
+      "hits",
+      this.dbfilters
+    );
+
+    // Load the data
+    this._loadHITs();
+  }
+
+  // Pulls the HIT data from the backend and loads it into the main database
+  _loadHITs(statuses = HIT_STATUSES) {
+    $.ajax({
+      type: "POST",
+      url: "/api/hits/",
+      data: JSON.stringify({
+        statuses: statuses,
+        only_local: false,
+      }),
+      contentType: "application/json; charset=utf-8",
+      dataType: "json",
+      success: (data) => {
+        this.db.updateData(data, HIT_FIELDS, {
+          rerender: true,
+          resetFilter: false,
+          maintainSelected: false,
+          index: "HITId",
+          callback: () => {
+            if (HIT_ID) {
+              $("#" + this.db.trPrefix + HIT_ID).click();
             }
-        },
-        expired_hits: function(){
-            return this.hits.filter(hit=>{
-                return hit.options.is_expired
-            })
-        },
-        active_hits: function(){
-            return this.hits.filter(hit=>{
-                return !hit.options.is_expired
-            })
-        },
-        any_outstanding_submissions: function(){
-            return this.hits.some(hit=>{
-                return hit.options.number_submissions_needing_action > 0
-            })
-        },
-        any_unexpired: function(){
-            return this.hits.some(hit=>{
-                return !hit.options.is_expired
-            })
-        },
-        any_deletable: function(){
-            return this.hits.some(hit=>{
-                return hit.options.is_expired && hit.options.number_submissions_needing_action == 0
-            })
-        }
+          },
+        });
+      },
+      error: function (errorMsg) {
+        console.log(errorMsg);
+        // alert('Error loading HIT data.');
+        // location.reload();
+      },
+    });
+  }
+
+  /**
+   * HANDLER: New HIT is selected in the database view
+   * @param {object} data - The data of the newly-selected HIT
+   */
+  _hitSelectedHandler(data) {
+    // Enable the HIT assignment page
+    $("#assignmentsPage").removeClass("disabled");
+
+    // Update the HIT information column
+    let hitId = data["HITId"];
+    $("#hitInfo_id").text(hitId);
+    $("#hitInfo_title").text(data["Title"]);
+    $("#hitInfo_desc").text(data["Description"]);
+    $("#hitInfo_status").text(data["HITStatus"]);
+    $("#hitInfo_reward").text("$" + data["Reward"]);
+    $("#hitInfo_created").text(data["CreationTime"]);
+    $("#hitInfo_expired").text(data["Expiration"]);
+    $("#hitInfo_todo").text(data["ToDoAssignments"]);
+    $("#hitInfo_max").text(data["MaxAssignments"]);
+    $("#hitInfo_available").text(data["NumberOfAssignmentsAvailable"]);
+    $("#hitInfo_completed").text(data["NumberOfAssignmentsCompleted"]);
+    $("#hitInfo_pending").text(data["NumberOfAssignmentsPending"]);
+
+    // Update the current HREF
+    history.pushState(
+      { id: "hitpage" },
+      "",
+      window.location.origin + "/dashboard/hits/" + hitId + "/"
+    );
+  }
+
+  /**
+   * HANDLER: Change in filters of main DB view
+   */
+  _filterChangeHandler() {
+    this.db.renderTable();
+  }
+
+  /**
+   * HANDLER: Download table
+   */
+  _downloadTableHandler() {
+    this.db.downloadData("hits");
+  }
+}
+
+// Updates the HIT expenses based on the modal
+function updateHITCreateExpense() {
+  // Fee structure 07.22.15:
+  // 20% for HITs with < 10 assignments
+  // 40% for HITs with >= 10 assignments
+  let assignments = parseInt($("#hitCreateInput-participants").val());
+  let reward = parseFloat(
+    parseFloat($("#hitCreateInput-reward").val()).toFixed(2)
+  );
+  let work = assignments * reward;
+
+  let commission = assignments >= 10 ? 0.4 : 0.2;
+  let fee = work * commission;
+  let total = fee + assignments * reward;
+
+  // Update displays
+  $("#hitCreate-mturkfee").html(fee.toFixed(2));
+  $("#hitCreate-totalCost").html(total.toFixed(2));
+}
+
+// Creates an HIT. Dangerous to use this on live!
+function createHIT() {
+  let participants = parseInt($("#hitCreateInput-participants").val());
+  let reward = parseFloat($("#hitCreateInput-reward").val());
+  let duration = parseInt($("#hitCreateInput-duration").val());
+
+  // Disables submitting the HIT twice
+  $("#hitCreate-submit").prop("disabled", true);
+
+  $.ajax({
+    type: "POST",
+    url: "/api/hits/action/create",
+    data: JSON.stringify({
+      num_workers: participants,
+      reward: reward,
+      duration: duration,
+    }),
+    contentType: "application/json; charset=utf-8",
+    dataType: "json",
+    success: function () {
+      alert(
+        "HIT was successfully created! If you don't see it in the database view, refresh."
+      );
+      $("#hitCreateModal").modal("hide");
+      $("#hitCreate-submit").prop("disabled", false);
+
+      // Reload the HIT data
+      disp._loadHITs();
     },
-    created: function(){
-        this.fetch_all_hits()
+    error: function () {
+      alert(
+        "There was an error creating your HIT. Try again maybe? Also, check your qualifications."
+      );
+      $("#hitCreate-submit").prop("disabled", false);
     },
-    methods: {
-        fetch_all_hits: function(){
-            this.loading = true;
-            fetch('/api/hits/').then((response)=>{
-                return response.json()
-            })
-            .then((json)=>{
-                this.hits = json;
-                this.loading = false;
-            })
-        },
-        delete_hit: function(hit){
-            this.hits.splice(this.hits.indexOf(hit), 1)
-        },
-        update_hit: function(hit, hit_data){
-            this.$set(this.hits, this.hits.indexOf(hit), hit_data)
-        },
-        expire_all: function(){
-            fetch('/api/hits/action/expire_all').then((response)=>{
-                return response.json()
-            })
-            .then(json=>{
-                for (let _result of json) {
-                    if (_result.success) {
-                        vm_flash_messages.add_success_message('Successfully expired hit: ' + _result.data.hit_id)
-                    } else {
-                        vm_flash_messages.add_error_message(json.exception,
-                            'Failed to expire hit: ' + _result.data.hit_id)
-                    }
-                }
-                this.fetch_all_hits()
-            })
-        },
-        delete_all: function(){
-            fetch('/api/hits/action/delete_all').then(response=>{
-                return response.json()
-            })
-            .then(json=>{
-                for (let _result of json) {
-                    if(_result.success) {
-                        vm_flash_messages.add_success_message('Successfully deleted hit: ' + _result.data.hit_id)
-                    } else {
-                        vm_flash_messages.add_error_message(_result.exception.exception,
-                            _result.exception.message)
-                    }
-                }
-                this.fetch_all_hits()
-            })
-        },
-        approve_all: function(){
-            fetch('/api/hits/action/approve_all').then(response=>{
-                return response.json()
-            })
-            .then(json=>{
-                for (let _result of json) {
-                    if(_result.success) {
-                        if (_result.data.results.length) {
-                            vm_flash_messages.add_success_message('Approved all assignments for hit: ' + _result.data.hit_id)
-                        }
-                    } else {
-                        vm_flash_messages.add_error_message(_result.exception.exception)
-                    }
-                }
-                this.fetch_all_hits()
-            })
-        }
+  });
+}
+
+// Generates a random 6-length ID for the debug link
+function randomIdGenerator() {
+  return Math.random().toString(36).substr(2, 6).toUpperCase();
+}
+
+// Sets the hit debug URL link
+function hitURLUpdate() {
+  $("#hitDebug-URL").val(
+    `${window.location.protocol}//${window.location.host}/pub?assignmentId=${$(
+      "#hitDebug-assignmentid"
+    ).val()}&workerId=${$("#hitDebug-workerid").val()}&hitId=${$(
+      "#hitDebug-hitid"
+    ).val()}&mode=debug`
+  );
+}
+
+// Populates the table view with HITs
+var disp;
+$(window).on("load", function () {
+  // Initialize the HIT display
+  disp = new HITDBDisplay({
+    filters: $("#DBFilters"),
+    display: $("#DBDisplay"),
+  });
+  disp.init();
+
+  // Listeners for moving with arrow keys
+  $(document).keydown((e) => {
+    if (e.which == 38) {
+      disp.db.selectPreviousRow();
+    } else if (e.which == 40) {
+      disp.db.selectNextRow();
     }
-})
+  });
+
+  // Add HIT creation expense calculation
+  updateHITCreateExpense();
+  $("#hitCreateInput-participants").on("change", updateHITCreateExpense);
+  $("#hitCreateInput-reward").on("change", updateHITCreateExpense);
+
+  // Add HIT creation function
+  $("#hitCreate-submit").on("click", createHIT);
+
+  // Handle debug link generation
+  $("#hitDebug-hitidRandom").on("click", () =>
+    $("#hitDebug-hitid").val(randomIdGenerator())
+  );
+  $("#hitDebug-workeridRandom").on("click", () =>
+    $("#hitDebug-workerid").val("debug" + randomIdGenerator())
+  );
+  $("#hitDebug-assignmentidRandom").on("click", () =>
+    $("#hitDebug-assignmentid").val("debug" + randomIdGenerator())
+  );
+  $("#hitDebug-openURL").on("click", () =>
+    window.open($("#hitDebug-URL").val(), "_blank")
+  );
+  $("#hitDebug-copyURL").on("click", () => {
+    $("#hitDebug-URL").select();
+    document.execCommand("copy");
+  });
+  $("#hitDebug-hitid").val(randomIdGenerator());
+  $("#hitDebug-workerid").val("debug" + randomIdGenerator());
+  $("#hitDebug-assignmentid").val("debug" + randomIdGenerator());
+  $("#hitDebug-hitid").on("change", hitURLUpdate);
+  $("#hitDebug-workerid").on("change", hitURLUpdate);
+  $("#hitDebug-assignmentid").on("change", hitURLUpdate);
+  hitURLUpdate();
+});

@@ -159,9 +159,12 @@ class ExperimentServerController(object):
     def check_server_process_running(self, process_hash):
         server_process_running = False
         for proc in psutil.process_iter():
-            if process_hash in str(proc.as_dict(['cmdline'])):
-                server_process_running = True
-                break
+            try:
+                if process_hash in str(proc.as_dict(['cmdline'])):
+                    server_process_running = True
+                    break
+            except:
+                pass
         return server_process_running
 
     def get_project_hash(self):

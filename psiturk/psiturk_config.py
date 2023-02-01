@@ -142,6 +142,10 @@ class PsiturkConfig(ConfigParser):
                                     'database_url')
             if ('localhost' in database_url) or ('sqlite' in database_url):
                 raise EphemeralContainerDBError(database_url)
+        
+        # if found, replace postgres:// with postgresql:// in database
+        database_url = self.get('Database Parameters', 'database_url')
+        self.set('Database Parameters', 'database_url', database_url.replace('postgres://', 'postgresql://'))
 
 
     def get_ad_url(self):

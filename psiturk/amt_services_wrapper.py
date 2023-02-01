@@ -204,6 +204,22 @@ class MTurkServicesWrapper(object):
         return worker_count
 
     @amt_services_wrapper_response
+    def notify_workers(self, worker_ids, m_subject, m_body):
+        """Sends an email to all workers specified in worker_ids
+
+        Args:
+            workers (_type_): A list of worker ids (up to 100)
+            m_subject (_type_): The subject of the email (max 200 chars)
+            m_body (_type_): The body of the email (max 4096 chars)
+
+        Returns:
+            _type_: _description_
+        """
+        if not worker_ids:
+            raise Exception("Worker IDs not specified!")
+        return self.amt_services.notify_workers(worker_ids, m_subject, m_body)
+
+    @amt_services_wrapper_response
     def count_available(self, hits=None):
         if not hits:
             hits = self.get_all_hits().data
@@ -230,6 +246,14 @@ class MTurkServicesWrapper(object):
             elif status == 'Unassignable':
                 maybe_will_complete_count += hit.options['number_assignments_pending']
         return maybe_will_complete_count
+    
+    @amt_services_wrapper_response
+    def get_bonuses(self, hit_id=None, assignment_ids=None):
+        """
+        Returns all bonuses if hit_id is set, or specific assignment bonuses.
+        """
+        bonus_data = self.amt_services.get_bonuses(hit_id, assignment_ids).data
+        return {'bonuses': bonus_data}
 
     @amt_services_wrapper_response
     def get_assignments(self, hit_ids=None, assignment_status=None, all_studies=False):

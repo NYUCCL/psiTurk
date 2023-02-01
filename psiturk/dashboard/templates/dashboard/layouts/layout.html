@@ -2,20 +2,26 @@
 
 {# Set the navigation bar pages and the currently active page#}
 {% set navigation_bar = [
-  ('/dashboard/', 'home', 'Home'),
-  ('/dashboard/hits/', 'hits', 'HITs'),
-  ('/dashboard/assignments/', 'assignments', 'Assignments'),
-  ('/dashboard/campaigns/', 'campaigns', 'Campaigns'),
-  ('/dashboard/tasks/', 'tasks', 'Tasks'),
+    ('/dashboard/campaigns/', 'campaigns', 'Campaigns'),
+    ('/dashboard/hits/', 'hits', 'HITs'),
+    ('/dashboard/workers/', 'workers', 'Workers'),
+    ('/dashboard/tasks/', 'tasks', 'Tasks'),
+    ('/dashboard/About/', 'about', 'About'),
 ] -%}
-{% set active_page = active_page | default('none') -%}
+{% set active_page = active_page|default('none') -%}
 
 {# Is the current session in live mode or sandbox? #}
 {% set live = session['services_manager_mode'] == 'live' %}
 
+
+{# ---------------------------------- LAYOUT -------------------------------- #}
 {% block layout %}
+
+<!-- Container for content -->
+<div class="container-fluid">
+
     <!-- Navigation bar -->
-    <nav class='navbar navbar-expand-sm navbar-dark bg-dark'>
+    <nav class='row navbar navbar-expand-sm navbar-dark bg-dark'>
         <a class="navbar-brand" href="/dashboard/">
             Dashboard
         </a>
@@ -31,38 +37,39 @@
                 {% endfor %}
             </ul>
             <div class="mr-2 font-weight-light text-muted align-middle h-100 overflow-auto">
-                <div class="d-md-none d-lg-block">
-                  <div class="col d-sm-none d-md-flex text-nowrap align-center">
-                      <small>PsiTurk <span class="text-info">v{{ psiturk_version_number }}</span>&nbsp;</small>
-                      <small> - Code <span class="text-info">v{{ code_version_number }}</span></small>
-                  </div>
-                  <div class="col d-sm-none d-md-flex text-nowrap align-center overflow-auto">
-                      <small>AMT Balance: <span class="text-info">$<span id="layout-amtbalance">{{ amt_balance }}</span></span>&nbsp;</small>
-                      <small> - AWS ID: <span class="text-info">{{ aws_access_key_id }}</span></small>
-                  </div>
-              </div>
+                <div class="col d-sm-none d-md-flex text-nowrap align-center">
+                    <small>PsiTurk <span class="text-info">v{{ psiturk_version_number }}</span>&nbsp;</small>
+                    <small> - Code <span class="text-info">v{{ code_version_number }}</span></small>
+                </div>
+                <div class="col d-sm-none d-md-flex text-nowrap align-center">
+                    <small>AMT Balance: <span class="text-info">$<span id="layout-amtbalance">{{ amt_balance }}</span></span></small>
+                </div>
+                <div class="col d-sm-flex d-md-none my-2"></div>
             </div>
-                <input
-                  style="opacity: 0;"
-                  type="checkbox"
-                  id="toggleLiveMode"
-                  {% if live %}checked{% endif %}
-                  data-toggle="toggle"
-                  data-on="Live"
-                  data-off="Sandbox"
-                  data-onstyle="outline-primary"
-                  data-offstyle="outline-secondary"
-                  data-size="sm">
-          </div>
-      </nav>
-<div class='container-fluid mt-2'>
-    <div class='row'>
-        <div class='main col px-4'>
+            <input
+                style="opacity: 0;"
+                type="checkbox"
+                id="toggleLiveMode"
+                {% if live %}checked{% endif %}
+                data-toggle="toggle" 
+                data-on="Live" 
+                data-off="Sandbox" 
+                data-onstyle="outline-primary" 
+                data-offstyle="outline-secondary"
+                data-size="sm">
+        </div>
+    </nav>
+
+    <div class="row">
+        <div class='main col'>
             {% block content %}{% endblock %}
         </div>
     </div>
 </div>
-<footer></footer>
+
+{% endblock %}
+
+{% block modals %}
 {% endblock %}
 
 
@@ -73,23 +80,23 @@
 <!-- BootStrap toggle plugin -->
 <link href="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/css/bootstrap4-toggle.min.css" rel="stylesheet">
 <!-- Custom styles -->
-<link rel='stylesheet' href="{{ url_for('.static', filename='styles/layout.css') }}">
+<link rel='stylesheet' href="{{url_for('.static', filename='styles/layout.css')}}">
 
 {% endblock %}
 
 
-{# ---------------------------------- SCRIPTS -------------------------------- #}
+{# --------------------------------- SCRIPTS -------------------------------- #}
 {% block scripts %}
 {{ super() }}
-<script src="https://d3js.org/d3-array.v2.min.js"></script>
 
 <!-- beefy bootstrap... sheesh, all this just for dropdowns... -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"   integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU="   crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script> 
 <!-- Bootstrap toggle plugin -->
 <script src="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/js/bootstrap4-toggle.min.js"></script>
 <!-- Custom scripts -->
-<script type='text/javascript' src="{{ url_for('.static', filename='js/layout.js') }}"></script>
+<script type='text/javascript' src="{{url_for('.static', filename='js/layout.js')}}"></script>
+
 {% endblock %}

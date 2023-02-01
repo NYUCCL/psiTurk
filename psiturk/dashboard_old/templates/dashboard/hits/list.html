@@ -1,0 +1,134 @@
+{% extends 'dashboard/layouts/layout.html' %}
+{% set active_page = 'hits' %}
+
+{% block content %}
+<div id='hits'>
+
+    <div>
+        <h3>Batch Operations</h3>
+        <div class='form-group'>
+            <button
+                v-on:click='expire_all'
+                :disabled='!any_unexpired'
+                type='button' class='btn btn-primary'>Expire all</button>
+            <small>Expires all unexpired hits</small>
+            <span
+                v-if='!any_unexpired'
+                class='badge badge-info'
+            >No unexpired hits found.</span>
+        </div>
+        <div class='form-group'>
+            <button
+                v-on:click='approve_all'
+                :disabled='!any_outstanding_submissions'
+                type='button' class='btn btn-primary'>Approve all</button>
+            <small>Approves all submissions for all hits.</small>
+            <span
+                v-if='!any_outstanding_submissions'
+                class='badge badge-info'
+            >No hits found with oustanding submissions.</span>
+        </div>
+        <div class='form-group'>
+            <button
+                v-on:click='delete_all'
+                :disabled='!any_deletable'
+                type='button' class='btn btn-primary'>Delete all</button>
+            <small>Deletes all expired hits which have no unapproved/rejected submissions outstanding.</small>
+            <span
+                v-if='!any_deletable'
+                class='badge badge-info'
+            >No deletable hits found.</span>
+        </div>
+    </div>
+    <hr/>
+    <div class='row'>
+        <div class='col'>
+            <h3>Table Options</h3>
+            <div class='mb-2'>
+                <div class='form-check'>
+                    <input class='form-check-input' type='radio'
+                        v-model='show_hits'
+                        value='show_all_hits'
+                        id='show-all-hits'
+                    >
+                    <label class='form-check-label' for='show-all-hits'>
+                        Show All hits
+                    </label>
+                </div>
+                <div class='form-check'>
+                    <input class='form-check-input' type='radio'
+                        v-model='show_hits'
+                        value='only_show_active_hits'
+                        id='only-show-active'
+                    >
+                    <label class='form-check-label' for='only-show-active'>
+                        Only show unexpired hits
+                    </label>
+                </div>
+                <div class='form-check'>
+                    <input class='form-check-input' type='radio'
+                        v-model='show_hits'
+                        value='only_show_reviewable_hits'
+                        id='only-show-reviewable'
+                    >
+                    <label class='form-check-label' for='only-show-reviewable'>
+                        Only show reviewable hits
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div v-if="loading">
+      <div class="d-flex justify-content-center mb-3">
+        <div class="spinner-border" role="status">
+          <span class="sr-only">Loading...</span>
+        </div>
+      </div>
+    </div>
+
+    <div>
+        <table class='table'>
+            <thead>
+                <tr>
+                    <th>Hit</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                    <th>Max Assignments</th>
+                    <th>Completed<sup>1</sup></th>
+                    <th>Available</th>
+                    <th>Pending<sup>2</sup></th>
+                    <th>Submissions Needing Action<sup>3</sup></th>
+                    <th>Duration (minutes)</th>
+                    <th>Reward</th>
+                    <th>Created</th>
+                    <th>Expires</th>
+                    <th>Is Expired</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr
+                    is='hit-table-row'
+                    v-for='hit in filtered_hits'
+                    v-bind:key='hit.options.hitid'
+                    v-bind:hit='hit'
+                    v-on:update:hit='update_hit(hit, $event)'
+                    v-on:delete:hit='delete_hit(hit)'
+                    v-on:patch='patch(hit, hit_data)'
+                ></tr>
+            </tbody>
+        </table>
+
+        <div>
+          <p><sup>1</sup>MTurk defines "Completed" as submissions that you have either Approved or Rejected.</p>
+          <p><sup>2</sup>MTurk defines "Pending" as submissions that have been "accepted" by a worker or that are being "viewed" by a worker. A worker has the "hit duration" to complete the hit. Many users use tools that automatically accept HITs for them and put them in a queue. Workers may not begin working on your hit until it is close to the duration expiry.</p>
+          <p><sup>3</sup>Outstanding submissions that need to be either approved or rejected before the hit can be deleted.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script type='text/javascript' src="{{ url_for('.static', filename='js/hits.js') }}"></script>
+{% endblock %}

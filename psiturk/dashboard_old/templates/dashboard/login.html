@@ -1,0 +1,12 @@
+ {% extends 'dashboard/base.html' %}
+ 
+ {% block layout %}
+ <div class='container'>
+ <form class='form-signin' method='post'>
+    <h1 class='h3 mb-3 font-weight-normal'>Please sign in</h1>
+    <input type="text" class="form-control" name="username" placeholder="username">
+    <input type="password" class="form-control" name="password" placeholder="password">
+    <button type="submit" class="btn btn-lg btn-primary">Sign in</button>
+ </form>
+ </div>
+ {% endblock %}

@@ -79,7 +79,6 @@ def amt_service_response(func):
             response = func(*args, **kwargs)
             return AmtServicesSuccessResponse(operation=func.__name__, data=response)
         except Exception as e:
-            # print(e)
             return AmtServicesErrorResponse(operation=func.__name__, exception=e)
 
     return wrapper
@@ -189,7 +188,8 @@ class MTurkServices(object):
         for hit_id in hit_ids:
             paginator = self.mtc.get_paginator('list_assignments_for_hit')
             args = dict(
-                HITId=hit_id
+                HITId=hit_id,
+                PaginationConfig={'PageSize': 100}
             )
             if assignment_status:
                 args['AssignmentStatuses'] = [assignment_status]
@@ -220,6 +220,43 @@ class MTurkServices(object):
             'status': assignment['AssignmentStatus'],
         }
         return worker_data
+    
+    @amt_service_response
+    def get_bonuses(self, hit_id=None, assignment_ids=None):
+        """Get paid bonuses."""
+        bonuses = []
+        if hit_id:
+            paginator = self.mtc.get_paginator('list_bonus_payments')
+            args = dict(
+                HITId=hit_id,
+                PaginationConfig={'PageSize': 100}
+            )
+            for page in paginator.paginate(**args):
+                bonuses.extend(page['BonusPayments'])
+        elif assignment_ids:
+            if not isinstance(assignment_ids, list):
+                assignment_ids = [assignment_ids]
+            for assignment_id in assignment_ids:
+                paginator = self.mtc.get_paginator('list_bonus_payments')
+                args = dict(
+                    AssignmentId=assignment_id,
+                    PaginationConfig={'PageSize': 100}
+                )
+                for page in paginator.paginate(**args):
+                    bonuses.extend(page['BonusPayments'])
+        bonus_data = [{
+            'workerId': bonus['WorkerId'],
+            'bonusAmount': bonus['BonusAmount'],
+            'assignmentId': bonus['AssignmentId'],
+            'reason': bonus['Reason'],
+            'grantTime': bonus['GrantTime']
+        } for bonus in bonuses]
+        return bonus_data
+    
+    @amt_service_response
+    def notify_workers(self, worker_ids, message_subject, message_body):
+        """Notify workers"""
+        return self.mtc.notify_workers(WorkerIds=worker_ids, Subject=message_subject, MessageText=message_body)
 
     @amt_service_response
     def bonus_assignment(self, assignment_id, worker_id, amount, reason=""):
@@ -268,7 +305,9 @@ class MTurkServices(object):
         aws_access_key_id = self.config.get('AWS Access', 'aws_access_key_id')
         aws_secret_access_key = self.config.get('AWS Access',
                                                 'aws_secret_access_key')
-
+        session_kwargs = {
+            'region_name': 'us-east-1'
+        }
         if aws_access_key_id and aws_secret_access_key:
             session_kwargs['aws_access_key_id'] = aws_access_key_id
             session_kwargs['aws_secret_access_key'] = aws_secret_access_key

@@ -45,7 +45,7 @@ def test_awskeys_invalid_shell(capfd, experiment_server_controller,
     out, err = capfd.readouterr()
     assert NoMturkConnectionError().message in err
     
-
+@pytest.mark.enable_socket
 def test_nonaws_still_can_do(capfd, edit_config_file,
                              experiment_server_controller, psiturk_shell):
     """test_nonaws_still_can_do."""
