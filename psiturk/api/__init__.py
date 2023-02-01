@@ -224,7 +224,7 @@ class WorkersAction(Resource):
             worker_ids = request.json['worker_ids']
             m_subject = request.json['message_subject']
             m_body = request.json['message_body']
-            _return = services_manager.amt_services_wrapper.notify_workers(workers, m_subject, m_body)
+            _return = services_manager.amt_services_wrapper.notify_workers(worker_ids, m_subject, m_body)
             return _return.data
 
 class CampaignsList(Resource):
@@ -339,7 +339,7 @@ class HitsAction(Resource):
                 for participant in participants:
                     write_data_to_zip(participant, fields, zf, prefix=participant.workerid + '_data/')
             mem_file.seek(0)
-            return send_file(mem_file, attachment_filename=hitid + '_hitdata.zip', as_attachment=True)
+            return send_file(mem_file, download_name=hitid + '_hitdata.zip', as_attachment=True)
 
     # POST: Perform an HIT action 
     def post(self, action=None):
@@ -401,7 +401,7 @@ class AssignmentsAction(Resource):
             with zipfile.ZipFile(mem_file, 'w', compression=zipfile.ZIP_DEFLATED) as zf:
                 write_data_to_zip(participant, fields, zf)
             mem_file.seek(0)
-            return send_file(mem_file, attachment_filename=participant.workerid + '_data.zip', as_attachment=True)
+            return send_file(mem_file, download_name=participant.workerid + '_data.zip', as_attachment=True)
 
 
     # POST: Perform an assignment action 
