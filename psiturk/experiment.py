@@ -206,7 +206,7 @@ def get_random_condcount(mode):
                    Participant.status == CREDITED,
                    Participant.status == SUBMITTED,
                    Participant.status == BONUSED,
-                   Participant.beginhit > starttime)).all()
+                   Participant.beginhit > starttime)).with_entities(Participant.cond, Participant.counterbalance).all()
     counts = Counter()
     for cond in range(numconds):
         for counter in range(numcounts):
